@@ -333,12 +333,14 @@ uint8_t err_sensor = 0;
 void sensor_level(unsigned long millisec) {
   if ((millisec - time_water) > 1000 * 1) {
     time_water = millisec;
+    send_water = 0;
+    send_honey = 0;
     for (int8_t index = 0 ; index < 6 ; index++) {
       water_level[index] = ioport.digitalRead(index);
       honey_level[index] = ioport.digitalRead(index+6);
       //수위(단위 %)
-      if(water_level[index]) send_water = index*20;
-      if(honey_level[index]) send_honey = index*20;
+      if(water_level[index]) send_water = (index+1)*20;
+      if(honey_level[index]) send_honey = (index+1)*20;
     }
     if(!water_level[1]) use_water = true; //센서 수위가 40% 이하일 경우 급수
     if(!honey_level[1]) use_honey = true;
