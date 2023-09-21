@@ -365,11 +365,11 @@ void sensor_level(unsigned long millisec) {
       //알람 보내기
       if (err_sensor > 240) {
         if(sensor_state_w && sensor_state_h){
-          ERR_Message = "SENSOR=ERR=WATER=FALSE=HONEY=FALSE;";
+          ERR_Message = "SENSOR=ERR=LEVEL=ALL=0=0;";
         }else if(sensor_state_w){
-          ERR_Message = "SENSOR=ERR=WATER=FALSE=HONEY=TRUE;";
+          ERR_Message = "SENSOR=ERR=LEVEL=WATER=0=0;";
         }else{
-          ERR_Message = "SENSOR=ERR=WATER=TRUE=HONEY=FALSE;";
+          ERR_Message = "SENSOR=ERR=LEVEL=HONEY=0=0;";
         }        
         mesh.sendBroadcast(ERR_Message);
         err_sensor  = 0;
@@ -389,7 +389,8 @@ void sensor_level(unsigned long millisec) {
             full_water++;
             if (full_water > 240){
               digitalWrite(RELAY_VALVE_W, false);
-              mesh.sendBroadcast("SENSOR=ERR=EMPTY=WATER=0=0;");
+              ERR_Message = "SENSOR=ERR=EMPTY=WATER=0=0;";
+              mesh.sendBroadcast(ERR_Message);
               mesh.sendBroadcast("SENSOR=RELAY=OFF=WATER=0=0;");
             }
           }else if(water_level[4]){
@@ -411,7 +412,8 @@ void sensor_level(unsigned long millisec) {
           full_honey++;
           if (full_honey > 240){
             digitalWrite(RELAY_VALVE_H, false);
-            mesh.sendBroadcast("SENSOR=ERR=EMPTY=HONEY=0=0;");
+            ERR_Message = "SENSOR=ERR=EMPTY=HONEY=0=0;";
+            mesh.sendBroadcast(ERR_Message);
             mesh.sendBroadcast("SENSOR=RELAY=OFF=HONEY=0=0;");
           }
         }else if(water_level[4]){
@@ -446,7 +448,6 @@ boolean temp_flage(boolean onoff_Heater, boolean onoff_Fan) {
     if (onoff_Fan) {
       Serial.println("Fan on");
       mesh.sendBroadcast("SENSOR=RELAY=ON=FAN=0=0;");
-      mesh.sendBroadcast("SENSOR=RUN=FAN;");
     }
     else {
       Serial.println("Fan off");
@@ -485,7 +486,8 @@ void stable(unsigned long millisec) {
       }
     } else {
       if (err_stable > 240) {
-        mesh.sendBroadcast("SENSOR=ERR=TEMP=0=0=0;");
+        ERR_Message = "SENSOR=ERR=TEMP=0=0=0;";
+        mesh.sendBroadcast(ERR_Message);
         err_stable  = 0;
       }
       else {
