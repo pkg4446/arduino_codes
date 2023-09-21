@@ -19,6 +19,9 @@ const uint8_t  p_dir[4]    = {35,34,33,32};          //PC2~5
 bool     zero_set[4] = {false,}; //step zero set
 uint16_t position[4] = {0,}; //step position
 
+//출력 - 브레이크 릴레이 3개, 스탭모터 핀 2(cw,ccw)*3개, 로봇 제어용 릴레이 2개.
+//입력 - 컵 유무(정전용량 센서) 3개, 스텝모터 리미트 2*3개
+
 void init_port_base(){
   /*
   DDRA |= 0x3F; //0b00111111

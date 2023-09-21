@@ -135,20 +135,25 @@ painlessMesh  mesh;
 String ERR_Message = "SENSOR=GREEN=ALL;";
 
 String nodeID = "";
-const uint8_t tempGap  = 1;
+const uint8_t tempGap = 1;
 //// ----------- Flage --------------
-boolean SHT40          = false;
-boolean stableUse      = false;
-boolean flage_water    = true;
-boolean flage_honey    = false;
-boolean flage_relay_water = false;
-boolean flage_relay_honey = false;
-boolean flage_Heater   = false;
-boolean flage_Fan      = false;
+boolean SHT40        = false;
+boolean use_stable   = false;
+boolean use_water    = true;
+boolean use_honey    = true;
+
+boolean sensor_state_w = false;//센서 고장여부 확인 플레그
+boolean sensor_state_h = false;
+boolean run_water  = false;
+boolean run_honey  = false;
+boolean run_heater = false;
+boolean run_fan    = false;
 //// ----------- Variable -----------
 //// ----------- Sensor -----------
-int16_t temperature    = 14040;
-int16_t humidity       = 14040;
+int16_t temperature = 14040;
+int16_t humidity    = 14040;
+int8_t  send_water  = 0;
+int8_t  send_honey  = 0;
 boolean water_level[6] = {false,};
 boolean honey_level[6] = {false,};
 ////for millis() func//
@@ -180,19 +185,16 @@ void command_Service(String command, String value) {
     EEPROM.write(EEP_humidity, control_humidity);
     mesh.sendBroadcast("SENSOR=SET=HUMI;");
   } else if (command == "AT+USE") {
-    stableUse = value.toInt();
-    EEPROM.write(EEP_Stable, stableUse);
+    use_stable = value.toInt();
+    EEPROM.write(EEP_Stable, use_stable);
     mesh.sendBroadcast("SENSOR=SET=USE;");
   } else if (command == "AT+WATER") {
-    flage_water       = true;
-    flage_relay_water = true;
+    use_water        = true;
     mesh.sendBroadcast("SENSOR=SET=WATER;");
   } else if (command == "AT+HONEY") {
-    flage_honey       = true;
-    flage_relay_honey = true;
+    use_honey        = true;
     mesh.sendBroadcast("SENSOR=SET=HONEY;");
   } 
-  
   
   else if (command == "AT+RELAY") {
     if(value.toInt() > 0){
@@ -218,7 +220,7 @@ void AT_commandHelp() {
   Serial.println(";AT+HUMI = int;      Humidity Change.");
   Serial.println(";AT+USE  = bool;     Useable Change.");
   Serial.println(";AT+WATER= bool;     Water Alarm Reset.");
-  Serial.println(";AT+RELAY= bool;     relay test.");
+  Serial.println(";AT+RELAY= bool;     All relay on or off test.");
 }
 char Serial_buf[SERIAL_MAX];
 int8_t Serial_num;
@@ -248,9 +250,9 @@ void Serial_process() {
 
 //taskSendMessage funtion
 void sendMessage() ; // Prototype so PlatformIO doesn't complain
-Task sensorLog( TASK_SECOND * 60, TASK_FOREVER, &sensorValue );
+Task sensorLog( TASK_SECOND*60*5, TASK_FOREVER, &sensorValue );
 void sensorValue() {
-  String msg = "SENSOR=" + (String)temperature + "=" + (String)humidity + ';';
+  String msg = "SENSOR=" + (String)temperature + "=" + (String)humidity + "=" + (String)send_water + "=" + (String)send_honey + ';';
   mesh.sendBroadcast( msg );
 }
 //taskSendMessage funtion end
@@ -291,7 +293,7 @@ void setup() {
   //// ------------ EEPROM ------------
   control_temperature = byte(EEPROM.read(EEP_temperature));
   control_humidity    = byte(EEPROM.read(EEP_humidity));
-  if(EEPROM.read(EEP_Stable) != 0){stableUse = true;}
+  if(EEPROM.read(EEP_Stable) != 0){use_stable = true;}
   //// ------------ EEPROM ------------
   mesh.setDebugMsgTypes( ERROR | STARTUP );  // set before init() so that you can see startup messages
   mesh.init( MESH_PREFIX, MESH_PASSWORD, &taskScheduler, MESH_PORT );
@@ -307,7 +309,7 @@ void setup() {
   Serial.print(", Set humidity is ");
   Serial.print(control_humidity);  
   Serial.print(", Set Operation : ");
-  Serial.println(stableUse);
+  Serial.println(use_stable);
   Serial.print("Device nodeID = ");
   Serial.println(nodeID);
   AT_commandHelp();
@@ -325,85 +327,129 @@ void loop() {
   serial_monit(now);
 }
 
-uint8_t full_Water  = 0;
-
+uint8_t full_water = 0;
+uint8_t full_honey = 0;
+uint8_t err_sensor = 0;
 void sensor_level(unsigned long millisec) {
   if ((millisec - time_water) > 1000 * 1) {
     time_water = millisec;
     for (int8_t index = 0 ; index < 6 ; index++) {
       water_level[index] = ioport.digitalRead(index);
       honey_level[index] = ioport.digitalRead(index+6);
+      //수위(단위 %)
+      if(water_level[index]) send_water = index*20;
+      if(honey_level[index]) send_honey = index*20;
     }
-    for (int8_t index = 0 ; index < 6 ; index++) { //위는 켜졌는데 아래는 안켜질 경우(고장) 검증
-      water_level[index];
-    }
-    for (int8_t index = 0 ; index < 6 ; index++) { //위는 켜졌는데 아래는 안켜질 경우(고장) 검증
-      honey_level[index];
-    }
-    if(flage_relay_water){
-
-    }else{
-
-    }
-    if(flage_relay_honey){
-
-    }else{
-      
+    if(!water_level[1]) use_water = true; //센서 수위가 40% 이하일 경우 급수
+    if(!honey_level[1]) use_honey = true;
+    for (int8_t index = 1 ; index < 6 ; index++) { //위는 켜졌는데 아래는 안켜질 경우(고장) 검증
+      if(water_level[index] && !water_level[index-1]){
+        sensor_state_w = true;
+      }
+      if(honey_level[index] && !honey_level[index-1]){
+        sensor_state_h = true;
+      }
+      if(sensor_state_w && sensor_state_h) break;//센서들이 고장일 경우
     }
 
-    /*
-    if ((!flage_relay_water) && (digitalRead(SENSOR_BOTTOM) == LOW) && (digitalRead(SENSOR_TOP) == LOW)) {
-      digitalWrite(RELAY_VALVE_H, HIGH);
-      mesh.sendBroadcast("P=ID=AT+PUMP=3;"); //펌프 켜기
-      water_flage(true);
-      full_Water++;
-      Serial.println("Water relay On");
-    } else if (flage_relay_water && (digitalRead(SENSOR_BOTTOM) == HIGH) && (digitalRead(SENSOR_TOP) == LOW)) {
-      if ((full_Water < 250) && flage_relay_water) full_Water++;
-    } else if (flage_relay_water && (digitalRead(SENSOR_BOTTOM) == HIGH) && (digitalRead(SENSOR_TOP) == HIGH)) {
-      //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
-      digitalWrite(RELAY_VALVE_H, LOW);
-      Serial.println("Water charging");
-      water_flage(false);
-      full_Water = 0;
-      Serial.println("Water full");
-    } else if ((full_Water > 240) || ((digitalRead(SENSOR_BOTTOM) == LOW) && (digitalRead(SENSOR_TOP) == HIGH))) {
-      mesh.sendBroadcast("SENSOR=ERR=WATER;");
-      digitalWrite(RELAY_VALVE_H, LOW);
-      flage_water = false;
-      water_flage(false);
-      full_Water = 0;
-      Serial.println("Water ERR log");
-    } else if (full_Water > 0) {
-      full_Water++;
-      Serial.print("WROT : ");
-      Serial.println(full_Water);
+    if(sensor_state_w || sensor_state_h){ //센서가 고장일 경우
+      //솔레노이드 벨브 정지
+      if(!use_water && sensor_state_w){        
+        digitalWrite(RELAY_VALVE_W, false);
+        use_water = false;
+      }
+      if(!use_honey && sensor_state_h){
+        use_honey = false;
+        digitalWrite(RELAY_VALVE_H, false);
+      }
+      //알람 보내기
+      if (err_sensor > 240) {
+        if(sensor_state_w && sensor_state_h){
+          ERR_Message = "SENSOR=ERR=HONEYWATER;";
+        }else if(sensor_state_w){
+          ERR_Message = "SENSOR=ERR=WATER;";
+        }else{
+          ERR_Message = "SENSOR=ERR=HONEY;";
+        }        
+        mesh.sendBroadcast(ERR_Message);
+        err_sensor  = 0;
+      }
+      else {
+        err_sensor++;
+      }
     }
-    */
+    else{
+      if(use_water){
+        if(!run_water){
+          mesh.sendBroadcast("P=ID=AT+PUMP=3;"); //펌프 켜기
+          digitalWrite(RELAY_VALVE_W, true);     //솔레노이드 밸브 켜기
+          mesh.sendBroadcast("SENSOR=RUN=WATER;");
+        }else{
+          if(!water_level[1]){
+            full_water++;
+            if (full_water > 240){
+              digitalWrite(RELAY_VALVE_W, false);
+              mesh.sendBroadcast("SENSOR=ERR=NOWATER;");
+              mesh.sendBroadcast("SENSOR=OFF=WATER;");
+            }
+          }else if(water_level[4]){
+            //가득참
+            //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
+            digitalWrite(RELAY_VALVE_W, false);
+            mesh.sendBroadcast("SENSOR=OFF=WATER;");
+          }
+        }
+      }
+      if(use_honey){
+        if(run_honey){
+          mesh.sendBroadcast("P=ID=AT+PUMP=3;"); //펌프 켜기
+          digitalWrite(RELAY_VALVE_H, true);     //솔레노이드 밸브 켜기
+          mesh.sendBroadcast("SENSOR=RUN=HONEY;");
+        }
+      }else{
+        if(!honey_level[1]){
+          full_honey++;
+          if (full_honey > 240){
+            digitalWrite(RELAY_VALVE_H, false);
+            mesh.sendBroadcast("SENSOR=ERR=NOHONEY;");
+            mesh.sendBroadcast("SENSOR=OFF=HONEY;");
+          }
+        }else if(water_level[4]){
+          //가득참
+          //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
+          digitalWrite(RELAY_VALVE_H, false);
+          mesh.sendBroadcast("SENSOR=OFF=HONEY;");
+        }
+      }
+    }
   }//millis()
 }//sensor_Water() END
 
-uint8_t err_Stable    = 0;
+uint8_t err_stable = 0;
 boolean temp_flage(boolean onoff_Heater, boolean onoff_Fan) {
-  if (flage_Heater == onoff_Heater && flage_Fan == onoff_Fan) {
+  if (run_heater == onoff_Heater && run_fan == onoff_Fan) {
     return false;
   }
-  if (flage_Heater != onoff_Heater) {
-    flage_Heater = onoff_Heater;
-    if (onoff_Heater == true) {
+  if (run_heater != onoff_Heater) {
+    run_heater = onoff_Heater;
+    if (onoff_Heater) {
       Serial.println("Heater on");
+      mesh.sendBroadcast("SENSOR=RUN=HEAT;");
     }
     else {
       Serial.println("Heater off");
+      mesh.sendBroadcast("SENSOR=OFF=HEAT;");
     }
   }
-  if (flage_Fan != onoff_Fan) {
-    flage_Fan = onoff_Fan;
-    if (onoff_Fan == true) {
+  if (run_fan != onoff_Fan) {
+    run_fan = onoff_Fan;
+    if (onoff_Fan) {
       Serial.println("Fan on");
+      mesh.sendBroadcast("SENSOR=RUN=FAN;");
     }
     else {
       Serial.println("Fan off");
+      mesh.sendBroadcast("SENSOR=OFF=FAN;");
     }
   }
   return true;
@@ -412,15 +458,13 @@ boolean temp_flage(boolean onoff_Heater, boolean onoff_Fan) {
 void stable(unsigned long millisec) {
   if ((millisec - time_stalbe) > 1000 * 1) {
     time_stalbe = millisec;
-    String ERR_Message = "SENSOR=ERR=SHT31;";
     if (temperature != 14040) {
       ////온도 유지
-      if (stableUse) {
+      if (use_stable) {
         if (temperature/100 > control_temperature + tempGap) {
-          ERR_Message = "SENSOR=ERR=TEMP;";
           if (temp_flage(false, true)) { //히터, 팬
-            digitalWrite(RELAY_HEATER, flage_Heater);
-            digitalWrite(RELAY_FAN, flage_Fan);
+            digitalWrite(RELAY_HEATER, run_heater);
+            digitalWrite(RELAY_FAN, run_fan);
             Serial.print("TEMP EMERGENCY:");
             Serial.print(temperature);
             Serial.print(",");
@@ -428,24 +472,23 @@ void stable(unsigned long millisec) {
           }
         } else if (temperature/100 >= control_temperature) {
           if (temp_flage(false, false)) { //히터, 팬
-            digitalWrite(RELAY_HEATER, flage_Heater);
-            digitalWrite(RELAY_FAN, flage_Fan);
+            digitalWrite(RELAY_HEATER, run_heater);
+            digitalWrite(RELAY_FAN, run_fan);
           }
         } else if (temperature/100 < control_temperature - tempGap) {
           if (temp_flage(true, false)) { //히터, 팬
-            digitalWrite(RELAY_HEATER, flage_Heater);
-            digitalWrite(RELAY_FAN, flage_Fan);
+            digitalWrite(RELAY_HEATER, run_heater);
+            digitalWrite(RELAY_FAN, run_fan);
           }
         }//온도 조절 종료
       }
     } else {
-      if (err_Stable > 240) {
-        ERR_Message = "SENSOR=ERR=SHT31;";
-        mesh.sendBroadcast(ERR_Message);
-        err_Stable  = 0;
+      if (err_stable > 240) {
+        mesh.sendBroadcast("SENSOR=ERR=TEMP;");
+        err_stable  = 0;
       }
       else {
-        err_Stable++;
+        err_stable++;
       }
     }
   }//millis()
