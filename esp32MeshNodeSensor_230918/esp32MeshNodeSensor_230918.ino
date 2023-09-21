@@ -400,6 +400,11 @@ void sensor_level(unsigned long millisec) {
             //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
             digitalWrite(RELAY_VALVE_W, false);
             mesh.sendBroadcast("SENSOR=RELAY=OFF=WATER=0=0;");
+          }else if(water_level[5]){
+            //넘침
+            //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
+            digitalWrite(RELAY_VALVE_W, false);
+            mesh.sendBroadcast("SENSOR=ERR=OVERFLOW=WATER=0=0;");
           }
         }
       }
@@ -418,11 +423,16 @@ void sensor_level(unsigned long millisec) {
             mesh.sendBroadcast(ERR_Message);
             mesh.sendBroadcast("SENSOR=RELAY=OFF=HONEY=0=0;");
           }
-        }else if(water_level[4]){
+        }else if(honey_level[4]){
           //가득참
           //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
           digitalWrite(RELAY_VALVE_H, false);
           mesh.sendBroadcast("SENSOR=RELAY=OFF=HONEY=0=0;");
+        }else if(honey_level[5]){
+          //넘침
+          //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
+          digitalWrite(RELAY_VALVE_H, false);
+          mesh.sendBroadcast("SENSOR=ERR=OVERFLOW=HONEY=0=0;");
         }
       }
     }
