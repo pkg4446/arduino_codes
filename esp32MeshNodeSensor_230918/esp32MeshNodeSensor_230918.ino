@@ -132,7 +132,7 @@ void tca_select(uint8_t index) {
 
 Scheduler taskScheduler; // to control upload task
 painlessMesh  mesh;
-String ERR_Message = "SENSOR=GREEN=ALL;";
+String ERR_Message = "SENSOR=COMMEND=VALUE1=VALUE2=VALUE3=VALUE4;";
 
 String nodeID = "";
 const uint8_t tempGap = 1;
@@ -179,21 +179,21 @@ void command_Service(String command, String value) {
   if (command == "AT+TEMP") {
     control_temperature = value.toInt();
     EEPROM.write(EEP_temperature, control_temperature);
-    mesh.sendBroadcast("SENSOR=SET=TEMP;");
+    mesh.sendBroadcast("SENSOR=SET=TEMP=0=0=0;");
   } else if (command == "AT+HUMI") {
     control_humidity = value.toInt();
     EEPROM.write(EEP_humidity, control_humidity);
-    mesh.sendBroadcast("SENSOR=SET=HUMI;");
+    mesh.sendBroadcast("SENSOR=SET=HUMI=0=0=0;");
   } else if (command == "AT+USE") {
     use_stable = value.toInt();
     EEPROM.write(EEP_Stable, use_stable);
-    mesh.sendBroadcast("SENSOR=SET=USE;");
+    mesh.sendBroadcast("SENSOR=SET=USE=0=0=0;");
   } else if (command == "AT+WATER") {
     use_water        = true;
-    mesh.sendBroadcast("SENSOR=SET=WATER;");
+    mesh.sendBroadcast("SENSOR=SET=WATER=0=0=0;");
   } else if (command == "AT+HONEY") {
     use_honey        = true;
-    mesh.sendBroadcast("SENSOR=SET=HONEY;");
+    mesh.sendBroadcast("SENSOR=SET=HONEY=0=0=0;");
   } 
   
   else if (command == "AT+RELAY") {
@@ -252,7 +252,7 @@ void Serial_process() {
 void sendMessage() ; // Prototype so PlatformIO doesn't complain
 Task sensorLog( TASK_SECOND*60*5, TASK_FOREVER, &sensorValue );
 void sensorValue() {
-  String msg = "SENSOR=" + (String)temperature + "=" + (String)humidity + "=" + (String)send_water + "=" + (String)send_honey + ';';
+  String msg = "SENSOR=LOG=" + (String)temperature + "=" + (String)humidity + "=" + (String)send_water + "=" + (String)send_honey + ';';
   mesh.sendBroadcast( msg );
 }
 //taskSendMessage funtion end
@@ -272,7 +272,7 @@ void receivedCallback( uint32_t from, String &msg ) {
       String value   = strtok(NULL, ";");
       command_Service(command, value);
     } else if (device == "connecting"){
-      mesh.sendBroadcast("SENSOR=CNT=TRUE;");
+      mesh.sendBroadcast("SENSOR=CNT=TRUE=0=0=0;");
     }//echo
   }
 }
@@ -365,11 +365,11 @@ void sensor_level(unsigned long millisec) {
       //알람 보내기
       if (err_sensor > 240) {
         if(sensor_state_w && sensor_state_h){
-          ERR_Message = "SENSOR=ERR=HONEYWATER;";
+          ERR_Message = "SENSOR=ERR=WATER=FALSE=HONEY=FALSE;";
         }else if(sensor_state_w){
-          ERR_Message = "SENSOR=ERR=WATER;";
+          ERR_Message = "SENSOR=ERR=WATER=FALSE=HONEY=TRUE;";
         }else{
-          ERR_Message = "SENSOR=ERR=HONEY;";
+          ERR_Message = "SENSOR=ERR=WATER=TRUE=HONEY=FALSE;";
         }        
         mesh.sendBroadcast(ERR_Message);
         err_sensor  = 0;
@@ -383,20 +383,20 @@ void sensor_level(unsigned long millisec) {
         if(!run_water){
           mesh.sendBroadcast("P=ID=AT+PUMP=3;"); //펌프 켜기
           digitalWrite(RELAY_VALVE_W, true);     //솔레노이드 밸브 켜기
-          mesh.sendBroadcast("SENSOR=RUN=WATER;");
+          mesh.sendBroadcast("SENSOR=RELAY=ON=WATER=0=0;");
         }else{
           if(!water_level[1]){
             full_water++;
             if (full_water > 240){
               digitalWrite(RELAY_VALVE_W, false);
-              mesh.sendBroadcast("SENSOR=ERR=NOWATER;");
-              mesh.sendBroadcast("SENSOR=OFF=WATER;");
+              mesh.sendBroadcast("SENSOR=ERR=EMPTY=WATER=0=0;");
+              mesh.sendBroadcast("SENSOR=RELAY=OFF=WATER=0=0;");
             }
           }else if(water_level[4]){
             //가득참
             //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
             digitalWrite(RELAY_VALVE_W, false);
-            mesh.sendBroadcast("SENSOR=OFF=WATER;");
+            mesh.sendBroadcast("SENSOR=RELAY=OFF=WATER=0=0;");
           }
         }
       }
@@ -404,21 +404,21 @@ void sensor_level(unsigned long millisec) {
         if(run_honey){
           mesh.sendBroadcast("P=ID=AT+PUMP=3;"); //펌프 켜기
           digitalWrite(RELAY_VALVE_H, true);     //솔레노이드 밸브 켜기
-          mesh.sendBroadcast("SENSOR=RUN=HONEY;");
+          mesh.sendBroadcast("SENSOR=RELAY=ON=HONEY=0=0;");
         }
       }else{
         if(!honey_level[1]){
           full_honey++;
           if (full_honey > 240){
             digitalWrite(RELAY_VALVE_H, false);
-            mesh.sendBroadcast("SENSOR=ERR=NOHONEY;");
-            mesh.sendBroadcast("SENSOR=OFF=HONEY;");
+            mesh.sendBroadcast("SENSOR=ERR=EMPTY=HONEY=0=0;");
+            mesh.sendBroadcast("SENSOR=RELAY=OFF=HONEY=0=0;");
           }
         }else if(water_level[4]){
           //가득참
           //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
           digitalWrite(RELAY_VALVE_H, false);
-          mesh.sendBroadcast("SENSOR=OFF=HONEY;");
+          mesh.sendBroadcast("SENSOR=RELAY=OFF=HONEY=0=0;");
         }
       }
     }
@@ -434,22 +434,23 @@ boolean temp_flage(boolean onoff_Heater, boolean onoff_Fan) {
     run_heater = onoff_Heater;
     if (onoff_Heater) {
       Serial.println("Heater on");
-      mesh.sendBroadcast("SENSOR=RUN=HEAT;");
+      mesh.sendBroadcast("SENSOR=RELAY=ON=HEAT=0=0;");
     }
     else {
       Serial.println("Heater off");
-      mesh.sendBroadcast("SENSOR=OFF=HEAT;");
+      mesh.sendBroadcast("SENSOR=RELAY=OFF=HEAT=0=0;");
     }
   }
   if (run_fan != onoff_Fan) {
     run_fan = onoff_Fan;
     if (onoff_Fan) {
       Serial.println("Fan on");
+      mesh.sendBroadcast("SENSOR=RELAY=ON=FAN=0=0;");
       mesh.sendBroadcast("SENSOR=RUN=FAN;");
     }
     else {
       Serial.println("Fan off");
-      mesh.sendBroadcast("SENSOR=OFF=FAN;");
+      mesh.sendBroadcast("SENSOR=RELAY=OFF=FAN=0=0;");
     }
   }
   return true;
@@ -484,7 +485,7 @@ void stable(unsigned long millisec) {
       }
     } else {
       if (err_stable > 240) {
-        mesh.sendBroadcast("SENSOR=ERR=TEMP;");
+        mesh.sendBroadcast("SENSOR=ERR=TEMP=0=0=0;");
         err_stable  = 0;
       }
       else {

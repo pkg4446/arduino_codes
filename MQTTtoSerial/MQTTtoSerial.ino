@@ -18,8 +18,11 @@ PubSubClient mqttClient(mqtt_client);
 struct dataSet {
   String TYPE;
   String MODULE;
+  String COMMEND;
   String VALUE1;
   String VALUE2;
+  String VALUE3;
+  String VALUE4;
 };
 
 //// ------------ MQTT Callback ------------
@@ -39,10 +42,13 @@ int16_t command_Num;
 
 void command_Service() {
   struct dataSet dataSend;
-  dataSend.MODULE = strtok(command_Buf, "=");
-  dataSend.TYPE   = strtok(NULL, "=");
-  dataSend.VALUE1 = strtok(NULL, "=");
-  dataSend.VALUE2 = strtok(NULL, ";");
+  dataSend.MODULE  = strtok(command_Buf, "=");
+  dataSend.TYPE    = strtok(NULL, "=");
+  dataSend.COMMEND = strtok(NULL, "=");
+  dataSend.VALUE1  = strtok(NULL, "=");
+  dataSend.VALUE2  = strtok(NULL, "=");
+  dataSend.VALUE3  = strtok(NULL, "=");
+  dataSend.VALUE4  = strtok(NULL, ";");
   if (dataSend.TYPE != "P") {
     httpPOSTRequest(&dataSend);
   }
@@ -141,11 +147,14 @@ void httpPOSTRequest(struct dataSet *ptr) {
   http.begin(http_client, serverUrl);
 
   http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-  String httpRequestData = (String)"FARM="  + deviceID    +
-                           "&MODULE="       + ptr->MODULE +
-                           "&TYPE="         + ptr->TYPE   +
-                           "&VALUE1="       + ptr->VALUE1 +
-                           "&VALUE2="       + ptr->VALUE2;
+  String httpRequestData = (String)"FARM="  + deviceID     +
+                           "&MODULE="       + ptr->MODULE  +
+                           "&TYPE="         + ptr->TYPE    +
+                           "&COMMEND="      + ptr->COMMEND +
+                           "&VALUE1="       + ptr->VALUE1  +
+                           "&VALUE2="       + ptr->VALUE2  +
+                           "&VALUE3="       + ptr->VALUE3  +
+                           "&VALUE4="       + ptr->VALUE4;
 
   int httpResponseCode = http.POST(httpRequestData);
   Serial.print(httpRequestData);
