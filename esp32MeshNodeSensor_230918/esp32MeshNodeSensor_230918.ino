@@ -21,6 +21,9 @@
 #define NXP_INVERT     4
 #define NXP_CONFIG     6
 
+const boolean pin_on  = false;
+const boolean pin_off = true;
+
 class PCA9539 {
   public:
     PCA9539(uint8_t address);                            // constructor
@@ -198,15 +201,15 @@ void command_Service(String command, String value) {
   
   else if (command == "AT+RELAY") {
     if(value.toInt() > 0){
-      digitalWrite(RELAY_HEATER,  HIGH);
-      digitalWrite(RELAY_FAN,     HIGH);
-      digitalWrite(RELAY_VALVE_H, HIGH);
-      digitalWrite(RELAY_VALVE_W, HIGH);
+      digitalWrite(RELAY_HEATER,  pin_on);
+      digitalWrite(RELAY_FAN,     pin_on);
+      digitalWrite(RELAY_VALVE_H, pin_on);
+      digitalWrite(RELAY_VALVE_W, pin_on);
     }else{      
-      digitalWrite(RELAY_HEATER,  LOW);
-      digitalWrite(RELAY_FAN,     LOW);
-      digitalWrite(RELAY_VALVE_H, LOW);
-      digitalWrite(RELAY_VALVE_W, LOW);
+      digitalWrite(RELAY_HEATER,  pin_off);
+      digitalWrite(RELAY_FAN,     pin_off);
+      digitalWrite(RELAY_VALVE_H, pin_off);
+      digitalWrite(RELAY_VALVE_W, pin_off);
     }
   }
 
@@ -288,6 +291,10 @@ void setup() {
   pinMode(RELAY_FAN, OUTPUT);
   pinMode(RELAY_VALVE_H, OUTPUT);
   pinMode(RELAY_VALVE_W, OUTPUT);
+  digitalWrite(RELAY_HEATER,  pin_off);
+  digitalWrite(RELAY_FAN,     pin_off);
+  digitalWrite(RELAY_VALVE_H, pin_off);
+  digitalWrite(RELAY_VALVE_W, pin_off);
   //// ------------ PIN OUT ------------
   if (!EEPROM.begin(EEPROM_SIZE)) Serial.println("failed to initialise EEPROM");
   //// ------------ EEPROM ------------
@@ -330,6 +337,8 @@ void loop() {
 uint8_t full_water = 0;
 uint8_t full_honey = 0;
 uint8_t err_sensor = 0;
+uint8_t level_gauge_w = 0;
+uint8_t level_gauge_h = 0;
 void sensor_level(unsigned long millisec) {
   if ((millisec - time_water) > 1000 * 1) {
     time_water = millisec;
@@ -356,13 +365,15 @@ void sensor_level(unsigned long millisec) {
 
     if(sensor_state_w || sensor_state_h){ //센서가 고장일 경우
       //솔레노이드 벨브 정지
-      if(!use_water && sensor_state_w){        
-        digitalWrite(RELAY_VALVE_W, false);
+      if(!use_water && sensor_state_w){
+        digitalWrite(RELAY_VALVE_W, pin_off);
         use_water = false;
+        Serial.println("water_relay_stop");
       }
       if(!use_honey && sensor_state_h){
         use_honey = false;
-        digitalWrite(RELAY_VALVE_H, false);
+        digitalWrite(RELAY_VALVE_H, pin_off);
+        Serial.println("honey_relay_stop");
       }
       //알람 보내기
       if (err_sensor > 240) {
@@ -384,55 +395,81 @@ void sensor_level(unsigned long millisec) {
       if(use_water){
         if(!run_water){
           mesh.sendBroadcast("P=ID=AT+PUMP=3;"); //펌프 켜기
-          digitalWrite(RELAY_VALVE_W, true);     //솔레노이드 밸브 켜기
+          digitalWrite(RELAY_VALVE_W, pin_on);     //솔레노이드 밸브 켜기
+          run_water = true;
+          level_gauge_w = 1;
           mesh.sendBroadcast("SENSOR=RELAY=ON=WATER=0=0;");
+          Serial.println("water_relay_run");          
         }else{
-          if(!water_level[1]){
+          if(water_level[4]){
+            //가득참
+            //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
+            digitalWrite(RELAY_VALVE_W, pin_off);
+            run_water = false;
+            mesh.sendBroadcast("SENSOR=RELAY=OFF=WATER=0=0;");
+            Serial.println("water_relay_stop");
+          } else if(water_level[5]){
+            //넘침
+            //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
+            digitalWrite(RELAY_VALVE_W, pin_off);
+            mesh.sendBroadcast("SENSOR=ERR=OVERFLOW=WATER=0=0;");
+            Serial.println("water_relay_stop");
+          } else if(!water_level[level_gauge_w]){
             full_water++;
             if (full_water > 240){
-              digitalWrite(RELAY_VALVE_W, false);
+              digitalWrite(RELAY_VALVE_W, pin_off);
               ERR_Message = "SENSOR=ERR=EMPTY=WATER=0=0;";
               mesh.sendBroadcast(ERR_Message);
               mesh.sendBroadcast("SENSOR=RELAY=OFF=WATER=0=0;");
+              Serial.println("water_relay_stop");
             }
-          }else if(water_level[4]){
-            //가득참
-            //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
-            digitalWrite(RELAY_VALVE_W, false);
-            mesh.sendBroadcast("SENSOR=RELAY=OFF=WATER=0=0;");
-          }else if(water_level[5]){
-            //넘침
-            //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
-            digitalWrite(RELAY_VALVE_W, false);
-            mesh.sendBroadcast("SENSOR=ERR=OVERFLOW=WATER=0=0;");
+          } else if(level_gauge_w != 0){
+            level_gauge_w += 1;
+            if(level_gauge_w > 6){
+              level_gauge_w = 0;
+              digitalWrite(RELAY_VALVE_W, pin_off);
+            }
           }
         }
       }
       if(use_honey){
-        if(run_honey){
+        if(!run_honey){
           mesh.sendBroadcast("P=ID=AT+PUMP=3;"); //펌프 켜기
-          digitalWrite(RELAY_VALVE_H, true);     //솔레노이드 밸브 켜기
+          digitalWrite(RELAY_VALVE_H, pin_on);     //솔레노이드 밸브 켜기
+          run_honey = true;
+          level_gauge_h = 1;
           mesh.sendBroadcast("SENSOR=RELAY=ON=HONEY=0=0;");
+          Serial.println("honey_relay_run");          
         }
       }else{
-        if(!honey_level[1]){
+        if(honey_level[4]){
+          //가득참
+          //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
+          digitalWrite(RELAY_VALVE_H, pin_off);
+          run_honey = false;
+          mesh.sendBroadcast("SENSOR=RELAY=OFF=HONEY=0=0;");
+          Serial.println("honey_relay_stop");
+        } else if(honey_level[5]){
+          //넘침
+          //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
+          digitalWrite(RELAY_VALVE_H, pin_off);
+          mesh.sendBroadcast("SENSOR=ERR=OVERFLOW=HONEY=0=0;");
+          Serial.println("honey_relay_stop");
+        } else if(!honey_level[level_gauge_h]){
           full_honey++;
           if (full_honey > 240){
-            digitalWrite(RELAY_VALVE_H, false);
+            digitalWrite(RELAY_VALVE_H, pin_off);
             ERR_Message = "SENSOR=ERR=EMPTY=HONEY=0=0;";
             mesh.sendBroadcast(ERR_Message);
             mesh.sendBroadcast("SENSOR=RELAY=OFF=HONEY=0=0;");
+            Serial.println("honey_relay_stop");
           }
-        }else if(honey_level[4]){
-          //가득참
-          //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
-          digitalWrite(RELAY_VALVE_H, false);
-          mesh.sendBroadcast("SENSOR=RELAY=OFF=HONEY=0=0;");
-        }else if(honey_level[5]){
-          //넘침
-          //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
-          digitalWrite(RELAY_VALVE_H, false);
-          mesh.sendBroadcast("SENSOR=ERR=OVERFLOW=HONEY=0=0;");
+        } else if(level_gauge_h != 0){
+          level_gauge_h += 1;
+          if(level_gauge_h > 6){
+            level_gauge_h = 0;
+            digitalWrite(RELAY_VALVE_W, pin_off);
+          }
         }
       }
     }
@@ -477,8 +514,8 @@ void stable(unsigned long millisec) {
       if (use_stable) {
         if (temperature/100 > control_temperature + tempGap) {
           if (temp_flage(false, true)) { //히터, 팬
-            digitalWrite(RELAY_HEATER, run_heater);
-            digitalWrite(RELAY_FAN, run_fan);
+            digitalWrite(RELAY_HEATER, pin_off);
+            digitalWrite(RELAY_FAN,    pin_on);
             Serial.print("TEMP EMERGENCY:");
             Serial.print(temperature);
             Serial.print(",");
@@ -486,13 +523,13 @@ void stable(unsigned long millisec) {
           }
         } else if (temperature/100 >= control_temperature) {
           if (temp_flage(false, false)) { //히터, 팬
-            digitalWrite(RELAY_HEATER, run_heater);
-            digitalWrite(RELAY_FAN, run_fan);
+            digitalWrite(RELAY_HEATER, pin_off);
+            digitalWrite(RELAY_FAN,    pin_off);
           }
         } else if (temperature/100 < control_temperature - tempGap) {
           if (temp_flage(true, false)) { //히터, 팬
-            digitalWrite(RELAY_HEATER, run_heater);
-            digitalWrite(RELAY_FAN, run_fan);
+            digitalWrite(RELAY_HEATER, pin_on);
+            digitalWrite(RELAY_FAN,    pin_off);
           }
         }//온도 조절 종료
       }
@@ -539,6 +576,23 @@ void serial_monit(unsigned long millisec){
     Serial.print("°C ,H: ");
     Serial.print(humidity);
     Serial.println("%");
+
+    Serial.print("sensor_state_w: ");
+    Serial.print(sensor_state_w);
+    Serial.print(",sensor_state_h: ");
+    Serial.print(sensor_state_h);
+    Serial.println(";");
+
+    Serial.print("run: water");
+    Serial.print(run_water);
+    Serial.print(", honey");
+    Serial.print(run_honey);
+    Serial.print(", heater");
+    Serial.print(run_heater);
+    Serial.print(", fan");
+    Serial.print(run_fan);
+    Serial.println(";");
+
     Serial.print("water_level: ");
     for (int8_t index = 0 ; index < 6 ; index++) {
       Serial.print(water_level[index]);
