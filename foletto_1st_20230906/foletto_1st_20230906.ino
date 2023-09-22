@@ -13,8 +13,8 @@
 #define CE   16 // CE=PH1=16 //out
 ////pin set
 const uint8_t  p_relay[7]  = {22,23,24,25,26,27,28}; //PA0~6
-const uint8_t  p_step[4]   = {10,11,12,13};          //PB4~7
-const uint8_t  p_dir[4]    = {35,34,33,32};          //PC2~5
+const uint8_t  p_step[4]   = {10,11,12,13};          //PB4~7 //cw or ccw
+const uint8_t  p_dir[4]    = {35,34,33,32};          //PC2~5 //ccw or cw
 
 bool     zero_set[4] = {false,}; //step zero set
 uint16_t position[4] = {0,}; //step position
@@ -25,7 +25,7 @@ uint16_t position[4] = {0,}; //step position
 void init_port_base(){
   /*
   DDRA |= 0x3F; //0b00111111
-  DDRB |= 0x3C; //0b00111100                          
+  DDRB |= 0x3C; //0b00111100
   DDRC |= 0xF0; //0b11110000
   //All output pins false
   PORTA &= 0xC0; //0b11000000
