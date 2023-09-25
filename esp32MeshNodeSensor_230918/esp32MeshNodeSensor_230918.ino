@@ -230,12 +230,12 @@ void command_Service(String command, String value) {
 //// ----------- TEST  -----------
 void AT_commandHelp() {
   Serial.println("------------ AT command help ------------");
-  Serial.println(";AT+TEMP = int;      Temperature Change.");
-  Serial.println(";AT+HUMI = int;      Humidity Change.");
-  Serial.println(";AT+USE  = bool;     Useable Change.");
-  Serial.println(";AT+WATER= bool;     Water Alarm Reset.");
-  Serial.println(";AT+RELAY= bool;     All relay on or off test.");
-  Serial.println(";AT+LOG=   bool;     Serial log view");
+  Serial.println(";AT+TEMP=   int;      Temperature Change.");
+  Serial.println(";AT+HUMI=   int;      Humidity Change.");
+  Serial.println(";AT+USE=    bool;     Useable Change.");
+  Serial.println(";AT+LIQUID= bool;     Water&Honey Alarm Reset.");
+  Serial.println(";AT+RELAY=  bool;     All relay on or off test.");
+  Serial.println(";AT+LOG=    bool;     Serial log view");
 }
 char Serial_buf[SERIAL_MAX];
 int8_t Serial_num;
