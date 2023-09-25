@@ -179,8 +179,8 @@ const uint8_t RELAY_FAN     = 16;
 const uint8_t RELAY_VALVE_H = 13;
 const uint8_t RELAY_VALVE_W = 14;
 //// ----------- Variable -----------
-uint8_t count_sensor_err_w = 0;
-uint8_t count_sensor_err_h = 0;
+boolean count_sensor_err_w = 0;
+boolean count_sensor_err_h = 0;
 
 //// ----------- Command  -----------
 void command_Service(String command, String value) {
@@ -200,8 +200,8 @@ void command_Service(String command, String value) {
   } else if (command == "AT+LIQUID") {
     sensor_state_w     = false;
     sensor_state_h     = false;
-    count_sensor_err_h = 0;
-    count_sensor_err_w = 0;
+    count_sensor_err_h = false;
+    count_sensor_err_w = false;
     mesh.sendBroadcast("SENSOR=SET=WATER=HONEY=0=0;");
   }
   
@@ -364,24 +364,24 @@ void sensor_level(unsigned long millisec) {
     if(!honey_level[1]) use_honey = true;
     for (int8_t index = 1 ; index < 6 ; index++) { //위는 켜졌는데 아래는 안켜질 경우(고장) 검증
       if(water_level[index] && !water_level[index-1]){
-        if(count_sensor_err_w > 3){
+        if(count_sensor_err_w){
           sensor_state_w = true;
         }else{
-          count_sensor_err_w += 1;
+          count_sensor_err_w = true;
         }
         Serial.println("water_sensor_error");
       }else{
-        count_sensor_err_w = 0;
+        count_sensor_err_w = false;
       }
       if(honey_level[index] && !honey_level[index-1]){
-        if(count_sensor_err_h > 3){
+        if(count_sensor_err_h){
           sensor_state_h = true;
         }else{
-          count_sensor_err_h += 1;
+          count_sensor_err_h = true;
         }
         Serial.println("honey_sensor_error");
       }else{
-        count_sensor_err_h = 0;
+        count_sensor_err_h = false;
       }
       if(sensor_state_w && sensor_state_h) break;//센서들이 고장일 경우
     }
