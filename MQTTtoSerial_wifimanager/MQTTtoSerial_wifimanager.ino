@@ -1,11 +1,8 @@
-#include <WiFi.h>
+#include <WiFiManager.h>  //https://github.com/tzapu/WiFiManager
 #include <PubSubClient.h> //https://github.com/knolleary/pubsubclient
 #include <HTTPClient.h>
 #define SERIAL_MAX  64
 HardwareSerial rootDvice(2);
-
-const char* ssid      = "CNR_L580W_2CD8FC";
-const char* password  = "#234567!";
 
 const char* mqttServer    = "smarthive.kr";
 const int   mqttPort      = 1883;
@@ -77,10 +74,16 @@ void setup() {
   Serial.begin(115200);
   rootDvice.begin(115200, SERIAL_8N1, 21, 22);
 
-  WiFi.disconnect(true);
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  
+  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+  WiFiManager wm;
+  wm.setConfigPortalTimeout(120);
+  bool res;
+  res = wm.autoConnect("SmartHive");
+  if (!res) {
+    wm.resetSettings();
+    return;
+  }
+
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.println("Connecting to WiFi..");
