@@ -100,8 +100,8 @@ void steper(uint8_t number, bool direction, uint16_t step, uint8_t celeration, u
   if(celeration < 1) celeration = 1;
   if(speed_max > speed_init) speed_max = speed_init;
 
-  const unit8_t  section = step / celeration;
-  const unit16_t speed_change = (speed_init - speed_max) / section;
+  const uint8_t  section = step / celeration;
+  const uint16_t speed_change = (speed_init - speed_max) / section;
   uint16_t speed = speed_init;
   if(direction && zero_set[number]){ //up
     for (uint16_t index=0; index < step; index++) {
@@ -187,15 +187,16 @@ void loop() {
     Serial_process();
   }
   //if need asynchronous, add something
-  //display_pin_values();
+  display_pin_values();
 }//// ------------ End Of loop() ------------
 
-/*
-unsigned long interval_74HC165 = 0;
+
+unsigned long interval_74HC165 = 0L;
 void display_pin_values()
 {
     BYTES_VAL_T pinValues = read_shift_regs();
-    if(interval_74HC165 - millis() > 1000){
+    if(millis() > interval_74HC165 + 1000){
+      interval_74HC165 = millis();
       Serial.print("Pin States:\r\n");
 
       for(int i = 0; i < DATA_WIDTH; i++)
@@ -212,7 +213,6 @@ void display_pin_values()
           Serial.print("\r\n");
       }
 
-      Serial.print("\r\n");
+      Serial.print("done.\r\n");
     }
 }
-*/

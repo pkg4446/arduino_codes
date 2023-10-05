@@ -4,7 +4,7 @@
 #define SERIAL_MAX  64
 HardwareSerial rootDvice(2);
 
-const char* ssid      = "CNR_L580W_2CD8FC";
+const char* ssid      = "CNR_L580W_2CD944";
 const char* password  = "#234567!";
 
 const char* mqttServer    = "smarthive.kr";
