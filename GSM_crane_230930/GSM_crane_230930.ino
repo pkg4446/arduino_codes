@@ -39,6 +39,8 @@ const uint8_t relay_reel_down       = 24;
 const uint8_t relay_cylinder_up     = 26;
 const uint8_t relay_cylinder_down   = 28;
 
+const uint8_t relay_bulb[4]   = {14,15,18,19};
+
 boolean state_reel_up       = false;
 boolean state_reel_down     = false;
 boolean state_cylinder_up   = false;
@@ -102,14 +104,12 @@ void setup() {
   pinMode(relay_reel_down,OUTPUT);
   pinMode(relay_cylinder_up,OUTPUT);
   pinMode(relay_cylinder_down,OUTPUT);
-
+  for (int8_t index=0; index<4; index++) {
+  pinMode(relay_bulb[index],OUTPUT);
+  }
+  
   Serial.print("max load: ");
   Serial.println(load_max);
-  /*
-  send2Nextion("flage_w.val=1");
-  send2Nextion("flage_m.val=1");
-  send2Nextion("flage_l.val=1");
-  */
 }
 void loop() {
   Update_time = millis();
@@ -144,9 +144,11 @@ void warning(unsigned long Update_time) {
       if(load_view){
         send2Nextion("flage_w.val=1");
         send2Nextion("flage_l.val=1");
+        digitalWrite(relay_bulb[2],true);
       }
     }else if(load_view){
       send2Nextion("flage_l.val=0");
+      digitalWrite(relay_bulb[2],false);
     }
   }
   //Update_time
@@ -155,10 +157,12 @@ void warning(unsigned long Update_time) {
       prevUpdate_warn_load = Update_time;
       if(load_view){
         send2Nextion("flage_w.val=1");
-        send2Nextion("flage_m.val=1");
+        send2Nextion("flage_m.val=1");    
+        digitalWrite(relay_bulb[3],true);
       }
     }else if(load_view){
       send2Nextion("flage_m.val=0");
+      digitalWrite(relay_bulb[3],false);
     }
   }//Update_time
 }//warning()
