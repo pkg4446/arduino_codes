@@ -3,7 +3,7 @@
 //const int8_t ADC[5]    = {33, 32, 34, 39, 35};
 //const int8_t DAC[2]    = {25, 26};
 
-uint16_t total_run   = 60*2;
+uint16_t total_run   = 60*5;
 uint8_t interval_on  = 30;
 uint8_t interval_off = 30;
 //// ------------ Pin out D ---------------
@@ -78,6 +78,7 @@ void simple_run(unsigned long time_now){
           delay(1000);
         }
         digitalWrite(relay_plazma, false);
+        Serial.println("plazma_end");
       }      
     }
   }
