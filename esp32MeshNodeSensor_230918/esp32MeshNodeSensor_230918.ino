@@ -241,7 +241,7 @@ char Serial_buf[SERIAL_MAX];
 int8_t Serial_num;
 void Serial_service() {
   String str1 = strtok(Serial_buf, "=");
-  String str2 = strtok(NULL, " ");
+  String str2 = strtok(0x00, " ");
   command_Service(str1, str2);
 }
 void Serial_process() {
@@ -249,7 +249,7 @@ void Serial_process() {
   ch = Serial.read();
   switch ( ch ) {
     case ';':
-      Serial_buf[Serial_num] = NULL;
+      Serial_buf[Serial_num] = 0x00;
       Serial_service();
       Serial_num = 0;
       break;
@@ -278,10 +278,10 @@ void receivedCallback( uint32_t from, String &msg ) {
   }
   String types   = strtok(msg_buf, "=");
   if (types == "S") {
-    String device  = strtok(NULL, "=");
+    String device  = strtok(0x00, "=");
     if (device == nodeID) {
-      String command = strtok(NULL, "=");
-      String value   = strtok(NULL, ";");
+      String command = strtok(0x00, "=");
+      String value   = strtok(0x00, ";");
       command_Service(command, value);
     } else if (device == "connecting"){
       mesh.sendBroadcast("SENSOR=CNT=TRUE=0=0=0;");
