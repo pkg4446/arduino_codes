@@ -1,8 +1,7 @@
-#define SERIAL_MAX  7
+#define SERIAL_MAX 16
 
 #define NUMBER_OF_SHIFT_CHIPS 2
 #define DATA_WIDTH        NUMBER_OF_SHIFT_CHIPS * 8
-#define PULSE_WIDTH_USEC  5
 // You will need to change the "int" to "long" If the NUMBER_OF_SHIFT_CHIPS is trueer than 2.
 #define BYTES_VAL_T unsigned long
 
@@ -18,12 +17,14 @@ const uint8_t step_break[4] = {22,23,24,25};
 
 const uint8_t step_cw[4]    = {10,11,12,13};          //PB4~7
 const uint8_t step_ccw[4]   = {35,34,33,32};          //PC2~5
+const uint8_t step_cw_limit[4]  = {0,1,2,3};          //PB4~7
+const uint8_t step_ccw_limit[4] = {4,5,6,7};          //PB4~7
 
 bool     zero_set[4] = {false,}; //step zero set
-uint16_t position[4] = {0,}; //step position
+uint32_t position[4] = {0,}; //step position
 
 //value
-uint16_t speed_init = 60000; // Initial speed for acceleration and deceleration
+const uint32_t hight_max = 9999999; // Initial speed for acceleration and deceleration
 
 //출력 - 브레이크 릴레이 3개, 스탭모터 핀 2(cw,ccw)*3개, 로봇 제어용 릴레이 2개.
 //입력 - 컵 유무(정전용량 센서) 3개, 스텝모터 리미트 2*3개
@@ -69,17 +70,14 @@ BYTES_VAL_T read_shift_regs()
 {
     long bitVal;
     BYTES_VAL_T bytesVal = 0;
-  //digitalWrite(CE, true);
     digitalWrite(LOAD, false);  //remove_noize
-    delayMicroseconds(PULSE_WIDTH_USEC);
+    //delayMicroseconds(1);
     digitalWrite(LOAD, true);
-  //digitalWrite(CE, false);
     for(int i = 0; i < DATA_WIDTH; i++)
     {
         bitVal = digitalRead(DIN);
         bytesVal |= (bitVal << ((DATA_WIDTH-1) - i));
         digitalWrite(CLK, true);
-        //delayMicroseconds(PULSE_WIDTH_USEC);
         digitalWrite(CLK, false);
     }
     return(bytesVal);
@@ -95,51 +93,108 @@ boolean swich_values(uint8_t pin)
   }
 }
 
-void steper(uint8_t number, bool direction, uint16_t step, uint8_t celeration, uint16_t speed_max){
+void steper(uint8_t number, bool direction, uint32_t step, uint8_t celeration, uint8_t speed_max, uint16_t speed_min){
   //브레이크 풀기 후 딜레이 추가.
-  if(celeration < 1) celeration = 1;
-  if(speed_max > speed_init) speed_max = speed_init;
+  boolean celerations = false;
+  float  speed_change = 0.0;
+  if(celeration < 1){celeration = 1;}
+  else if(celeration > 45){celeration = 45;}
+  if(speed_max < 1){speed_max = 1;}
+  const float percent = celeration/100.0;
+  const float section = step*percent;
+  if(speed_min > speed_max){
+    celerations  = true;
+    speed_change = ((speed_min - speed_max) / section);
+  }
 
-  const uint8_t  section = step / celeration;
-  const uint16_t speed_change = (speed_init - speed_max) / section;
-  uint16_t speed = speed_init;
-  if(direction && zero_set[number]){ //up
-    for (uint16_t index=0; index < step; index++) {
+  Serial.print("zero_set: ");
+  Serial.print(zero_set[number]);
+  Serial.print(", position: ");
+  Serial.print(position[number]);
+  Serial.print(", celeration: ");
+  Serial.print(percent);
+  Serial.print(", section: ");
+  Serial.print(section);
+  Serial.print(", speed_change: ");
+  Serial.println(speed_change);
+
+  float speed       = speed_min;
+  uint32_t distance = uint32_t(section)+1;
+  uint16_t adjust   = speed_min;
+
+  if(direction){ //up
+    for (uint32_t index=0; index < step; index++) {
       //speed change
-      if(index < section){
-        speed -= speed_change;
-      }else if(index > (step - section)){
-        speed += speed_change;
+      if(zero_set[number] && (position[number] < hight_max)){
+        if(celerations){
+          if(index < distance){
+            if(speed > speed_max){speed -= speed_change;}
+            else{speed = speed_max;}
+            adjust = uint16_t(speed);
+          }else if(index > (step - distance)){
+            speed += speed_change;
+            adjust = uint16_t(speed);
+          }else{
+            adjust = uint16_t(speed); //for delay (move smoth)
+          }
+        }
+      }else{
+        adjust = 0;
+        //---------check this----------------------- limit sw pin
+        if(swich_values(step_cw_limit[number])){
+          zero_set[number] = true;
+          position[number] = hight_max;
+          break; //when push the limit sw, stop
+        }
       }
       //---------check this---------------------- max hight
-      if(swich_values(number+4)) break; //when push the limit sw, stop
+      //if(swich_values(step_cw_limit[number])) break; //when push the limit sw, stop
       //if(position[number] > 1000) break; //if position is higher than maximum hight, stop
       digitalWrite(step_cw[number], true);
       position[number] += 1;
       digitalWrite(step_cw[number], false);
-      delayMicroseconds (speed);
+      delayMicroseconds(adjust);
     }
-  }else{  //down
-    for (uint16_t index=0; index<step; index++) {
+  }else if(!direction){  //down
+    for (uint32_t index=0; index<step; index++) {
       //speed change
-      if(index < section){
-        speed -= speed_change;
-      }else if(index > (step - section)){
-        speed += speed_change;
+      if(zero_set[number]){
+        if(celerations){
+          if(index < distance){
+            if(speed >speed_max){speed -= speed_change;}
+            else{speed = speed_max;}
+            adjust = uint16_t(speed);
+          }else if(index > (step - distance)){
+            speed += speed_change;
+            adjust = uint16_t(speed);
+          }else{
+            adjust = uint16_t(speed); //for delay (move smoth)
+          }
+        }
+      }else{
+        adjust = 0;
+        //---------check this----------------------- limit sw pin
+        if(swich_values(step_ccw_limit[number])){
+          zero_set[number] = true;
+          position[number] = 0;
+          break; //when push the limit sw, stop
+        }
       }
-      //---------check this----------------------- limit sw pin
-      if(swich_values(number)) break; //when push the limit sw, stop
-      //if(position[number] < 1 break; //if position is higher than minimum hight, stop
       digitalWrite(step_ccw[number], true);
       if(position[number] > 0){
         position[number] -= 1;
       }else{
-        zero_set[number] = 0;
+        zero_set[number] = false;
       }
       digitalWrite(step_ccw[number], false);
-      delayMicroseconds (speed);
+      delayMicroseconds(adjust);
     }
+  }else{
+    Serial.println("need zero set");
   }
+  
+  Serial.print("position: ");
+  Serial.println(position[number]);
   //딜레이 추가 후 브레이크 잠금 추가.
 }
 
@@ -151,28 +206,62 @@ unsigned long pre_loop_1 = 0UL;
 void Serial_process() {
   char ch;
   ch = Serial.read();
-  switch ( ch ) {
-    case 0x53: //strat
-      Serial_buf[Serial_num] = NULL;
-      Serial_num += 1;
-      break;
-    case 0x0A: //end
-      Serial_buf[Serial_num] = NULL;
-      command_Service();
-      Serial_num = 0;
-      break;
-    default :
-      Serial_buf[ Serial_num++ ] = ch;
-      Serial_num %= SERIAL_MAX;
-      break;
+  if(ch==0x03 && Serial_num>7){
+    Serial_buf[Serial_num] = 0x00;
+    command_Service();
+    Serial_num = 0;
+  }else if(ch==0x02 && (Serial_num==0 || Serial_num>8)){
+    Serial_num = 0;
+    Serial_buf[7]=0x00;
+  }else{
+    Serial_buf[ Serial_num++ ] = ch;
+    Serial_num %= SERIAL_MAX;
   }
 }
 
 void command_Service() {
   //check sum
-  //command
+  char checksum = Serial_buf[0]^Serial_buf[1]^Serial_buf[2]^Serial_buf[3]^Serial_buf[4]^Serial_buf[5]^Serial_buf[6]^Serial_buf[7]^Serial_buf[8]^Serial_buf[9];
+  Serial.print("checksum=");
+  Serial.print(uint8_t(checksum));
+  Serial.print("=");
+  Serial.println(uint8_t(Serial_buf[10]));
   //run
-  //response
+  checksum = 0x11;
+  if(checksum == Serial_buf[10]){
+    //command
+    //0,0x02:start/0,0x4D/1,0x46(0x42):direction/2,0x00~0x03:moter/3,celeration:1~100/4,speed_max/5,speed_min*255/6,speed_min
+    //7,step1*255*255/8,step2:*255/9,step3/10,checksum/11,0x03:end/
+    if(Serial_buf[0]==0x4D){//M
+      uint32_t step = uint32_t(Serial_buf[7])*256*256 + uint16_t(Serial_buf[8])*256 + uint8_t(Serial_buf[9]);
+      boolean  direction = false;
+      if(Serial_buf[1]==0x46) direction = true;
+      uint8_t  motor_num  = uint8_t(Serial_buf[2]);
+      uint8_t  celeration = uint8_t(Serial_buf[3]);
+      uint8_t  speed_max  = uint8_t(Serial_buf[4]);
+      uint16_t speed_min  = uint16_t(Serial_buf[5])*255 + uint8_t(Serial_buf[6]);
+      //
+      Serial.print("step=");
+      Serial.print(step);
+      Serial.print(", direction=");
+      Serial.print(direction);
+      Serial.print(", motor_num=");
+      Serial.print(motor_num);
+      Serial.print(", celeration=");
+      Serial.print(celeration);
+      Serial.print(", speed_max=");
+      Serial.print(speed_max);
+      Serial.print(", speed_min=");
+      Serial.println(speed_min);
+      //
+      steper(motor_num, direction, step, celeration, speed_max, speed_min);
+      //
+      Serial.println("motor moved");
+    }
+  }else{
+    //response
+    Serial.println("commend wrong");
+  }
 }//Command_service() END
 
 //// ------------ setup ------------
@@ -187,9 +276,9 @@ void loop() {
     Serial_process();
   }
   //if need asynchronous, add something
-  display_pin_values();
+  //display_pin_values();
+  //steper_test(0,200,2000);
 }//// ------------ End Of loop() ------------
-
 
 unsigned long interval_74HC165 = 0L;
 void display_pin_values()
@@ -215,4 +304,24 @@ void display_pin_values()
 
       Serial.print("done.\r\n");
     }
+}
+
+unsigned long interval_steper[4] = {0L,};
+void steper_test(uint8_t number,uint8_t interval,uint16_t max_step){
+  if(millis() > interval_steper[number] + 1000){
+    interval_steper[number] = millis();
+    Serial.print("forward,");
+    for (uint16_t index=0; index < max_step; index++) {
+      digitalWrite(step_cw[number], true);
+      digitalWrite(step_cw[number], false);
+      delayMicroseconds(interval);
+    }
+    Serial.print("backward,");
+    for (uint16_t index=0; index < max_step; index++) {
+      digitalWrite(step_ccw[0], true);
+      digitalWrite(step_ccw[0], false); 
+      delayMicroseconds(interval);
+    }
+    Serial.println(" done.");
+  }
 }
