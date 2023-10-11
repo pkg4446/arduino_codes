@@ -3,11 +3,12 @@
 //const int8_t ADC[5]    = {33, 32, 34, 39, 35};
 //const int8_t DAC[2]    = {25, 26};
 
-uint32_t total_run   = 1000*60*5;
+uint16_t total_run   = 60*2;
 uint8_t interval_on  = 30;
 uint8_t interval_off = 30;
 //// ------------ Pin out D ---------------
-const uint8_t plazma_relay = 15;
+const uint8_t relay_plazma = 15;
+const uint8_t relay_buzz   = 5;
 //// ------------ Pin out B ---------------
 const uint8_t plazma_start = 13;
 const uint8_t plazma_stop  = 14;
@@ -26,7 +27,8 @@ void setup() {
   prevUpdate = millis();
   Serial.begin(115200);
   //// ------------ Pin Out ---------------
-  pinMode(plazma_relay, OUTPUT);
+  pinMode(relay_plazma, OUTPUT);
+  pinMode(relay_buzz,   OUTPUT);
   pinMode(plazma_start, INPUT_PULLUP);
   pinMode(plazma_stop,  INPUT_PULLUP);
   Serial.println("System Boot");
@@ -36,7 +38,7 @@ void setup() {
 void loop() {
   unsigned long time_now = millis();
   simple_run(time_now);
-  simple_button();
+  simple_button();  
 }//// ------------ End Of loop() ----------
 
 void simple_run(unsigned long time_now){
@@ -46,7 +48,7 @@ void simple_run(unsigned long time_now){
       count_plazma_total++;
       Serial.print("plazma_total: ");
       Serial.print(count_plazma_total);
-      digitalWrite(plazma_relay, plazma_phaze);
+      digitalWrite(relay_plazma, plazma_phaze);
       if(plazma_phaze){
         if(count_plazma_on < interval_on){
           count_plazma_on++;
@@ -67,7 +69,16 @@ void simple_run(unsigned long time_now){
         Serial.println(count_plazma_off);
       }
     }else{
-      digitalWrite(plazma_relay, false);
+      if(plazma_run){
+        plazma_run = false;
+        for (uint8_t index=0; index<3; index++) {
+          digitalWrite(relay_buzz, true);
+          delay(1000);
+          digitalWrite(relay_buzz, false);
+          delay(1000);
+        }
+        digitalWrite(relay_plazma, false);
+      }      
     }
   }
 }
@@ -83,7 +94,7 @@ void simple_button(){
   }else if(!digitalRead(plazma_stop)&&plazma_run){
     delay(1);
     if(!digitalRead(plazma_stop)){
-      digitalWrite(plazma_relay, false);
+      digitalWrite(relay_plazma, false);
       plazma_run = false;
       Serial.println("plazma_stop");
     }

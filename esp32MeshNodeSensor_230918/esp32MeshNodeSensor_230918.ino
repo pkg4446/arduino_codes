@@ -154,6 +154,7 @@ boolean run_honey  = false;
 boolean run_heater = false;
 boolean run_fan    = false;
 boolean run_log    = false;
+boolean led_show   = false;
 //// ----------- Variable -----------
 //// ----------- Sensor -----------
 int16_t temperature = 14040;
@@ -163,9 +164,10 @@ int8_t  send_honey  = 0;
 boolean water_level[6] = {false,};
 boolean honey_level[6] = {false,};
 ////for millis() func//
-unsigned long timer_SHT40 = 0;
-unsigned long time_water  = 0;
-unsigned long time_stalbe = 0;
+unsigned long time_led_show = 0UL;
+unsigned long timer_SHT40   = 0UL;
+unsigned long time_water    = 0UL;
+unsigned long time_stalbe   = 0UL;
 //// ------------ EEPROM ------------
 const uint8_t EEP_temperature = 1;
 const uint8_t EEP_humidity    = 2;
@@ -178,6 +180,8 @@ const uint8_t RELAY_HEATER  = 12;
 const uint8_t RELAY_FAN     = 16;
 const uint8_t RELAY_VALVE_H = 13;
 const uint8_t RELAY_VALVE_W = 14;
+const uint8_t BUILTIN_LED_A = 17;
+const uint8_t BUILTIN_LED_B = 25;
 //// ----------- Variable -----------
 uint8_t count_sensor_err_w = 0;
 uint8_t count_sensor_err_h = 0;
@@ -218,7 +222,9 @@ void command_Service(String command, String value) {
       digitalWrite(RELAY_VALVE_W, pin_off);
     }
   } else if (command == "AT+LOG") {
-    run_log = (value.toInt() > 0) ? true : false;
+    run_log  = (value.toInt() > 0) ? true : false;
+  } else if (command == "AT+SHOW") {
+    led_show = (value.toInt() > 0) ? true : false;
   }
   Serial.print("AT command:");
   Serial.print(command);
@@ -226,6 +232,19 @@ void command_Service(String command, String value) {
   Serial.println(value);
   EEPROM.commit();
 }//Command_service() END
+////////
+////////
+////////
+////////
+////////
+////////
+void builtin_led(unsigned long millisec){
+  if ((millisec - time_led_show) > 1000 * 1) {
+    time_led_show = millisec;
+    digitalWrite(BUILTIN_LED_A, pin_on);
+    digitalWrite(BUILTIN_LED_B, pin_on);
+  }
+}
 
 //// ----------- TEST  -----------
 void AT_commandHelp() {
@@ -300,6 +319,10 @@ void setup() {
   pinMode(RELAY_FAN, OUTPUT);
   pinMode(RELAY_VALVE_H, OUTPUT);
   pinMode(RELAY_VALVE_W, OUTPUT);
+  pinMode(BUILTIN_LED_A, OUTPUT);
+  pinMode(BUILTIN_LED_B, OUTPUT);
+  digitalWrite(BUILTIN_LED_A, pin_off);
+  digitalWrite(BUILTIN_LED_B, pin_off);
   digitalWrite(RELAY_HEATER,  pin_off);
   digitalWrite(RELAY_FAN,     pin_off);
   digitalWrite(RELAY_VALVE_H, pin_off);
@@ -400,7 +423,7 @@ void sensor_level(unsigned long millisec) {
           mesh.sendBroadcast("SENSOR=RELAY=ON=WATER=0=0;");
           Serial.println("water_relay_run");
         }else{
-          if(water_level[4]){
+          if(water_level[3]){
             if(run_water){
               //가득참
               //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
@@ -409,7 +432,7 @@ void sensor_level(unsigned long millisec) {
               mesh.sendBroadcast("SENSOR=RELAY=OFF=WATER=0=0;");
               Serial.println("water_relay_stop_full");
             }            
-          } else if(water_level[5]){
+          } else if(water_level[4]||water_level[5]){
             //넘침
             //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
             digitalWrite(RELAY_VALVE_W, pin_off);
@@ -454,7 +477,7 @@ void sensor_level(unsigned long millisec) {
           mesh.sendBroadcast("SENSOR=RELAY=ON=HONEY=0=0;");
           Serial.println("honey_relay_run");          
         }else{
-          if(honey_level[4]){
+          if(honey_level[3]){
             if(run_honey){
               //가득참
               //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
@@ -463,7 +486,7 @@ void sensor_level(unsigned long millisec) {
               mesh.sendBroadcast("SENSOR=RELAY=OFF=HONEY=0=0;");
               Serial.println("honey_relay_stop_full");
             }
-          } else if(honey_level[5]){
+          } else if(honey_level[4]||honey_level[5]){
             //넘침
             //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
             digitalWrite(RELAY_VALVE_H, pin_off);

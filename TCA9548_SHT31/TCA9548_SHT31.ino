@@ -30,10 +30,11 @@ void loop()
 {
   delay(1000);
   Serial.println("\nTCAScanner ready!");
-
   for (uint8_t t = 0; t < 8; t++) {
     tcaselect(t);
     Serial.print("TCA Port #"); Serial.println(t);
+
+//176,180
 
     for (uint8_t addr = 0; addr < 255; addr++) {
       if (addr == TCAADDR) continue;
@@ -43,10 +44,18 @@ void loop()
         Serial.print("Found I2C = "); 
         Serial.print(addr);  
         Serial.print(" = 0x");
-        Serial.println(addr, HEX);        
+        Serial.println(addr, HEX);
+        
+        if (addr == 68 && sht31.begin(0x44)){
+          uint8_t Temperature = sht31.readTemperature();
+          uint8_t Humidity    = sht31.readHumidity();
+          Serial.print("Temperature: ");
+          Serial.print(Temperature);
+          Serial.print(" ,Humidity: ");
+          Serial.println(Humidity);
+        }
       }
     }
   }
-  
   Serial.println("\ndone");
 }
