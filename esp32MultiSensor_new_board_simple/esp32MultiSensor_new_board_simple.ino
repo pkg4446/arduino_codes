@@ -147,7 +147,7 @@ void tca_select(uint8_t index) {
 const boolean pin_on  = false;
 const boolean pin_off = true;
 boolean run_log       = false;
-uint8_t led_show      = 60;
+uint8_t led_show      = 250;
 //// ------------- PIN --------------
 const uint8_t RELAY_HEATER  = 12;
 const uint8_t RELAY_FAN     = 16;
@@ -287,11 +287,11 @@ void command_Service(String command, String value) {
 
 boolean led_status = false;
 void builtin_led(unsigned long millisec){
-  if ((millisec - time_led_show) > 1000 * 1) {
-    if(led_show<60){
+  if ((millisec - time_led_show) > 500) {
+    if(led_show<250){
       time_led_show = millisec;
       digitalWrite(BUILTIN_LED_A, led_status);
-      digitalWrite(BUILTIN_LED_B, led_status);
+      digitalWrite(BUILTIN_LED_B, !led_status);
       led_show ++;
       led_status = !led_status;
     }else{
@@ -416,8 +416,8 @@ void serial_monit(unsigned long millisec){
   if (run_log && ((millisec - timer_serial_monit) > 1000)) {
     timer_serial_monit = millisec;
     for (uint8_t index = 0; index < sensor_quantity; index++){
-      Serial.print("TCA Port 6");
-      Serial.print(index);
+      Serial.print("TCA Port");
+      Serial.print(sensor_socket[index]);
       Serial.print(", T: ");
       Serial.print(dataSend[index].VALUE1);
       Serial.print("°C ,H: ");
