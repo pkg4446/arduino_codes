@@ -154,7 +154,7 @@ boolean run_honey  = false;
 boolean run_heater = false;
 boolean run_fan    = false;
 boolean run_log    = false;
-boolean led_show   = false;
+uint8_t led_show   = 60;
 //// ----------- Variable -----------
 //// ----------- Sensor -----------
 int16_t temperature = 14040;
@@ -224,7 +224,7 @@ void command_Service(String command, String value) {
   } else if (command == "AT+LOG") {
     run_log  = (value.toInt() > 0) ? true : false;
   } else if (command == "AT+SHOW") {
-    led_show = (value.toInt() > 0) ? true : false;
+    led_show = (value.toInt() > 0) ? 60 : 0;
   }
   Serial.print("AT command:");
   Serial.print(command);
@@ -232,17 +232,20 @@ void command_Service(String command, String value) {
   Serial.println(value);
   EEPROM.commit();
 }//Command_service() END
-////////
-////////
-////////
-////////
-////////
-////////
+
+boolean led_status = false;
 void builtin_led(unsigned long millisec){
   if ((millisec - time_led_show) > 1000 * 1) {
-    time_led_show = millisec;
-    digitalWrite(BUILTIN_LED_A, pin_on);
-    digitalWrite(BUILTIN_LED_B, pin_on);
+    if(led_show<60){
+      time_led_show = millisec;
+      digitalWrite(BUILTIN_LED_A, led_status);
+      digitalWrite(BUILTIN_LED_B, led_status);
+      led_show ++;
+      led_status = !led_status;
+    }else{
+      digitalWrite(BUILTIN_LED_A, pin_off);
+      digitalWrite(BUILTIN_LED_B, pin_off);
+    }
   }
 }
 
@@ -365,6 +368,7 @@ void loop() {
   get_sensor(now);
   stable(now);
   serial_monit(now);
+  builtin_led(now);
 }
 
 uint8_t full_water = 0;

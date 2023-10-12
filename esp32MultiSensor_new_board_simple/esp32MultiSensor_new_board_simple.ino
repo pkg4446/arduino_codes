@@ -147,7 +147,7 @@ void tca_select(uint8_t index) {
 const boolean pin_on  = false;
 const boolean pin_off = true;
 boolean run_log       = false;
-boolean led_show      = false;
+uint8_t led_show      = 60;
 //// ------------- PIN --------------
 const uint8_t RELAY_HEATER  = 12;
 const uint8_t RELAY_FAN     = 16;
@@ -171,12 +171,14 @@ struct dataSet {
   String VALUE4;
 };
 
-struct dataSet dataSend[3] = {
-  {":01","SENSOR","LOG","1404","1404","0","0"},
-  {":02","SENSOR","LOG","1404","1404","0","0"},
-  {":03","SENSOR","LOG","1404","1404","0","0"}
+struct dataSet dataSend[4] = {
+  {"SENSOR",":01","LOG","1404","1404","0","0"},
+  {"SENSOR",":02","LOG","1404","1404","0","0"},
+  {"SENSOR",":03","LOG","1404","1404","0","0"},
+  {"SENSOR",":04","LOG","1404","1404","0","0"}
 };
-uint8_t sensor_socket[3] = {2,4,6};
+uint8_t sensor_socket[4] = {0,2,4,6};
+const uint8_t sensor_quantity = 4;
 
 void get_sensor(uint8_t sensor_number) {
   tca_select(sensor_socket[sensor_number]);
@@ -184,8 +186,8 @@ void get_sensor(uint8_t sensor_number) {
   if (!Wire.endTransmission() && sht40.begin()) {
     sensors_event_t humi, temp;
     sht40.getEvent(&humi, &temp);
-    dataSend[sensor_number].VALUE1  = temp.temperature * 100;
-    dataSend[sensor_number].VALUE2  = humi.relative_humidity * 100;
+    dataSend[sensor_number].VALUE1  = int16_t(temp.temperature * 100);
+    dataSend[sensor_number].VALUE2  = int16_t(humi.relative_humidity * 100);
   } else {
     dataSend[sensor_number].VALUE1  = 14040;
     dataSend[sensor_number].VALUE2  = 14040;
@@ -193,9 +195,9 @@ void get_sensor(uint8_t sensor_number) {
 }
 
 void save_sensor_value() {
-    get_sensor(0);
-    get_sensor(1);
-    get_sensor(2);
+  for(uint8_t index=0; index<sensor_quantity; index++){
+    get_sensor(index);
+  }
 }
 
 void routine_sensor(unsigned long millisec) {
@@ -208,21 +210,20 @@ void routine_sensor(unsigned long millisec) {
 //// ------------ MQTT Callback ------------
 void callback(char* topic, byte* payload, unsigned int length) {
   char mqtt_buf[SERIAL_MAX] = "";
-  int8_t Serial_num = 0;
+  int8_t mqtt_num = 0;
   for (int i = 0; i < length; i++) {
     switch (payload[i]) {
       case ';':
-        mqtt_buf[Serial_num] = 0x00;
-        mqtt_service();
-        Serial_num = 0;
+        mqtt_buf[mqtt_num] = 0x00;
+        mqtt_service(mqtt_buf);
+        mqtt_num = 0;
         break;
       default :
-        mqtt_buf[ Serial_num ++ ] = payload[i];
-        Serial_num %= SERIAL_MAX;
+        mqtt_buf[ mqtt_num ++ ] = payload[i];
+        mqtt_num %= SERIAL_MAX;
         break;
     }
   }
-  Serial.println(mqtt_buf);
 }
 
 char Serial_buf[SERIAL_MAX];
@@ -233,7 +234,7 @@ void Serial_process() {
   switch ( ch ) {
     case ';':
       Serial_buf[Serial_num] = 0x00;
-      mqtt_service();
+      mqtt_service(Serial_buf);
       Serial_num = 0;
       break;
     default :
@@ -252,8 +253,8 @@ void AT_commandHelp() {
   Serial.println(";AT+SHOW=   bool;     Builtin led on off");
 }
 
-void mqtt_service() {
-  String str1 = strtok(Serial_buf, "=");
+void mqtt_service(char* service_buf) {
+  String str1 = strtok(service_buf, "=");
   String str2 = strtok(0x00, " ");
   command_Service(str1, str2);
 }
@@ -276,7 +277,7 @@ void command_Service(String command, String value) {
   } else if (command == "AT+LOG") {
     run_log  = (value.toInt() > 0) ? true : false;
   } else if (command == "AT+SHOW") {
-    led_show = (value.toInt() > 0) ? true : false;
+    led_show = (value.toInt() > 0) ? 0 : 60;
   }
   Serial.print("AT command:");
   Serial.print(command);
@@ -284,8 +285,26 @@ void command_Service(String command, String value) {
   Serial.println(value);
 }
 
+boolean led_status = false;
+void builtin_led(unsigned long millisec){
+  if ((millisec - time_led_show) > 1000 * 1) {
+    if(led_show<60){
+      time_led_show = millisec;
+      digitalWrite(BUILTIN_LED_A, led_status);
+      digitalWrite(BUILTIN_LED_B, led_status);
+      led_show ++;
+      led_status = !led_status;
+    }else{
+      digitalWrite(BUILTIN_LED_A, pin_off);
+      digitalWrite(BUILTIN_LED_B, pin_off);
+    }
+  }
+}
+
 void setup() {
   Serial.begin(115200);
+  pinMode(BUILTIN_LED_A, OUTPUT);
+  pinMode(BUILTIN_LED_B, OUTPUT);
 
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
@@ -327,6 +346,7 @@ void setup() {
 
   save_sensor_value();
   send_http_post();
+  AT_commandHelp();
 }//End Of Setup()
 
 void reconnect(){
@@ -346,10 +366,13 @@ void reconnect(){
 
 void loop() {
   unsigned long millisec = millis();
+  if (Serial.available()) {Serial_process();}
   if (mqttClient.connected()){mqttClient.loop();}
   else{reconnect();}
   routine_sensor(millisec);
   routine_http_post(millisec);
+  serial_monit(millisec);
+  builtin_led(millisec);
 }
 
 void httpPOSTRequest(struct dataSet *ptr) {
@@ -376,9 +399,9 @@ void httpPOSTRequest(struct dataSet *ptr) {
 }////httpPOSTRequest_End
 
 void send_http_post(){
-  httpPOSTRequest(&dataSend[0]);
-  httpPOSTRequest(&dataSend[1]);
-  httpPOSTRequest(&dataSend[2]);
+  for(uint8_t index=0; index<sensor_quantity; index++){
+    httpPOSTRequest(&dataSend[index]);
+  }
 }
 
 void routine_http_post(unsigned long millisec){
@@ -392,8 +415,9 @@ unsigned long timer_serial_monit = 0;
 void serial_monit(unsigned long millisec){
   if (run_log && ((millisec - timer_serial_monit) > 1000)) {
     timer_serial_monit = millisec;
-    for (uint8_t index = 0; index < 3; index++){
+    for (uint8_t index = 0; index < sensor_quantity; index++){
       Serial.print("TCA Port 6");
+      Serial.print(index);
       Serial.print(", T: ");
       Serial.print(dataSend[index].VALUE1);
       Serial.print("°C ,H: ");
