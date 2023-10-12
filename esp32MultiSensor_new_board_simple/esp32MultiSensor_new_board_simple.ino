@@ -2,9 +2,12 @@
 #include <PubSubClient.h> //https://github.com/knolleary/pubsubclient
 #include <HTTPClient.h>
 #define SERIAL_MAX  64
-
+/*
 const char* ssid      = "CNR_L580W_2CD944";
 const char* password  = "#234567!";
+*/
+const char* ssid      = "Daesung2G";
+const char* password  = "smarthive123";
 
 const char* mqttServer    = "smarthive.kr";
 const int   mqttPort      = 1883;
@@ -145,6 +148,18 @@ const boolean pin_on  = false;
 const boolean pin_off = true;
 boolean run_log       = false;
 boolean led_show      = false;
+//// ------------- PIN --------------
+const uint8_t RELAY_HEATER  = 12;
+const uint8_t RELAY_FAN     = 16;
+const uint8_t RELAY_VALVE_H = 13;
+const uint8_t RELAY_VALVE_W = 14;
+const uint8_t BUILTIN_LED_A = 17;
+const uint8_t BUILTIN_LED_B = 25;
+////for millis() func//
+unsigned long time_led_show = 0UL;
+unsigned long timer_SHT40   = 0UL;
+unsigned long timer_post    = 0UL;
+//// ----------- Variable -----------
 
 struct dataSet {
   String TYPE;
@@ -163,7 +178,7 @@ struct dataSet dataSend[3] = {
 };
 uint8_t sensor_socket[3] = {2,4,6};
 
-void get_sensor(uint_8t sensor_number) {
+void get_sensor(uint8_t sensor_number) {
   tca_select(sensor_socket[sensor_number]);
   Wire.beginTransmission(68); //0x44
   if (!Wire.endTransmission() && sht40.begin()) {
@@ -190,34 +205,19 @@ void routine_sensor(unsigned long millisec) {
   }//if
 }
 
-int16_t temperature[3] = {14040,};
-int16_t humidity[3]    = {14040,};
-//// ------------- PIN --------------
-const uint8_t RELAY_HEATER  = 12;
-const uint8_t RELAY_FAN     = 16;
-const uint8_t RELAY_VALVE_H = 13;
-const uint8_t RELAY_VALVE_W = 14;
-const uint8_t BUILTIN_LED_A = 17;
-const uint8_t BUILTIN_LED_B = 25;
-////for millis() func//
-unsigned long time_led_show = 0UL;
-unsigned long timer_SHT40   = 0UL;
-unsigned long timer_post    = 0UL;
-//// ----------- Variable -----------
-
 //// ------------ MQTT Callback ------------
 void callback(char* topic, byte* payload, unsigned int length) {
   char mqtt_buf[SERIAL_MAX] = "";
   int8_t Serial_num = 0;
   for (int i = 0; i < length; i++) {
-    switch ( payload[i] ) {
+    switch (payload[i]) {
       case ';':
-        Serial_buf[Serial_num] = 0x00;
+        mqtt_buf[Serial_num] = 0x00;
         mqtt_service();
         Serial_num = 0;
         break;
       default :
-        Serial_buf[ Serial_num ++ ] = ch;
+        mqtt_buf[ Serial_num ++ ] = payload[i];
         Serial_num %= SERIAL_MAX;
         break;
     }
@@ -225,9 +225,28 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.println(mqtt_buf);
 }
 
+char Serial_buf[SERIAL_MAX];
+int8_t Serial_num;
+void Serial_process() {
+  char ch;
+  ch = Serial.read();
+  switch ( ch ) {
+    case ';':
+      Serial_buf[Serial_num] = 0x00;
+      mqtt_service();
+      Serial_num = 0;
+      break;
+    default :
+      Serial_buf[ Serial_num ++ ] = ch;
+      Serial_num %= SERIAL_MAX;
+      break;
+  }
+}
+
 //// ----------- Command  -----------
 void AT_commandHelp() {
   Serial.println("------------ AT command help ------------");
+  Serial.println(";AT+HELP=   bool;     this messege.");
   Serial.println(";AT+RELAY=  bool;     All relay on or off test.");
   Serial.println(";AT+LOG=    bool;     Serial log view");
   Serial.println(";AT+SHOW=   bool;     Builtin led on off");
@@ -240,7 +259,9 @@ void mqtt_service() {
 }
 
 void command_Service(String command, String value) {
-  if (command == "AT+RELAY") {
+  if (command == "AT+HELP") {
+    AT_commandHelp();
+  }else if (command == "AT+RELAY") {
     if(value.toInt() > 0){
       digitalWrite(RELAY_HEATER,  pin_on);
       digitalWrite(RELAY_FAN,     pin_on);
@@ -355,14 +376,30 @@ void httpPOSTRequest(struct dataSet *ptr) {
 }////httpPOSTRequest_End
 
 void send_http_post(){
-  httpPOSTRequest(dataSend[0]);
-  httpPOSTRequest(dataSend[1]);
-  httpPOSTRequest(dataSend[2]);
+  httpPOSTRequest(&dataSend[0]);
+  httpPOSTRequest(&dataSend[1]);
+  httpPOSTRequest(&dataSend[2]);
 }
 
 void routine_http_post(unsigned long millisec){
-  if ((millisec - timer_SHT40) > 1000*60*5) {
-    timer_SHT40 = millisec;
+  if ((millisec - timer_post) > 1000*60*5) {
+    timer_post = millisec;
     send_http_post();
   }//if
+}
+
+unsigned long timer_serial_monit = 0;
+void serial_monit(unsigned long millisec){
+  if (run_log && ((millisec - timer_serial_monit) > 1000)) {
+    timer_serial_monit = millisec;
+    for (uint8_t index = 0; index < 3; index++){
+      Serial.print("TCA Port 6");
+      Serial.print(", T: ");
+      Serial.print(dataSend[index].VALUE1);
+      Serial.print("°C ,H: ");
+      Serial.print(dataSend[index].VALUE2);
+      Serial.println("%");
+    }
+    Serial.println("\r\n");
+  }
 }
