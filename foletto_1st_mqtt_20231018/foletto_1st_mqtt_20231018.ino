@@ -1,3 +1,28 @@
+#include <SPI.h>
+#include "Adafruit_MQTT.h"
+#include "Adafruit_MQTT_Client.h"
+
+#include <Ethernet.h>
+#include <EthernetClient.h>
+#include <Dns.h>
+#include <Dhcp.h>
+/************************* Ethernet Client Setup *****************************/
+byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+/************************* Mqtt Server Setup *********************************/
+#define AIO_SERVER      "mqtt.kro.kr"
+#define AIO_SERVER_PORT  1883
+#define AIO_USERNAME    "test"
+#define AIO_KEY         "test"
+//Set up the ethernet client
+EthernetClient client;
+Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVER_PORT, AIO_USERNAME, AIO_KEY);
+// You don't need to change anything below this line!
+#define halt(s) { Serial.println(F( s )); while(1);  }
+// Setup a mqtt 
+Adafruit_MQTT_Publish   response = Adafruit_MQTT_Publish(&mqtt,  "arduino_test_p");
+Adafruit_MQTT_Subscribe request  = Adafruit_MQTT_Subscribe(&mqtt, "arduino_test_s");
+/************************* Mqtt End *********************************/
+
 #define SERIAL_MAX 16
 
 #define NUMBER_OF_SHIFT_CHIPS 2
@@ -140,14 +165,14 @@ void steper(uint8_t number, bool direction, uint32_t step, uint8_t celeration, u
         }
       }else{
         adjust = 0;
-        //---------check this----------------------- limit sw pin
+        //---------check this**********----------- limit sw pin
         if(swich_values(step_cw_limit[number])){
           zero_set[number] = true;
           position[number] = hight_max;
           break; //when push the limit sw, stop
         }
       }
-      //---------check this---------------------- max hight
+      //---------check this**********---------- max hight
       //if(swich_values(step_cw_limit[number])) break; //when push the limit sw, stop
       //if(position[number] > 1000) break; //if position is higher than maximum hight, stop
       digitalWrite(step_cw[number], true);
@@ -173,7 +198,7 @@ void steper(uint8_t number, bool direction, uint32_t step, uint8_t celeration, u
         }
       }else{
         adjust = 0;
-        //---------check this----------------------- limit sw pin
+        //---------check this**********----------- limit sw pin
         if(swich_values(step_ccw_limit[number])){
           zero_set[number] = true;
           position[number] = 0;
@@ -198,7 +223,7 @@ void steper(uint8_t number, bool direction, uint32_t step, uint8_t celeration, u
   //딜레이 추가 후 브레이크 잠금 추가.
 }
 
-////command chage the Something//////////////////////////
+//*********command chage the Something**********************//
 char    Serial_buf[SERIAL_MAX];
 uint8_t Serial_num;
 unsigned long pre_loop_1 = 0UL;
@@ -208,9 +233,9 @@ void Serial_process() {
   ch = Serial.read();
   if(ch==0x03 && Serial_num>10){
     Serial_buf[Serial_num] = 0x00;
-    command_Service();
+    command_Service(Serial_buf);
     Serial_num = 0;
-  }else if(ch==0x02 && (Serial_num==0 || Serial_num>10)){
+  }else if(ch==0x02 && (Serial_num==0 || Serial_num>11)){
     Serial_num = 0;
     Serial_buf[10]=0x00;
   }else{
@@ -219,27 +244,30 @@ void Serial_process() {
   }
 }
 
-void command_Service() {
+void command_Service(char* commend_buf) {
   //check sum
-  char checksum = Serial_buf[0]^Serial_buf[1]^Serial_buf[2]^Serial_buf[3]^Serial_buf[4]^Serial_buf[5]^Serial_buf[6]^Serial_buf[7]^Serial_buf[8]^Serial_buf[9];
+  char checksum = commend_buf[0]^commend_buf[1]^commend_buf[2]^commend_buf[3]^commend_buf[4]^commend_buf[5]^commend_buf[6]^commend_buf[7]^commend_buf[8]^commend_buf[9];
   Serial.print("checksum=");
   Serial.print(uint8_t(checksum));
   Serial.print("=");
-  Serial.println(uint8_t(Serial_buf[10]));
+  Serial.println(uint8_t(commend_buf[10]));
+
+  char res[11] = "checksum===";
+       res[9] = checksum;
+  mqtt_response(res);
   //run
-  checksum = 0x11;
-  if(checksum == Serial_buf[10]){
+  if(checksum == commend_buf[10]){
     //command
     //0,0x02:start/0,0x4D/1,0x46(0x42):direction/2,0x00~0x03:moter/3,celeration:1~100/4,speed_max/5,speed_min*255/6,speed_min
     //7,step1*255*255/8,step2:*255/9,step3/10,checksum/11,0x03:end/
-    if(Serial_buf[0]==0x4D){//M
-      uint32_t step = uint32_t(Serial_buf[7])*256*256 + uint16_t(Serial_buf[8])*256 + uint8_t(Serial_buf[9]);
+    if(commend_buf[0]==0x4D){//M
+      uint32_t step = uint32_t(commend_buf[7])*256*256 + uint16_t(commend_buf[8])*256 + uint8_t(commend_buf[9]);
       boolean  direction = false;
-      if(Serial_buf[1]==0x46) direction = true;
-      uint8_t  motor_num  = uint8_t(Serial_buf[2]);
-      uint8_t  celeration = uint8_t(Serial_buf[3]);
-      uint8_t  speed_max  = uint8_t(Serial_buf[4]);
-      uint16_t speed_min  = uint16_t(Serial_buf[5])*255 + uint8_t(Serial_buf[6]);
+      if(commend_buf[1]==0x46) direction = true;
+      uint8_t  motor_num  = uint8_t(commend_buf[2]);
+      uint8_t  celeration = uint8_t(commend_buf[3]);
+      uint8_t  speed_max  = uint8_t(commend_buf[4]);
+      uint16_t speed_min  = uint16_t(commend_buf[5])*255 + uint8_t(commend_buf[6]);
       //
       Serial.print("step=");
       Serial.print(step);
@@ -254,7 +282,7 @@ void command_Service() {
       Serial.print(", speed_min=");
       Serial.println(speed_min);
       //
-      steper(motor_num, direction, step, celeration, speed_max, speed_min);
+      //steper(motor_num, direction, step, celeration, speed_max, speed_min);
       //
       Serial.println("motor moved");
     }
@@ -264,21 +292,81 @@ void command_Service() {
   }
 }//Command_service() END
 
-//// ------------ setup ------------
+//********** setup**********//
 void setup() {
   Serial.begin(115200);
+  Serial.println("System boot... wait a few seconds.");
+  Ethernet.begin(mac);
   init_port_base();
-}//// ------------ End Of Setup() ------------
+  delay(1000); //give the ethernet a second to initialize
+  mqtt.subscribe(&request);
+}//********** End Of Setup() **********//
 
-//// ------------ loop ------------
+//********** loop **********//
 void loop() {
   if (Serial.available()) {
     Serial_process();
   }
+  MQTT_connect();
+  mqtt_requeset();
   //if need asynchronous, add something
   //display_pin_values();
   //steper_test(0,200,2000);
-}//// ------------ End Of loop() ------------
+}//**********End Of loop()**********//
+
+//**********MQTT**********//
+void MQTT_connect() {
+  // Stop if already connected.
+  if (mqtt.connected()) {
+    return;
+  }
+  int8_t ret;
+  Serial.println("Connecting to MQTT.");
+  while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
+       Serial.println(mqtt.connectErrorString(ret));
+       Serial.println("Retrying MQTT connection in 5 seconds.");
+       mqtt.disconnect();
+       delay(5000);  // wait 5 seconds
+  }
+  Serial.println("MQTT Connected!");
+}
+
+void mqtt_requeset(){
+  Adafruit_MQTT_Subscribe *subscription;
+  while ((subscription = mqtt.readSubscription(1))) {
+    if (subscription == &request) {
+      String receive = (char *)request.lastread;
+      char Mqtt_buf[SERIAL_MAX];
+      uint8_t Mqtt_num = 0;      
+      for (uint8_t index=0; index<receive.length(); index++) {
+        if(receive[index]==0x03 && Mqtt_num>10){                        //
+          Mqtt_buf[Mqtt_num] = 0x00;
+          command_Service(Mqtt_buf);
+          const char* res = "moter command done.";
+          mqtt_response(res);
+          Mqtt_num = 0;
+        }else if(receive[index]==0x02 && (Mqtt_num==0 || Mqtt_num>10)){ //
+          Mqtt_num = 0;
+          Mqtt_buf[10]=0x00;
+        }else{
+          Mqtt_buf[ Mqtt_num++ ] = receive[index];
+          Mqtt_num %= SERIAL_MAX;
+        }
+      }
+      Serial.print("MQTT: ");
+      Serial.println(receive);
+    }
+  }
+}
+
+void mqtt_response(const char* send_data){
+  if (! response.publish(send_data)) {
+    Serial.println("Failed");
+  } else {
+    Serial.println("OK!");
+  }
+}
+//**********End Of MQTT**********//
 
 unsigned long interval_74HC165 = 0L;
 void display_pin_values()
@@ -287,21 +375,17 @@ void display_pin_values()
     if(millis() > interval_74HC165 + 1000){
       interval_74HC165 = millis();
       Serial.print("Pin States:\r\n");
-
       for(int i = 0; i < DATA_WIDTH; i++)
       {
           Serial.print("  Pin-");
           Serial.print(i);
           Serial.print(": ");
-
           if((pinValues >> i) & 1)
               Serial.print("HIGH");
           else
               Serial.print("LOW");
-
           Serial.print("\r\n");
       }
-
       Serial.print("done.\r\n");
     }
 }
