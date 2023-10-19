@@ -6,6 +6,8 @@
 #include <EthernetClient.h>
 #include <Dns.h>
 #include <Dhcp.h>
+
+#define DEBUG
 /************************* Ethernet Client Setup *****************************/
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 /************************* Mqtt Server Setup *********************************/
@@ -96,7 +98,7 @@ BYTES_VAL_T read_shift_regs()
     long bitVal;
     BYTES_VAL_T bytesVal = 0;
     digitalWrite(LOAD, false);  //remove_noize
-    //delayMicroseconds(1);
+    delayMicroseconds(1);
     digitalWrite(LOAD, true);
     for(int i = 0; i < DATA_WIDTH; i++)
     {
@@ -132,6 +134,7 @@ void steper(uint8_t number, bool direction, uint32_t step, uint8_t celeration, u
     speed_change = ((speed_min - speed_max) / section);
   }
 
+  #ifdef DEBUG
   Serial.print("zero_set: ");
   Serial.print(zero_set[number]);
   Serial.print(", position: ");
@@ -142,6 +145,7 @@ void steper(uint8_t number, bool direction, uint32_t step, uint8_t celeration, u
   Serial.print(section);
   Serial.print(", speed_change: ");
   Serial.println(speed_change);
+  #endif
 
   float speed       = speed_min;
   uint32_t distance = uint32_t(section)+1;
@@ -215,12 +219,15 @@ void steper(uint8_t number, bool direction, uint32_t step, uint8_t celeration, u
       delayMicroseconds(adjust);
     }
   }else{
+    #ifdef DEBUG
     Serial.println("need zero set");
+    #endif
   }
-  
+  #ifdef DEBUG
   Serial.print("position: ");
   Serial.println(position[number]);
   //딜레이 추가 후 브레이크 잠금 추가.
+  #endif
 }
 
 //*********command chage the Something**********************//
@@ -247,10 +254,13 @@ void Serial_process() {
 void command_Service(char* commend_buf) {
   //check sum
   char checksum = commend_buf[0]^commend_buf[1]^commend_buf[2]^commend_buf[3]^commend_buf[4]^commend_buf[5]^commend_buf[6]^commend_buf[7]^commend_buf[8]^commend_buf[9];
+  
+  #ifdef DEBUG
   Serial.print("checksum=");
   Serial.print(uint8_t(checksum));
   Serial.print("=");
   Serial.println(uint8_t(commend_buf[10]));
+  #endif
 
   char res[11] = "checksum===";
        res[9] = checksum;
@@ -269,6 +279,7 @@ void command_Service(char* commend_buf) {
       uint8_t  speed_max  = uint8_t(commend_buf[4]);
       uint16_t speed_min  = uint16_t(commend_buf[5])*255 + uint8_t(commend_buf[6]);
       //
+      #ifdef DEBUG
       Serial.print("step=");
       Serial.print(step);
       Serial.print(", direction=");
@@ -285,10 +296,13 @@ void command_Service(char* commend_buf) {
       //steper(motor_num, direction, step, celeration, speed_max, speed_min);
       //
       Serial.println("motor moved");
+      #endif
     }
   }else{
     //response
+    #ifdef DEBUG
     Serial.println("commend wrong");
+    #endif
   }
 }//Command_service() END
 
@@ -310,8 +324,9 @@ void loop() {
   MQTT_connect();
   mqtt_requeset();
   //if need asynchronous, add something
-  //display_pin_values();
-  //steper_test(0,200,2000);
+  #ifdef DEBUG
+  display_pin_values();
+  #endif
 }//**********End Of loop()**********//
 
 //**********MQTT**********//
@@ -353,8 +368,10 @@ void mqtt_requeset(){
           Mqtt_num %= SERIAL_MAX;
         }
       }
+      #ifdef DEBUG
       Serial.print("MQTT: ");
       Serial.println(receive);
+      #endif
     }
   }
 }
@@ -388,24 +405,4 @@ void display_pin_values()
       }
       Serial.print("done.\r\n");
     }
-}
-
-unsigned long interval_steper[4] = {0L,};
-void steper_test(uint8_t number,uint8_t interval,uint16_t max_step){
-  if(millis() > interval_steper[number] + 1000){
-    interval_steper[number] = millis();
-    Serial.print("forward,");
-    for (uint16_t index=0; index < max_step; index++) {
-      digitalWrite(step_cw[number], true);
-      digitalWrite(step_cw[number], false);
-      delayMicroseconds(interval);
-    }
-    Serial.print("backward,");
-    for (uint16_t index=0; index < max_step; index++) {
-      digitalWrite(step_ccw[0], true);
-      digitalWrite(step_ccw[0], false); 
-      delayMicroseconds(interval);
-    }
-    Serial.println(" done.");
-  }
 }
