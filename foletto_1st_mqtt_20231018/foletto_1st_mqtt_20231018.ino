@@ -7,6 +7,8 @@
 #include <Dns.h>
 #include <Dhcp.h>
 
+#include <Arduino_JSON.h>
+
 #define DEBUG
 /************************* Ethernet Client Setup *****************************/
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
