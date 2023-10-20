@@ -174,11 +174,10 @@ struct dataSet {
 struct dataSet dataSend[4] = {
   {"SENSOR",":01","LOG","1404","1404","0","0"},
   {"SENSOR",":02","LOG","1404","1404","0","0"},
-  {"SENSOR",":03","LOG","1404","1404","0","0"},
-  {"SENSOR",":04","LOG","1404","1404","0","0"}
+  {"SENSOR",":03","LOG","1404","1404","0","0"}
 };
-uint8_t sensor_socket[4] = {0,2,4,6};
-const uint8_t sensor_quantity = 4;
+uint8_t sensor_socket[3] = {2,4,6};
+const uint8_t sensor_quantity = 3;
 
 void get_sensor(uint8_t sensor_number) {
   tca_select(sensor_socket[sensor_number]);
