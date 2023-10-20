@@ -2,12 +2,9 @@
 #include <PubSubClient.h> //https://github.com/knolleary/pubsubclient
 #include <HTTPClient.h>
 #define SERIAL_MAX  64
-/*
-const char* ssid      = "CNR_L580W_2CD944";
+
+const char* ssid      = "CNR_L580W_2CDFC2";
 const char* password  = "#234567!";
-*/
-const char* ssid      = "Daesung2G";
-const char* password  = "smarthive123";
 
 const char* mqttServer    = "smarthive.kr";
 const int   mqttPort      = 1883;
