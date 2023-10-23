@@ -2,6 +2,11 @@
 
 #include "arduino.h"
 
+#define LOAD 49 // PL=PL0=49 //out
+#define DIN  48 // Q7=PL1=48 //in
+#define CLK  46 // CP=PL3=46 //out
+#define CE   16 // CE=PH1=16 //out
+
 #define PIN_PE4 2
 #define PIN_PE5 3
 #define PIN_PE3 5

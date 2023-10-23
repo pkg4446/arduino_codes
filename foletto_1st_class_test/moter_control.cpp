@@ -1,10 +1,13 @@
+#include "arduino.h"
+
 #include "moter_control.h"
 #include "pin_setup.h"
-#include "arduino.h"
+#include "shift_regs.h"
 
 MOTOR::MOTOR(){
   Position   = 0;
   Zero_set   = false;
+  hight_max  = 99999;
 }
 MOTOR::~MOTOR(){}
 
@@ -27,10 +30,15 @@ void MOTOR::status(){
   Serial.println(Zero_set);
 }
 
-bool MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint8_t acceleration, uint8_t deceleration, uint8_t speed_max, uint16_t speed_min){
+void MOTOR::set_maximum(uint32_t maximum){
+  hight_max = maximum;
+}
+
+void MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint8_t acceleration, uint8_t deceleration, uint8_t speed_max, uint16_t speed_min){
   //브레이크 풀기 후 딜레이 추가.
   boolean celerations = false;
-  float  speed_change = 0.0;
+  float  speed_change_ac = 0.0;
+  float  speed_change_de = 0.0;
 
   if(acceleration < 1){acceleration = 1;}
   else if(acceleration > 45){acceleration = 45;}  
@@ -57,7 +65,7 @@ bool MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint8_t a
   if(direction){ //up
     for (uint32_t index=0; index < step; index++) {
       //speed change
-      if(stepDriver[number].Zero && (stepDriver[number].Position < hight_max)){
+      if(Zero_set && (Position < hight_max)){
         if(celerations){
           if(index < distance_ac){
             if(speed > speed_max){speed -= speed_change_ac;}
@@ -69,56 +77,60 @@ bool MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint8_t a
           }else{
             adjust = uint16_t(speed); //for delay (move smoth)
           }
+        }else{
+          speed = speed_max;
         }
       }else{
         adjust = 0;
         //---------check this**********----------- limit sw pin
-        if(swich_values(limit_sw)){
-          stepDriver[number].Zero = true;
-          stepDriver[number].Position = hight_max;
+        if(swich_values(limit_sw, read_shift_regs())){
+          Zero_set = true;
+          Position = hight_max;
           break; //when push the limit sw, stop
         }
       }
       //---------check this**********---------- max hight
-      //if(swich_values(step_cw_limit[number])) break; //when push the limit sw, stop
-      //if(stepDriver[number].Position > 1000) break; //if stepDriver[number].Position is higher than maximum hight, stop
-      digitalWrite(step_cw[number], true);
-      stepDriver[number].Position += 1;
-      digitalWrite(step_cw[number], false);
+      //if(swich_values(limit_sw, read_shift_regs())) break; //when push the limit sw, stop
+      //if(Position > 1000) break; //if Position is higher than maximum hight, stop
+      digitalWrite(step_moter.PWM, true);
+      Position += 1;
+      digitalWrite(step_moter.PWM, false);
       delayMicroseconds(adjust);
     }
   }else if(!direction){  //down
     for (uint32_t index=0; index<step; index++) {
       //speed change
-      if(stepDriver[number].Zero){
+      if(Zero_set){
         if(celerations){
-          if(index < distance){
-            if(speed >speed_max){speed -= speed_change;}
+          if(index < distance_ac){
+            if(speed >speed_max){speed -= speed_change_ac;}
             else{speed = speed_max;}
             adjust = uint16_t(speed);
-          }else if(index > (step - distance)){
-            speed += speed_change;
+          }else if(index > (step - distance_de)){
+            speed += speed_change_de;
             adjust = uint16_t(speed);
           }else{
             adjust = uint16_t(speed); //for delay (move smoth)
           }
+        }else{
+          speed = speed_max;
         }
       }else{
         adjust = 0;
         //---------check this**********----------- limit sw pin
-        if(swich_values(limit_sw)){
-          stepDriver[number].Zero = true;
-          stepDriver[number].Position = 0;
+        if(swich_values(limit_sw, read_shift_regs())){
+          Zero_set = true;
+          Position = 0;
           break; //when push the limit sw, stop
         }
       }
-      digitalWrite(step_ccw[number], true);
-      if(stepDriver[number].Position > 0){
-        stepDriver[number].Position -= 1;
+      digitalWrite(step_moter.DIR, true);
+      if(Position > 0){
+        Position -= 1;
       }else{
-        stepDriver[number].Zero = false;
+        Zero_set = false;
       }
-      digitalWrite(step_ccw[number], false);
+      digitalWrite(step_moter.DIR, false);
       delayMicroseconds(adjust);
     }
   }

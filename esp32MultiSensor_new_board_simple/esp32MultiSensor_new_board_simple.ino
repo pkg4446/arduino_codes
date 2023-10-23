@@ -3,7 +3,7 @@
 #include <HTTPClient.h>
 #define SERIAL_MAX  64
 
-const char* ssid      = "CNR_L580W_2CDFFC";
+const char* ssid      = "CNR_L580W_2CDFF2";
 const char* password  = "#234567!";
 
 const char* mqttServer   = "smarthive.kr";
