@@ -1,5 +1,6 @@
-#include "config.h"
-#include <Arduino.h>
+#include "control.h"
+
+MOTOR test;
 
 void setup() {
   // put your setup code here, to run once:
@@ -21,10 +22,8 @@ void setup() {
   PORTL |= 0x01; //0b00000001 //LOAD true
   PORTH &= 0xFD; //0b11111101 //CE false
 
-  for (uint8_t index; index<16; index++) {
-    Serial.println(LOADCELL[index].DOUT);
-  }
-  
+  test.begin(12);
+  //driver.begin(1);
 }
 
 void loop() {

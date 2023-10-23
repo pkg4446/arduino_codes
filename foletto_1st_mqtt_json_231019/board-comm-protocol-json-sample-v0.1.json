@@ -1,0 +1,84 @@
+// relay request example
+{
+    "control": "relay",
+    "target": {             // relay number e.g. 1번 relay
+        "type": "uchar",    // unsigned char (0 to 255)
+        "value": 1          // relay number e.g. (1번 relay)
+    },
+    "duration": {
+        "type": "ushort",   // unsigned short 0 to 65,535
+        "value": 1000       // e.g. 1000 ms
+    }
+}
+// relay response
+{
+    "id": "<board-id>",     // 제어보드 고유 id
+    "control": "relay",
+    "target": 1,
+    "duration": 1000,
+    "error": ""             // error 발생시
+}
+
+
+// sensor read request
+{
+    "conrol": "sensor_read",
+}
+// sensor read response
+{
+    "id": "<board-id>",      // 제어보드 고유 id
+    "control": "sensor_read",
+    "sensor": [
+        {
+            "target": 1,     // sensor target e.g. 1번 센서
+            "value": 0       // sensor value 0
+        },
+        {
+            "target": 2,     // sensor target e.g. 2번 센서
+            "value": 1       // sensor value 1
+        },
+        ...
+    ],
+    "error": ""     // 에러 발생시
+}
+
+
+// step motor control request
+{
+    "control": "step_motor",
+    "target": {             // step motor number e.g. 1번 스탭 모터
+        "type": "uchar",     // unsigned char - 0 to 255
+        "value": 1,         // motor target e.g. 1번 모터
+    },
+    "cycle": {          // 회전수
+        "type": "uchar",   // unsigned char - 0 to 255
+        "value": 10,          // step size e.g. 10
+    },
+    "direction": {
+        "type": "string",
+        "value": "ACW",   // step motor direction (ACW/CW)
+    },
+    "acceleration": {
+        "type": ?,
+        "value": ?,       // 질문 필요 - 이 부분은 어떤식으로 드리면 좋을지 알려주시면 감사하겠습니다.
+    },
+    "speed_min": {
+        "type": ?,
+        "value": ?
+    },
+    "speed_max": {
+        "type": ?,
+        "value": ?
+    }
+}
+// step motor control response
+{
+    "id": "<board-id>",      // 제어보드 고유 id
+    "control": "step_motor",
+    "target": 1,
+    "step": 10,
+    "direction": "ACW",
+    "acceleration": ?,
+    "speed_min": ?,
+    "speed_max": ?
+}

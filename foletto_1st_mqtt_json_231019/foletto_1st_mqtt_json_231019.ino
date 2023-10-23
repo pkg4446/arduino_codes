@@ -1,3 +1,5 @@
+#include "pin_setup.h"
+
 #include <SPI.h>
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
@@ -28,11 +30,8 @@ Adafruit_MQTT_Subscribe request  = Adafruit_MQTT_Subscribe(&mqtt, "arduino_test_
 /************************* Mqtt End *********************************/
 
 #define SERIAL_MAX 16
-
 #define NUMBER_OF_SHIFT_CHIPS 2
-#define DATA_WIDTH        NUMBER_OF_SHIFT_CHIPS * 8
-// You will need to change the "int" to "long" If the NUMBER_OF_SHIFT_CHIPS is trueer than 2.
-#define BYTES_VAL_T unsigned long
+#define DATA_WIDTH  NUMBER_OF_SHIFT_CHIPS * 8
 
 //DS=PL2=47, this pin used when using more than two
 #define LOAD 49 // PL=PL0=49 //out
@@ -40,20 +39,12 @@ Adafruit_MQTT_Subscribe request  = Adafruit_MQTT_Subscribe(&mqtt, "arduino_test_
 #define CLK  46 // CP=PL3=46 //out
 #define CE   16 // CE=PH1=16 //out
 ////pin set
-const uint8_t p_relay[7]    = {22,23,24,25,26,27,28}; //PA0~6 //여기서 브레이크 선정. 로봇제어 선정
-const uint8_t robot_arm[3]  = {26,27,28};
-const uint8_t step_break[4] = {22,23,24,25};
 
-const uint8_t step_cw[4]    = {10,11,12,13};          //PB4~7
-const uint8_t step_ccw[4]   = {35,34,33,32};          //PC2~5
-const uint8_t step_cw_limit[4]  = {0,1,2,3};          //PB4~7
-const uint8_t step_ccw_limit[4] = {4,5,6,7};          //PB4~7
-
-bool     zero_set[4] = {false,}; //step zero set
-uint32_t position[4] = {0,}; //step position
-
+const uint8_t step_cw_limit[4]  = {0,1,2,3};
+const uint8_t step_ccw_limit[4] = {4,5,6,7};
 //value
-const uint32_t hight_max = 9999999; // Initial speed for acceleration and deceleration
+uint32_t hight_max = 9999999; // Initial speed for acceleration and deceleration
+#define BYTES_VAL_T uint16_t
 
 //출력 - 브레이크 릴레이 3개, 스탭모터 핀 2(cw,ccw)*3개, 로봇 제어용 릴레이 2개.
 //입력 - 컵 유무(정전용량 센서) 3개, 스텝모터 리미트 2*3개
@@ -97,7 +88,7 @@ void init_port_base(){
 
 BYTES_VAL_T read_shift_regs()
 {
-    long bitVal;
+    BYTES_VAL_T bitVal;
     BYTES_VAL_T bytesVal = 0;
     digitalWrite(LOAD, false);  //remove_noize
     delayMicroseconds(1);
