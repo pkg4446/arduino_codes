@@ -3,19 +3,19 @@
 #include <HTTPClient.h>
 #define SERIAL_MAX  64
 
-const char* ssid      = "CNR_L580W_2CDFC2";
+const char* ssid      = "CNR_L580W_2CDFFC";
 const char* password  = "#234567!";
 
-const char* mqttServer    = "smarthive.kr";
-const int   mqttPort      = 1883;
-const char* mqttUser      = "hive";
-const char* mqttPassword  = "hive";
-const char* topic_pub     = "SHS";
+const char* mqttServer   = "smarthive.kr";
+const int   mqttPort     = 1883;
+const char* mqttUser     = "hive";
+const char* mqttPassword = "hive";
+const char* topic_pub    = "SHS";
 char        deviceID[18];
-char        sendID[21]    = "ID=";
+char        sendID[21]   = "ID=";
 
-WiFiClient mqtt_client;
-PubSubClient mqttClient(mqtt_client);
+WiFiClient    mqtt_client;
+PubSubClient  mqttClient(mqtt_client);
 
 #include "Wire.h"
 #define  TCAADDR 0x70

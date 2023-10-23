@@ -1,7 +1,15 @@
-#include "pin_setup"
-#include <HX711.h>
+//#include "pin_setup"
+#include "control.h"
+#include "pin_setup.h"
 
-MOTOR step;
+MOTOR::MOTOR(STEP_ts moter_pins){
+    step_moter = moter_pins;
+    Position   = 0;
+    Zero       = false;
+}
+MOTOR::~MOTOR(){}
 
-void HAPPYBONZ::begin(){
+void MOTOR::init(){
+  Serial.print(step_moter.DIR);
+  Serial.print(step_moter.PWM);
 }

@@ -1,0 +1,125 @@
+#include "moter_control.h"
+#include "pin_setup.h"
+#include "arduino.h"
+
+MOTOR::MOTOR(){
+  Position   = 0;
+  Zero_set   = false;
+}
+MOTOR::~MOTOR(){}
+
+void MOTOR::init(STEP_ts moter_pins){
+  step_moter = moter_pins;
+  pinMode(step_moter.DIR, OUTPUT);
+  pinMode(step_moter.PWM, OUTPUT);
+  digitalWrite(step_moter.DIR, false);
+  digitalWrite(step_moter.PWM, false);
+}
+
+void MOTOR::status(){
+  Serial.print("DIR: ");
+  Serial.print(step_moter.DIR);
+  Serial.print(" , PWM: ");
+  Serial.print(step_moter.PWM);
+  Serial.print(", Position: ");
+  Serial.print(Position);
+  Serial.print(" , zero set: ");
+  Serial.println(Zero_set);
+}
+
+bool MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint8_t acceleration, uint8_t deceleration, uint8_t speed_max, uint16_t speed_min){
+  //브레이크 풀기 후 딜레이 추가.
+  boolean celerations = false;
+  float  speed_change = 0.0;
+
+  if(acceleration < 1){acceleration = 1;}
+  else if(acceleration > 45){acceleration = 45;}  
+  if(deceleration < 1){deceleration = 1;}
+  else if(deceleration > 45){deceleration = 45;}
+
+  if(speed_max < 1){speed_max = 1;}
+  const float percent_ac = acceleration/100.0;
+  const float section_ac = step*percent_ac;
+  const float percent_de = deceleration/100.0;
+  const float section_de = step*percent_de;
+
+  if(speed_min > speed_max){
+    celerations  = true;
+    speed_change_ac = ((speed_min - speed_max) / section_ac);
+    speed_change_de = ((speed_min - speed_max) / section_de);
+  }
+
+  float speed          = speed_min;
+  uint32_t distance_ac = uint32_t(section_ac)+1;
+  uint32_t distance_de = uint32_t(section_de)+1;
+  uint16_t adjust      = speed_min;
+
+  if(direction){ //up
+    for (uint32_t index=0; index < step; index++) {
+      //speed change
+      if(stepDriver[number].Zero && (stepDriver[number].Position < hight_max)){
+        if(celerations){
+          if(index < distance_ac){
+            if(speed > speed_max){speed -= speed_change_ac;}
+            else{speed = speed_max;}
+            adjust = uint16_t(speed);
+          }else if(index > (step - distance_de)){
+            speed += speed_change_de;
+            adjust = uint16_t(speed);
+          }else{
+            adjust = uint16_t(speed); //for delay (move smoth)
+          }
+        }
+      }else{
+        adjust = 0;
+        //---------check this**********----------- limit sw pin
+        if(swich_values(limit_sw)){
+          stepDriver[number].Zero = true;
+          stepDriver[number].Position = hight_max;
+          break; //when push the limit sw, stop
+        }
+      }
+      //---------check this**********---------- max hight
+      //if(swich_values(step_cw_limit[number])) break; //when push the limit sw, stop
+      //if(stepDriver[number].Position > 1000) break; //if stepDriver[number].Position is higher than maximum hight, stop
+      digitalWrite(step_cw[number], true);
+      stepDriver[number].Position += 1;
+      digitalWrite(step_cw[number], false);
+      delayMicroseconds(adjust);
+    }
+  }else if(!direction){  //down
+    for (uint32_t index=0; index<step; index++) {
+      //speed change
+      if(stepDriver[number].Zero){
+        if(celerations){
+          if(index < distance){
+            if(speed >speed_max){speed -= speed_change;}
+            else{speed = speed_max;}
+            adjust = uint16_t(speed);
+          }else if(index > (step - distance)){
+            speed += speed_change;
+            adjust = uint16_t(speed);
+          }else{
+            adjust = uint16_t(speed); //for delay (move smoth)
+          }
+        }
+      }else{
+        adjust = 0;
+        //---------check this**********----------- limit sw pin
+        if(swich_values(limit_sw)){
+          stepDriver[number].Zero = true;
+          stepDriver[number].Position = 0;
+          break; //when push the limit sw, stop
+        }
+      }
+      digitalWrite(step_ccw[number], true);
+      if(stepDriver[number].Position > 0){
+        stepDriver[number].Position -= 1;
+      }else{
+        stepDriver[number].Zero = false;
+      }
+      digitalWrite(step_ccw[number], false);
+      delayMicroseconds(adjust);
+    }
+  }
+}

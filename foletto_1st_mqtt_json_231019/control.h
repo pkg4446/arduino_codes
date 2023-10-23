@@ -1,14 +1,13 @@
-#ifndef _control
-#define _control
+#pragma once
 
-#include "pin_setup"
+#include "pin_setup.h"
 
 class MOTOR{
-	STEP_ts	step_moter[8];
-	
-public:
-	uint16_t shiftInput;
-    void begin();
-
+	STEP_ts	step_moter;
+	uint32_t Position;
+	bool     Zero;
+	public:
+		MOTOR(STEP_ts moter_pins);
+		~MOTOR();
+		void init();
 };
-#endif
