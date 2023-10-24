@@ -1,22 +1,30 @@
+//최대 전송 문자열 갯수 140
+//common: Immediate response
+{
+    "id":   "<board-id>",   // 제어보드 고유 id
+    "ctrl": "receive",
+    "type": "ctrl type"
+}
+//common: error response
+{
+    "id":   "<board-id>",   // 제어보드 고유 id
+    "ctrl": "error",
+    "type": "ctrl type",
+    "err":  "err_msg"
+}
+
 // relay request example
 {
-    "control": "relay",
-    "target": {             // relay number e.g. 1번 relay
-        "type": "uchar",    // unsigned char (0 to 255)
-        "value": 1          // relay number e.g. (1번 relay)
-    },
-    "duration": {
-        "type": "ushort",   // unsigned short 0 to 65,535
-        "value": 1000       // e.g. 1000 ms
-    }
+    "ctrl":     "relay",
+    "type":     1,          // relay number e.g. 1번 relay, unsigned char (0 to 255), relay number e.g. (1~7 relay)
+    "duration": 1000        // unsigned short 0 to 65,535, e.g. 1000 ms
 }
 // relay response
 {
-    "id": "<board-id>",     // 제어보드 고유 id
-    "control": "relay",
-    "target": 1,
-    "duration": 1000,
-    "error": ""             // error 발생시
+    "id":   "<board-id>",   // 제어보드 고유 id
+    "ctrl": "relay",
+    "type": 1,
+    "duration": 1001        //실제 릴레이 작동시간(시스템 시간상 +10 miili sec 정도 차이가 날 수 있음 )
 }
 
 
@@ -26,59 +34,58 @@
 }
 // sensor read response
 {
-    "id": "<board-id>",      // 제어보드 고유 id
-    "control": "sensor_read",
-    "sensor": [
-        {
-            "target": 1,     // sensor target e.g. 1번 센서
-            "value": 0       // sensor value 0
-        },
-        {
-            "target": 2,     // sensor target e.g. 2번 센서
-            "value": 1       // sensor value 1
-        },
-        ...
-    ],
-    "error": ""     // 에러 발생시
+    "id":     "<board-id>",     // 제어보드 고유 id
+    "ctrl":   "sensor_read",
+    "sensor": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], //배열 순서대로 0~15번 센서값 0:false,1:true
 }
 
 
-// step motor control request
+// step motor ctrl request
 {
-    "control": "step_motor",
-    "target": {             // step motor number e.g. 1번 스탭 모터
-        "type": "uchar",     // unsigned char - 0 to 255
-        "value": 1,         // motor target e.g. 1번 모터
-    },
-    "cycle": {          // 회전수
-        "type": "uchar",   // unsigned char - 0 to 255
-        "value": 10,          // step size e.g. 10
-    },
-    "direction": {
-        "type": "string",
-        "value": "ACW",   // step motor direction (ACW/CW)
-    },
-    "acceleration": {
-        "type": ?,
-        "value": ?,       // 질문 필요 - 이 부분은 어떤식으로 드리면 좋을지 알려주시면 감사하겠습니다.
-    },
-    "speed_min": {
-        "type": ?,
-        "value": ?
-    },
-    "speed_max": {
-        "type": ?,
-        "value": ?
-    }
+    "ctrl":    "motor",
+    "driver":  1,   //0내장 드라이버, 1외장드라이버(MD5-HD14)
+    "type":    1,   // motor type e.g. 1번 모터 // 0 to 255
+    "step":    10,  //스탭 수 (n 스탭당 1회전) unsigned int32 - 0 to 4294967295        
+    "dir":     1,   //step motor direction (CW/CCW), 0:CW, 1:CCW
+    "limit":   4,   //모터 진행방향 리미트센서 번호 = sensor_read 번호
+    "accel":   10,  //0 to 45, 가속 구간 % 비율
+    "decel":   5,   //0 to 45, 감속 구간 % 비율
+    "spd_max": 10,  //unsigned int 16, 모터 스탭간격 micro sec 
+    "spd_min": 1000 //unsigned int 16, 모터 스탭간격 micro sec, speed_max < speed_min    
 }
-// step motor control response
+
 {
-    "id": "<board-id>",      // 제어보드 고유 id
-    "control": "step_motor",
-    "target": 1,
-    "step": 10,
-    "direction": "ACW",
-    "acceleration": ?,
-    "speed_min": ?,
-    "speed_max": ?
+    "ctrl":    "motor",
+    "driver":  1,
+    "type":    1,
+    "step":    10,
+    "dir":     1,
+    "limit":   4,
+    "accel":   10,
+    "decel":   5,
+    "spd_max": 10,
+    "spd_min": 1000   
 }
+
+// step motor ctrl response
+{
+    "id":     "<board-id>", // 제어보드 고유 id
+    "ctrl":   "step_motor",
+    "driver": 1,
+    "type":   1,
+    "zero":   false,        // 영점 확인 여부
+    "pos":    999           // 모터 위치
+}
+
+// step motor config request
+{
+    "ctrl": "motor_config",
+    "driver": 1, //0:내장 드라이버, 1:외장드라이버(MD5-HD14)
+    "type":   1, //motor type e.g. 1번 모터 // 0 to 255
+    "method": 0, //0:get, 1:set
+    "step":   99999, //method=1 일 경우, unsigned int32 - 0 to 4294967295 하단 리미트에서 상단 리미트 센서까지의 스탭 수.
+}
+
+
+//하단 리미트에서 상단 리미트 센서까지의 스탭 측정 기능 추가 예정
+//스탭모터 리미트 사용하지 않는 경우,

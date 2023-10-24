@@ -65,7 +65,7 @@
 #define PIN_PJ6 84
 #define PIN_PJ7 85
 
-const uint8_t p_relay[7] = {22,23,24,25,26,27,28}; //PA0~6 //여기서 브레이크 선정. 로봇제어 선정
+const uint8_t relay_pin[7] = {22,23,24,25,26,27,28}; //PA0~6 //여기서 브레이크 선정. 로봇제어 선정
 const uint8_t robot_arm[3]  = {26,27,28};
 const uint8_t step_break[4] = {22,23,24,25};
 

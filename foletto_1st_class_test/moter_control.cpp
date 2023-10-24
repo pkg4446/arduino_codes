@@ -30,6 +30,18 @@ void MOTOR::status(){
   Serial.println(Zero_set);
 }
 
+uint32_t MOTOR::get_max(){
+  return hight_max;
+}
+
+uint32_t MOTOR::get_pos(){
+  return Position;
+}
+
+bool MOTOR::get_zero_set(){
+  return Zero_set;
+}
+
 void MOTOR::set_maximum(uint32_t maximum){
   hight_max = maximum;
 }
