@@ -21,12 +21,25 @@
 }
 // relay response
 {
-    "id":   "<board-id>",   // 제어보드 고유 id
-    "ctrl": "relay",
-    "type": 1,
+    "id":       "<board-id>",   // 제어보드 고유 id
+    "ctrl":     "relay",
+    "type":     1,
     "duration": 1001        //실제 릴레이 작동시간(시스템 시간상 +10 miili sec 정도 차이가 날 수 있음 )
 }
 
+// relay status change request example (스탭모터 브레이크 사용 등)
+{
+    "ctrl":     "relay_hold",
+    "type":     1,  // relay number e.g. 1번 relay, unsigned char (0 to 255), relay number e.g. (1~7 relay)
+    "status":   1  // unsigned short 0 to 65,535, e.g. 1000 ms
+}
+// relay response
+{
+    "id":     "<board-id>",   //제어보드 고유 id
+    "ctrl":   "relay_hold",
+    "type":   1,
+    "status": 1             //릴레이 on,off 상태
+}
 
 // sensor read request
 {
@@ -39,8 +52,7 @@
     "sensor": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], //배열 순서대로 0~15번 센서값 0:false,1:true
 }
 
-
-// step motor ctrl request
+// step motor ctrl request (사용 전, 후, relay status change로 반드시 브레이크 off, on)
 {
     "ctrl":    "motor",
     "driver":  1,   //0내장 드라이버, 1외장드라이버(MD5-HD14)
@@ -64,7 +76,7 @@
     "accel":   10,
     "decel":   5,
     "spd_max": 10,
-    "spd_min": 1000   
+    "spd_min": 1000
 }
 
 // step motor ctrl response
@@ -86,6 +98,12 @@
     "step":   99999, //method=1 일 경우, unsigned int32 - 0 to 4294967295 하단 리미트에서 상단 리미트 센서까지의 스탭 수.
 }
 
-
 //하단 리미트에서 상단 리미트 센서까지의 스탭 측정 기능 추가 예정
 //스탭모터 리미트 사용하지 않는 경우,
+//비동기 동작이 필요한지?
+//-(현재 코드에서는 스탭모터의 비동기 동작이 불가능)
+//-(스탭모터의 비동기 동작을 위해서는 회전속도 문제로 풀스탭 사용이 요구됨)
+//-(스탭모터 비동기 동작 코딩을 위해서는 테스트용 하드웨어 구성이 필요함)
+
+//hx720 센서를 이용한 로드셀 사용 기능 추가 예정
+//-(로드셀 추가를 위해서 테스트용 하드웨어 구성이 필요함)

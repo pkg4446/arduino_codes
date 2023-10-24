@@ -64,10 +64,10 @@ void MQTT_connect() {
   int8_t ret;
   Serial.println("Connecting to MQTT.");
   while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
-       Serial.println(mqtt.connectErrorString(ret));
-       Serial.println("Retrying MQTT connection in 1 seconds.");
-       mqtt.disconnect();
-       delay(1000);  // wait 1 seconds
+    Serial.println(mqtt.connectErrorString(ret));
+    Serial.println("Retrying MQTT connection in 1 seconds.");
+    mqtt.disconnect();
+    delay(1000);  // wait 1 seconds
   }
   Serial.println("MQTT Connected!");
 }
@@ -97,6 +97,16 @@ void mqtt_requeset(){
           unsigned long sys_time = millis();
           relay_start_time[type] = sys_time;
           relay_end_time[type]   = sys_time + duration;
+        }
+      }else if(ctrl.equalsIgnoreCase("relay_hold")){
+        int8_t type = json["type"];
+        if(type<1 || type>7){
+          mqtt_err_msg("relay","select wrong");
+        }else{
+          type -= 1;
+          bool status = json["status"];
+          digitalWrite(relay_pin[type], status);
+          relay_status_change(type+1, status);
         }
       }else if(ctrl.equalsIgnoreCase("sensor_read")){
         read_pin_values();
@@ -216,6 +226,20 @@ void read_pin_values(){
     char buffer[json.length() + 1];
     json.toCharArray(buffer, json.length() + 1);
     mqtt_response(buffer);
+}
+
+void relay_status_change(uint8_t index, bool status){
+  DynamicJsonDocument res(JSON_STACK);
+  res["id"]     = AIO_Subscribe;
+  res["ctrl"]   = "relay_hold";
+  res["type"]   = index;
+  res["status"] = status;
+
+  String json="";
+  serializeJson(res, json);
+  char buffer[json.length() + 1];
+  json.toCharArray(buffer, json.length() + 1);
+  mqtt_response(buffer);
 }
 
 void relay_off_awiat(){

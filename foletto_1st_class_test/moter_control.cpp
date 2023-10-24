@@ -47,7 +47,6 @@ void MOTOR::set_maximum(uint32_t maximum){
 }
 
 void MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint8_t acceleration, uint8_t deceleration, uint8_t speed_max, uint16_t speed_min){
-  //브레이크 풀기 후 딜레이 추가.
   boolean celerations = false;
   float  speed_change_ac = 0.0;
   float  speed_change_de = 0.0;
