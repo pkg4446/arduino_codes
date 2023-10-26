@@ -2,7 +2,7 @@
 #include "HX711.h"
 #define  SERIAL_MAX  10
 
-boolean  load_view = false;
+boolean  load_view = true;
 
 const uint8_t eeprom_1st = 1;
 const uint8_t eeprom_2nd = 2;
@@ -45,6 +45,9 @@ boolean state_reel_up       = false;
 boolean state_reel_down     = false;
 boolean state_cylinder_up   = false;
 boolean state_cylinder_down = false;
+
+bool flage_l = false;
+bool flage_m = false;
 
 void Serial_process() {
   char ch;
@@ -142,13 +145,16 @@ void warning(unsigned long Update_time) {
         digitalWrite(relay_reel_up,false);
       }
       if(load_view){
+        flage_l = true;
         send2Nextion("flage_w.val=1");
         send2Nextion("flage_l.val=1");
         digitalWrite(relay_bulb[2],true);
       }
     }else if(load_view){
+      flage_l = false;
       send2Nextion("flage_l.val=0");
       digitalWrite(relay_bulb[2],false);
+      if(!flage_l && !flage_m)  send2Nextion("flage_w.val=0");
     }
   }
   //Update_time
@@ -156,20 +162,23 @@ void warning(unsigned long Update_time) {
     if((load_weght > load_max)){
       prevUpdate_warn_load = Update_time;
       if(load_view){
+        flage_m = true;
         send2Nextion("flage_w.val=1");
         send2Nextion("flage_m.val=1");    
         digitalWrite(relay_bulb[3],true);
       }
     }else if(load_view){
+      flage_m = false;
       send2Nextion("flage_m.val=0");
       digitalWrite(relay_bulb[3],false);
+      if(!flage_l && !flage_m)  send2Nextion("flage_w.val=0");
     }
   }//Update_time
 }//warning()
 
 void lever(unsigned long Update_time) {
   if(Update_time > prevUpdate_lever_reel + 10){
-    prevUpdate_warn_reel = Update_time;
+    prevUpdate_lever_reel = Update_time;
     if(!digitalRead(lever_reel_up) && digitalRead(over_reel)){
       if(state_reel_down){
         state_reel_down = false;
