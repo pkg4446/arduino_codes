@@ -224,7 +224,7 @@ void command_Service(String command, String value) {
   } else if (command == "AT+LOG") {
     run_log  = (value.toInt() > 0) ? true : false;
   } else if (command == "AT+SHOW") {
-    led_show = (value.toInt() > 0) ? 60 : 0;
+    led_show = (value.toInt() > 0) ? 0 : 60;
   }
   Serial.print("AT command:");
   Serial.print(command);
@@ -238,6 +238,7 @@ void builtin_led(unsigned long millisec){
   if ((millisec - time_led_show) > 1000 * 1) {
     if(led_show<60){
       time_led_show = millisec;
+      Serial.print("led: 1");
       digitalWrite(BUILTIN_LED_A, led_status);
       digitalWrite(BUILTIN_LED_B, led_status);
       led_show ++;
@@ -338,10 +339,9 @@ void setup() {
   control_humidity    = byte(EEPROM.read(EEP_humidity));
   if(EEPROM.read(EEP_Stable) != 0){use_stable = true;}
   //// ------------ EEPROM ------------
-  mesh.setDebugMsgTypes( ERROR | STARTUP );  // set before init() so that you can see startup messages
   mesh.init( MESH_PREFIX, MESH_PASSWORD, &taskScheduler, MESH_PORT );
   mesh.onReceive(&receivedCallback);
-
+  
   nodeID = mesh.getNodeId();
 
   taskScheduler.addTask( sensorLog );
@@ -360,9 +360,7 @@ void setup() {
 
 void loop() {
   unsigned long now = millis();
-  if (Serial.available()) {
-    Serial_process();
-  }
+  if (Serial.available()) Serial_process();
   mesh.update();
   sensor_level(now);
   get_sensor(now);

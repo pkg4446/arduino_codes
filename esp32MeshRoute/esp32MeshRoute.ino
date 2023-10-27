@@ -41,31 +41,35 @@ void receivedCallback( uint32_t from, String &msg ) {
 }
 // Needed for painless library end
 
-void newConnectionCallback(uint32_t nodeId) {
-    Serial.printf("--> startHere: New Connection, nodeId = %u\n", nodeId);
-}
+SimpleList<uint32_t> nodes;
 void changedConnectionCallback() {
-  Serial.printf("Changed connections\n");
+  nodes = mesh.getNodeList();
+  SimpleList<uint32_t>::iterator node = nodes.begin();
+  Serial.print("[");
+  while (node != nodes.end()) 
+  {
+    Serial.printf("%u,", *node);
+    node++;
+  }
+  Serial.println("]");
 }
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
-  Serial.printf("MeshRoot");
-  
+  Serial.begin(115200);  
   rootDvice.begin(115200, SERIAL_8N1, 18, 19);
   //mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION );
   mesh.setDebugMsgTypes( ERROR | STARTUP );
   mesh.init( MESH_PREFIX, MESH_PASSWORD, MESH_PORT );
   mesh.onReceive( &receivedCallback );
-
-  mesh.onNewConnection(&newConnectionCallback);
   mesh.onChangedConnections(&changedConnectionCallback);
 
   mesh.setRoot( true );
   mesh.setContainsRoot( true );
   routeID = mesh.getNodeId();
 }
+
+//unsigned long retime = 0UL;
 
 void loop() {
   mesh.update();
@@ -75,6 +79,13 @@ void loop() {
   if (Serial.available()) {
     Serial_process();
   }
+/*
+  unsigned long update = millis();
+  if(update - retime > 1000){
+    retime = update;
+    Serial.println("Test");
+  }
+*/
 }
 
 void Serial_process() {
