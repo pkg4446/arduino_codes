@@ -41,15 +41,26 @@ void receivedCallback( uint32_t from, String &msg ) {
 }
 // Needed for painless library end
 
+void newConnectionCallback(uint32_t nodeId) {
+    Serial.printf("--> startHere: New Connection, nodeId = %u\n", nodeId);
+}
+void changedConnectionCallback() {
+  Serial.printf("Changed connections\n");
+}
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.printf("MeshRoot");
   
   rootDvice.begin(115200, SERIAL_8N1, 18, 19);
-  mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION );
+  //mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION );
+  mesh.setDebugMsgTypes( ERROR | STARTUP );
   mesh.init( MESH_PREFIX, MESH_PASSWORD, MESH_PORT );
   mesh.onReceive( &receivedCallback );
+
+  mesh.onNewConnection(&newConnectionCallback);
+  mesh.onChangedConnections(&changedConnectionCallback);
 
   mesh.setRoot( true );
   mesh.setContainsRoot( true );
