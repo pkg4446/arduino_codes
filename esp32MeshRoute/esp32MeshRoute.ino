@@ -46,7 +46,7 @@ void setup() {
   Serial.begin(115200);
   Serial.printf("MeshRoot");
   
-  rootDvice.begin(115200, SERIAL_8N1, 22, 21);
+  rootDvice.begin(115200, SERIAL_8N1, 18, 19);
   mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION );
   mesh.init( MESH_PREFIX, MESH_PASSWORD, MESH_PORT );
   mesh.onReceive( &receivedCallback );

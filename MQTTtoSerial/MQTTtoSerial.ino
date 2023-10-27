@@ -75,7 +75,7 @@ void command_Process() {
 
 void setup() {
   Serial.begin(115200);
-  rootDvice.begin(115200, SERIAL_8N1, 21, 22);
+  rootDvice.begin(115200, SERIAL_8N1, 18, 19);
 
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
