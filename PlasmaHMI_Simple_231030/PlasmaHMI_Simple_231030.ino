@@ -6,6 +6,7 @@
 HardwareSerial nxSerial(2);
 
 unsigned long prevUpdatePlasma  = 0UL;
+unsigned long WIFI_TXT = 0UL;
 
 //const int8_t Relay[6]  = {5, 17, 16, 4, 2, 15};
 //const int8_t Button[4] = {13, 12, 14, 27};
@@ -25,6 +26,7 @@ const char* mqttUser     = "hive";
 const char* mqttPassword = "hive";
 const char* topic_pub    = "WAREHOSE";
 char deviceID[18];
+char sendID[21] = "ID=";
 
 //// ------------ EEPROM ------------
 const uint8_t WIFI  = 1;
@@ -166,7 +168,6 @@ void ATCode(char* commend, char* value) {
   }
 
   else if (strCommend == "AT+MAC") {
-    char sendID[21] = "ID=";
     for (int i = 0; i < 17; i++) {
       sendID[i + 3] = WiFi.macAddress()[i];
     }
@@ -244,7 +245,6 @@ void wifiConnect() {
   mqttClient.setServer(mqttServer, mqttPort);
   mqttClient.setCallback(callback);
 
-  unsigned long WIFI_TXT = 0UL;
 
   char sendID[20] = "ID=";
   for (int i = 0; i < 17; i++) {
@@ -309,10 +309,28 @@ void setup() {
   SystemBoot();
 }  //// ------------ End Of Setup() ------------
 
+void reconnect(){
+  char* topic_sub = deviceID;
+  char* sub_ID    = sendID;
+  while (!mqttClient.connected()) {
+    Serial.println("Connecting to MQTT...");
+    if (mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
+      Serial.println("connected");
+    } else {
+      Serial.print("failed with state ");
+      Serial.print(mqttClient.state());
+      delay(2000);
+    }
+  }
+}
+
 //// ------------ loop ------------
 void loop() {
   DisplayConnect();
-  if (wifiOnOff) mqttClient.loop();
+  if (wifiOnOff){
+    if (mqttClient.connected()){mqttClient.loop();}
+    else{reconnect();}
+  }
   PlasmaSchedule(millis());
 }  //// ------------ End Of loop() ------------
 
