@@ -17,10 +17,11 @@ unsigned long prevUpdateTime    = 0UL;
 //const int8_t DAC[2]    = {25, 26};
 
 //// ------------ Pin out D ------------
-const int8_t  Relay_Door  = 5;
-const int8_t  Relay_PA    = 17;
-const int8_t  Relay_PB    = 16;
-const int8_t  Relay_F     = 2;
+const int8_t  Relay_PA  = 17;
+const int8_t  Relay_PB  = 16;
+const int8_t  Relay_A   = 4;
+const int8_t  Relay_B   = 2;
+const int8_t  Relay_C   = 15;
 //// ------------ MQTT ------------
 const char*   mqttServer   = "smarthive.kr";
 const int     mqttPort     = 1883;
@@ -152,6 +153,32 @@ void ATCode(char* commend, char* value) {
     send2Nextion("btConfirm.val=0");
   }
 
+  else if (strCommend == "AT+RO") {
+    if(commend_value == 1){
+      digitalWrite(Relay_A, true);
+    }else if(commend_value == 2){
+      digitalWrite(Relay_B, true);
+    }else if(commend_value == 3){
+      digitalWrite(Relay_C, true);
+    }else{
+      digitalWrite(Relay_A, true);
+      digitalWrite(Relay_B, true);
+      digitalWrite(Relay_C, true);
+    }
+  }else if (strCommend == "AT+RC") {
+    if(commend_value == 1){
+      digitalWrite(Relay_A, false);
+    }else if(commend_value == 2){
+      digitalWrite(Relay_B, false);
+    }else if(commend_value == 3){
+      digitalWrite(Relay_C, false);
+    }else{
+      digitalWrite(Relay_A, false);
+      digitalWrite(Relay_B, false);
+      digitalWrite(Relay_C, false);
+    }
+  }
+
   else if (strCommend == "AT+MAC") {
     char sendID[21]   = "ID=";
     for (int i = 0; i < 17; i++) {
@@ -180,7 +207,7 @@ void Serial_process() {
   ch = nxSerial.read();
   switch ( ch ) {
     case ';':
-      Serial_buf[Serial_num] = NULL;
+      Serial_buf[Serial_num] = 0x00;
       Serial_service();
       Serial_num = 0;
       break;
@@ -193,7 +220,7 @@ void Serial_process() {
 
 void Serial_service() {
   char* StrCommend = strtok(Serial_buf, "=");
-  char* StrValue   = strtok(NULL, " ");
+  char* StrValue   = strtok(0x00, " ");
   ATCode(StrCommend, StrValue);
 }//Serial_service
 
@@ -204,7 +231,7 @@ void callback(char* topic, byte * payload, unsigned int length) {
     mqtt_buf[i] = payload[i];
   }
   char* StrCommend = strtok(mqtt_buf, "=");
-  char* StrValue   = strtok(NULL, " ");
+  char* StrValue   = strtok(0x00, " ");
   ATCode(StrCommend, StrValue);
 }
 //// ------------ End Of MQTT Callback ------------
@@ -276,10 +303,11 @@ void setup() {
   if (!EEPROM.begin(EEPROM_SIZE)) Serial.println("failed to initialise EEPROM");
 
   //// ------------ Pin Out ------------
-  pinMode(Relay_Door, OUTPUT);
   pinMode(Relay_PA, OUTPUT);
   pinMode(Relay_PB, OUTPUT);
-  pinMode(Relay_F, OUTPUT);
+  pinMode(Relay_A, OUTPUT);
+  pinMode(Relay_B, OUTPUT);
+  pinMode(Relay_C, OUTPUT);
 
   //// ------------ EEPROM ------------
   wifiSet     = byte(EEPROM.read(WIFI));
