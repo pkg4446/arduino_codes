@@ -354,9 +354,7 @@ void HAPPYBONZ::sensorRead(){
 	txbuf[6] = 0xCF&((inp.bits.b8)|((inp.bits.b9)<<1)|((inp.bits.b10)<<2)|((inp.bits.b11)<<3)|((inp.bits.b6)<<6)|((inp.bits.b7)<<7));
 	// txbuf[4] = inp.byte[0];
 	// txbuf[5] = inp.byte[1];
-	
 	p->write(txbuf,9);
-
 }
 void HAPPYBONZ::solon(){
 	// if(happy.sen == 4){ pinMode(conRELAY[3], OUTPUT); digitalWrite(conRELAY[3], 1);}

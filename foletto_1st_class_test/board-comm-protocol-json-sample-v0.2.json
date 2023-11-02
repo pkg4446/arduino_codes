@@ -19,6 +19,7 @@
     "type":     1,          // relay number e.g. 1번 relay, unsigned char (0 to 255), relay number e.g. (1~7 relay)
     "duration": 1000        // unsigned short 0 to 65,535, e.g. 1000 ms
 }
+{"ctrl":"relay","type":2,"duration": 1000}
 // relay response
 {
     "id":       "<board-id>",   // 제어보드 고유 id
@@ -65,6 +66,7 @@
     "spd_max": 10,  //unsigned int 16, 모터 스탭간격 micro sec 
     "spd_min": 1000 //unsigned int 16, 모터 스탭간격 micro sec, speed_max < speed_min    
 }
+{"ctrl":"motor","driver":0,"type":1,"step":1000,"dir":1,"limit":4,"accel":9,"decel":9,"spd_max":1,"spd_min":9}
 
 {
     "ctrl":    "motor",

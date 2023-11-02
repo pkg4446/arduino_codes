@@ -30,6 +30,11 @@ void MOTOR::status(){
   Serial.println(Zero_set);
 }
 
+void MOTOR::pos_update(bool direction){
+  if(direction) Position++;
+  else Position--;
+}
+
 uint32_t MOTOR::get_max(){
   return hight_max;
 }

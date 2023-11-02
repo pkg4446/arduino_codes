@@ -14,6 +14,7 @@ class MOTOR{
 		void init(STEP_ts moter_pins);
 		void set_maximum(uint32_t maximum);
 		void status();
+		void pos_update(bool direction);
 		uint32_t get_max();
 		uint32_t get_pos();
 		bool get_zero_set();

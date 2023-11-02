@@ -7,6 +7,9 @@
 #define CLK  46 // CP=PL3=46 //out
 #define CE   16 // CE=PH1=16 //out
 
+//#define PIN_PG2 39
+#define BUITIN_EN 39
+
 #define PIN_PE4 2
 #define PIN_PE5 3
 #define PIN_PE3 5
@@ -69,6 +72,15 @@ const uint8_t relay_pin[7] = {22,23,24,25,26,27,28}; //PA0~6 //여기서 브레�
 const uint8_t robot_arm[3]  = {26,27,28};
 const uint8_t step_break[4] = {22,23,24,25};
 
+typedef struct PACKET_ts{
+	uint8_t  svr[4];
+	uint8_t  local[4];
+	uint8_t  subnet[4];
+	uint8_t  gateway[4];
+	uint8_t  mac;
+	int8_t   motor[10];
+}PACKET_ts;
+
 /*
 typedef struct STEP_OUT_ts{
 	int 		cw;
@@ -95,11 +107,11 @@ const STEP_ts stepDriver[4]={
    {PIN_PC3,PIN_PB5},
    {PIN_PC2,PIN_PB4}
 };
-
 typedef struct LOAD_ts{
    int8_t   DOUT;
    int8_t   SCKD;
 }LOAD_ts;
+
 const LOAD_ts LOADCELL[16]={
    {PIN_PD5, PIN_PF6},
    {PIN_PJ6, PIN_PK6},
