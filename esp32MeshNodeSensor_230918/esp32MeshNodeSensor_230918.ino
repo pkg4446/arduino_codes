@@ -3,33 +3,33 @@
 #define   EEPROM_SIZE 4
 #define   SERIAL_MAX  64
 
-#define   MESH_PREFIX     "smartHiveMesh"
-#define   MESH_PASSWORD   "smarthive123"
-#define   MESH_PORT       3333
+#define   MESH_PREFIX   "smartHiveMesh"
+#define   MESH_PASSWORD "smarthive123"
+#define   MESH_PORT     3333
 
-#include "Wire.h"
-#define  TCAADDR 0x70
-#include "FS.h"
-#include "SD.h"
-#include "SPI.h"
+#include  "Wire.h"
+#define   TCAADDR 0x70
+#include  "FS.h"
+#include  "SD.h"
+#include  "SPI.h"
 
-#define PCA9539_H_
-#include "Arduino.h"
-#define DEBUG 1
-#define NXP_INPUT      0
-#define NXP_OUTPUT     2
-#define NXP_INVERT     4
-#define NXP_CONFIG     6
+#define   PCA9539_H_
+#include  "Arduino.h"
+#define   DEBUG 1
+#define   NXP_INPUT  0
+#define   NXP_OUTPUT 2
+#define   NXP_INVERT 4
+#define   NXP_CONFIG 6
 
 const boolean pin_on  = false;
 const boolean pin_off = true;
 
 class PCA9539 {
   public:
-    PCA9539(uint8_t address);                            // constructor
-    void pinMode(uint8_t pin, uint8_t IOMode );          // pinMode
-    uint8_t digitalRead(uint8_t pin);                    // digitalRead
-    void digitalWrite(uint8_t pin, uint8_t value );      // digitalWrite
+    PCA9539(uint8_t address);                       // constructor
+    void pinMode(uint8_t pin, uint8_t IOMode );     // pinMode
+    uint8_t digitalRead(uint8_t pin);               // digitalRead
+    void digitalWrite(uint8_t pin, uint8_t value ); // digitalWrite
 
   private:
     uint16_t I2CGetValue(uint8_t address, uint8_t reg);
@@ -37,20 +37,20 @@ class PCA9539 {
 
     union {
       struct {
-        uint8_t _configurationRegister_low;          // low order byte
-        uint8_t _configurationRegister_high;         // high order byte
+        uint8_t _configurationRegister_low;   // low order byte
+        uint8_t _configurationRegister_high;  // high order byte
       };
-      uint16_t _configurationRegister;                 // 16 bits presentation
+      uint16_t _configurationRegister;        // 16 bits presentation
     };
     union {
       struct {
-        uint8_t _valueRegister_low;                  // low order byte
-        uint8_t _valueRegister_high;                 // high order byte
+        uint8_t _valueRegister_low;           // low order byte
+        uint8_t _valueRegister_high;          // high order byte
       };
       uint16_t _valueRegister;
     };
-    uint8_t _address;                                    // address of port this class is supporting
-    int _error;                                          // error code from I2C
+    uint8_t _address;                         // address of port this class is supporting
+    int _error;                               // error code from I2C
 };
 
 PCA9539::PCA9539(uint8_t address) {
@@ -89,9 +89,9 @@ void PCA9539::digitalWrite(uint8_t pin, uint8_t value) {
     return;                  // exit
   }
   if (value > 0) {
-    _valueRegister = _valueRegister | (1 << pin);    // and OR bit in register
+    _valueRegister = _valueRegister | (1 << pin);   // and OR bit in register
   } else {
-    _valueRegister = _valueRegister & ~(1 << pin);    // AND all bits
+    _valueRegister = _valueRegister & ~(1 << pin);  // AND all bits
   }
   I2CSetValue(_address, NXP_OUTPUT    , _valueRegister_low);
   I2CSetValue(_address, NXP_OUTPUT + 1, _valueRegister_high);
@@ -99,21 +99,21 @@ void PCA9539::digitalWrite(uint8_t pin, uint8_t value) {
 
 uint16_t PCA9539::I2CGetValue(uint8_t address, uint8_t reg) {
   uint16_t _inputData;
-  Wire.beginTransmission(address);          // setup read registers
+  Wire.beginTransmission(address);      // setup read registers
   Wire.write(reg);
   _error = Wire.endTransmission();
   if (Wire.requestFrom((int)address, 1) != 1)
   {
-    return 256;                            // error code is above normal data range
+    return 256;                         // error code is above normal data range
   };
   _inputData = Wire.read();
   return _inputData;
 }
 
 void PCA9539::I2CSetValue(uint8_t address, uint8_t reg, uint8_t value) {
-  Wire.beginTransmission(address);              // setup direction registers
-  Wire.write(reg);                              // pointer to configuration register address 0
-  Wire.write(value);                            // write config register low byte
+  Wire.beginTransmission(address);      // setup direction registers
+  Wire.write(reg);                      // pointer to configuration register address 0
+  Wire.write(value);                    // write config register low byte
   _error = Wire.endTransmission();
 }
 

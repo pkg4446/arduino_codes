@@ -4,8 +4,15 @@
 #define SERIAL_MAX  64
 HardwareSerial rootDvice(2);
 
-const char* ssid      = "CNR_L580W_2CD944";
-const char* password  = "#234567!";
+#include "EEPROM.h"
+#define   EEPROM_SIZE 16
+
+/******************EEPROM******************/
+const uint8_t eep_ssid[EEPROM_SIZE] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+const uint8_t eep_pass[EEPROM_SIZE] = {16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
+/******************EEPROM******************/
+char ssid[EEPROM_SIZE];
+char password[EEPROM_SIZE]; //#234567!
 
 const char* mqttServer    = "smarthive.kr";
 const int   mqttPort      = 1883;
@@ -41,7 +48,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 //// ----------- Command  -----------
 char    command_Buf[SERIAL_MAX];
-int16_t command_Num;
+int8_t  command_Num;
 
 void command_Service() {
   struct dataSet dataSend;
@@ -73,17 +80,90 @@ void command_Process() {
   }
 }
 
+char    Serial_buf[SERIAL_MAX];
+int8_t  Serial_num;
+
+void wifi_config_change() {
+  String at_cmd     = strtok(Serial_buf, "=");
+  String ssid_value = strtok(NULL, "=");
+  String pass_value = strtok(NULL, ";");
+  if(at_cmd=="AT+WIFI"){
+    Serial.print("ssid_value=");
+    for (int index = 0; index < EEPROM_SIZE; index++) {
+      if(index < ssid_value.length()){
+        Serial.print(ssid_value[index]);
+        EEPROM.write(eep_ssid[index], byte(ssid_value[index]));
+      }else{
+        EEPROM.write(eep_ssid[index], byte(0x00));
+      }      
+    }
+    Serial.println("");
+    Serial.print("pass_value=");
+    for (int index = 0; index < EEPROM_SIZE; index++) {
+      if(index < pass_value.length()){
+        Serial.print(pass_value[index]);
+        EEPROM.write(eep_pass[index], byte(pass_value[index]));
+      }else{
+        EEPROM.write(eep_pass[index], byte(0x00));
+      }    
+    }
+    Serial.println("");
+    EEPROM.commit();
+    ESP.restart();
+  }else{
+    Serial.println(Serial_buf);
+  }
+}//Command_service() END
+
+void Serial_process() {
+  char ch;
+  ch = Serial.read();
+  switch ( ch ) {
+    case ';':
+      Serial_buf[Serial_num] = 0x00;
+      wifi_config_change();
+      Serial_num = 0;
+      break;
+    default :
+      Serial_buf[ Serial_num ++ ] = ch;
+      Serial_num %= SERIAL_MAX;
+      break;
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   rootDvice.begin(115200, SERIAL_8N1, 18, 19);
 
+  if (!EEPROM.begin(EEPROM_SIZE*2)){
+    Serial.println("Failed to initialise eeprom");
+    Serial.println("Restarting...");
+    delay(1000);
+    ESP.restart();
+  }
+
+  for (int index = 0; index < EEPROM_SIZE; index++) {
+    ssid[index]     = EEPROM.read(eep_ssid[index]);
+    password[index] = EEPROM.read(eep_pass[index]);
+  }
+
+  Serial.println("---- wifi config ----");
+  Serial.print("ssid: "); Serial.println(ssid);
+  Serial.print("pass: "); Serial.println(password);
+  Serial.println("---------------------");
+
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  
+
+  unsigned long wifi_config_update = 0UL;
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.println("Connecting to WiFi..");
+    if (Serial.available()) Serial_process();
+    unsigned long update_time = millis();
+    if(update_time - wifi_config_update > 3000){
+      wifi_config_update = update_time;
+      Serial.println("Connecting to WiFi..");
+    }    
   }
   Serial.println("Connected to the WiFi network");
 
@@ -135,6 +215,7 @@ void loop() {
   if (mqttClient.connected()){mqttClient.loop();}
   else{reconnect();}
   if (rootDvice.available()) command_Process();//post
+  if (Serial.available()) Serial_process();
 }
 
 void httpPOSTRequest(struct dataSet *ptr) {
