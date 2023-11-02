@@ -7,7 +7,10 @@
 MOTOR::MOTOR(){
   Position   = 0;
   Zero_set   = false;
-  hight_max  = 99999;
+  accel      = 0;
+  decel      = 0;
+  dla_s      = 10;
+  dla_l      = 10;
 }
 MOTOR::~MOTOR(){}
 
@@ -19,6 +22,13 @@ void MOTOR::init(STEP_ts moter_pins){
   digitalWrite(step_moter.PWM, false);
 }
 
+void MOTOR::set_config(uint16_t v_accel, uint16_t v_decel, uint16_t v_dla_s, uint16_t v_dla_l){
+  accel = v_accel;
+  decel = v_decel;
+  dla_s = v_dla_s;
+  dla_l = v_dla_l;
+}
+
 void MOTOR::status(){
   Serial.print("DIR: ");
   Serial.print(step_moter.DIR);
@@ -26,8 +36,16 @@ void MOTOR::status(){
   Serial.print(step_moter.PWM);
   Serial.print(", Position: ");
   Serial.print(Position);
-  Serial.print(" , zero set: ");
-  Serial.println(Zero_set);
+  Serial.print(", zero set: ");
+  Serial.print(Zero_set);
+  Serial.print(", accel_step: ");
+  Serial.print(accel);
+  Serial.print(", decel_step: ");
+  Serial.print(decel);
+  Serial.print(", delay_short: ");
+  Serial.print(dla_s);
+  Serial.print(", delay_long: ");
+  Serial.println(dla_l);
 }
 
 void MOTOR::pos_update(bool direction){
@@ -35,23 +53,14 @@ void MOTOR::pos_update(bool direction){
   else Position--;
 }
 
-uint32_t MOTOR::get_max(){
-  return hight_max;
-}
+uint32_t MOTOR::get_pos(){return Position;}
+bool     MOTOR::get_zero_set(){return Zero_set;}
+uint16_t MOTOR::accel_step(){return accel;}
+uint16_t MOTOR::decel_step(){return decel;}
+uint16_t MOTOR::delay_short(){return dla_s;}
+uint16_t MOTOR::delay_long(){return dla_l;}
 
-uint32_t MOTOR::get_pos(){
-  return Position;
-}
-
-bool MOTOR::get_zero_set(){
-  return Zero_set;
-}
-
-void MOTOR::set_maximum(uint32_t maximum){
-  hight_max = maximum;
-}
-
-void MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint8_t acceleration, uint8_t deceleration, uint8_t speed_max, uint16_t speed_min){
+void MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint8_t acceleration, uint8_t deceleration, uint8_t speed_max, uint16_t speed_min, uint32_t hight_max){
   boolean celerations = false;
   float  speed_change_ac = 0.0;
   float  speed_change_de = 0.0;
