@@ -1,7 +1,7 @@
 #include  "painlessMesh.h"
 #include  "EEPROM.h"
 #define   EEPROM_SIZE 4
-#define   SERIAL_MAX  64
+#define   SERIAL_MAX  128
 
 #define   MESH_PREFIX   "smartHiveMesh"
 #define   MESH_PASSWORD "smarthive123"

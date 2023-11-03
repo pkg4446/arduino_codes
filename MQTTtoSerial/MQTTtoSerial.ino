@@ -1,7 +1,7 @@
 #include <WiFi.h>
 #include <PubSubClient.h> //https://github.com/knolleary/pubsubclient
 #include <HTTPClient.h>
-#define SERIAL_MAX  64
+#define SERIAL_MAX  128
 HardwareSerial rootDvice(2);
 
 #include "EEPROM.h"
@@ -70,6 +70,7 @@ void command_Process() {
   switch (ch) {
     case ';':
       command_Buf[command_Num] = ';';
+      command_Buf[command_Num+1] = 0x00;
       command_Service();
       command_Num = 0;
       break;

@@ -1,5 +1,5 @@
 #include  "painlessMesh.h"
-#define   SERIAL_MAX  64
+#define   SERIAL_MAX  128
 
 #define   MESH_PREFIX     "smartHiveMesh"
 #define   MESH_PASSWORD   "smarthive123"
@@ -13,16 +13,20 @@ char    command_Buf[SERIAL_MAX];
 int16_t command_Num;
 
 void command_Service() {
-  Serial.printf(command_Buf);
-  mesh.sendBroadcast( command_Buf );
+  if(command_Buf[0] != ';'){
+    Serial.println(command_Buf);
+    mesh.sendBroadcast(command_Buf);
+  }
 }//Command_service() END
 
+//replace by pointer
 void command_Process() {
   char ch;
   ch = rootDvice.read();
   switch (ch) {
     case ';':
       command_Buf[command_Num] = ';';
+      command_Buf[command_Num+1] = 0x00;
       command_Service();
       command_Num = 0;
       break;
@@ -94,6 +98,7 @@ void Serial_process() {
   switch (ch) {
     case ';':
       command_Buf[command_Num] = ';';
+      command_Buf[command_Num+1] = 0x00;
       command_Service();
       command_Num = 0;
       break;
