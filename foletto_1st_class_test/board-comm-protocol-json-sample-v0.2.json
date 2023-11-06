@@ -62,23 +62,24 @@
     "num":   1,   // motor type e.g. 1번 모터 // 0 to 255
     "accel": 10,  //가속 구간 스탭 수 unsigned int16 - 0 to 65535
     "decel": 5,   //감속 구간 스탭 수 unsigned int16 - 0 to 65535
-    "dla_s": 10,  //unsigned int 16, 모터 스탭간격 micro sec, delay_short
-    "dla_l": 1000 //unsigned int 16, 모터 스탭간격 micro sec, delay_long > delay_short    
+    "dla_s": 1,  //unsigned int 16, 모터 스탭간격 micro sec, delay_short
+    "dla_l": 100 //unsigned int 16, 모터 스탭간격 micro sec, delay_long > delay_short    
 }
-{"ctrl":"motor","cmd":"set","opt":1,"num":1,"accel":10,"decel":5,"dla_s":10,"dla_l":1000}
+{"ctrl":"motor","cmd":"set","opt":0,"num":1,"accel":10,"decel":5,"dla_s":1,"dla_l":100}
 
 {
     "ctrl":  "motor",
     "cmd":   "run",
     "opt":   1,   //0내장 드라이버, 1외장드라이버(MD5-HD14)
     "num":   1,   // motor type e.g. 1번 모터 // 0 to 255
-    "step":  10,  //스탭 수 (n 스탭당 1회전) unsigned int32 - 0 to 4294967295        
+    "step":  100,  //스탭 수 (n 스탭당 1회전) unsigned int32 - 0 to 4294967295        
     "dir":   1,   //step motor direction (CW/CCW), 0:CW, 1:CCW
-    "limit": 4,   //모터 진행방향 리미트센서 번호 = sensor_read 번호 
+    "limit": 4,   //모터 진행방향 리미트센서 번호 = sensor_read 번호, 16이상일 경우 인식 안함.
     "max":   1000 //unsigned int 36, 가동 최대 거리 //리미트 한쪽에만 있을 경우, 리미트 인식 후 pos가 0이 되고, 이후 최대 max 까지만 회전
 }
+{"ctrl":"motor","cmd":"run","opt":0,"num":1,"step":100,"dir":1,"limit":4,"max":1000}
 
-
+//XXXXXXXXXXXXXXXXXXXXXX
 // step motor ctrl request (사용 전, 후, relay status change로 반드시 브레이크 off, on)
 {
     "ctrl":    "motor",
@@ -106,6 +107,7 @@
     "spd_max": 10,
     "spd_min": 1000
 }
+//XXXXXXXXXXXXXXXXXXXXXX
 
 // step motor ctrl response
 {

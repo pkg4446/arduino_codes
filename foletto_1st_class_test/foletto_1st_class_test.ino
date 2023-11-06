@@ -52,18 +52,27 @@ bool online = false;
 
 
 /******
-// step motor ctrl request (사용 전, 후, relay status change로 반드시 브레이크 off, on)
 {
-    "ctrl":    "motor",
-    "driver":  1,   //0내장 드라이버, 1외장드라이버(MD5-HD14)
-    "type":    1,   // motor type e.g. 1번 모터 // 0 to 255
-    "step":    10,  //스탭 수 (n 스탭당 1회전) unsigned int32 - 0 to 4294967295        
-    "dir":     1,   //step motor direction (CW/CCW), 0:CW, 1:CCW
-    "limit":   4,   //모터 진행방향 리미트센서 번호 = sensor_read 번호
-    "accel":   10,  //0 to 45, 가속 구간 % 비율
-    "decel":   5,   //0 to 45, 감속 구간 % 비율
-    "spd_max": 10,  //unsigned int 16, 모터 스탭간격 micro sec 
-    "spd_min": 1000 //unsigned int 16, 모터 스탭간격 micro sec, speed_max < speed_min    
+    "ctrl":  "motor",
+    "cmd":   "set",
+    "opt":   1,   //0내장 드라이버, 1외장드라이버(MD5-HD14)
+    "num":   1,   // motor type e.g. 1번 모터 // 0 to 255
+    "accel": 10,  //가속 구간 스탭 수 unsigned int16 - 0 to 65535
+    "decel": 5,   //감속 구간 스탭 수 unsigned int16 - 0 to 65535
+    "dla_s": 10,  //unsigned int 16, 모터 스탭간격 micro sec, delay_short
+    "dla_l": 1000 //unsigned int 16, 모터 스탭간격 micro sec, delay_long > delay_short    
+}
+
+step motor ctrl request (사용 전, 후, relay status change로 반드시 브레이크 off, on)
+{
+    "ctrl":  "motor",
+    "cmd":   "run",
+    "opt":   1,   //0내장 드라이버, 1외장드라이버(MD5-HD14)
+    "num":   1,   // motor type e.g. 1번 모터 // 0 to 255
+    "step":  10,  //스탭 수 (n 스탭당 1회전) unsigned int32 - 0 to 4294967295        
+    "dir":   1,   //step motor direction (CW/CCW), 0:CW, 1:CCW
+    "limit": 4,   //모터 진행방향 리미트센서 번호 = sensor_read 번호 
+    "max":   1000 //unsigned int 36, 가동 최대 거리 //리미트 한쪽에만 있을 경우, 리미트 인식 후 pos가 0이 되고, 이후 최대 max 까지만 회전
 }
 *******/
 /*************/
@@ -110,17 +119,20 @@ void builtin_stepper(){
         builtin[index].pos_update(builtin_dir[index]);
         builtin_pulse[index]--;
 
-        //Serial.println(builtin_speed_f[index]);
-
-         if(builtin_pulse[index] <= 1){
+        #ifdef DEBUG
+          Serial.print(builtin_speed_f[index]);
+          Serial.print(" = ");
+          Serial.println(builtin_speed[index]);
+        #endif
+         if(builtin_pulse[index] == 0){
           builtin_run[index] = false;
           response_moter_status("motor", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos());
-        }else if(builtin_pulse[index] > builtin_pulse_start[index]){
+        }else if(builtin_pulse[index] >= builtin_pulse_start[index]){
           builtin_speed_f[index] -= builtin_speed_accel[index];
-          //builtin_speed[index] = builtin_speed_f[index];
-        }else if(builtin_pulse[index] < builtin_pulse_end[index]){
+          builtin_speed[index] = builtin_speed_f[index] + 0.01;
+        }else if(builtin_pulse[index] <= builtin_pulse_end[index]){
           builtin_speed_f[index] += builtin_speed_decel[index];
-          //builtin_speed[index] = builtin_speed_f[index];
+          builtin_speed[index] = builtin_speed_f[index] + 0.01;
         }
         
       }
@@ -129,6 +141,9 @@ void builtin_stepper(){
     digitalWrite(BUITIN_EN, false);
   }
 }
+/***************/
+/***************/
+/***************/
 /***************/
 
 void init_port_base(){
@@ -254,7 +269,7 @@ void command_pros(String receive){
           
         }else{mqtt_err_msg(control,"command null");}
       }
-    }else{
+    }else{ //builtin driver
       if(motor_number<1 || motor_number>6){
         mqtt_err_msg(control,"select wrong");
       }else{
@@ -263,7 +278,28 @@ void command_pros(String receive){
           builtin[motor_number].set_config(json["accel"], json["decel"], json["dla_s"], json["dla_l"]);
           response_moter_config(control,command,drive,motor_number+1,builtin[motor_number].accel_step(),builtin[motor_number].decel_step(),builtin[motor_number].delay_short(),builtin[motor_number].delay_long());
         }else if(command.equalsIgnoreCase("run")){
-          
+          builtin_dir[motor_number]   = json["dir"];
+          digitalWrite(stepMotor[motor_number].DIR, builtin_dir[motor_number]);
+          builtin_pulse[motor_number] = json["step"];
+          builtin_limit[motor_number] = json["limit"];
+          builtin_run[motor_number]   = true;
+          uint16_t spd_gap = builtin[motor_number].delay_long() - builtin[motor_number].delay_short();
+          builtin_speed[motor_number]   = builtin[motor_number].delay_long();
+          builtin_speed_f[motor_number] = builtin[motor_number].delay_long();
+          builtin_pulse_start[motor_number] = builtin[motor_number].accel_step();
+          builtin_pulse_end[motor_number]   = builtin[motor_number].decel_step();
+          builtin_speed_accel[motor_number] = (spd_gap*1.00)/(builtin_pulse_start[motor_number]*1.00);
+          builtin_speed_decel[motor_number] = (spd_gap*1.00)/(builtin_pulse_end[motor_number]*1.00);
+          #ifdef DEBUG
+            Serial.print("spd_gap="); Serial.println(spd_gap);
+            Serial.print("accel step="); Serial.print(builtin_pulse_start[motor_number]);
+            Serial.print(",accel="); Serial.println(builtin_speed_accel[motor_number]);
+            Serial.print("decel step="); Serial.print(builtin_pulse_end[motor_number]);
+            Serial.print(",decel="); Serial.println(builtin_speed_decel[motor_number]);
+          #endif
+
+          builtin_pulse_start[motor_number] = builtin_pulse[motor_number] - builtin_pulse_start[motor_number];
+          //json["max"];
         }else if(command.equalsIgnoreCase("status")){
           
         }else if(command.equalsIgnoreCase("config")){
@@ -538,7 +574,6 @@ void loop() {
     display_pin_values();
   #endif
 }//**********End Of loop()**********//
-
 
 #ifdef DEBUG_SHIFT_REGS
 unsigned long interval_74HC165 = 0L;
