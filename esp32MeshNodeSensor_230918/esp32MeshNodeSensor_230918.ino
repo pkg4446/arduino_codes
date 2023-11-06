@@ -367,6 +367,7 @@ void loop() {
   stable(now);
   serial_monit(now);
   builtin_led(now);
+  mesh_restart(now);
 }
 
 uint8_t full_water = 0;
@@ -673,8 +674,12 @@ void serial_monit(unsigned long millisec){
     Serial.println(";");
   }
 }
-/*
+
+unsigned long timer_restart = 0;
+uint8_t restart_count       = 0;
 void mesh_restart(unsigned long millisec){
-  ESP.restart();
+  if(millisec - timer_restart > 1000*60*60){
+    timer_restart = millisec;
+    if(restart_count++ > 60) ESP.restart();
+  }
 }
-*/

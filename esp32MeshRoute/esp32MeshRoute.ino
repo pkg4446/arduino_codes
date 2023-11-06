@@ -83,6 +83,7 @@ void loop() {
   if (Serial.available()) {
     Serial_process();
   }
+  mesh_restart(millis());
 /*
   unsigned long update = millis();
   if(update - retime > 1000){
@@ -106,5 +107,14 @@ void Serial_process() {
       command_Buf[command_Num++] = ch;
       command_Num %= SERIAL_MAX;
       break;
+  }
+}
+
+unsigned long timer_restart = 0;
+uint8_t restart_count       = 0;
+void mesh_restart(unsigned long millisec){
+  if(millisec - timer_restart > 1000*60*60){
+    timer_restart = millisec;
+    if(restart_count++ > 240) ESP.restart();
   }
 }

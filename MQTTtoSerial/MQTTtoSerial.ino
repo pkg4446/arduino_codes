@@ -217,6 +217,7 @@ void loop() {
   else{reconnect();}
   if (rootDvice.available()) command_Process();//post
   if (Serial.available()) Serial_process();
+  mesh_restart(millis());
 }
 
 void httpPOSTRequest(struct dataSet *ptr) {
@@ -241,3 +242,12 @@ void httpPOSTRequest(struct dataSet *ptr) {
   Serial.println(httpResponseCode);
   http.end();           // Free resources
 }////httpPOSTRequest_End
+
+unsigned long timer_restart = 0;
+uint8_t restart_count       = 0;
+void mesh_restart(unsigned long millisec){
+  if(millisec - timer_restart > 1000*60*60){
+    timer_restart = millisec;
+    if(restart_count++ > 240) ESP.restart();
+  }
+}
