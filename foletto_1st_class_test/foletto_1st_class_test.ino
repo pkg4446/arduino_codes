@@ -108,7 +108,7 @@ void builtin_stepper(){
           digitalWrite(stepMotor[index].PWM, true);
         }else{
           builtin_run[index] = false;
-          response_moter_status("motor", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos());
+          response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos());
           //종료
         }
       }
@@ -126,7 +126,7 @@ void builtin_stepper(){
         #endif
          if(builtin_pulse[index] == 0){
           builtin_run[index] = false;
-          response_moter_status("motor", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos());
+          response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos());
         }else if(builtin_pulse[index] >= builtin_pulse_start[index]){
           builtin_speed_f[index] -= builtin_speed_accel[index];
           builtin_speed[index] = builtin_speed_f[index] + 0.01;
@@ -262,6 +262,9 @@ void command_pros(String receive){
           }
           if(relay_busy){
             mqtt_err_msg(control,"relay is busy");
+          }else{
+              driver[motor_number].run_drive(json["dir"],json["limit"],json["step"],json["max"]);
+              response_moter_status("motor", "run", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos());
           }
         }else if(command.equalsIgnoreCase("status")){
           
@@ -327,44 +330,7 @@ void command_pros(String receive){
       }else{
         type -= 1;
         driver[type].run_drive(json["dir"],json["limit"],json["step"],json["accel"],json["decel"],json["spd_max"],json["spd_min"]);
-        response_moter_status("motor", drive, type +1, driver[type].get_zero_set(), driver[type].get_pos(), driver[type].get_max());
-      }
-    }else{
-      uint8_t type  = json["type"];
-      if(type<1 || type>6){
-        mqtt_err_msg("motor","select wrong");
-      }else{
-        type -= 1;
-        builtin_dir[type]   = json["dir"];
-        digitalWrite(stepMotor[type].DIR, builtin_dir[type]);
-        builtin_run[type]   = true;
-        builtin_pulse[type] = json["step"];
-        builtin_limit[type] = json["limit"];
-        uint16_t spd_max = json["spd_max"];
-        uint16_t spd_min = json["spd_min"];
-        uint16_t spd_gap = spd_min - spd_max;
-        builtin_speed[type] = spd_min;
-
-        uint8_t accel = json["accel"];
-        uint8_t decel = json["decel"];
-        builtin_pulse_start[type] = builtin_pulse[type]*(accel/100.0);
-        builtin_pulse_end[type]   = builtin_pulse[type]*(decel/100.0);
-
-        Serial.println(builtin_pulse_start[type]);
-        Serial.println(builtin_pulse_end[type]);
-
-        Serial.println(spd_min);
-        Serial.println(spd_max);
-        Serial.println(spd_gap);
-        Serial.println(builtin_speed[type]);
-
-        builtin_speed_accel[type] = spd_gap/float(builtin_pulse_start[type]);
-        builtin_speed_decel[type] = spd_gap/float(builtin_pulse_end[type]);
-
-        Serial.println(builtin_speed_accel[type]);
-        Serial.println(builtin_speed_decel[type]);
-
-        builtin_pulse_start[type] = builtin_pulse[type] - builtin_pulse_start[type];
+        response_moter_status("motor", "run", drive, type +1, driver[type].get_zero_set(), driver[type].get_pos(), driver[type].get_max());
       }
     }
     */
@@ -383,10 +349,10 @@ void command_pros(String receive){
     }else if(drive){//MD5-HD14
       type -= 1;
       if(method)  driver[type].set_maximum(step);
-      response_moter_status("motor_config", drive, type +1, driver[type].get_zero_set(), driver[type].get_pos(), driver[type].get_max());
+      response_moter_status("motor_config", "run", drive, type +1, driver[type].get_zero_set(), driver[type].get_pos(), driver[type].get_max());
     }else{
       if(method)  builtin[type].set_maximum(step);
-      response_moter_status("motor_config", drive, type +1, builtin[type].get_zero_set(), builtin[type].get_pos(), builtin[type].get_max());
+      response_moter_status("motor_config", "run", drive, type +1, builtin[type].get_zero_set(), builtin[type].get_pos(), builtin[type].get_max());
     }
   */
   }else{
@@ -451,13 +417,15 @@ void response_moter_config(String control, String command, bool drive, uint8_t m
   mqtt_response(buffer);
 }
 
-void response_moter_status(String ctrl, bool drive, uint8_t type, bool zero, uint32_t pos){
+void response_moter_status(String ctrl, String command, bool drive, uint8_t number, bool zero, uint32_t pos){
   DynamicJsonDocument res(JSON_STACK);
-  res["id"]     = AIO_Subscribe;
-  res["ctrl"]   = ctrl;
-  res["driver"] = drive;
-  res["zero"]   = zero;
-  res["pos"]    = pos;
+  res["id"]   = AIO_Subscribe;
+  res["ctrl"] = ctrl;
+  res["cmd"]  = command;
+  res["opt"]  = drive;
+  res["num"]  = number;
+  res["zero"] = zero;
+  res["pos"]  = pos;
 
   String json="";
   serializeJson(res, json);

@@ -54,7 +54,7 @@
     "opt":  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], //배열 순서대로 0~15번 센서값 0:false,1:true
 }
 
-// step motor ctrl request (사용 전, 후, relay status change로 반드시 브레이크 off, on)
+// step motor ctrl request "set"
 {
     "ctrl":  "motor",
     "cmd":   "set",
@@ -66,7 +66,20 @@
     "dla_l": 100 //unsigned int 16, 모터 스탭간격 micro sec, delay_long > delay_short    
 }
 {"ctrl":"motor","cmd":"set","opt":0,"num":1,"accel":10,"decel":5,"dla_s":1,"dla_l":100}
+// step motor ctrl response "set"
+{
+    "id":"foletto_2nd_f",
+    "ctrl":"motor",
+    "cmd":"set",
+    "opt":false,
+    "num":1,
+    "accel":10,
+    "decel":5,
+    "dla_s":1,
+    "dla_l":100
+}
 
+// step motor ctrl request "run" (사용 전, 후, relay status change로 반드시 브레이크 off, on)
 {
     "ctrl":  "motor",
     "cmd":   "run",
@@ -78,36 +91,16 @@
     "max":   1000 //unsigned int 36, 가동 최대 거리 //리미트 한쪽에만 있을 경우, 리미트 인식 후 pos가 0이 되고, 이후 최대 max 까지만 회전
 }
 {"ctrl":"motor","cmd":"run","opt":0,"num":1,"step":100,"dir":1,"limit":4,"max":1000}
-
-//XXXXXXXXXXXXXXXXXXXXXX
-// step motor ctrl request (사용 전, 후, relay status change로 반드시 브레이크 off, on)
+// step motor ctrl response "run"
 {
-    "ctrl":    "motor",
-    "driver":  1,   //0내장 드라이버, 1외장드라이버(MD5-HD14)
-    "type":    1,   // motor type e.g. 1번 모터 // 0 to 255
-    "step":    10,  //스탭 수 (n 스탭당 1회전) unsigned int32 - 0 to 4294967295        
-    "dir":     1,   //step motor direction (CW/CCW), 0:CW, 1:CCW
-    "limit":   4,   //모터 진행방향 리미트센서 번호 = sensor_read 번호
-    "accel":   10,  //0 to 45, 가속 구간 % 비율
-    "decel":   5,   //0 to 45, 감속 구간 % 비율
-    "spd_max": 10,  //unsigned int 16, 모터 스탭간격 micro sec 
-    "spd_min": 1000 //unsigned int 16, 모터 스탭간격 micro sec, speed_max < speed_min    
+    "id":   "<board-id>", // 제어보드 고유 id
+    "ctrl": "motor",
+    "cmd":  "run",
+    "opt":  false,
+    "num":  1,
+    "zero": false,
+    "pos":  100
 }
-{"ctrl":"motor","driver":0,"type":1,"step":1000,"dir":1,"limit":4,"accel":9,"decel":9,"spd_max":1,"spd_min":9}
-
-{
-    "ctrl":    "motor",
-    "driver":  1,
-    "type":    1,
-    "step":    10,
-    "dir":     1,
-    "limit":   4,
-    "accel":   10,
-    "decel":   5,
-    "spd_max": 10,
-    "spd_min": 1000
-}
-//XXXXXXXXXXXXXXXXXXXXXX
 
 // step motor ctrl response
 {
@@ -128,12 +121,10 @@
     "step":   99999, //method=1 일 경우, unsigned int32 - 0 to 4294967295 하단 리미트에서 상단 리미트 센서까지의 스탭 수.
 }
 
-//하단 리미트에서 상단 리미트 센서까지의 스탭 측정 기능 추가 예정
-//스탭모터 리미트 사용하지 않는 경우,
-//비동기 동작이 필요한지?
-//-(현재 코드에서는 스탭모터의 비동기 동작이 불가능)
-//-(스탭모터의 비동기 동작을 위해서는 회전속도 문제로 풀스탭 사용이 요구됨)
-//-(스탭모터 비동기 동작 코딩을 위해서는 테스트용 하드웨어 구성이 필요함)
+//스탭모터의 동작 스탭이 가속, 감속 스탭의 합보다 작은경우의 처리 추가해야함.
 
+//하단 리미트에서 상단 리미트 센서까지의 스탭 측정 기능 추가 예정
+//스탭모터 리미트 사용하지 않는 경우는 센서 번호 >= 16
+//외부 드라이버(MD5-HD14)의 경우 단독으로만 작동 가능. 작동하는동안 외부 간섭 불가
 //hx720 센서를 이용한 로드셀 사용 기능 추가 예정
 //-(로드셀 추가를 위해서 테스트용 하드웨어 구성이 필요함)

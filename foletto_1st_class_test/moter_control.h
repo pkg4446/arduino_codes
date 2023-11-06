@@ -24,5 +24,5 @@ class MOTOR{
 		uint16_t decel_step();
 		uint16_t delay_short();
 		uint16_t delay_long();
-		void run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint8_t acceleration, uint8_t deceleration, uint8_t speed_max, uint16_t speed_min, uint32_t hight_max);
+		void run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint32_t hight_max);
 };
