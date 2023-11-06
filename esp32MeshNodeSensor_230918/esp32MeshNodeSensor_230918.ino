@@ -575,7 +575,7 @@ boolean temp_flage(boolean onoff_Heater, boolean onoff_Fan) {
 void stable(unsigned long millisec) {
   if ((millisec - time_stalbe) > 1000 * 1) {
     time_stalbe = millisec;
-    if (temperature != 14040 || temperature > 0) {
+    if (temperature != 14040 || temperature > 5) {
       ////온도 유지
       if (use_stable) {
         if (temperature/100 > control_temperature + tempGap) {
