@@ -599,6 +599,9 @@ void stable(unsigned long millisec) {
             digitalWrite(RELAY_FAN,    pin_off);
           }
         }//온도 조절 종료
+      }else{
+        digitalWrite(RELAY_HEATER, pin_off);
+        digitalWrite(RELAY_FAN,    pin_off);
       }
     } else {
       if (err_stable > 240) {
