@@ -143,7 +143,8 @@ const uint8_t tempGap = 1;
 boolean connect_check = false;
 
 boolean SHT40        = false;
-boolean use_stable   = false;
+boolean use_stable_h = false;
+boolean use_stable_f = false;
 boolean use_water    = true;
 boolean use_honey    = true;
 
@@ -171,7 +172,8 @@ unsigned long time_stalbe   = 0UL;
 //// ------------ EEPROM ------------
 const uint8_t EEP_temperature = 1;
 const uint8_t EEP_humidity    = 2;
-const uint8_t EEP_Stable      = 3;
+const uint8_t EEP_Stable_h    = 3;
+const uint8_t EEP_Stable_f    = 4;
 //// ------------ EEPROM Variable ---
 uint8_t control_temperature = 33;
 uint8_t control_humidity    = 50;
@@ -197,10 +199,33 @@ void command_Service(String command, String value) {
     EEPROM.write(EEP_humidity, control_humidity);
     mesh.sendBroadcast("SENSOR=SET=HUMI=0=0=0;");
   } else if (command == "AT+USE") {
-    if (value == "true"){ use_stable = 1; }
-    else{ use_stable = 0; }
-    EEPROM.write(EEP_Stable, use_stable);
-    mesh.sendBroadcast("SENSOR=SET=USE=0=0=0;");
+    if (value == "true"){
+      use_stable_h = 1;
+      use_stable_f = 1;
+    }else{
+      use_stable_h = 0;
+      use_stable_f = 0; 
+    }
+    EEPROM.write(EEP_Stable_h, use_stable_h);
+    EEPROM.write(EEP_Stable_f, use_stable_f);
+    mesh.sendBroadcast("SENSOR=SET=USE=1=0=0;");
+  } else if (command == "AT+USEH") {
+    if (value == "true"){
+      use_stable_h = 1;
+    }else{
+      use_stable_h = 0;
+    }
+    EEPROM.write(EEP_Stable_h, use_stable_h);
+    mesh.sendBroadcast("SENSOR=SET=USE=0=1=0;");
+  } else if (command == "AT+USEF") {
+    if (value == "true"){
+      use_stable_f = 1;
+    }else{
+      use_stable_h = 0;
+      use_stable_f = 0; 
+    }
+    EEPROM.write(EEP_Stable_f, use_stable_f);
+    mesh.sendBroadcast("SENSOR=SET=USE=0=0=1;");
   } else if (command == "AT+LIQUID") {
     sensor_state_w     = false;
     sensor_state_h     = false;
@@ -337,7 +362,8 @@ void setup() {
   //// ------------ EEPROM ------------
   control_temperature = byte(EEPROM.read(EEP_temperature));
   control_humidity    = byte(EEPROM.read(EEP_humidity));
-  if(EEPROM.read(EEP_Stable) != 0){use_stable = true;}
+  if(EEPROM.read(EEP_Stable_h) != 0){use_stable_h = true;}
+  if(EEPROM.read(EEP_Stable_f) != 0){use_stable_f = true;}
   //// ------------ EEPROM ------------
   mesh.init( MESH_PREFIX, MESH_PASSWORD, &taskScheduler, MESH_PORT );
   mesh.onReceive(&receivedCallback);
@@ -351,8 +377,10 @@ void setup() {
   Serial.print(control_temperature);
   Serial.print(", Set humidity is ");
   Serial.print(control_humidity);  
-  Serial.print(", Set Operation : ");
-  Serial.println(use_stable);
+  Serial.print(", Set Operation Heat: ");
+  Serial.print(use_stable_h);
+  Serial.print(", Fan: ");
+  Serial.println(use_stable_f);
   Serial.print("Device nodeID = ");
   Serial.println(nodeID);
   AT_commandHelp();
@@ -577,29 +605,32 @@ void stable(unsigned long millisec) {
   if ((millisec - time_stalbe) > 1000 * 1) {
     time_stalbe = millisec;
     if (temperature != 14040 || temperature > 5) {
-      ////온도 유지
-      if (use_stable) {
-        if (temperature/100 > control_temperature + tempGap) {
-          if (temp_flage(false, true)) { //히터, 팬
-            digitalWrite(RELAY_HEATER, pin_off);
-            digitalWrite(RELAY_FAN,    pin_on);
-            Serial.print("TEMP EMERGENCY:");
-            Serial.print(temperature);
-            Serial.print(",");
-            Serial.println(control_temperature + tempGap);
+      ////온도 유지 팬
+      if (use_stable_h || use_stable_f) {
+        if (use_stable_h) {
+          if (temperature/100 < control_temperature - tempGap) {
+            if (temp_flage(true, false)) { //히터, 팬
+              digitalWrite(RELAY_HEATER, pin_on);
+            }
+          }else if (temperature/100 >= control_temperature) {
+            if (temp_flage(false, false)) { //히터, 팬
+              digitalWrite(RELAY_HEATER, pin_off);
+            }
           }
-        } else if (temperature/100 >= control_temperature) {
-          if (temp_flage(false, false)) { //히터, 팬
-            digitalWrite(RELAY_HEATER, pin_off);
-            digitalWrite(RELAY_FAN,    pin_off);
+        }
+        if (use_stable_f) {
+          if (temperature/100 > control_temperature + tempGap) {
+            if (temp_flage(false, true)) { //히터, 팬
+              digitalWrite(RELAY_FAN,    pin_on);
+            }
+          }else if (temperature/100 <= control_temperature) {
+            if (temp_flage(false, false)) { //히터, 팬
+              digitalWrite(RELAY_FAN,    pin_off);
+            }
           }
-        } else if (temperature/100 < control_temperature - tempGap) {
-          if (temp_flage(true, false)) { //히터, 팬
-            digitalWrite(RELAY_HEATER, pin_on);
-            digitalWrite(RELAY_FAN,    pin_off);
-          }
-        }//온도 조절 종료
-      }else{
+
+        }
+      }else{//온도 조절 종료
         digitalWrite(RELAY_HEATER, pin_off);
         digitalWrite(RELAY_FAN,    pin_off);
       }

@@ -148,10 +148,11 @@ void setup() {
     password[index] = EEPROM.read(eep_pass[index]);
   }
 
-  Serial.println("---- wifi config ----");
+  Serial.println("------- wifi config -------");
+  Serial.println("AT+WIFI=SSID=PASS;");
   Serial.print("ssid: "); Serial.println(ssid);
   Serial.print("pass: "); Serial.println(password);
-  Serial.println("---------------------");
+  Serial.println("---------------------------");
 
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
