@@ -1,23 +1,47 @@
 #include  "painlessMesh.h"
 #define   SERIAL_MAX  128
 
+#define   SEGMENT 8
+#define   QUE_MAX 9
+
 #define   MESH_PREFIX     "smartHiveMesh"
 #define   MESH_PASSWORD   "smarthive123"
 #define   MESH_PORT       3333
 
 HardwareSerial rootDvice(2);
-painlessMesh  mesh;
+painlessMesh   mesh;
+
+uint8_t que_index = 0;
+struct que_mesh{
+  bool      state;
+  uint32_t  nodeid;
+  String    message;
+};
+
+struct que_mesh que_com[QUE_MAX] = {
+  {false,0,""},
+  {false,0,""},
+  {false,0,""},
+  {false,0,""},
+  {false,0,""},
+  {false,0,""},
+  {false,0,""},
+  {false,0,""},
+  {false,0,""}
+};
+
 
 const uint8_t led_pin[8] = {12,13,14,16,17,25,26,27};
 const uint8_t led_sw[2]  = {32,33};
 const uint8_t relay[2]   = {22,23};
 uint8_t segment_number   = 0;
-bool segment_state[8]    = {true,true,true,true,true,true,true,true};
+bool segment_state[SEGMENT]    = {true,true,true,true,true,true,true,true};
 bool segment_change      = false;
 bool segment_cal         = false;
 uint8_t segment_interval = 9;
 
 unsigned long segment_update  = 0UL;
+unsigned long que_update      = 0UL;
 
 String routeID = "";
 SimpleList<uint32_t> nodes;
@@ -26,7 +50,7 @@ void segment_display(unsigned long millisec){
   if(millisec - segment_update> segment_interval){
     segment_update = millisec;
     if(segment_cal){
-      const bool segment[10][8] = {
+      const bool segment[10][SEGMENT] = {
         {false,false,false,false,false,false,true,true},
         {true,false,false,true,true,true,true,true},
         {false,false,true,false,false,true,false,true},
@@ -44,7 +68,7 @@ void segment_display(unsigned long millisec){
       }else{
         one_ten = segment_number%10;
       }
-      for(uint8_t index=0; index<8; index++){
+      for(uint8_t index=0; index<SEGMENT; index++){
         if(segment_state[index] != segment[one_ten][index]){
           segment_state[index]   = segment[one_ten][index];
           digitalWrite(led_pin[index], segment_state[index]);
@@ -69,8 +93,23 @@ int16_t command_Num;
 
 void command_Service() {
   if(command_Buf[0] != ';'){
+    /*
+    const char* command = command_Buf;
+    const char* types   = strtok(command_Buf, "=");
+    const char* device  = strtok(0x00, "=");
+    const char* value   = strtok(0x00, ";");
+    bool pass = mesh.sendSingle(atoi(device), command);
+    Serial.print(pass);
+    Serial.print(":");
+    Serial.print(types);
+    Serial.print(":");
+    Serial.print(device);
+    Serial.print(":");
+    Serial.println(value);
+    */
     Serial.println(command_Buf);
     mesh.sendBroadcast(command_Buf);
+    
   }
 }//Command_service() END
 
@@ -117,6 +156,12 @@ void changedConnectionCallback() {
   mesh_node_list();
 }
 
+void que_sender(unsigned long millisec){
+  if(millisec - que_update > 1000){
+    que_update = millisec;
+  }
+}
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);  
@@ -156,6 +201,7 @@ void loop() {
   unsigned long millisec = millis();
   mesh_restart(millisec);
   segment_display(millisec);
+  que_sender(millisec);
 }
 
 void Serial_process() {
