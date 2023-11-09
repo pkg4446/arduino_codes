@@ -15,7 +15,7 @@ uint8_t que_index = 0;
 struct que_mesh{
   bool      state;
   uint32_t  nodeid;
-  String    message;
+  char*     message;
 };
 
 struct que_mesh que_com[QUE_MAX] = {
@@ -94,22 +94,27 @@ int16_t command_Num;
 void command_Service() {
   if(command_Buf[0] != ';'){
     /*
-    const char* command = command_Buf;
-    const char* types   = strtok(command_Buf, "=");
-    const char* device  = strtok(0x00, "=");
-    const char* value   = strtok(0x00, ";");
-    bool pass = mesh.sendSingle(atoi(device), command);
-    Serial.print(pass);
-    Serial.print(":");
-    Serial.print(types);
-    Serial.print(":");
-    Serial.print(device);
-    Serial.print(":");
-    Serial.println(value);
+    uint8_t command_index = 0;
+    for(uint8_t index=0; index<SERIAL_MAX; index++){      
+      command_index++;
+      if(command_Buf[index] == 0x00) break;
+    }
+    char command_send[command_index];
+    for(uint8_t index=0; index<command_index; index++){      
+      command_send[index] = command_Buf[index];
+    }
+    if(command_index > 9){
+      const char* types   = strtok(command_send, "=");
+      const char* device  = strtok(0x00, "=");
+      const char* value   = strtok(0x00, ";");
+      bool pass = mesh.sendSingle(atoi(device), command_Buf);
+      Serial.print(pass);
+      Serial.print(":");
+      Serial.println(command_Buf);
+    }
     */
     Serial.println(command_Buf);
     mesh.sendBroadcast(command_Buf);
-    
   }
 }//Command_service() END
 
@@ -191,14 +196,14 @@ void setup() {
 //unsigned long retime = 0UL;
 
 void loop() {
-  mesh.update();
+  unsigned long millisec = millis();
   if (rootDvice.available()) {
     command_Process();
   }
   if (Serial.available()) {
     Serial_process();
   }
-  unsigned long millisec = millis();
+  mesh.update();
   mesh_restart(millisec);
   segment_display(millisec);
   que_sender(millisec);
