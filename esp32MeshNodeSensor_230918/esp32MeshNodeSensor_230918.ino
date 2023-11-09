@@ -683,7 +683,10 @@ void serial_monit(unsigned long millisec){
     Serial.print(",sensor_state_h: ");
     Serial.print(sensor_state_h);
     Serial.println(";");
-
+    Serial.print("USE_heater = ");
+    Serial.print(use_stable_h);
+    Serial.print(", USE_fan = ");
+    Serial.println(use_stable_f);
     Serial.print("run: water");
     Serial.print(run_water);
     Serial.print(", honey");
