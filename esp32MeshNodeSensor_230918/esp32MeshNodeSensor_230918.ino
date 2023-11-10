@@ -251,6 +251,7 @@ void command_Service(String command, String value) {
   } else if (command == "AT+SHOW") {
     led_show = (value.toInt() > 0) ? 0 : 60;
   }
+  mesh.update();
   Serial.print("AT command:");
   Serial.print(command);
   Serial.print("=");
@@ -296,6 +297,7 @@ void Serial_service() {
 void Serial_process() {
   char ch;
   ch = Serial.read();
+  mesh.update();
   switch ( ch ) {
     case ';':
       Serial_buf[Serial_num] = 0x00;
@@ -414,6 +416,7 @@ void sensor_level(unsigned long millisec) {
     for (int8_t index = 0 ; index < 6 ; index++) {
       water_level[index] = ioport.digitalRead(index);
       honey_level[index] = ioport.digitalRead(index+6);
+      mesh.update();
       //수위(단위 %)
       if(water_level[index]) send_water = (index+1)*20;
       if(honey_level[index]) send_honey = (index+1)*20;
@@ -442,8 +445,10 @@ void sensor_level(unsigned long millisec) {
         count_sensor_err_h -= 1;
       }
       if(sensor_state_w && sensor_state_h) break;//센서들이 고장일 경우
+      mesh.update();
     }
     if(use_water){
+      mesh.update();
       if(run_water && sensor_state_w){
         //솔레노이드 벨브 정지
         digitalWrite(RELAY_VALVE_W, pin_off);
@@ -498,6 +503,7 @@ void sensor_level(unsigned long millisec) {
       }
     }//use_water
     if(use_honey){
+      mesh.update();
       if(run_honey && sensor_state_h){
         //솔레노이드 벨브 정지
         run_honey = false;
@@ -551,7 +557,7 @@ void sensor_level(unsigned long millisec) {
         }
       }
     }//use_honey
-
+    mesh.update();
     if(sensor_state_w || sensor_state_h){ //센서가 고장일 경우
       //알람 보내기
       if (err_sensor > 240) {
@@ -579,6 +585,7 @@ boolean temp_flage(boolean onoff_Heater, boolean onoff_Fan) {
   if (run_heater == onoff_Heater && run_fan == onoff_Fan) {
     return false;
   }
+  mesh.update();
   if (run_heater != onoff_Heater) {
     run_heater = onoff_Heater;
     if (onoff_Heater) {
@@ -607,6 +614,7 @@ boolean temp_flage(boolean onoff_Heater, boolean onoff_Fan) {
 void stable(unsigned long millisec) {
   if ((millisec - time_stalbe) > 1000 * 1) {
     time_stalbe = millisec;
+    mesh.update();
     if (temperature != 14040 || temperature > 5) {
       ////온도 유지 팬
       if (use_stable_h || use_stable_f) {
@@ -656,6 +664,7 @@ void get_sensor(unsigned long millisec) {
     timer_SHT40 = millisec;
     tca_select(6);
     Wire.beginTransmission(68); //0x44
+    mesh.update();
     if (!Wire.endTransmission() && sht40.begin()) {
       sensors_event_t humi, temp;
       sht40.getEvent(&humi, &temp);
@@ -680,7 +689,7 @@ void serial_monit(unsigned long millisec){
     Serial.print("°C ,H: ");
     Serial.print(humidity);
     Serial.println("%");
-
+    mesh.update();
     Serial.print("sensor_state_w: ");
     Serial.print(sensor_state_w);
     Serial.print(",sensor_state_h: ");
@@ -699,17 +708,19 @@ void serial_monit(unsigned long millisec){
     Serial.print(", fan");
     Serial.print(run_fan);
     Serial.println(";");
-
+    mesh.update();
     Serial.print(count_sensor_err_w);
     Serial.print("-water_level: ");
     for (int8_t index = 0 ; index < 6 ; index++) {
       Serial.print(water_level[index]);
+      mesh.update();
     }
     Serial.println(";");
     Serial.print(count_sensor_err_h);
     Serial.print("-honey_level: ");
     for (int8_t index = 0 ; index < 6 ; index++) {
       Serial.print(honey_level[index]);
+      mesh.update();
     }    
     Serial.println(";");
   }

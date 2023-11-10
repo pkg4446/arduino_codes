@@ -21,7 +21,6 @@ bool segment_cal         = false;
 uint8_t segment_interval = 9;
 
 unsigned long segment_update  = 0UL;
-unsigned long que_update      = 0UL;
 
 String routeID = "";
 SimpleList<uint32_t> nodes;
@@ -48,14 +47,16 @@ void segment_display(unsigned long millisec){
       }else{
         one_ten = segment_number%10;
       }
-      for(uint8_t index=0; index<SEGMENT; index++){
+      for(uint8_t index=0; index<SEGMENT; index++){        
         if(segment_state[index] != segment[one_ten][index]){
           segment_state[index]   = segment[one_ten][index];
           digitalWrite(led_pin[index], segment_state[index]);
+          mesh.update();
         }
       }
       segment_change = !segment_change;
     }
+    mesh.update();
     if(segment_cal){
       digitalWrite(led_sw[segment_change], true);
       segment_interval = 9;
@@ -73,26 +74,6 @@ int16_t command_Num;
 
 void command_Service() {
   if(command_Buf[0] != ';'){
-    /*
-    uint8_t command_index = 0;
-    for(uint8_t index=0; index<SERIAL_MAX; index++){      
-      command_index++;
-      if(command_Buf[index] == 0x00) break;
-    }
-    char command_send[command_index];
-    for(uint8_t index=0; index<command_index; index++){      
-      command_send[index] = command_Buf[index];
-    }
-    if(command_index > 9){
-      const char* types   = strtok(command_send, "=");
-      const char* device  = strtok(0x00, "=");
-      const char* value   = strtok(0x00, ";");
-      bool pass = mesh.sendSingle(atoi(device), command_Buf);
-      Serial.print(pass);
-      Serial.print(":");
-      Serial.println(command_Buf);
-    }
-    */
     Serial.println(command_Buf);
     mesh.sendBroadcast(command_Buf);
   }
@@ -102,6 +83,7 @@ void command_Service() {
 void command_Process() {
   char ch;
   ch = rootDvice.read();
+  mesh.update();
   switch (ch) {
     case ';':
       command_Buf[command_Num] = ';';
@@ -123,6 +105,7 @@ void mesh_node_list(){
   segment_number = 0;
   while (node != nodes.end()) 
   {
+    mesh.update();
     Serial.printf("%u,", *node);
     node++;
     segment_number++;
@@ -185,6 +168,7 @@ void loop() {
 void Serial_process() {
   char ch;
   ch = Serial.read();
+  mesh.update();
   switch (ch) {
     case ';':
       command_Buf[command_Num] = ';';
