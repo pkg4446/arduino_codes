@@ -11,26 +11,6 @@
 HardwareSerial rootDvice(2);
 painlessMesh   mesh;
 
-uint8_t que_index = 0;
-struct que_mesh{
-  bool      state;
-  uint32_t  nodeid;
-  char*     message;
-};
-
-struct que_mesh que_com[QUE_MAX] = {
-  {false,0,""},
-  {false,0,""},
-  {false,0,""},
-  {false,0,""},
-  {false,0,""},
-  {false,0,""},
-  {false,0,""},
-  {false,0,""},
-  {false,0,""}
-};
-
-
 const uint8_t led_pin[8] = {12,13,14,16,17,25,26,27};
 const uint8_t led_sw[2]  = {32,33};
 const uint8_t relay[2]   = {22,23};
@@ -161,12 +141,6 @@ void changedConnectionCallback() {
   mesh_node_list();
 }
 
-void que_sender(unsigned long millisec){
-  if(millisec - que_update > 1000){
-    que_update = millisec;
-  }
-}
-
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);  
@@ -206,7 +180,6 @@ void loop() {
   mesh.update();
   mesh_restart(millisec);
   segment_display(millisec);
-  que_sender(millisec);
 }
 
 void Serial_process() {

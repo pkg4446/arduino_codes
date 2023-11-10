@@ -391,8 +391,11 @@ void loop() {
   if (Serial.available()) Serial_process();
   mesh.update();
   sensor_level(now);
+  mesh.update();
   get_sensor(now);
+  mesh.update();
   stable(now);
+  mesh.update();
   serial_monit(now);
   builtin_led(now);
   mesh_restart(now);
