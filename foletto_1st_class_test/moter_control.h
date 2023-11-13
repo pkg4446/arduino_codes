@@ -3,7 +3,8 @@
 #include "pin_setup.h"
 
 class MOTOR{
-	STEP_ts	 step_moter;
+	uint8_t  DIR;
+	uint8_t  PWM;
 	uint32_t Position;
 	bool     Zero_set;
 	uint16_t accel;

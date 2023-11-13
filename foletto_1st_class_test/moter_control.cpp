@@ -15,11 +15,12 @@ MOTOR::MOTOR(){
 MOTOR::~MOTOR(){}
 
 void MOTOR::init(STEP_ts moter_pins){
-  step_moter = moter_pins;
-  pinMode(step_moter.DIR, OUTPUT);
-  pinMode(step_moter.PWM, OUTPUT);
-  digitalWrite(step_moter.DIR, false);
-  digitalWrite(step_moter.PWM, false);
+  DIR = moter_pins.DIR;
+  PWM = moter_pins.PWM;
+  pinMode(DIR, OUTPUT);
+  pinMode(PWM, OUTPUT);
+  digitalWrite(DIR, false);
+  digitalWrite(PWM, false);
 }
 
 void MOTOR::set_config(uint16_t v_accel, uint16_t v_decel, uint16_t v_dla_s, uint16_t v_dla_l){
@@ -31,9 +32,9 @@ void MOTOR::set_config(uint16_t v_accel, uint16_t v_decel, uint16_t v_dla_s, uin
 
 void MOTOR::status(){
   Serial.print("DIR: ");
-  Serial.print(step_moter.DIR);
+  Serial.print(DIR);
   Serial.print(" , PWM: ");
-  Serial.print(step_moter.PWM);
+  Serial.print(PWM);
   Serial.print(", Position: ");
   Serial.print(Position);
   Serial.print(", zero set: ");
@@ -50,7 +51,7 @@ void MOTOR::status(){
 
 void MOTOR::pos_update(bool direction){
   if(direction) Position++;
-  else Position--;
+  else if(Position > 0) Position--;
 }
 
 uint32_t MOTOR::get_pos(){return Position;}
@@ -106,9 +107,9 @@ void MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint32_t 
       //---------check this**********---------- max hight
       //if(swich_values(limit_sw, read_shift_regs())) break; //when push the limit sw, stop
       //if(Position > 1000) break; //if Position is higher than maximum hight, stop
-      digitalWrite(step_moter.PWM, true);
+      digitalWrite(PWM, true);
       Position += 1;
-      digitalWrite(step_moter.PWM, false);
+      digitalWrite(PWM, false);
       delayMicroseconds(adjust);
     }
   }else if(!direction){  //down
@@ -138,13 +139,13 @@ void MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint32_t 
           break; //when push the limit sw, stop
         }
       }
-      digitalWrite(step_moter.DIR, true);
+      digitalWrite(DIR, true);
       if(Position > 0){
         Position -= 1;
       }else{
         Zero_set = false;
       }
-      digitalWrite(step_moter.DIR, false);
+      digitalWrite(DIR, false);
       delayMicroseconds(adjust);
     }
   }

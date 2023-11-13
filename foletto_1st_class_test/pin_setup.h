@@ -85,36 +85,28 @@ typedef struct PACKET_ts{
 	int8_t   motor[10];
 }PACKET_ts;
 
-/*
-typedef struct STEP_OUT_ts{
-	int 		cw;
-	int 		ccw;
-	uint32_t	Position;
-}STEP_ts;
-*/
-
 typedef struct STEP_ts{
 	int8_t   DIR; // CCW
 	int8_t   PWM; // CW
 }STEP_ts;
 const STEP_ts stepMotor[6]={
+   /*
    {1,PIN_PE5},
    {1,PIN_PE6},
    {1,1},
    {PIN_PL7,PIN_PE4},
    {1,PIN_PE3},
    {1,1}
-   /*
-   {PIN_PL6,PIN_PE5},41,7
-   {PIN_PE6,PIN_PH4},8,16
-   {PIN_PE2,PIN_PE3},4,5
-   {PIN_PE7,PIN_PH5},9,17
-   {PIN_PH7,PIN_PE4},27,6
-   {PIN_PL7,PIN_PH3},42,15
    */
+   {PIN_PE7,PIN_PH5},
+   {PIN_PE6,PIN_PH4},
+   {PIN_PL7,PIN_PH3},
+   {PIN_PL6,PIN_PE5},
+   {PIN_PH7,PIN_PE4},
+   {PIN_PE2,PIN_PE3}
 };
 const STEP_ts stepDriver[4]={
-   {35,10},
+   {48,10},
    {34,11},
    {33,12},
    {32,13}
