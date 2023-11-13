@@ -35,6 +35,10 @@ struct dataSet {
   String VALUE4;
 };
 
+const uint8_t led_pin[8] = {12,13,14,16,17,25,26,27};
+const uint8_t led_sw[2]  = {32,33};
+const uint8_t relay[2]   = {22,23};
+
 //// ------------ MQTT Callback ------------
 void callback(char* topic, byte* payload, unsigned int length) {
   char mqtt_buf[SERIAL_MAX] = "";
@@ -136,9 +140,21 @@ void setup() {
   Serial.begin(115200);
   rootDvice.begin(115200, SERIAL_8N1, 18, 19);
 
+  for(uint8_t index=0; index<8; index++){
+    pinMode(led_pin[index], OUTPUT);
+    digitalWrite(led_pin[index], true);
+  }
+  for(uint8_t index=0; index<2; index++){
+    pinMode(led_sw[index], OUTPUT);
+    pinMode(relay[index], OUTPUT);
+    digitalWrite(led_sw[index], true);
+    digitalWrite(relay[index], false);
+  }
+
   if (!EEPROM.begin(EEPROM_SIZE*2)){
     Serial.println("Failed to initialise eeprom");
     Serial.println("Restarting...");
+    digitalWrite(led_pin[0], false);
     delay(1000);
     ESP.restart();
   }
@@ -148,10 +164,11 @@ void setup() {
     password[index] = EEPROM.read(eep_pass[index]);
   }
 
-  Serial.println("---- wifi config ----");
+  Serial.println("------- wifi config -------");
+  Serial.println("AT+WIFI=SSID=PASS;");
   Serial.print("ssid: "); Serial.println(ssid);
   Serial.print("pass: "); Serial.println(password);
-  Serial.println("---------------------");
+  Serial.println("---------------------------");
 
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
@@ -162,10 +179,12 @@ void setup() {
     if (Serial.available()) Serial_process();
     unsigned long update_time = millis();
     if(update_time - wifi_config_update > 3000){
+      digitalWrite(led_pin[6], false);
       wifi_config_update = update_time;
       Serial.println("Connecting to WiFi..");
-    }    
+    }
   }
+  digitalWrite(led_pin[6], true);
   Serial.println("Connected to the WiFi network");
 
   mqttClient.setServer(mqttServer, mqttPort);
@@ -182,7 +201,9 @@ void setup() {
     Serial.println("Connecting to MQTT...");
     if (mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
       Serial.println("connected");
+      digitalWrite(led_pin[3], true);
     } else {
+      digitalWrite(led_pin[3], false);
       Serial.print("failed with state ");
       Serial.print(mqttClient.state());
       delay(2000);
@@ -204,7 +225,9 @@ void reconnect(){
     Serial.println("Connecting to MQTT...");
     if (mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
       Serial.println("connected");
+      digitalWrite(led_pin[3], true);
     } else {
+      digitalWrite(led_pin[3], false);
       Serial.print("failed with state ");
       Serial.print(mqttClient.state());
       delay(2000);
@@ -217,7 +240,8 @@ void loop() {
   else{reconnect();}
   if (rootDvice.available()) command_Process();//post
   if (Serial.available()) Serial_process();
-  mesh_restart(millis());
+  unsigned long millisec = millis();
+  mesh_restart(millisec);
 }
 
 void httpPOSTRequest(struct dataSet *ptr) {

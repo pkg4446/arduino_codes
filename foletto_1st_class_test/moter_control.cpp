@@ -60,32 +60,21 @@ uint16_t MOTOR::decel_step(){return decel;}
 uint16_t MOTOR::delay_short(){return dla_s;}
 uint16_t MOTOR::delay_long(){return dla_l;}
 
-void MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint8_t acceleration, uint8_t deceleration, uint8_t speed_max, uint16_t speed_min, uint32_t hight_max){
+void MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint32_t hight_max){
   boolean celerations = false;
   float  speed_change_ac = 0.0;
   float  speed_change_de = 0.0;
 
-  if(acceleration < 1){acceleration = 1;}
-  else if(acceleration > 45){acceleration = 45;}  
-  if(deceleration < 1){deceleration = 1;}
-  else if(deceleration > 45){deceleration = 45;}
-
-  if(speed_max < 1){speed_max = 1;}
-  const float percent_ac = acceleration/100.0;
-  const float section_ac = step*percent_ac;
-  const float percent_de = deceleration/100.0;
-  const float section_de = step*percent_de;
-
-  if(speed_min > speed_max){
+  if(this->dla_l > this->dla_s){
     celerations  = true;
-    speed_change_ac = ((speed_min - speed_max) / section_ac);
-    speed_change_de = ((speed_min - speed_max) / section_de);
+    speed_change_ac = (((this->dla_l - this->dla_s)*1.00) / (this->accel*1.00));
+    speed_change_de = (((this->dla_l - this->dla_s)*1.00) / (this->decel*1.00));
   }
 
-  float speed          = speed_min;
-  uint32_t distance_ac = uint32_t(section_ac)+1;
-  uint32_t distance_de = uint32_t(section_de)+1;
-  uint16_t adjust      = speed_min;
+  float speed          = this->dla_l;
+  uint32_t distance_ac = uint32_t(this->accel)+1;
+  uint32_t distance_de = uint32_t(this->decel)+1;
+  uint16_t adjust      = this->dla_l;
 
   if(direction){ //up
     for (uint32_t index=0; index < step; index++) {
@@ -93,8 +82,8 @@ void MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint8_t a
       if(Zero_set && (Position < hight_max)){
         if(celerations){
           if(index < distance_ac){
-            if(speed > speed_max){speed -= speed_change_ac;}
-            else{speed = speed_max;}
+            if(speed > this->dla_s){speed -= speed_change_ac;}
+            else{speed = this->dla_s;}
             adjust = uint16_t(speed);
           }else if(index > (step - distance_de)){
             speed += speed_change_de;
@@ -103,7 +92,7 @@ void MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint8_t a
             adjust = uint16_t(speed); //for delay (move smoth)
           }
         }else{
-          speed = speed_max;
+          speed = this->dla_s;
         }
       }else{
         adjust = 0;
@@ -128,8 +117,8 @@ void MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint8_t a
       if(Zero_set){
         if(celerations){
           if(index < distance_ac){
-            if(speed >speed_max){speed -= speed_change_ac;}
-            else{speed = speed_max;}
+            if(speed >this->dla_s){speed -= speed_change_ac;}
+            else{speed = this->dla_s;}
             adjust = uint16_t(speed);
           }else if(index > (step - distance_de)){
             speed += speed_change_de;
@@ -138,7 +127,7 @@ void MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint8_t a
             adjust = uint16_t(speed); //for delay (move smoth)
           }
         }else{
-          speed = speed_max;
+          speed = this->dla_s;
         }
       }else{
         adjust = 0;
