@@ -10,63 +10,66 @@
 //#define PIN_PG2 39
 #define BUITIN_EN 39
 
-#define PIN_PE4 2
-#define PIN_PE5 3
+
+#define PIN_PE2 4
 #define PIN_PE3 5
-#define PIN_PH3 6
-#define PIN_PH4 7
-#define PIN_PH5 8
+#define PIN_PE4 6
+#define PIN_PE5 7
+#define PIN_PE7 9
 
-#define PIN_PB4 10
-#define PIN_PB5 11
-#define PIN_PB6 12
-#define PIN_PB7 13
-#define PIN_PJ1 14
-#define PIN_PJ0 15
+#define PIN_PH3 15
+#define PIN_PH4 16
+#define PIN_PH5 17
 
-#define PIN_PC5 32
-#define PIN_PC4 33
-#define PIN_PC3 34
-#define PIN_PC2 35
-#define PIN_PC1 36
-#define PIN_PC0 37
-#define PIN_PD7 38
+#define PIN_PB4 23
+#define PIN_PB5 24
+#define PIN_PB6 25
+#define PIN_PB7 26
+
+#define PIN_PJ0 63
+#define PIN_PJ1 64
+
+#define PIN_PC5 58
+#define PIN_PC4 57
+#define PIN_PC3 56
+#define PIN_PC2 55
+#define PIN_PC1 54
+#define PIN_PC0 53
+
+#define PIN_PD7 50
 
 #define PIN_PL7 42
-#define PIN_PL6 43
-#define PIN_PL4 45
+#define PIN_PL6 41
+#define PIN_PL4 39
 
-#define PIN_PF0 54
-#define PIN_PF1 55
-#define PIN_PF2 56
-#define PIN_PF3 57
-#define PIN_PF4 58
-#define PIN_PF5 59
-#define PIN_PF6 60
-#define PIN_PF7 61
-#define PIN_PK0 62
-#define PIN_PK1 63
-#define PIN_PK2 64
-#define PIN_PK3 65
-#define PIN_PK4 66
-#define PIN_PK5 67
-#define PIN_PK6 68
-#define PIN_PK7 69
-#define PIN_PE2 70
-#define PIN_PE6 71
-#define PIN_PE7 72
-#define PIN_PH2 73
-#define PIN_PH7 74
+#define PIN_PF0 97
+#define PIN_PF1 96
+#define PIN_PF2 95
+#define PIN_PF3 94
+#define PIN_PF4 93
+#define PIN_PF5 92
+#define PIN_PF6 91
+#define PIN_PF7 90
+#define PIN_PK0 89
+#define PIN_PK1 88
+#define PIN_PK2 87
+#define PIN_PK3 86
+#define PIN_PK4 85
+#define PIN_PK5 84
+#define PIN_PK6 83
+#define PIN_PK7 82
+#define PIN_PH2 14
+#define PIN_PH7 27
 
-#define PIN_PD4 77
-#define PIN_PD5 78
-#define PIN_PD6 79
-#define PIN_PJ2 80
-#define PIN_PJ3 81
-#define PIN_PJ4 82
-#define PIN_PJ5 83
-#define PIN_PJ6 84
-#define PIN_PJ7 85
+#define PIN_PD4 47
+#define PIN_PD5 48
+#define PIN_PD6 49
+#define PIN_PJ2 65
+#define PIN_PJ3 66
+#define PIN_PJ4 67
+#define PIN_PJ5 68
+#define PIN_PJ6 69
+#define PIN_PJ7 79
 
 const uint8_t relay_pin[7] = {22,23,24,25,26,27,28}; //PA0~6 //여기서 브레이크 선정. 로봇제어 선정
 const uint8_t robot_arm[3]  = {26,27,28};
