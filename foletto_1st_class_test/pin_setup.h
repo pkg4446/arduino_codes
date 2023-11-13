@@ -10,69 +10,7 @@
 //#define PIN_PG2 39
 #define BUITIN_EN 39
 
-#define PIN_PE2 4
-#define PIN_PE3 5
-#define PIN_PE4 6
-#define PIN_PE5 7
-#define PIN_PE6 8
-#define PIN_PE7 9
-
-#define PIN_PH2 14
-#define PIN_PH3 15
-#define PIN_PH4 16
-#define PIN_PH5 17
-
-#define PIN_PH7 27
-
-#define PIN_PB4 23
-#define PIN_PB5 24
-#define PIN_PB6 25
-#define PIN_PB7 26
-
-#define PIN_PL4 39
-#define PIN_PL6 41
-#define PIN_PL7 42
-
-#define PIN_PD4 47
-#define PIN_PD5 48
-#define PIN_PD6 49
-#define PIN_PD7 50
-
-#define PIN_PC5 58
-#define PIN_PC4 57
-#define PIN_PC3 56
-#define PIN_PC2 55
-#define PIN_PC1 54
-#define PIN_PC0 53
-
-#define PIN_PJ0 63
-#define PIN_PJ1 64
-#define PIN_PJ2 65
-#define PIN_PJ3 66
-#define PIN_PJ4 67
-#define PIN_PJ5 68
-#define PIN_PJ6 69
-#define PIN_PJ7 79
-
-#define PIN_PF0 97
-#define PIN_PF1 96
-#define PIN_PF2 95
-#define PIN_PF3 94
-#define PIN_PF4 93
-#define PIN_PF5 92
-#define PIN_PF6 91
-#define PIN_PF7 90
-#define PIN_PK0 89
-#define PIN_PK1 88
-#define PIN_PK2 87
-#define PIN_PK3 86
-#define PIN_PK4 85
-#define PIN_PK5 84
-#define PIN_PK6 83
-#define PIN_PK7 82
-
-
-const uint8_t relay_pin[7] = {22,23,24,25,26,27,28}; //PA0~6 //여기서 브레이크 선정. 로봇제어 선정
+const uint8_t relay_pin[7]  = {22,23,24,25,26,27,28}; //PA0~6 //여기서 브레이크 선정. 로봇제어 선정
 const uint8_t robot_arm[3]  = {26,27,28};
 const uint8_t step_break[4] = {22,23,24,25};
 
@@ -90,14 +28,6 @@ typedef struct STEP_ts{
 	int8_t   PWM; // CW
 }STEP_ts;
 const STEP_ts stepMotor[6]={
-   /*
-   {1,PIN_PE5},
-   {1,PIN_PE6},
-   {1,1},
-   {PIN_PL7,PIN_PE4},
-   {1,PIN_PE3},
-   {1,1}
-   */
    {PIN_PE7,PIN_PH5},
    {PIN_PE6,PIN_PH4},
    {PIN_PL7,PIN_PH3},
@@ -106,16 +36,10 @@ const STEP_ts stepMotor[6]={
    {PIN_PE2,PIN_PE3}
 };
 const STEP_ts stepDriver[4]={
-   {48,10},
-   {34,11},
-   {33,12},
-   {32,13}
-   /*
    {PIN_PC5,PIN_PB7},
    {PIN_PC4,PIN_PB6},
    {PIN_PC3,PIN_PB5},
    {PIN_PC2,PIN_PB4}
-   */
 };
 typedef struct LOAD_ts{
    int8_t   DOUT;
