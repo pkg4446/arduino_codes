@@ -98,32 +98,18 @@ typedef struct STEP_ts{
 	int8_t   PWM; // CW
 }STEP_ts;
 const STEP_ts stepMotor[6]={
-   {1,PIN_PE5},
-   {1,PIN_PE6},
-   {1,1},
-   {PIN_PL7,PIN_PE4},
-   {1,PIN_PE3},
-   {1,1}
-   /*
-   {PIN_PL6,PIN_PE5},41,7
-   {PIN_PE6,PIN_PH4},8,16
-   {PIN_PE2,PIN_PE3},4,5
-   {PIN_PE7,PIN_PH5},9,17
-   {PIN_PH7,PIN_PE4},27,6
-   {PIN_PL7,PIN_PH3},82,15
-   */
+   {PIN_PL6,PIN_PE5},
+   {PIN_PE6,PIN_PH4},
+   {PIN_PE7,PIN_PH5},
+   {PIN_PH7,PIN_PE4},
+   {PIN_PE2,PIN_PE3},
+   {PIN_PL7,PIN_PH3}
 };
 const STEP_ts stepDriver[4]={
-   {35,10},
-   {34,11},
-   {33,12},
-   {32,13}
-   /*
    {PIN_PC5,PIN_PB7},
    {PIN_PC4,PIN_PB6},
    {PIN_PC3,PIN_PB5},
    {PIN_PC2,PIN_PB4}
-   */
 };
 typedef struct LOAD_ts{
    int8_t   DOUT;

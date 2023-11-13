@@ -122,6 +122,8 @@ void builtin_stepper(){
         #ifdef DEBUG
           Serial.print(builtin_speed_f[index]);
           Serial.print(" = ");
+          Serial.print(stepMotor[index].PWM);
+          Serial.print(" = ");
           Serial.println(builtin_speed[index]);
         #endif
          if(builtin_pulse[index] == 0){
