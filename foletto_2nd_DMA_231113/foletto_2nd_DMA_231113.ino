@@ -146,6 +146,18 @@ void builtin_stepper(){
 /***************/
 
 void init_port_base(){
+  DDRE |= 0b11000100;
+  DDRH |= 0b01000000;
+  /*
+  PORTE &= 0b00111011; //off
+  
+  PORTH &= 0b01000000; //off
+  
+  delay(1000);
+  PORTE |= 0b11000100; //on
+  PORTH |= 0b01000000; //on
+  delay(1000);
+  */
   for (uint8_t index=0 ; index<7; index++) {
     pinMode(relay_pin[index],OUTPUT);
     digitalWrite(relay_pin[index], false);
@@ -280,8 +292,33 @@ void command_pros(String receive){
           builtin[motor_number].set_config(json["accel"], json["decel"], json["dla_s"], json["dla_l"]);
           response_moter_config(control,command,drive,motor_number+1,builtin[motor_number].accel_step(),builtin[motor_number].decel_step(),builtin[motor_number].delay_short(),builtin[motor_number].delay_long());
         }else if(command.equalsIgnoreCase("run")){
-          builtin_dir[motor_number]   = json["dir"];
-          digitalWrite(stepMotor[motor_number].DIR, builtin_dir[motor_number]);
+          builtin_dir[motor_number] = json["dir"];
+          if(motor_number == 2 || motor_number == 3){
+            digitalWrite(stepMotor[motor_number].DIR, builtin_dir[motor_number]);
+          }else{
+            if(builtin_dir[motor_number]){
+              if(motor_number == 0){
+                PORTE &= 0b10000000; //on
+              }else if(motor_number == 1){
+                PORTE &= 0b01000000; //on
+              }else if(motor_number == 4){
+                PORTH &= 0b10000000; //on
+              }else if(motor_number == 5){
+                PORTE &= 0b00000100; //on
+              }
+            }else{
+              if(motor_number == 0){
+                PORTE &= 0b011111111; //off
+              }else if(motor_number == 1){
+                PORTE &= 0b101111111; //off
+              }else if(motor_number == 4){
+                PORTH &= 0b011111111; //off
+              }else if(motor_number == 5){
+                PORTE &= 0b111111011; //off
+              }
+            }
+          }
+
           builtin_pulse[motor_number] = json["step"];
           builtin_limit[motor_number] = json["limit"];
           builtin_run[motor_number]   = true;
