@@ -17,6 +17,7 @@
 
 #define DEBUG
 #define DEBUG_MQTT
+//#define DEBUG_STEP
 //#define DEBUG_SHIFT_REGS
 
 /************************* Ethernet Client Setup *****************************/
@@ -43,7 +44,7 @@ Adafruit_MQTT_Subscribe request  = Adafruit_MQTT_Subscribe(&mqtt, AIO_Subscribe)
 
 /************************* values *********************************/
 MOTOR driver[4];
-MOTOR builtin[4];
+MOTOR builtin[6];
 unsigned long relay_start_time[7] = {0UL,};
 unsigned long relay_end_time[7]   = {0UL,};
 bool relay_state[7];
@@ -79,6 +80,7 @@ step motor ctrl request (사용 전, 후, relay status change로 반드시 브�
 uint8_t  shift_read       = 0;
 bool     builtin_run[6]   = {false,};
 bool     builtin_dir[6]   = {false,};
+bool     builtin_pulse_swich[6] = {false,};
 uint32_t builtin_pulse[6] = {0,};
 uint32_t builtin_pulse_start[6] = {0,};
 uint32_t builtin_pulse_end[6]   = {0,};
@@ -104,8 +106,15 @@ void builtin_stepper(){
     }
     for(uint8_t index=0; index<6; index++){
       if(builtin_run[index] && (builtin_time - builtin_interval[index] > builtin_speed[index])){
+        builtin_interval[index] = builtin_time;
         if(!swich_values(builtin_limit[index], pinValues)){
           digitalWrite(stepMotor[index].PWM, true);
+          builtin_pulse_swich[index] = true;
+          #ifdef DEBUG_STEP
+          Serial.print(builtin_speed_f[index]);
+          Serial.print(" = ");
+          Serial.println(builtin_speed[index]);
+          #endif
         }else{
           builtin_run[index] = false;
           response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos());
@@ -114,17 +123,12 @@ void builtin_stepper(){
       }
     }
     for(uint8_t index=0; index<6; index++){
-      if(builtin_run[index]){
+      if(builtin_pulse_swich[index] && builtin_run[index]){
+        builtin_pulse_swich[index] = false;
         digitalWrite(stepMotor[index].PWM, false);
         builtin[index].pos_update(builtin_dir[index]);
         builtin_pulse[index]--;
-
-        #ifdef DEBUG
-          Serial.print(builtin_speed_f[index]);
-          Serial.print(" = ");
-          Serial.println(builtin_speed[index]);
-        #endif
-         if(builtin_pulse[index] == 0){
+        if(builtin_pulse[index] == 0){
           builtin_run[index] = false;
           response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos());
         }else if(builtin_pulse[index] >= builtin_pulse_start[index]){
@@ -146,7 +150,7 @@ void builtin_stepper(){
 /***************/
 
 void init_port_base(){
-  DDRE |= 0b11000100;
+  DDRE |= 0b11111100;
   DDRH |= 0b01000000;
   /*
   PORTE &= 0b00111011; //off
@@ -274,11 +278,14 @@ void command_pros(String receive){
           if(relay_busy){
             mqtt_err_msg(control,"relay is busy");
           }else{
-              driver[motor_number].run_drive(json["dir"],json["limit"],json["step"],json["max"]);
-              response_moter_status("motor", "run", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos());
+            driver[motor_number].run_drive(stepDriver[motor_number],json["dir"],json["limit"],json["step"],json["max"]);
+            response_moter_status("motor", "run", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos());
           }
         }else if(command.equalsIgnoreCase("status")){
-          
+          Serial.print("driver");
+          Serial.print(motor_number);
+          Serial.print(":");
+          driver[motor_number].status();
         }else if(command.equalsIgnoreCase("config")){
           
         }else{mqtt_err_msg(control,"command null");}
@@ -298,23 +305,23 @@ void command_pros(String receive){
           }else{
             if(builtin_dir[motor_number]){
               if(motor_number == 0){
-                PORTE &= 0b10000000; //on
+                PORTE |= 0b10000000; //on
               }else if(motor_number == 1){
-                PORTE &= 0b01000000; //on
+                PORTE |= 0b01000000; //on
               }else if(motor_number == 4){
-                PORTH &= 0b10000000; //on
+                PORTH |= 0b10000000; //on
               }else if(motor_number == 5){
-                PORTE &= 0b00000100; //on
+                PORTE |= 0b00000100; //on
               }
             }else{
               if(motor_number == 0){
-                PORTE &= 0b011111111; //off
+                PORTE &= 0b01111111; //off
               }else if(motor_number == 1){
-                PORTE &= 0b101111111; //off
+                PORTE &= 0b10111111; //off
               }else if(motor_number == 4){
-                PORTH &= 0b011111111; //off
+                PORTH &= 0b01111111; //off
               }else if(motor_number == 5){
-                PORTE &= 0b111111011; //off
+                PORTE &= 0b11111011; //off
               }
             }
           }
@@ -340,37 +347,15 @@ void command_pros(String receive){
           builtin_pulse_start[motor_number] = builtin_pulse[motor_number] - builtin_pulse_start[motor_number];
           //json["max"];
         }else if(command.equalsIgnoreCase("status")){
-          
+          Serial.print("builtin");
+          Serial.print(motor_number);
+          Serial.print(":");
+          driver[motor_number].status();
         }else if(command.equalsIgnoreCase("config")){
           
         }else{mqtt_err_msg(control,"command null");}
       }
     }
-
-    
-    /**********************************************/
-    /*
-    bool relay_busy = false;
-    for(uint8_t index = 0; index < 7; index++){
-      if(relay_state[index]) relay_busy = true;
-    }
-    
-    bool drive  = json["driver"];
-    
-    if(drive){ //(MD5-HD14)
-      uint8_t type  = json["type"];
-      if(relay_busy){
-        mqtt_err_msg("motor","relay is busy");
-      }else if(type<1 || type>4){
-        mqtt_err_msg("motor","select wrong");
-      }else{
-        type -= 1;
-        driver[type].run_drive(json["dir"],json["limit"],json["step"],json["accel"],json["decel"],json["spd_max"],json["spd_min"]);
-        response_moter_status("motor", "run", drive, type +1, driver[type].get_zero_set(), driver[type].get_pos(), driver[type].get_max());
-      }
-    }
-    */
-    /**********************************************/
   }else if(control.equalsIgnoreCase("motor_config")){
   /*
     bool drive    = json["driver"];
@@ -549,17 +534,16 @@ void setup() {
     online = true;
     mqtt.subscribe(&request);
   }
-
   shift_regs_init();
+/*
+  pinMode(BUITIN_EN, OUTPUT);
   for (uint8_t index=0 ; index<4; index++) {
     driver[index].init(stepDriver[index]);
-    driver[index].status();
   }
-  pinMode(BUITIN_EN, OUTPUT);
   for (uint8_t index=0 ; index<6; index++) {
     builtin[index].init(stepMotor[index]);
-    builtin[index].status();
   }
+*/
   init_port_base();
 }//********** End Of Setup() **********//
 

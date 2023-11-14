@@ -15,12 +15,14 @@ MOTOR::MOTOR(){
 MOTOR::~MOTOR(){}
 
 void MOTOR::init(STEP_ts moter_pins){
-  DIR = moter_pins.DIR;
-  PWM = moter_pins.PWM;
-  pinMode(DIR, OUTPUT);
-  pinMode(PWM, OUTPUT);
-  digitalWrite(DIR, false);
-  digitalWrite(PWM, false);
+  pinMode(moter_pins.DIR, OUTPUT);
+  pinMode(moter_pins.PWM, OUTPUT);
+  digitalWrite(moter_pins.DIR, false);
+  digitalWrite(moter_pins.PWM, false);
+  Serial.print("DIR: ");
+  Serial.print(moter_pins.DIR);
+  Serial.print(" ,PWM: ");
+  Serial.println(moter_pins.PWM);
 }
 
 void MOTOR::set_config(uint16_t v_accel, uint16_t v_decel, uint16_t v_dla_s, uint16_t v_dla_l){
@@ -31,10 +33,6 @@ void MOTOR::set_config(uint16_t v_accel, uint16_t v_decel, uint16_t v_dla_s, uin
 }
 
 void MOTOR::status(){
-  Serial.print("DIR: ");
-  Serial.print(DIR);
-  Serial.print(" , PWM: ");
-  Serial.print(PWM);
   Serial.print(", Position: ");
   Serial.print(Position);
   Serial.print(", zero set: ");
@@ -61,10 +59,14 @@ uint16_t MOTOR::decel_step(){return decel;}
 uint16_t MOTOR::delay_short(){return dla_s;}
 uint16_t MOTOR::delay_long(){return dla_l;}
 
-void MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint32_t hight_max){
+void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, uint32_t step, uint32_t hight_max){
   boolean celerations = false;
   float  speed_change_ac = 0.0;
   float  speed_change_de = 0.0;
+  Serial.print("PWM:");
+  Serial.print(moter_pins.PWM);
+  Serial.print(" ,DIR:");
+  Serial.println(moter_pins.DIR);
 
   if(this->dla_l > this->dla_s){
     celerations  = true;
@@ -107,9 +109,9 @@ void MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint32_t 
       //---------check this**********---------- max hight
       //if(swich_values(limit_sw, read_shift_regs())) break; //when push the limit sw, stop
       //if(Position > 1000) break; //if Position is higher than maximum hight, stop
-      digitalWrite(PWM, true);
+      digitalWrite(moter_pins.PWM, true);
       Position += 1;
-      digitalWrite(PWM, false);
+      digitalWrite(moter_pins.PWM, false);
       delayMicroseconds(adjust);
     }
   }else if(!direction){  //down
@@ -139,13 +141,13 @@ void MOTOR::run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint32_t 
           break; //when push the limit sw, stop
         }
       }
-      digitalWrite(DIR, true);
+      digitalWrite(moter_pins.DIR, true);
       if(Position > 0){
         Position -= 1;
       }else{
         Zero_set = false;
       }
-      digitalWrite(DIR, false);
+      digitalWrite(moter_pins.DIR, false);
       delayMicroseconds(adjust);
     }
   }

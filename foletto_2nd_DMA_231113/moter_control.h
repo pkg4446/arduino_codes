@@ -3,8 +3,6 @@
 #include "pin_setup.h"
 
 class MOTOR{
-	uint8_t  DIR;
-	uint8_t  PWM;
 	uint32_t Position;
 	bool     Zero_set;
 	uint16_t accel;
@@ -25,5 +23,5 @@ class MOTOR{
 		uint16_t decel_step();
 		uint16_t delay_short();
 		uint16_t delay_long();
-		void run_drive(bool direction, uint8_t limit_sw, uint32_t step, uint32_t hight_max);
+		void run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, uint32_t step, uint32_t hight_max);
 };
