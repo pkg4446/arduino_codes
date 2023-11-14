@@ -535,7 +535,7 @@ void setup() {
     mqtt.subscribe(&request);
   }
   shift_regs_init();
-/*
+
   pinMode(BUITIN_EN, OUTPUT);
   for (uint8_t index=0 ; index<4; index++) {
     driver[index].init(stepDriver[index]);
@@ -543,7 +543,7 @@ void setup() {
   for (uint8_t index=0 ; index<6; index++) {
     builtin[index].init(stepMotor[index]);
   }
-*/
+
   init_port_base();
 }//********** End Of Setup() **********//
 
