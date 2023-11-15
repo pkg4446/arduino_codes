@@ -151,15 +151,15 @@ void builtin_stepper(){
 
 void init_port_base(){
   DDRE |= 0b11000100;
-  DDRH |= 0b01000000;
+  DDRH |= 0b10000000;
   /*
   PORTE &= 0b00111011; //off
   
-  PORTH &= 0b10111111; //off
+  PORTH &= 0b01111111; //off
   
   delay(1000);
   PORTE |= 0b11000100; //on
-  PORTH |= 0b01000000; //on
+  PORTH |= 0b10000000; //on
   delay(1000);
   */
   for (uint8_t index=0 ; index<7; index++) {

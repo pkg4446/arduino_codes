@@ -57,7 +57,7 @@ const STEP_ts stepMotor[6]={
    {PIN_PL6,PIN_PE5},//digital pin{43,3}
    {PIN_PL7,PIN_PH3},//digital pin{42,6}
    {PIN_PE2,PIN_PE3},//digital pin{null,5}
-   {PIN_PH7,PIN_PE4} //digital pin{null,2} //DDRH |= 0b01000000;
+   {PIN_PH7,PIN_PE4} //digital pin{null,2} //DDRH |= 0b10000000;
 };
 const STEP_ts stepDriver[4]={
    {PIN_PC5,PIN_PB7},//digital pin{32,13}
