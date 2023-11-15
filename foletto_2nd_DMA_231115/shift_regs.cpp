@@ -31,7 +31,7 @@ BYTES_VAL_T read_shift_regs()
 
 boolean swich_values(uint8_t pin, BYTES_VAL_T pinValues)
 {
-  if((DATA_WIDTH > pinValues) && ((pinValues >> pin) & 1)){
+  if((pinValues >> pin) & 1){
     return true;
   }else{
     return false;

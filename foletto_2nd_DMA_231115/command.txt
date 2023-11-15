@@ -1,3 +1,5 @@
+{"ctrl":"sensor","cmd":"read"}
+
 {"ctrl":"motor","cmd":"set","opt":0,"num":1,"accel":30,"decel":30,"dla_s":1,"dla_l":100}
 {"ctrl":"motor","cmd":"run","opt":0,"num":1,"step":100,"dir":1,"limit":4,"max":1000}
 

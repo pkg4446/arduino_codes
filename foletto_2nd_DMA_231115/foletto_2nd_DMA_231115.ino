@@ -305,23 +305,23 @@ void command_pros(String receive){
           }else{
             if(builtin_dir[motor_number]){
               if(motor_number == 0){
-                PORTE |= 0b10000000; //on
-              }else if(motor_number == 1){
                 PORTE |= 0b01000000; //on
+              }else if(motor_number == 1){
+                PORTE |= 0b10000000; //on
               }else if(motor_number == 4){
-                PORTH |= 0b10000000; //on
-              }else if(motor_number == 5){
                 PORTE |= 0b00000100; //on
+              }else if(motor_number == 5){
+                PORTH |= 0b10000000; //on
               }
             }else{
               if(motor_number == 0){
-                PORTE &= 0b01111111; //off
-              }else if(motor_number == 1){
                 PORTE &= 0b10111111; //off
+              }else if(motor_number == 1){
+                PORTE &= 0b01111111; //off
               }else if(motor_number == 4){
-                PORTH &= 0b01111111; //off
-              }else if(motor_number == 5){
                 PORTE &= 0b11111011; //off
+              }else if(motor_number == 5){
+                PORTH &= 0b01111111; //off
               }
             }
           }
