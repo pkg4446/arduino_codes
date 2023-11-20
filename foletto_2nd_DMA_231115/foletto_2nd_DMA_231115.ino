@@ -2,6 +2,7 @@
 #include "shift_regs.h"
 #include "moter_control.h"
 
+#include <EEPROM.h>
 #include <SPI.h>
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
@@ -24,7 +25,7 @@
 //byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0x54};
 
-IPAddress ip(192, 168, 0, 177);
+IPAddress ip(192, 168, 0, random(100, 255));
 IPAddress myDns(192, 168, 0, 1);
 EthernetClient client;
 /************************* Mqtt Server Setup *********************************/
@@ -33,8 +34,8 @@ EthernetClient client;
 #define AIO_USERNAME    "test"
 #define AIO_KEY         "test"
 
-const char* AIO_Publish   = "foletto_pub_hub";
-const char* AIO_Subscribe = "foletto_2nd_test";
+const char* AIO_Publish = "foletto_pub_hub";
+char AIO_Subscribe[24]  = {0x00,};
 Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVER_PORT, AIO_USERNAME, AIO_KEY);
 // You don't need to change anything below this line!
 // Setup a mqtt 
@@ -232,6 +233,17 @@ void command_pros(String receive){
   deserializeJson(json, receive);
   String control = json["ctrl"];
   String command = json["cmd"];
+
+  if(control.equalsIgnoreCase("mqtt_sub")){    
+    String mqtt_sub_cmd = json["cmd"];
+    for(uint8_t index=0; index<mqtt_sub_cmd.length(); index++){
+      byte sub_char = mqtt_sub_cmd[index];
+      EEPROM.write(index, sub_char);
+    }
+    EEPROM.write(mqtt_sub_cmd.length(), 0x00);
+    Serial.print(mqtt_sub_cmd);
+  }
+
   mqtt_receive(control,command);
   /************************************************/
   if(control.equalsIgnoreCase("relay")){
@@ -516,6 +528,13 @@ void setup() {
   Serial.begin(115200);
   Serial.println("System boot... wait a few seconds.");
 
+  for (uint8_t index = 0; index < 24; index++)
+  {
+    AIO_Subscribe[index] = EEPROM.read(index);
+  }
+  Serial.print("mqtt_subscribe:");  Serial.println(AIO_Subscribe);
+  request  = Adafruit_MQTT_Subscribe(&mqtt, AIO_Subscribe);
+
   Ethernet.init(53);
   if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
@@ -544,7 +563,6 @@ void setup() {
   for (uint8_t index=0 ; index<6; index++) {
     builtin[index].init(stepMotor[index]);
   }
-
   init_port_base();
 }//********** End Of Setup() **********//
 

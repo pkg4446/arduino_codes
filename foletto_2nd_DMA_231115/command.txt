@@ -18,3 +18,5 @@
 {"ctrl":"motor","cmd":"status","opt":0,"num":4}
 {"ctrl":"motor","cmd":"status","opt":0,"num":5}
 {"ctrl":"motor","cmd":"status","opt":0,"num":6}
+
+{"ctrl":"mqtt_sub","cmd":"foletto_test"}
