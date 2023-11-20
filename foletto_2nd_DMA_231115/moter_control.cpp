@@ -60,6 +60,7 @@ uint16_t MOTOR::delay_short(){return dla_s;}
 uint16_t MOTOR::delay_long(){return dla_l;}
 
 void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, uint32_t step, uint32_t hight_max){
+  if(limit_sw>15) Zero_set = true;
   boolean celerations = false;
   float  speed_change_ac = 0.0;
   float  speed_change_de = 0.0;

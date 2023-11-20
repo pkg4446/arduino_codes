@@ -33,8 +33,8 @@ EthernetClient client;
 #define AIO_USERNAME    "test"
 #define AIO_KEY         "test"
 
-const char* AIO_Publish   = "test_pub_hub";
-const char* AIO_Subscribe = "foletto_2nd_f";
+const char* AIO_Publish   = "foletto_pub_hub";
+const char* AIO_Subscribe = "foletto_2nd_test";
 Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVER_PORT, AIO_USERNAME, AIO_KEY);
 // You don't need to change anything below this line!
 // Setup a mqtt 
@@ -85,11 +85,11 @@ uint32_t builtin_pulse[6] = {0,};
 uint32_t builtin_pulse_start[6] = {0,};
 uint32_t builtin_pulse_end[6]   = {0,};
 uint8_t  builtin_limit[6] = {16,};
-uint8_t  builtin_speed[6] = {0L,};
+uint16_t builtin_speed[6] = {0L,};
 float  builtin_speed_f[6] = {0.00f,};
 float  builtin_speed_accel[6] = {0.00f,};
 float  builtin_speed_decel[6] = {0.00f,};
-unsigned long builtin_interval[6] = {0L,};
+unsigned long builtin_interval[6] = {0UL,};
 
 void builtin_stepper(){
   BYTES_VAL_T pinValues;
@@ -99,13 +99,14 @@ void builtin_stepper(){
   }
   if(builtin_progress){
     digitalWrite(BUITIN_EN, true);
-    unsigned long builtin_time = millis();
-    if(shift_read++ > 10){
+    unsigned long builtin_time = micros();
+    if(shift_read++ > 160){
       pinValues   = read_shift_regs();
       shift_read  = 0;
     }
+
     for(uint8_t index=0; index<6; index++){
-      if(builtin_run[index] && (builtin_time - builtin_interval[index] > builtin_speed[index])){
+      if(builtin_run[index] && (builtin_time - builtin_interval[index] > builtin_speed[index] + 180)){
         builtin_interval[index] = builtin_time;
         if(!swich_values(builtin_limit[index], pinValues)){
           digitalWrite(stepMotor[index].PWM, true);
@@ -197,7 +198,7 @@ void MQTT_connect() {
   }
   int8_t ret = mqtt.connect();
   Serial.println("Connecting to MQTT.");
-  unsigned long interval_mqtt_retry = 0L;
+  unsigned long interval_mqtt_retry = 0UL;
   while (ret != 0) { // connect will return 0 for connected
     unsigned long mqtt_retry = millis();
     if (Serial.available()) Serial_process();
@@ -332,8 +333,8 @@ void command_pros(String receive){
           uint16_t spd_gap = builtin[motor_number].delay_long() - builtin[motor_number].delay_short();
           builtin_speed[motor_number]   = builtin[motor_number].delay_long();
           builtin_speed_f[motor_number] = builtin[motor_number].delay_long();
-          builtin_pulse_start[motor_number] = builtin[motor_number].accel_step();
-          builtin_pulse_end[motor_number]   = builtin[motor_number].decel_step();
+          builtin_pulse_start[motor_number] = builtin[motor_number].accel_step()+1;
+          builtin_pulse_end[motor_number]   = builtin[motor_number].decel_step()+1;
           builtin_speed_accel[motor_number] = (spd_gap*1.00)/(builtin_pulse_start[motor_number]*1.00);
           builtin_speed_decel[motor_number] = (spd_gap*1.00)/(builtin_pulse_end[motor_number]*1.00);
           #ifdef DEBUG
@@ -547,12 +548,17 @@ void setup() {
   init_port_base();
 }//********** End Of Setup() **********//
 
+unsigned long mqtt_req = 0UL;
 //********** loop **********//
 void loop() {
   //if need asynchronous, add something
   if(online){
     MQTT_connect();
-    mqtt_requeset();
+    unsigned long mqtt_run = micros();
+    if(mqtt_run - mqtt_req > 100000){
+      mqtt_req = mqtt_run;
+      mqtt_requeset();
+    }
   }else if (Serial.available()) {
     Serial_process();
   }
