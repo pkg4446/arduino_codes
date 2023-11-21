@@ -548,7 +548,7 @@ void setup() {
     // try to configure using IP address instead of DHCP:
     Ethernet.begin(mac, ip, myDns);
   } else {
-    Serial.print("  DHCP assigned IP ");
+    Serial.print("DHCP assigned IP ");
     Serial.println(Ethernet.localIP());
     
     online = true;
