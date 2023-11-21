@@ -39,8 +39,8 @@ char AIO_Subscribe[24]  = {0x00,};
 Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVER_PORT, AIO_USERNAME, AIO_KEY);
 // You don't need to change anything below this line!
 // Setup a mqtt 
-Adafruit_MQTT_Publish   response = Adafruit_MQTT_Publish(&mqtt,   AIO_Publish);
-Adafruit_MQTT_Subscribe request  = Adafruit_MQTT_Subscribe(&mqtt, AIO_Subscribe);
+Adafruit_MQTT_Publish   response = Adafruit_MQTT_Publish(&mqtt,   AIO_Publish); //Adafruit_MQTT_Publish(&mqtt,   AIO_Publish, 1);
+Adafruit_MQTT_Subscribe request  = Adafruit_MQTT_Subscribe(&mqtt, AIO_Subscribe); //Adafruit_MQTT_Subscribe(&mqtt, AIO_Subscribe, 1);
 /************************* Mqtt End *********************************/
 
 /************************* values *********************************/
