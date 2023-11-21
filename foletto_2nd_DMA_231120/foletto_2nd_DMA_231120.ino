@@ -199,17 +199,18 @@ void MQTT_connect() {
   }
   int8_t ret = mqtt.connect();
   Serial.println("Connecting to MQTT.");
-  unsigned long interval_mqtt_retry = 0UL;
-  while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
+  unsigned long interval_mqtt_retry = 0L;
+  while (ret != 0) { // connect will return 0 for connected
     unsigned long mqtt_retry = millis();
-    if (Serial.available()) Serial_process();
+    if(Serial.available()) Serial_process();
     if(mqtt_retry - interval_mqtt_retry > 1000){
-      interval_mqtt_retry = mqtt_retry;
       Serial.println(mqtt.connectErrorString(ret));
       mqtt.disconnect();
+      interval_mqtt_retry = mqtt_retry;
+      Serial.println("Retrying MQTT connection.");
+      ret = mqtt.connect();
     }    
   }
-  mqtt_requeset();
   Serial.println("MQTT Connected!");
 }
 
@@ -578,6 +579,7 @@ void loop() {
     if(mqtt_run - mqtt_req > 50000){   //11000
       mqtt_req = mqtt_run;
       if(mqtt.ping()){mqtt_requeset();}
+      else{mqtt.disconnect();}
     }
   }
   if (Serial.available()) Serial_process();
