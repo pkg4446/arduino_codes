@@ -10,8 +10,8 @@
 #include  "Adafruit_SHT31.h"
 Adafruit_SHT31 sht31  = Adafruit_SHT31();
 
-const char* ssid      = "Daesung2G";
-const char* password  = "smarthive123";
+const char* ssid      = "CNR_L580W_2CD8FC";
+const char* password  = "#234567!";
 
 uint8_t   LED = 17;
 
@@ -75,7 +75,7 @@ void wifiCheck(unsigned long millisec) {
 }
 
 void send_sensor(unsigned long millisec) {
-  if ((millisec - timer_SEND) > 10 * 1000) {
+  if ((millisec - timer_SEND) > 60 * 1000) {
     timer_SEND = millisec;
 
     for (uint8_t channel = 0; channel < 8; channel++) {
