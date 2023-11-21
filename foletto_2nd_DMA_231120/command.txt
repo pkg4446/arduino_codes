@@ -1,10 +1,10 @@
 {"ctrl":"sensor","cmd":"read"}
 
-{"ctrl":"motor","cmd":"set","opt":0,"num":1,"accel":30,"decel":30,"dla_s":1,"dla_l":100}
-{"ctrl":"motor","cmd":"run","opt":0,"num":1,"step":100,"dir":1,"limit":4,"max":1000}
+{"ctrl":"motor","cmd":"set","opt":0,"num":2,"accel":30,"decel":30,"dla_s":1,"dla_l":100}
+{"ctrl":"motor","cmd":"run","opt":0,"num":2,"step":1000,"dir":1,"limit":4,"max":1000}
 
-{"ctrl":"motor","cmd":"set","opt":1,"num":1,"accel":10,"decel":5,"dla_s":1,"dla_l":100}
-{"ctrl":"motor","cmd":"run","opt":1,"num":1,"step":3000,"dir":1,"limit":4,"max":1000}
+{"ctrl":"motor","cmd":"set","opt":1,"num":1,"accel":1000,"decel":1000,"dla_s":1,"dla_l":1000}
+{"ctrl":"motor","cmd":"run","opt":1,"num":1,"step":3000,"dir":1,"limit":7,"max":1000}
 
 
 {"ctrl":"motor","cmd":"status","opt":1,"num":1}
@@ -19,4 +19,4 @@
 {"ctrl":"motor","cmd":"status","opt":0,"num":5}
 {"ctrl":"motor","cmd":"status","opt":0,"num":6}
 
-{"ctrl":"mqtt_sub","cmd":"foletto_sub_f"}
+{"ctrl":"mqtt_sub","cmd":"foletto_2nd_f"}

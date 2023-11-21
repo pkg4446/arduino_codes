@@ -107,7 +107,7 @@ void builtin_stepper(){
     }
 
     for(uint8_t index=0; index<6; index++){
-      if(builtin_run[index] && (builtin_time - builtin_interval[index] > builtin_speed[index] + 180)){
+      if(builtin_run[index] && (builtin_time - builtin_interval[index] > builtin_speed[index] + 200)){
         builtin_interval[index] = builtin_time;
         if(!swich_values(builtin_limit[index], pinValues)){
           digitalWrite(stepMotor[index].PWM, true);
@@ -171,7 +171,7 @@ void init_port_base(){
   }
 }
 
-char    Serial_buf[JSON_STACK+1];
+char    Serial_buf[144];
 uint8_t Serial_num = 0;
 
 void Serial_process() {
@@ -187,7 +187,7 @@ void Serial_process() {
     Serial_buf[Serial_num++]='{';
   }else{
     Serial_buf[ Serial_num++ ] = ch;
-    Serial_num %= JSON_STACK;
+    Serial_num %= 144;
   }
 }
 
@@ -200,18 +200,12 @@ void MQTT_connect() {
   int8_t ret = mqtt.connect();
   Serial.println("Connecting to MQTT.");
   unsigned long interval_mqtt_retry = 0UL;
-  int8_t message_count = 0;
-  while (ret != 0) { // connect will return 0 for connected
+  while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
     unsigned long mqtt_retry = millis();
     if (Serial.available()) Serial_process();
-    if(mqtt_retry - interval_mqtt_retry > 100){
-      mqtt.connect();
+    if(mqtt_retry - interval_mqtt_retry > 1000){
       interval_mqtt_retry = mqtt_retry;
       Serial.println(mqtt.connectErrorString(ret));
-      if(message_count++ > 10){
-        message_count = 0;
-        Serial.println("Retrying MQTT connection.");
-      }
       mqtt.disconnect();
     }    
   }
@@ -360,6 +354,7 @@ void command_pros(String receive){
             Serial.print(",accel="); Serial.println(builtin_speed_accel[motor_number]);
             Serial.print("decel step="); Serial.print(builtin_pulse_end[motor_number]);
             Serial.print(",decel="); Serial.println(builtin_speed_decel[motor_number]);
+            Serial.print(",total_step="); Serial.println(builtin_pulse[motor_number]);
           #endif
 
           builtin_pulse_start[motor_number] = builtin_pulse[motor_number] - builtin_pulse_start[motor_number];
@@ -569,35 +564,26 @@ void setup() {
     builtin[index].init(stepMotor[index]);
   }
   init_port_base();
+  //online = false;
 }//********** End Of Setup() **********//
 
 unsigned long mqtt_req    = 0UL;
-unsigned long mqtt_repeat = 0UL;
 //********** loop **********//
 void loop() {
   //if need asynchronous, add something
+  //unsigned long test1 = micros();
   if(online){
     MQTT_connect();
-    mqtt_requeset();
-    /*
     unsigned long mqtt_run = micros();
-    if(mqtt_run - mqtt_req > 1000){
+    if(mqtt_run - mqtt_req > 50000){   //11000
       mqtt_req = mqtt_run;
-      mqtt_requeset();
+      if(mqtt.ping()){mqtt_requeset();}
     }
-    */
-    
-    unsigned long mqtt_res = millis();
-    
-    if(mqtt_res - mqtt_repeat > 1000*3){
-      mqtt_repeat = mqtt_res;
-      response.publish(mqtt_res);
-      Serial.println(AIO_Subscribe);
-    }
-
-  }else if (Serial.available()) {
-    Serial_process();
   }
+  if (Serial.available()) Serial_process();
+
+  //Serial.println(micros() - test1);
+
   relay_off_awiat();
   builtin_stepper();
   #ifdef DEBUG_SHIFT_REGS
