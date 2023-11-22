@@ -578,8 +578,11 @@ void loop() {
     unsigned long mqtt_run = micros();
     if(mqtt_run - mqtt_req > 50000){   //11000
       mqtt_req = mqtt_run;
+      mqtt_requeset();
+      /*
       if(mqtt.ping()){mqtt_requeset();}
       else{mqtt.disconnect();}
+      */
     }
   }
   if (Serial.available()) Serial_process();
