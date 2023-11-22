@@ -412,10 +412,10 @@ void setup() {
   Serial.print(use_stable_h);
   Serial.print(", Fan: ");
   Serial.println(use_stable_f);
+  AT_commandHelp();
   Serial.print("Device nodeID = ");
   Serial.println(nodeID);
   Serial.println("ver 1.0.0");
-  AT_commandHelp();
 }
 
 void loop() {
