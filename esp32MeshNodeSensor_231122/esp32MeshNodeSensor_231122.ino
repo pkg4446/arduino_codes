@@ -24,6 +24,8 @@
 const boolean pin_on  = false;
 const boolean pin_off = true;
 
+bool mesh_send = false;
+
 class PCA9539 {
   public:
     PCA9539(uint8_t address);                       // constructor
@@ -54,9 +56,9 @@ class PCA9539 {
 };
 
 PCA9539::PCA9539(uint8_t address) {
-  _address         = address;        // save the address id
-  _valueRegister   = 0;
-  Wire.begin();                      // start I2C communication
+  _address        = address;          // save the address id
+  _valueRegister  = 0;
+  Wire.begin();                       // start I2C communication
 }
 
 void PCA9539::pinMode(uint8_t pin, uint8_t IOMode) {
@@ -138,6 +140,8 @@ painlessMesh  mesh;
 String ERR_Message = "SENSOR=COMMEND=VALUE1=VALUE2=VALUE3=VALUE4;";
 
 String nodeID = "";
+SimpleList<uint32_t> nodes;
+
 const uint8_t tempGap = 1;
 //// ----------- Flage --------------
 boolean connect_check = false;
@@ -169,6 +173,7 @@ unsigned long time_led_show = 0UL;
 unsigned long timer_SHT40   = 0UL;
 unsigned long time_water    = 0UL;
 unsigned long time_stalbe   = 0UL;
+unsigned long time_send     = 0UL;
 //// ------------ EEPROM ------------
 const uint8_t EEP_temperature = 1;
 const uint8_t EEP_humidity    = 2;
@@ -312,12 +317,36 @@ void Serial_process() {
 }
 //// ----------- TEST  -----------
 
+uint8_t mesh_node_list(){
+  nodes = mesh.getNodeList();
+  SimpleList<uint32_t>::iterator node = nodes.begin();
+  uint8_t node_number = 0;
+  while (node != nodes.end()) 
+  {
+    mesh.update();
+    node++;
+    node_number++;
+  }
+  return node_number;
+}
+
 //taskSendMessage funtion
 void sendMessage() ; // Prototype so PlatformIO doesn't complain
 Task sensorLog( TASK_SECOND*60*5, TASK_FOREVER, &sensorValue );
 void sensorValue() {
-  String msg = "SENSOR=LOG=" + (String)temperature + "=" + (String)humidity + "=" + (String)send_water + "=" + (String)send_honey + ';';
-  mesh.sendBroadcast( msg );
+  mesh_send = true;
+}
+
+void sensor_values(unsigned long millisec){
+  //매쉬 확인
+  if(mesh_send&& millisec - time_send > 3000){
+    time_send = millisec;
+    if(mesh_node_list() > 0){
+      mesh_send = false;
+      String msg = "SENSOR=LOG=" + (String)temperature + "=" + (String)humidity + "=" + (String)send_water + "=" + (String)send_honey + ';';
+      mesh.sendBroadcast( msg );
+    }
+  }
 }
 //taskSendMessage funtion end
 
@@ -399,8 +428,11 @@ void loop() {
   stable(now);
   mesh.update();
   serial_monit(now);
+  mesh.update();
   builtin_led(now);
+  mesh.update();
   mesh_restart(now);
+  sensor_values(now);
 }
 
 uint8_t full_water = 0;
