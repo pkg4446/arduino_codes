@@ -575,8 +575,8 @@ void loop() {
   //unsigned long test1 = micros();
   if(online){
     MQTT_connect();
-    unsigned long mqtt_run = micros();
-    if(mqtt_run - mqtt_req > 1000*1000){
+    unsigned long mqtt_run = millis();
+    if(mqtt_run - mqtt_req > 1000){
       mqtt_req = mqtt_run;
       mqtt_requeset();
     }
