@@ -42,6 +42,7 @@ void segment_display(unsigned long millisec){
         {false,false,false,true,true,false,false,true},
       };
       uint8_t one_ten = 0;
+      mesh.update();
       if(segment_change){
         one_ten = segment_number/10;
       }else{
@@ -148,6 +149,7 @@ void setup() {
     digitalWrite(led_sw[index], true);
     digitalWrite(relay[index], false);
   }
+  Serial.println("ver 1.0.0");
 }
 
 //unsigned long retime = 0UL;
