@@ -236,11 +236,11 @@ void command_pros(String receive){
 
   if(control.equalsIgnoreCase("mqtt_sub")){    
     String mqtt_sub_cmd = json["cmd"];
-    for(uint8_t index=1; index<mqtt_sub_cmd.length(); index++){
+    for(uint8_t index=0; index<mqtt_sub_cmd.length(); index++){
       byte sub_char = mqtt_sub_cmd[index];
-      EEPROM.write(index, sub_char);
+      EEPROM.write(index+1, sub_char);
     }
-    EEPROM.write(mqtt_sub_cmd.length(), 0x00);
+    EEPROM.write(mqtt_sub_cmd.length()+1, 0x00);
     Serial.print(mqtt_sub_cmd);
   }else if(control.equalsIgnoreCase("macaddr")){
     uint8_t macaddr = json["cmd"];
@@ -373,26 +373,6 @@ void command_pros(String receive){
         }else{mqtt_err_msg(control,"command null");}
       }
     }
-  }else if(control.equalsIgnoreCase("motor_config")){
-  /*
-    bool drive    = json["driver"];
-    bool method   = json["method"];
-    uint8_t type  = json["type"];
-    uint32_t step;;
-    if(method){
-      step = json["step"];
-    }
-    if(type<1 || type>4){
-      mqtt_err_msg("motor","select wrong");
-    }else if(drive){//MD5-HD14
-      type -= 1;
-      if(method)  driver[type].set_maximum(step);
-      response_moter_status("motor_config", "run", drive, type +1, driver[type].get_zero_set(), driver[type].get_pos(), driver[type].get_max());
-    }else{
-      if(method)  builtin[type].set_maximum(step);
-      response_moter_status("motor_config", "run", drive, type +1, builtin[type].get_zero_set(), builtin[type].get_pos(), builtin[type].get_max());
-    }
-  */
   }else{
     Serial.println("nope");
     mqtt_err_msg("null","command error");
