@@ -22,8 +22,7 @@
 //#define DEBUG_SHIFT_REGS
 
 /************************* Ethernet Client Setup *****************************/
-//byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
-byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0x54};
+byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 
 IPAddress ip(192, 168, 0, random(100, 255));
 IPAddress myDns(192, 168, 0, 1);
@@ -537,6 +536,9 @@ void setup() {
   request  = Adafruit_MQTT_Subscribe(&mqtt, AIO_Subscribe);
 
   Ethernet.init(53);
+  for(uint8_t index = 1; index<6; index++){
+    mac[index] = random(0, 255);
+  }  
   if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
     // Check for Ethernet hardware present
