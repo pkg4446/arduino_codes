@@ -414,6 +414,7 @@ void setup() {
   Serial.println(use_stable_f);
   Serial.print("Device nodeID = ");
   Serial.println(nodeID);
+  Serial.println("ver 1.0.0");
   AT_commandHelp();
 }
 
