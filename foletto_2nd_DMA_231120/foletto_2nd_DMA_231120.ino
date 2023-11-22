@@ -22,9 +22,10 @@
 //#define DEBUG_SHIFT_REGS
 
 /************************* Ethernet Client Setup *****************************/
-byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+//byte mac[6] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, byte(random(0, 255))};
+byte mac[6] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0x00};
 
-IPAddress ip(192, 168, 0, random(100, 255));
+IPAddress ip(192, 168, 0, random(0, 255));
 IPAddress myDns(192, 168, 0, 1);
 EthernetClient client;
 /************************* Mqtt Server Setup *********************************/
@@ -50,7 +51,6 @@ unsigned long relay_end_time[7]   = {0UL,};
 bool relay_state[7];
 bool online = false;
 /************************* values *********************************/
-
 
 /******
 {
@@ -196,6 +196,7 @@ void MQTT_connect() {
   if (mqtt.connected()) {
     return;
   }
+  Ethernet.maintain();
   int8_t ret = mqtt.connect();
   Serial.println("Connecting to MQTT.");
   unsigned long interval_mqtt_retry = 0L;
@@ -235,12 +236,15 @@ void command_pros(String receive){
 
   if(control.equalsIgnoreCase("mqtt_sub")){    
     String mqtt_sub_cmd = json["cmd"];
-    for(uint8_t index=0; index<mqtt_sub_cmd.length(); index++){
+    for(uint8_t index=1; index<mqtt_sub_cmd.length(); index++){
       byte sub_char = mqtt_sub_cmd[index];
       EEPROM.write(index, sub_char);
     }
     EEPROM.write(mqtt_sub_cmd.length(), 0x00);
     Serial.print(mqtt_sub_cmd);
+  }else if(control.equalsIgnoreCase("macaddr")){
+    uint8_t macaddr = json["cmd"];
+    EEPROM.write(0, macaddr);
   }
 
   mqtt_receive(control,command);
@@ -528,17 +532,15 @@ void setup() {
   Serial.begin(115200);
   Serial.println("System boot... wait a few seconds.");
 
-  for (uint8_t index = 0; index < 24; index++)
+  mac[5] = byte(EEPROM.read(0));
+  for (uint8_t index = 1; index < 25; index++)
   {
-    AIO_Subscribe[index] = EEPROM.read(index);
+    AIO_Subscribe[index-1] = EEPROM.read(index);
   }
-  Serial.print("mqtt_subscribe:");  Serial.println(AIO_Subscribe);
   request  = Adafruit_MQTT_Subscribe(&mqtt, AIO_Subscribe);
 
   Ethernet.init(53);
-  for(uint8_t index = 1; index<6; index++){
-    mac[index] = random(0, 255);
-  }  
+
   if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
     // Check for Ethernet hardware present
@@ -551,11 +553,7 @@ void setup() {
     // try to configure using IP address instead of DHCP:
     Ethernet.begin(mac, ip, myDns);
   } else {
-    Serial.print("DHCP assigned IP ");
-    Serial.println(Ethernet.localIP());
-    
     online = true;
-    mqtt.subscribe(&request);
   }
   shift_regs_init();
 
@@ -567,6 +565,16 @@ void setup() {
     builtin[index].init(stepMotor[index]);
   }
   init_port_base();
+  
+  if(online){
+    Serial.print(Ethernet.maintain());
+    Serial.print(" : ");
+    Serial.print(mac[5]);
+    Serial.print(" : DHCP assigned IP ");
+    Serial.println(Ethernet.localIP());
+    mqtt.subscribe(&request);
+    Serial.print("mqtt_subscribe:");  Serial.println(AIO_Subscribe);
+  }
   //online = false;
 }//********** End Of Setup() **********//
 
