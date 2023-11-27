@@ -415,7 +415,7 @@ void setup() {
   AT_commandHelp();
   Serial.print("Device nodeID = ");
   Serial.println(nodeID);
-  Serial.println("ver 1.0.0");
+  Serial.println("ver 1.0.1");
 }
 
 void loop() {
@@ -648,12 +648,13 @@ void stable(unsigned long millisec) {
   if ((millisec - time_stalbe) > 1000 * 1) {
     time_stalbe = millisec;
     mesh.update();
-    if (temperature != 14040 || temperature > 5) {
+    if(temperature != 14040 && temperature > 1) {
       ////온도 유지 팬
       if (use_stable_h || use_stable_f) {
         if (use_stable_h) {
           if (temperature/100 < control_temperature - tempGap) {
             if (temp_flage(true, false)) { //히터, 팬
+
               digitalWrite(RELAY_HEATER, pin_on);
             }
           }else if (temperature/100 >= control_temperature) {
