@@ -1,6 +1,6 @@
 #include  "painlessMesh.h"
 #include  "EEPROM.h"
-#define   EEPROM_SIZE 4
+#define   EEPROM_SIZE 5
 #define   SERIAL_MAX  128
 
 #define   MESH_PREFIX   "smartHiveMesh"
@@ -226,7 +226,6 @@ void command_Service(String command, String value) {
     if (value == "true"){
       use_stable_f = 1;
     }else{
-      use_stable_h = 0;
       use_stable_f = 0; 
     }
     EEPROM.write(EEP_Stable_f, use_stable_f);
