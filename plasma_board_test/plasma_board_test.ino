@@ -17,6 +17,9 @@ void setup() {
   pinMode(led[0], OUTPUT);
   pinMode(led[1], OUTPUT);
   pinMode(led[2], OUTPUT);
+  digitalWrite(led[0], true);
+  digitalWrite(led[1], true);
+  digitalWrite(led[2], true);
 
   relayOnOff(0);
   relayOnOff(1);
@@ -29,16 +32,16 @@ void setup() {
 // the loop function runs over and over again forever
 void loop() {
   for (int i = 0; i < 3; i++) {
-    digitalWrite(led[i], HIGH);
+    digitalWrite(led[i], false);
     delay(1000);
-    digitalWrite(led[i], LOW);
+    digitalWrite(led[i], true);
     delay(1000);
   }
 }
 
 void relayOnOff(int8_t pinNumber) {
-  digitalWrite(Relay[pinNumber], HIGH);
+  digitalWrite(Relay[pinNumber], true);
   delay(1000);
-  digitalWrite(Relay[pinNumber], LOW);
+  digitalWrite(Relay[pinNumber], false);
   delay(1000);
 }

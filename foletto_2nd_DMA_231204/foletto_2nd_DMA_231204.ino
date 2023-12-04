@@ -558,11 +558,10 @@ void setup() {
   //online = false;
 }//********** End Of Setup() **********//
 
-unsigned long mqtt_req    = 0UL;
+unsigned long mqtt_req  = 0UL;
+unsigned long mqtt_ping = 0UL;
 //********** loop **********//
 void loop() {
-  //if need asynchronous, add something
-  //unsigned long test1 = micros();
   if(online){
     MQTT_connect();
     unsigned long mqtt_run = millis();
@@ -570,11 +569,16 @@ void loop() {
       mqtt_req = mqtt_run;
       mqtt_requeset();
     }
+    if(mqtt_run - mqtt_ping > 1000*10){
+      mqtt_ping = mqtt_run;
+      #ifdef DEBUG
+        Serial.println("Ping");
+      #endif
+      if (!mqtt.ping()) mqtt.disconnect();
+    }
   }
   if (Serial.available()) Serial_process();
-
-  //Serial.println(micros() - test1);
-
+  
   relay_off_awiat();
   builtin_stepper();
   #ifdef DEBUG_SHIFT_REGS
