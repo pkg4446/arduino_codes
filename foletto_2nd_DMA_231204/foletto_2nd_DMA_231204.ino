@@ -1,3 +1,4 @@
+/******************************** ver 1.0.1 ********************************/
 #include "pin_setup.h"
 #include "shift_regs.h"
 #include "moter_control.h"
