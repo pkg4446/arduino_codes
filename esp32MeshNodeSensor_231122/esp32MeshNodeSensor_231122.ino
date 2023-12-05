@@ -376,17 +376,17 @@ void setup() {
   }
   //// ------------ PIN OUT ------------
   pinMode(RELAY_HEATER, OUTPUT);
-  pinMode(RELAY_FAN, OUTPUT);
-  pinMode(RELAY_VALVE_H, OUTPUT);
-  pinMode(RELAY_VALVE_W, OUTPUT);
-  pinMode(BUILTIN_LED_A, OUTPUT);
-  pinMode(BUILTIN_LED_B, OUTPUT);
-  digitalWrite(BUILTIN_LED_A, pin_off);
-  digitalWrite(BUILTIN_LED_B, pin_off);
   digitalWrite(RELAY_HEATER,  pin_off);
+  pinMode(RELAY_FAN, OUTPUT);
   digitalWrite(RELAY_FAN,     pin_off);
+  pinMode(RELAY_VALVE_H, OUTPUT);
   digitalWrite(RELAY_VALVE_H, pin_off);
+  pinMode(RELAY_VALVE_W, OUTPUT);
   digitalWrite(RELAY_VALVE_W, pin_off);
+  pinMode(BUILTIN_LED_A, OUTPUT);
+  digitalWrite(BUILTIN_LED_A, pin_off);
+  pinMode(BUILTIN_LED_B, OUTPUT);
+  digitalWrite(BUILTIN_LED_B, pin_off);
   //// ------------ PIN OUT ------------
   if (!EEPROM.begin(EEPROM_SIZE)) Serial.println("failed to initialise EEPROM");
   //// ------------ EEPROM ------------
@@ -414,7 +414,7 @@ void setup() {
   AT_commandHelp();
   Serial.print("Device nodeID = ");
   Serial.println(nodeID);
-  Serial.println("ver 1.0.1");
+  Serial.println("ver 1.0.2");
 }
 
 void loop() {
