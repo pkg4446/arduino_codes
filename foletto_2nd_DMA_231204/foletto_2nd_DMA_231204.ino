@@ -51,6 +51,7 @@ unsigned long relay_start_time[7] = {0UL,};
 unsigned long relay_end_time[7]   = {0UL,};
 bool relay_state[7];
 bool online = false;
+BYTES_VAL_T pinValues;
 /************************* values *********************************/
 
 /******
@@ -93,7 +94,6 @@ float  builtin_speed_decel[6] = {0.00f,};
 unsigned long builtin_interval[6] = {0UL,};
 
 void builtin_stepper(){
-  BYTES_VAL_T pinValues;
   bool builtin_progress = false;
   for(uint8_t index=0; index<6; index++){
     if(builtin_run[index]) builtin_progress = true;
@@ -102,8 +102,8 @@ void builtin_stepper(){
     digitalWrite(BUITIN_EN, true);
     unsigned long builtin_time = micros();
     if(shift_read++ > 160){
-      pinValues   = read_shift_regs();
-      shift_read  = 0;
+      pinValues  = read_shift_regs();
+      shift_read = 0;
     }
 
     for(uint8_t index=0; index<6; index++){
@@ -316,6 +316,7 @@ void command_pros(String receive){
           builtin[motor_number].set_config(json["accel"], json["decel"], json["dla_s"], json["dla_l"]);
           response_moter_config(control,command,drive,motor_number+1,builtin[motor_number].accel_step(),builtin[motor_number].decel_step(),builtin[motor_number].delay_short(),builtin[motor_number].delay_long());
         }else if(command.equalsIgnoreCase("run")){
+          pinValues = read_shift_regs();
           builtin_dir[motor_number] = json["dir"];
           if(motor_number == 2 || motor_number == 3){
             digitalWrite(stepMotor[motor_number].DIR, builtin_dir[motor_number]);
@@ -454,7 +455,7 @@ void response_moter_status(String ctrl, String command, bool drive, uint8_t numb
 }
 
 void read_pin_values(){
-    BYTES_VAL_T pinValues = read_shift_regs();
+    pinValues = read_shift_regs();
 
     String json = "{\"id\":\"";
     json += AIO_Subscribe;
@@ -592,7 +593,7 @@ unsigned long interval_74HC165 = 0L;
 void display_pin_values()
 {
     if(millis() > interval_74HC165 + 1000){
-      BYTES_VAL_T pinValues = read_shift_regs();
+      pinValues = read_shift_regs();
       interval_74HC165 = millis();
       Serial.print("Pin States:\r\n");
       for(int i = 0; i < DATA_WIDTH; i++)
