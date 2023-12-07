@@ -118,6 +118,8 @@ void mesh_node_list(){
 void receivedCallback( uint32_t from, String &msg ) {
   rootDvice.print( String(from) + "=" + msg.c_str());
   Serial.println( String(from) + "=" + msg.c_str());
+  String res = "S=" + String(from) + "=AT+RES=1;";
+  mesh.sendBroadcast(res);  
 }
 // Needed for painless library end
 
@@ -149,7 +151,7 @@ void setup() {
     digitalWrite(led_sw[index], true);
     digitalWrite(relay[index], false);
   }
-  Serial.println("ver 1.0.0");
+  Serial.println("ver 1.1.0");
 }
 
 //unsigned long retime = 0UL;

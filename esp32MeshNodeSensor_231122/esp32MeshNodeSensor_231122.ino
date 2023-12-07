@@ -1,6 +1,6 @@
 #include  "painlessMesh.h"
 #include  "EEPROM.h"
-#define   EEPROM_SIZE 5
+#define   EEPROM_SIZE 7
 #define   SERIAL_MAX  128
 
 #define   MESH_PREFIX   "smartHiveMesh"
@@ -24,6 +24,7 @@
 const boolean pin_on  = false;
 const boolean pin_off = true;
 
+bool mesh_info = false;
 bool mesh_send = false;
 
 class PCA9539 {
@@ -149,8 +150,11 @@ boolean connect_check = false;
 boolean SHT40        = false;
 boolean use_stable_h = false;
 boolean use_stable_f = false;
-boolean use_water    = true;
-boolean use_honey    = true;
+boolean use_water_f  = false;
+boolean use_honey_f  = false;
+
+boolean use_water    = false;
+boolean use_honey    = false;
 
 boolean sensor_state_w = false;//센서 고장여부 확인 플레그
 boolean sensor_state_h = false;
@@ -179,6 +183,8 @@ const uint8_t EEP_temperature = 1;
 const uint8_t EEP_humidity    = 2;
 const uint8_t EEP_Stable_h    = 3;
 const uint8_t EEP_Stable_f    = 4;
+const uint8_t EEP_water       = 5;
+const uint8_t EEP_honey       = 6;
 //// ------------ EEPROM Variable ---
 uint8_t control_temperature = 33;
 uint8_t control_humidity    = 50;
@@ -195,14 +201,18 @@ uint8_t count_sensor_err_h = 0;
 
 //// ----------- Command  -----------
 void command_Service(String command, String value) {
-  if (command == "AT+TEMP") {
+  if (command == "AT+RES") {
+    if(mesh_info) mesh_send = false;
+  } else if (command == "AT+HELP") {
+    AT_commandHelp();
+  } else if (command == "AT+TEMP") {
     control_temperature = value.toInt();
     EEPROM.write(EEP_temperature, control_temperature);
-    mesh.sendBroadcast("SENSOR=SET=TEMP=0=0=0;");
+    mesh.sendBroadcast("SENSOR=SET=TEMP="+ String(control_temperature) +"=0=0;");
   } else if (command == "AT+HUMI") {
     control_humidity = value.toInt();
     EEPROM.write(EEP_humidity, control_humidity);
-    mesh.sendBroadcast("SENSOR=SET=HUMI=0=0=0;");
+    mesh.sendBroadcast("SENSOR=SET=HUMI="+ String(control_humidity) +"=0=0;");
   } else if (command == "AT+USE") {
     if (value == "true"){
       use_stable_h = 1;
@@ -236,13 +246,32 @@ void command_Service(String command, String value) {
     count_sensor_err_h = 0;
     count_sensor_err_w = 0;
     mesh.sendBroadcast("SENSOR=SET=WATER=HONEY=0=0;");
+  }else if (command == "AT+WATER") {
+    if (value == "true"){
+      use_water_f = 1;
+    }else{
+      use_water_f = 0;
+    }
+    EEPROM.write(EEP_water, use_water_f);
+    mesh.sendBroadcast("SENSOR=SET=WATER=HONEY=1=1;");
+  }else if (command == "AT+HONEY") {
+    if (value == "true"){
+      use_honey_f = 1;
+    }else{
+      use_honey_f = 0;
+    }
+    EEPROM.write(EEP_honey, use_honey_f);
+    mesh.sendBroadcast("SENSOR=SET=WATER=HONEY=1=1;");
   }
   
   else if (command == "AT+RELAY") {
-    if(value.toInt() > 0){
+    if(value.toInt() == 1){
       digitalWrite(RELAY_HEATER,  pin_on);
+    }else if(value.toInt() == 2){     
       digitalWrite(RELAY_FAN,     pin_on);
+    }else if(value.toInt() == 3){     
       digitalWrite(RELAY_VALVE_H, pin_on);
+    }else if(value.toInt() == 4){     
       digitalWrite(RELAY_VALVE_W, pin_on);
     }else{      
       digitalWrite(RELAY_HEATER,  pin_off);
@@ -283,13 +312,19 @@ void builtin_led(unsigned long millisec){
 //// ----------- TEST  -----------
 void AT_commandHelp() {
   Serial.println("------------ AT command help ------------");
+  Serial.println(";AT+HELP=   int;      Tish menual.");
   Serial.println(";AT+TEMP=   int;      Temperature Change.");
   Serial.println(";AT+HUMI=   int;      Humidity Change.");
   Serial.println(";AT+USE=    bool;     Useable Change.");
+  Serial.println(";AT+USEH=   bool;     Useable Heat Change.");
+  Serial.println(";AT+USEF=   bool;     Useable Fan  Change.");
+  Serial.println(";AT+WATER=  bool;     Useable Water Change.");
+  Serial.println(";AT+HONEY=  bool;     Useable Honey Change.");
   Serial.println(";AT+LIQUID= bool;     Water&Honey Alarm Reset.");
-  Serial.println(";AT+RELAY=  bool;     All relay on or off test.");
+  Serial.println(";AT+RELAY=  int;      relay(int) on, if int=0 all relay off.");
   Serial.println(";AT+LOG=    bool;     Serial log view");
   Serial.println(";AT+SHOW=   bool;     Builtin led on off");
+  Serial.println("-----------------------------------------");
 }
 char Serial_buf[SERIAL_MAX];
 int8_t Serial_num;
@@ -303,6 +338,9 @@ void Serial_process() {
   ch = Serial.read();
   mesh.update();
   switch ( ch ) {
+    case '\n':
+      Serial_num = 0;
+      break;
     case ';':
       Serial_buf[Serial_num] = 0x00;
       Serial_service();
@@ -338,10 +376,10 @@ void sensorValue() {
 
 void sensor_values(unsigned long millisec){
   //매쉬 확인
-  if(mesh_send&& millisec - time_send > 3000){
+  if(mesh_send&& millisec - time_send > 1000*10){
     time_send = millisec;
     if(mesh_node_list() > 0){
-      mesh_send = false;
+      mesh_info = true;
       String msg = "SENSOR=LOG=" + (String)temperature + "=" + (String)humidity + "=" + (String)send_water + "=" + (String)send_honey + ';';
       mesh.sendBroadcast( msg );
     }
@@ -394,6 +432,9 @@ void setup() {
   control_humidity    = byte(EEPROM.read(EEP_humidity));
   if(EEPROM.read(EEP_Stable_h) != 0){use_stable_h = true;}
   if(EEPROM.read(EEP_Stable_f) != 0){use_stable_f = true;}
+  if(EEPROM.read(EEP_water) != 0)   {use_water_f = true;}
+  if(EEPROM.read(EEP_honey) != 0)   {use_honey_f = true;}
+  
   //// ------------ EEPROM ------------
   mesh.init( MESH_PREFIX, MESH_PASSWORD, &taskScheduler, MESH_PORT );
   mesh.onReceive(&receivedCallback);
@@ -410,11 +451,15 @@ void setup() {
   Serial.print(", Set Operation Heat: ");
   Serial.print(use_stable_h);
   Serial.print(", Fan: ");
-  Serial.println(use_stable_f);
+  Serial.print(use_stable_f);
+  Serial.print(", Set Water: ");
+  Serial.println(use_water_f);
+  Serial.print(", Honey: ");
+  Serial.println(use_honey_f);
   AT_commandHelp();
   Serial.print("Device nodeID = ");
   Serial.println(nodeID);
-  Serial.println("ver 1.0.2");
+  Serial.println("ver 1.1.0");
 }
 
 void loop() {
@@ -479,7 +524,7 @@ void sensor_level(unsigned long millisec) {
       if(sensor_state_w && sensor_state_h) break;//센서들이 고장일 경우
       mesh.update();
     }
-    if(use_water){
+    if(use_water_f && use_water){
       mesh.update();
       if(run_water && sensor_state_w){
         //솔레노이드 벨브 정지
@@ -534,7 +579,7 @@ void sensor_level(unsigned long millisec) {
         }
       }
     }//use_water
-    if(use_honey){
+    if(use_honey_f && use_honey){
       mesh.update();
       if(run_honey && sensor_state_h){
         //솔레노이드 벨브 정지
@@ -703,7 +748,6 @@ void get_sensor(unsigned long millisec) {
       sht40.getEvent(&humi, &temp);
       temperature  = temp.temperature * 100;
       humidity     = humi.relative_humidity * 100;
-
     } else {
       temperature  = 14040;
       humidity     = 14040;
