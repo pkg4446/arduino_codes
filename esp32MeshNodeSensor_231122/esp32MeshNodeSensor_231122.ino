@@ -533,7 +533,7 @@ void sensor_level(unsigned long millisec) {
         Serial.println("water_relay_stop_err");
       }else if(!sensor_state_w){
         if(!run_water && !water_level[1]){
-          mesh.sendBroadcast("P=ID=AT+PUMP=3;"); //펌프 켜기
+          //mesh.sendBroadcast("P=ID=AT+PUMP=3;"); //펌프 켜기
           digitalWrite(RELAY_VALVE_W, pin_on);   //솔레노이드 밸브 켜기
           run_water = true;
           level_gauge_w = 1;
@@ -558,7 +558,7 @@ void sensor_level(unsigned long millisec) {
           }else if(run_water){ 
             if(!water_level[level_gauge_w]){
               full_water++;
-              if (full_water > 240){
+              if (full_water > 254){
                 digitalWrite(RELAY_VALVE_W, pin_off);
                 run_water      = false;
                 sensor_state_w = true;
@@ -588,7 +588,7 @@ void sensor_level(unsigned long millisec) {
         Serial.println("honey_relay_stop_err");
       }else if(!sensor_state_h){
         if(!run_honey && !honey_level[1]){
-          mesh.sendBroadcast("P=ID=AT+PUMP=3;"); //펌프 켜기
+          //mesh.sendBroadcast("P=ID=AT+PUMP=3;"); //펌프 켜기
           digitalWrite(RELAY_VALVE_H, pin_on);     //솔레노이드 밸브 켜기
           run_honey = true;
           level_gauge_h = 1;
@@ -613,7 +613,7 @@ void sensor_level(unsigned long millisec) {
           } else if(run_honey){ 
             if(!honey_level[level_gauge_h]){
               full_honey++;
-              if (full_honey > 240){
+              if (full_honey > 254){
                 digitalWrite(RELAY_VALVE_H, pin_off);
                 run_honey = false;
                 sensor_state_h = true;
@@ -637,7 +637,7 @@ void sensor_level(unsigned long millisec) {
     mesh.update();
     if(sensor_state_w || sensor_state_h){ //센서가 고장일 경우
       //알람 보내기
-      if (err_sensor > 240) {
+      if (err_sensor > 254) {
         if(sensor_state_w && sensor_state_h){
           ERR_Message = "SENSOR=ERR=LEVEL=ALL=0=0;";
         }else if(sensor_state_w){
@@ -692,45 +692,33 @@ void stable(unsigned long millisec) {
   if ((millisec - time_stalbe) > 1000 * 1) {
     time_stalbe = millisec;
     mesh.update();
-    if(temperature != 14040 && temperature > 1) {
+    if(temperature != 14040 && temperature > 0) {
       ////온도 유지 팬
       if (use_stable_h || use_stable_f) {
         if (use_stable_h) {
           if (temperature/100 < control_temperature - tempGap) {
             if (temp_flage(true, false)) { //히터, 팬
-
               digitalWrite(RELAY_HEATER, pin_on);
             }
-          }else if (temperature/100 >= control_temperature) {
+          }else if (temperature/100 > control_temperature) {
             if (temp_flage(false, false)) { //히터, 팬
               digitalWrite(RELAY_HEATER, pin_off);
             }
           }
-        }
-        if (use_stable_f) {
+        }else if (use_stable_f) {
           if (temperature/100 > control_temperature + tempGap) {
             if (temp_flage(false, true)) { //히터, 팬
               digitalWrite(RELAY_FAN,    pin_on);
             }
-          }else if (temperature/100 <= control_temperature) {
+          }else if (temperature/100 < control_temperature) {
             if (temp_flage(false, false)) { //히터, 팬
               digitalWrite(RELAY_FAN,    pin_off);
             }
           }
-
         }
       }else{//온도 조절 종료
         digitalWrite(RELAY_HEATER, pin_off);
         digitalWrite(RELAY_FAN,    pin_off);
-      }
-    } else {
-      if (err_stable > 240) {
-        ERR_Message = "SENSOR=ERR=TEMP=0=0=0;";
-        mesh.sendBroadcast(ERR_Message);
-        err_stable  = 0;
-      }
-      else {
-        err_stable++;
       }
     }
   }//millis()
