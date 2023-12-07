@@ -1,4 +1,3 @@
-#define CLSPCA9555_H_
 #include "Arduino.h"
 #include "Wire.h"
 
@@ -8,6 +7,7 @@
 #define NXP_INVERT     4
 #define NXP_CONFIG     6
 
+/******************************************* PCA9555 LIB *******************************************/
 class PCA9555 {
   public:
     PCA9555(uint8_t address, int interruptPin = -1);     // optional interrupt pin in second argument
@@ -155,28 +155,55 @@ void PCA9555::I2CSetValue(uint8_t address, uint8_t reg, uint8_t value) {
 }
 //// PCA955 library ////
 PCA9555 ioport(0x20);
-uint8_t pin_out[6] = {4, 26, 27, 14, 12, 13};
+/******************************************* PCA9555 END *******************************************/
+
+/******************************************* STEP  MOTOR *******************************************/
+#define STEP_NUM  3
+typedef struct STEP_ts{
+	int8_t   ENA;
+	int8_t   DIR;
+	int8_t   PUL;
+}STEP_ts;
+//uint8_t pin_out[6] = {4, 26, 27, 14, 12, 13};
+const STEP_ts step_under[STEP_NUM]={
+   {0,1,4},
+   {2,3,26},
+   {4,5,27},
+};
+const STEP_ts step_upper[STEP_NUM]={
+   {6,7,14},
+   {8,9,12},
+   {10,11,13},
+};
+
+uint32_t  Position[STEP_NUM]  = {0,};
+bool      Direction[STEP_NUM] = {0,};
+/******************************************* STEP  MOTOR *******************************************/
+
 uint8_t pin_in[3] =  {32, 33, 25};
 
+uint8_t index_led = 0;
+boolean led_flage = true;
+
+/******************************************** S E T U P ********************************************/
 void setup() {
   Serial.begin(115200);
   ioport.begin();
   ioport.setClock(400000);
-  for (uint8_t index = 0; index < 16; index++) {
-    ioport.pinMode(index, OUTPUT);
-    ioport.digitalWrite(index, LOW);
-  }
-  for (uint8_t index = 0; index < 6; index++) {
-    pinMode(pin_out[index], OUTPUT);
+  for (uint8_t index = 0; index < STEP_NUM; index++) {
+    ioport.pinMode(step_under[index].ENA, OUTPUT);
+    ioport.pinMode(step_under[index].DIR, OUTPUT);
+    pinMode(step_under[index].PUL, OUTPUT);
+    ioport.pinMode(step_upper[index].ENA, OUTPUT);
+    ioport.pinMode(step_upper[index].DIR, OUTPUT);
+    pinMode(step_upper[index].PUL, OUTPUT);
   }
   for (uint8_t index = 0; index < 3; index++) {
     pinMode(pin_in[index], INPUT_PULLUP);
   }
 }
-
-uint8_t index_led = 0;
-boolean led_flage = true;
-
+/******************************************** S E T U P ********************************************/
+/********************************************* L O O P *********************************************/
 void loop() {
   /*
     for (uint8_t index = 0; index < 3; index++) {
@@ -187,19 +214,25 @@ void loop() {
     }
   */
   if (led_flage) {
-    ioport.digitalWrite(index_led, HIGH);
+    ioport.digitalWrite(step_under[index_led].ENA, HIGH);
+    ioport.digitalWrite(step_under[index_led].DIR, HIGH);
+    ioport.digitalWrite(step_upper[index_led].ENA, HIGH);
+    ioport.digitalWrite(step_upper[index_led].DIR, HIGH);
     delay(200);
-    ioport.digitalWrite(index_led, LOW);
-    if (index_led < 16) {
+    ioport.digitalWrite(step_under[index_led].ENA, LOW);
+    ioport.digitalWrite(step_under[index_led].DIR, LOW);
+    ioport.digitalWrite(step_upper[index_led].ENA, LOW);
+    ioport.digitalWrite(step_upper[index_led].DIR, LOW);
+    if (index_led < STEP_NUM) {
       index_led++;
     } else {
       index_led = 0;
       led_flage = false;
     }
   } else {
-    digitalWrite(pin_out[index_led], true);
+    digitalWrite(step_under[index_led].PUL, true);
     delay(200);
-    digitalWrite(pin_out[index_led], LOW);
+    digitalWrite(step_under[index_led].PUL, LOW);
     if (index_led < 6) {
       index_led++;
     } else {
@@ -209,3 +242,4 @@ void loop() {
   }
   delay(1000);
 }
+/********************************************* L O O P *********************************************/
