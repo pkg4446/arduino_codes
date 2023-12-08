@@ -14,6 +14,18 @@
     "err":  "err_msg"
 }
 
+//macaddr set  *eeprom 사용
+{
+    "ctrl": "macaddr",      //macaddr 설정
+    "cmd":  250             //0~255,    최초 1회 필요, 설정 후 재부팅
+}
+
+//mqtt set  *eeprom 사용
+{
+    "ctrl": "mqtt_sub",     //mqtt 구독 설정
+    "cmd":  "foletto_2nd_f" //mqtt 구독명 설정, 최초 1회 필요, 설정 후 재부팅
+}
+
 // relay request example
 {
     "ctrl": "relay",
@@ -54,16 +66,26 @@
     "opt":  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], //배열 순서대로 0~15번 센서값 0:false,1:true
 }
 
-// step motor ctrl request "set"
+// step motor ctrl request "config" *eeprom 사용
+{
+    "ctrl":  "motor",
+    "cmd":   "config",
+    "opt":   1,    //0내장 드라이버, 1외장드라이버(MD5-HD14)
+    "num":   1,    //motor type e.g. 1번 모터 // 0 to 255
+    "max":   1000, //unsigned int 36, 가동 최대 거리 //리미트 한쪽에만 있을 경우, 리미트 인식 후 pos가 0이 되고, 이후 최대 max 까지만 회전
+    "brk":   1,    //브레이크 릴레이 번호,
+}
+
+// step motor ctrl request "set"    *eeprom 사용
 {
     "ctrl":  "motor",
     "cmd":   "set",
     "opt":   1,   //0내장 드라이버, 1외장드라이버(MD5-HD14)
-    "num":   1,   // motor type e.g. 1번 모터 // 0 to 255
+    "num":   1,   //motor type e.g. 1번 모터 // 0 to 255
     "accel": 10,  //가속 구간 스탭 수 unsigned int16 - 0 to 65535
     "decel": 5,   //감속 구간 스탭 수 unsigned int16 - 0 to 65535
-    "dla_s": 1,  //unsigned int 16, 모터 스탭간격 micro sec, delay_short
-    "dla_l": 100 //unsigned int 16, 모터 스탭간격 micro sec, delay_long > delay_short    
+    "dla_s": 1,   //unsigned int 16, 모터 스탭간격 micro sec, delay_short
+    "dla_l": 100  //unsigned int 16, 모터 스탭간격 micro sec, delay_long > delay_short    
 }
 {"ctrl":"motor","cmd":"set","opt":0,"num":1,"accel":10,"decel":5,"dla_s":1,"dla_l":100}
 // step motor ctrl response "set"
@@ -84,11 +106,11 @@
     "ctrl":  "motor",
     "cmd":   "run",
     "opt":   1,   //0내장 드라이버, 1외장드라이버(MD5-HD14)
-    "num":   1,   // motor type e.g. 1번 모터 // 0 to 255
-    "step":  100,  //스탭 수 (n 스탭당 1회전) unsigned int32 - 0 to 4294967295        
+    "num":   1,   //motor type e.g. 1번 모터 // 0 to 255
+    "step":  100, //스탭 수 (n 스탭당 1회전) unsigned int32 - 0 to 4294967295        
     "dir":   1,   //step motor direction (CW/CCW), 0:CW, 1:CCW
     "limit": 4,   //모터 진행방향 리미트센서 번호 = sensor_read 번호, 16이상일 경우 인식 안함.
-    "max":   1000 //unsigned int 36, 가동 최대 거리 //리미트 한쪽에만 있을 경우, 리미트 인식 후 pos가 0이 되고, 이후 최대 max 까지만 회전
+    "ext":   100, //리미트 인식 후 추가 진행 스탭
 }
 {"ctrl":"motor","cmd":"run","opt":0,"num":1,"step":100,"dir":1,"limit":4,"max":1000}
 // step motor ctrl response "run"
@@ -105,22 +127,13 @@
 // step motor ctrl response
 {
     "id":     "<board-id>", // 제어보드 고유 id
-    "ctrl":   "step_motor",
-    "driver": 1,
-    "type":   1,
+    "ctrl":   "step",
+    "cmd":    "run",
+    "opt":    1,            // 0:내장 드라이버, 1:외장 드라이버
+    "num":    1,            // 모터 번호
     "zero":   false,        // 영점 확인 여부
     "pos":    999           // 모터 위치
 }
-
-// step motor config request
-{
-    "ctrl": "motor_config",
-    "driver": 1, //0:내장 드라이버, 1:외장드라이버(MD5-HD14)
-    "type":   1, //motor type e.g. 1번 모터 // 0 to 255
-    "method": 0, //0:get, 1:set
-    "step":   99999, //method=1 일 경우, unsigned int32 - 0 to 4294967295 하단 리미트에서 상단 리미트 센서까지의 스탭 수.
-}
-
 
 //스탭모터 리미트 사용하지 않는 경우는 센서 번호 >= 16
 //외부 드라이버(MD5-HD14)의 경우 단독으로만 작동 가능. 작동하는동안 외부 간섭 불가

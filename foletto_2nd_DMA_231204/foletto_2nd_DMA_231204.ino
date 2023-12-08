@@ -17,6 +17,9 @@
 
 #define JSON_STACK 144
 
+#define DRIVER_O  4
+#define DRIVER_I  6
+
 #define DEBUG
 #define DEBUG_MQTT
 //#define DEBUG_STEP
@@ -43,17 +46,17 @@ Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVER_PORT, AIO_USERNAME, AI
 Adafruit_MQTT_Publish   response = Adafruit_MQTT_Publish(&mqtt,   AIO_Publish); //Adafruit_MQTT_Publish(&mqtt,   AIO_Publish, 1);
 Adafruit_MQTT_Subscribe request  = Adafruit_MQTT_Subscribe(&mqtt, AIO_Subscribe); //Adafruit_MQTT_Subscribe(&mqtt, AIO_Subscribe, 1);
 /************************* Mqtt End *********************************/
-
 /************************* values *********************************/
-MOTOR driver[4];
-MOTOR builtin[6];
+MOTOR driver[DRIVER_O];
+MOTOR builtin[DRIVER_I];
 unsigned long relay_start_time[7] = {0UL,};
 unsigned long relay_end_time[7]   = {0UL,};
 bool relay_state[7];
 bool online = false;
 BYTES_VAL_T pinValues;
 /************************* values *********************************/
-
+uint32_t HIGHT_MAX_O[DRIVER_O] = {9999,};
+uint32_t HIGHT_MAX_I[DRIVER_O] = {9999,};
 /******
 {
     "ctrl":  "motor",
@@ -66,7 +69,16 @@ BYTES_VAL_T pinValues;
     "dla_l": 1000 //unsigned int 16, 모터 스탭간격 micro sec, delay_long > delay_short    
 }
 
-step motor ctrl request (사용 전, 후, relay status change로 반드시 브레이크 off, on)
+// step motor ctrl request "config" *eeprom 사용
+{
+    "ctrl":  "motor",
+    "cmd":   "config",
+    "opt":   1,    //0내장 드라이버, 1외장드라이버(MD5-HD14)
+    "num":   1,    //motor type e.g. 1번 모터 // 0 to 255
+    "max":   1000, //unsigned int 36, 가동 최대 거리 //리미트 한쪽에만 있을 경우, 리미트 인식 후 pos가 0이 되고, 이후 최대 max 까지만 회전
+    "brk":   1,    //브레이크 릴레이 번호,
+}
+
 {
     "ctrl":  "motor",
     "cmd":   "run",
@@ -75,7 +87,7 @@ step motor ctrl request (사용 전, 후, relay status change로 반드시 브�
     "step":  10,  //스탭 수 (n 스탭당 1회전) unsigned int32 - 0 to 4294967295        
     "dir":   1,   //step motor direction (CW/CCW), 0:CW, 1:CCW
     "limit": 4,   //모터 진행방향 리미트센서 번호 = sensor_read 번호 
-    "max":   1000 //unsigned int 36, 가동 최대 거리 //리미트 한쪽에만 있을 경우, 리미트 인식 후 pos가 0이 되고, 이후 최대 max 까지만 회전
+    "ext":   1000 //리미트 인식 후 추가 진행 스탭
 }
 *******/
 /*************/
@@ -96,7 +108,10 @@ unsigned long builtin_interval[6] = {0UL,};
 void builtin_stepper(){
   bool builtin_progress = false;
   for(uint8_t index=0; index<6; index++){
-    if(builtin_run[index]) builtin_progress = true;
+    if(builtin_run[index]){
+      builtin_progress = true;
+      //브레이크 풀기
+    }
   }
   if(builtin_progress){
     digitalWrite(BUITIN_EN, true);
@@ -119,6 +134,7 @@ void builtin_stepper(){
           #endif
         }else{
           builtin_run[index] = false;
+          //브레이크 잠금
           response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos());
           //종료
         }
@@ -132,6 +148,7 @@ void builtin_stepper(){
         builtin_pulse[index]--;
         if(builtin_pulse[index] == 0){
           builtin_run[index] = false;
+          //브레이크 잠금
           response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos());
         }else if(builtin_pulse[index] >= builtin_pulse_start[index]){
           builtin_speed_f[index] -= builtin_speed_accel[index];
@@ -285,8 +302,20 @@ void command_pros(String receive){
       }else{
         motor_number -= 1;
         if(command.equalsIgnoreCase("set")){
-          driver[motor_number].set_config(json["accel"], json["decel"], json["dla_s"], json["dla_l"]);
-          response_moter_config(control,command,drive,motor_number+1,driver[motor_number].accel_step(),driver[motor_number].decel_step(),driver[motor_number].delay_short(),driver[motor_number].delay_long());
+          driver[motor_number].set_config(json["accel"], json["decel"], json["dla_s"], json["dla_l"]);      
+          uint16_t temp_accel = driver[motor_number].accel_step();
+          uint16_t temp_decel = driver[motor_number].decel_step();
+          uint16_t temp_dla_s = driver[motor_number].delay_short();
+          uint16_t temp_dla_l = driver[motor_number].delay_long();
+          EEPROM.write(eepDriver[motor_number].ACCEL[0], temp_accel/256);
+          EEPROM.write(eepDriver[motor_number].ACCEL[1], temp_accel%256);
+          EEPROM.write(eepDriver[motor_number].DECEL[0], temp_decel/256);
+          EEPROM.write(eepDriver[motor_number].DECEL[1], temp_decel%256);
+          EEPROM.write(eepDriver[motor_number].DLY_S[0], temp_dla_s/256);
+          EEPROM.write(eepDriver[motor_number].DLY_S[1], temp_dla_s%256);
+          EEPROM.write(eepDriver[motor_number].DLY_L[0], temp_dla_l/256);
+          EEPROM.write(eepDriver[motor_number].DLY_L[1], temp_dla_l%256);
+          response_moter_config(control,command,drive,motor_number+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l);
         }else if(command.equalsIgnoreCase("run")){
           bool relay_busy = false;
           for(uint8_t index = 0; index < 7; index++){
@@ -295,7 +324,7 @@ void command_pros(String receive){
           if(relay_busy){
             mqtt_err_msg(control,"relay is busy");
           }else{
-            driver[motor_number].run_drive(stepDriver[motor_number],json["dir"],json["limit"],json["step"],json["max"]);
+            driver[motor_number].run_drive(stepDriver[motor_number],json["dir"],json["limit"],json["step"],HIGHT_MAX_O[motor_number]);
             response_moter_status("motor", "run", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos());
           }
         }else if(command.equalsIgnoreCase("status")){
@@ -313,8 +342,20 @@ void command_pros(String receive){
       }else{
         motor_number -= 1;
         if(command.equalsIgnoreCase("set")){
-          builtin[motor_number].set_config(json["accel"], json["decel"], json["dla_s"], json["dla_l"]);
-          response_moter_config(control,command,drive,motor_number+1,builtin[motor_number].accel_step(),builtin[motor_number].decel_step(),builtin[motor_number].delay_short(),builtin[motor_number].delay_long());
+          builtin[motor_number].set_config(json["accel"], json["decel"], json["dla_s"], json["dla_l"]);          
+          uint16_t temp_accel = builtin[motor_number].accel_step();
+          uint16_t temp_decel = builtin[motor_number].decel_step();
+          uint16_t temp_dla_s = builtin[motor_number].delay_short();
+          uint16_t temp_dla_l = builtin[motor_number].delay_long();
+          EEPROM.write(eepMotor[motor_number].ACCEL[0], temp_accel/256);
+          EEPROM.write(eepMotor[motor_number].ACCEL[1], temp_accel%256);
+          EEPROM.write(eepMotor[motor_number].DECEL[0], temp_decel/256);
+          EEPROM.write(eepMotor[motor_number].DECEL[1], temp_decel%256);
+          EEPROM.write(eepMotor[motor_number].DLY_S[0], temp_dla_s/256);
+          EEPROM.write(eepMotor[motor_number].DLY_S[1], temp_dla_s%256);
+          EEPROM.write(eepMotor[motor_number].DLY_L[0], temp_dla_l/256);
+          EEPROM.write(eepMotor[motor_number].DLY_L[1], temp_dla_l%256);
+          response_moter_config(control,command,drive,motor_number+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l);
         }else if(command.equalsIgnoreCase("run")){
           pinValues = read_shift_regs();
           builtin_dir[motor_number] = json["dir"];
@@ -343,7 +384,6 @@ void command_pros(String receive){
               }
             }
           }
-
           builtin_pulse[motor_number] = json["step"];
           builtin_limit[motor_number] = json["limit"];
           builtin_run[motor_number]   = true;
@@ -362,7 +402,6 @@ void command_pros(String receive){
             Serial.print(",decel="); Serial.println(builtin_speed_decel[motor_number]);
             Serial.print(",total_step="); Serial.println(builtin_pulse[motor_number]);
           #endif
-
           builtin_pulse_start[motor_number] = builtin_pulse[motor_number] - builtin_pulse_start[motor_number];
           //json["max"];
         }else if(command.equalsIgnoreCase("status")){
@@ -515,10 +554,10 @@ void setup() {
   Serial.println("System boot... wait a few seconds.");
 
   mac[5] = byte(EEPROM.read(0));
-  for (uint8_t index = 1; index < 25; index++)
-  {
+  for (uint8_t index = 1; index < 25; index++){
     AIO_Subscribe[index-1] = EEPROM.read(index);
   }
+  
   request  = Adafruit_MQTT_Subscribe(&mqtt, AIO_Subscribe);
 
   Ethernet.init(53);
@@ -540,10 +579,10 @@ void setup() {
   shift_regs_init();
 
   pinMode(BUITIN_EN, OUTPUT);
-  for (uint8_t index=0 ; index<4; index++) {
+  for (uint8_t index=0 ; index<DRIVER_O; index++) {
     driver[index].init(stepDriver[index]);
   }
-  for (uint8_t index=0 ; index<6; index++) {
+  for (uint8_t index=0 ; index<DRIVER_I; index++) {
     builtin[index].init(stepMotor[index]);
   }
   init_port_base();
@@ -557,7 +596,42 @@ void setup() {
     mqtt.subscribe(&request);
     Serial.print("mqtt_subscribe:");  Serial.println(AIO_Subscribe);
   }
-  //online = false;
+  for (uint8_t index = 0; index < DRIVER_O; index++){
+    uint16_t temp_accel = EEPROM.read(eepDriver[index].ACCEL[0])*256 + EEPROM.read(eepDriver[index].ACCEL[1]);
+    uint16_t temp_decel = EEPROM.read(eepDriver[index].DECEL[0])*256 + EEPROM.read(eepDriver[index].DECEL[1]);
+    uint16_t temp_dla_s = EEPROM.read(eepDriver[index].DLY_S[0])*256 + EEPROM.read(eepDriver[index].DLY_S[1]);
+    uint16_t temp_dla_l = EEPROM.read(eepDriver[index].DLY_L[0])*256 + EEPROM.read(eepDriver[index].DLY_L[1]);
+    HIGHT_MAX_O[index]  = EEPROM.read(eepDriver[index].MAX[0])*65536 + EEPROM.read(eepDriver[index].MAX[1])*256 + EEPROM.read(eepDriver[index].MAX[2]);
+    driver[index].set_config(temp_accel, temp_decel, temp_dla_s, temp_dla_l);
+    #ifdef DEBUG
+      Serial.print("DRIVER "); Serial.print(index+1);
+      Serial.print(", accel:");Serial.print(temp_accel);
+      Serial.print(", decel:");Serial.print(temp_decel);
+      Serial.print(", d_shot:");Serial.print(temp_dla_s);
+      Serial.print(", d_long:");Serial.print(temp_dla_l);
+      Serial.print(", max:");Serial.print(HIGHT_MAX_O[index]);
+      Serial.println(".");
+    #endif
+    if(online) response_moter_config("motor","set",true,index+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l);
+  }
+  for (uint8_t index = 0; index < DRIVER_I; index++){
+    uint16_t temp_accel = EEPROM.read(eepMotor[index].ACCEL[0])*256 + EEPROM.read(eepMotor[index].ACCEL[1]);
+    uint16_t temp_decel = EEPROM.read(eepMotor[index].DECEL[0])*256 + EEPROM.read(eepMotor[index].DECEL[1]);
+    uint16_t temp_dla_s = EEPROM.read(eepMotor[index].DLY_S[0])*256 + EEPROM.read(eepMotor[index].DLY_S[1]);
+    uint16_t temp_dla_l = EEPROM.read(eepMotor[index].DLY_L[0])*256 + EEPROM.read(eepMotor[index].DLY_L[1]);
+    HIGHT_MAX_I[index]  = EEPROM.read(eepMotor[index].MAX[0])*65536 + EEPROM.read(eepMotor[index].MAX[1])*256 + EEPROM.read(eepMotor[index].MAX[2]);
+    builtin[index].set_config(temp_accel, temp_decel, temp_dla_s, temp_dla_l);
+    #ifdef DEBUG
+      Serial.print("BUILT_IN ");Serial.print(index+1);
+      Serial.print(", accel:");Serial.print(temp_accel);
+      Serial.print(", decel:");Serial.print(temp_decel);
+      Serial.print(", d_shot:");Serial.print(temp_dla_s);
+      Serial.print(", d_long:");Serial.print(temp_dla_l);
+      Serial.print(", max:");Serial.print(HIGHT_MAX_I[index]);
+      Serial.println(".");
+    #endif
+    if(online) response_moter_config("motor","set",false,index+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l);
+  }
 }//********** End Of Setup() **********//
 
 unsigned long mqtt_req  = 0UL;
