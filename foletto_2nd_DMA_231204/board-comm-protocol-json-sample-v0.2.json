@@ -87,7 +87,6 @@
     "dla_s": 1,   //unsigned int 16, 모터 스탭간격 micro sec, delay_short
     "dla_l": 100  //unsigned int 16, 모터 스탭간격 micro sec, delay_long > delay_short    
 }
-{"ctrl":"motor","cmd":"set","opt":0,"num":1,"accel":10,"decel":5,"dla_s":1,"dla_l":100}
 // step motor ctrl response "set"
 {
     "id":"foletto_2nd_f",
@@ -110,9 +109,8 @@
     "step":  100, //스탭 수 (n 스탭당 1회전) unsigned int32 - 0 to 4294967295        
     "dir":   1,   //step motor direction (CW/CCW), 0:CW, 1:CCW
     "limit": 4,   //모터 진행방향 리미트센서 번호 = sensor_read 번호, 16이상일 경우 인식 안함.
-    "ext":   100, //리미트 인식 후 추가 진행 스탭
+    "add":   100, //리미트 인식 후 추가 진행 스탭 // 추가 스탭은 step 범위 이내에서 리미트를 인식할 경우만 작동함.
 }
-{"ctrl":"motor","cmd":"run","opt":0,"num":1,"step":100,"dir":1,"limit":4,"max":1000}
 // step motor ctrl response "run"
 {
     "id":   "<board-id>", // 제어보드 고유 id
@@ -136,6 +134,7 @@
 }
 
 //스탭모터 리미트 사용하지 않는 경우는 센서 번호 >= 16
+//스탭모터 브레이크 사용하지 않는 경우는 브레이크 릴레이 번호 == 0
 //외부 드라이버(MD5-HD14)의 경우 단독으로만 작동 가능. 작동하는동안 외부 간섭 불가
 
 /**********************************************************************************/

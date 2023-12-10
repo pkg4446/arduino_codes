@@ -59,7 +59,7 @@ uint16_t MOTOR::decel_step(){return decel;}
 uint16_t MOTOR::delay_short(){return dla_s;}
 uint16_t MOTOR::delay_long(){return dla_l;}
 
-void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, uint32_t step, uint32_t hight_max){
+void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, uint32_t step, uint32_t hight_max, uint8_t brake, uint32_t extra){
   if(limit_sw>15) Zero_set = true;
   boolean celerations = false;
   float  speed_change_ac = 0.0;
@@ -79,6 +79,8 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, uint
   uint32_t distance_ac = uint32_t(this->accel)+1;
   uint32_t distance_de = uint32_t(this->decel)+1;
   uint16_t adjust      = this->dla_l;
+
+  if(brake !=0 && brake < 8) digitalWrite(relay_pin[brake-1], false);  //브레이크 풀기
 
   if(direction){ //up
     for (uint32_t index=0; index < step; index++) {
@@ -104,7 +106,7 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, uint
         if(swich_values(limit_sw, read_shift_regs())){
           Zero_set = true;
           Position = hight_max;
-          break; //when push the limit sw, stop
+          if(extra-- <= 1) break; //when push the limit sw, stop
         }
       }
       //---------check this**********---------- max hight
@@ -139,7 +141,7 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, uint
         if(swich_values(limit_sw, read_shift_regs())){
           Zero_set = true;
           Position = 0;
-          break; //when push the limit sw, stop
+          if(extra-- <= 1) break; //when push the limit sw, stop
         }
       }
       digitalWrite(moter_pins.DIR, true);
@@ -152,4 +154,6 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, uint
       delayMicroseconds(adjust);
     }
   }
+
+  if(brake !=0 && brake < 8) digitalWrite(relay_pin[brake-1], true);  //브레이크 잠금
 }

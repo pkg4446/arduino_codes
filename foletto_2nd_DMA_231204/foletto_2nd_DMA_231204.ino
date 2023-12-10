@@ -56,7 +56,9 @@ bool online = false;
 BYTES_VAL_T pinValues;
 /************************* values *********************************/
 uint32_t HIGHT_MAX_O[DRIVER_O] = {9999,};
-uint32_t HIGHT_MAX_I[DRIVER_O] = {9999,};
+uint32_t HIGHT_MAX_I[DRIVER_I] = {9999,};
+uint8_t  BRAKE_O[DRIVER_O] = {0,};
+uint8_t  BRAKE_I[DRIVER_I] = {0,};
 /******
 {
     "ctrl":  "motor",
@@ -94,8 +96,10 @@ uint32_t HIGHT_MAX_I[DRIVER_O] = {9999,};
 uint8_t  shift_read       = 0;
 bool     builtin_run[6]   = {false,};
 bool     builtin_dir[6]   = {false,};
+bool     builtin_break[6] = {false,};
 bool     builtin_pulse_swich[6] = {false,};
 uint32_t builtin_pulse[6] = {0,};
+uint32_t builtin_pulse_add[6]   = {0,};
 uint32_t builtin_pulse_start[6] = {0,};
 uint32_t builtin_pulse_end[6]   = {0,};
 uint8_t  builtin_limit[6] = {16,};
@@ -110,7 +114,11 @@ void builtin_stepper(){
   for(uint8_t index=0; index<6; index++){
     if(builtin_run[index]){
       builtin_progress = true;
-      //브레이크 풀기
+      if(!builtin_break[index] && BRAKE_I[index] !=0 && BRAKE_I[index] < 8) {
+        builtin_break[index] = true;
+        digitalWrite(relay_pin[BRAKE_I[index]-1], false);  
+        Serial.println("brake open");
+      }//브레이크 풀기
     }
   }
   if(builtin_progress){
@@ -133,10 +141,18 @@ void builtin_stepper(){
           Serial.println(builtin_speed[index]);
           #endif
         }else{
-          builtin_run[index] = false;
-          //브레이크 잠금
-          response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos());
-          //종료
+          if(builtin_pulse_add[index]-- > 1){ //추가 스탭 이동
+            digitalWrite(stepMotor[index].PWM, true);
+            builtin_pulse_swich[index] = true;
+          }else{
+            builtin_run[index] = false;
+            if(builtin_break[index]){
+              builtin_break[index] = false;
+              digitalWrite(relay_pin[BRAKE_I[index]-1], true);
+              Serial.println("limit detect");
+            }//브레이크 잠금
+            response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos());  //종료
+          }
         }
       }
     }
@@ -148,7 +164,11 @@ void builtin_stepper(){
         builtin_pulse[index]--;
         if(builtin_pulse[index] == 0){
           builtin_run[index] = false;
-          //브레이크 잠금
+          if(builtin_break[index]){
+            builtin_break[index] = false;
+            digitalWrite(relay_pin[BRAKE_I[index]-1], true);
+            Serial.println("brake close");
+          }//브레이크 잠금
           response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos());
         }else if(builtin_pulse[index] >= builtin_pulse_start[index]){
           builtin_speed_f[index] -= builtin_speed_accel[index];
@@ -318,6 +338,7 @@ void command_pros(String receive){
           response_moter_config(control,command,drive,motor_number+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l);
         }else if(command.equalsIgnoreCase("config")){
           uint8_t  temp_brk = json["brk"];
+          EEPROM.write(eepDriver[motor_number].BRAKE, temp_brk);
           uint32_t temp_max = json["max"];
           HIGHT_MAX_I[motor_number] = temp_max;
           EEPROM.write(eepDriver[motor_number].MAX[3], temp_max%256);
@@ -335,7 +356,7 @@ void command_pros(String receive){
           if(relay_busy){
             mqtt_err_msg(control,"relay is busy");
           }else{
-            driver[motor_number].run_drive(stepDriver[motor_number],json["dir"],json["limit"],json["step"],HIGHT_MAX_O[motor_number]);
+            driver[motor_number].run_drive(stepDriver[motor_number],json["dir"],json["limit"],json["step"],HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],json["add"]);
             response_moter_status("motor", "run", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos());
           }
         }else if(command.equalsIgnoreCase("status")){
@@ -367,6 +388,7 @@ void command_pros(String receive){
           response_moter_config(control,command,drive,motor_number+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l);
         }else if(command.equalsIgnoreCase("config")){
           uint8_t  temp_brk = json["brk"];
+          EEPROM.write(eepMotor[motor_number].BRAKE, temp_brk);
           uint32_t temp_max = json["max"];
           HIGHT_MAX_I[motor_number] = temp_max;
           EEPROM.write(eepMotor[motor_number].MAX[3], temp_max%256);
@@ -423,7 +445,7 @@ void command_pros(String receive){
             Serial.print(",total_step="); Serial.println(builtin_pulse[motor_number]);
           #endif
           builtin_pulse_start[motor_number] = builtin_pulse[motor_number] - builtin_pulse_start[motor_number];
-          //json["max"];
+          builtin_pulse_add[motor_number]   = json["add"];
         }else if(command.equalsIgnoreCase("status")){
           Serial.print("builtin");
           Serial.print(motor_number);
@@ -619,6 +641,7 @@ void setup() {
     uint16_t temp_decel = EEPROM.read(eepDriver[index].DECEL[0])*256 + EEPROM.read(eepDriver[index].DECEL[1]);
     uint16_t temp_dla_s = EEPROM.read(eepDriver[index].DLY_S[0])*256 + EEPROM.read(eepDriver[index].DLY_S[1]);
     uint16_t temp_dla_l = EEPROM.read(eepDriver[index].DLY_L[0])*256 + EEPROM.read(eepDriver[index].DLY_L[1]);
+    BRAKE_O[index]      = EEPROM.read(eepDriver[index].BRAKE);
     uint32_t temp_max[4] = {EEPROM.read(eepDriver[index].MAX[0]),EEPROM.read(eepDriver[index].MAX[1]),EEPROM.read(eepDriver[index].MAX[2]),EEPROM.read(eepDriver[index].MAX[3])}; 
     HIGHT_MAX_O[index]  = temp_max[0]*256*256*256 + temp_max[1]*256*256 + temp_max[2]*256 + temp_max[3];
     driver[index].set_config(temp_accel, temp_decel, temp_dla_s, temp_dla_l);
@@ -629,6 +652,7 @@ void setup() {
       Serial.print(", d_shot:");Serial.print(temp_dla_s);
       Serial.print(", d_long:");Serial.print(temp_dla_l);
       Serial.print(", max:");Serial.print(HIGHT_MAX_O[index]);
+      Serial.print(", max:");Serial.print(BRAKE_O[index]);
       Serial.println(".");
     #endif
     if(online) response_moter_config("motor","set",true,index+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l);
@@ -638,6 +662,7 @@ void setup() {
     uint16_t temp_decel = EEPROM.read(eepMotor[index].DECEL[0])*256 + EEPROM.read(eepMotor[index].DECEL[1]);
     uint16_t temp_dla_s = EEPROM.read(eepMotor[index].DLY_S[0])*256 + EEPROM.read(eepMotor[index].DLY_S[1]);
     uint16_t temp_dla_l = EEPROM.read(eepMotor[index].DLY_L[0])*256 + EEPROM.read(eepMotor[index].DLY_L[1]);
+    BRAKE_I[index]      = EEPROM.read(eepMotor[index].BRAKE);
     uint32_t temp_max[4] = {EEPROM.read(eepMotor[index].MAX[0]),EEPROM.read(eepMotor[index].MAX[1]),EEPROM.read(eepMotor[index].MAX[2]),EEPROM.read(eepMotor[index].MAX[3])}; 
     HIGHT_MAX_I[index]  = temp_max[0]*256*256*256 + temp_max[1]*256*256 + temp_max[2]*256 + temp_max[3];
     builtin[index].set_config(temp_accel, temp_decel, temp_dla_s, temp_dla_l);
@@ -648,6 +673,7 @@ void setup() {
       Serial.print(", d_shot:");Serial.print(temp_dla_s);
       Serial.print(", d_long:");Serial.print(temp_dla_l);
       Serial.print(", max:");Serial.print(HIGHT_MAX_I[index]);
+      Serial.print(", brake:");Serial.print(BRAKE_I[index]);
       Serial.println(".");
     #endif
     if(online) response_moter_config("motor","set",false,index+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l);
