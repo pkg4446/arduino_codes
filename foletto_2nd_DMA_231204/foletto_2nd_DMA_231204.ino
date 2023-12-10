@@ -316,6 +316,17 @@ void command_pros(String receive){
           EEPROM.write(eepDriver[motor_number].DLY_L[0], temp_dla_l/256);
           EEPROM.write(eepDriver[motor_number].DLY_L[1], temp_dla_l%256);
           response_moter_config(control,command,drive,motor_number+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l);
+        }else if(command.equalsIgnoreCase("config")){
+          uint8_t  temp_brk = json["brk"];
+          uint32_t temp_max = json["max"];
+          HIGHT_MAX_I[motor_number] = temp_max;
+          EEPROM.write(eepDriver[motor_number].MAX[3], temp_max%256);
+          temp_max /= 256;
+          EEPROM.write(eepDriver[motor_number].MAX[2], temp_max%256);
+          temp_max /= 256;
+          EEPROM.write(eepDriver[motor_number].MAX[1], temp_max%256);
+          temp_max /= 256;
+          EEPROM.write(eepDriver[motor_number].MAX[0], temp_max%256);
         }else if(command.equalsIgnoreCase("run")){
           bool relay_busy = false;
           for(uint8_t index = 0; index < 7; index++){
@@ -332,8 +343,6 @@ void command_pros(String receive){
           Serial.print(motor_number);
           Serial.print(":");
           driver[motor_number].status();
-        }else if(command.equalsIgnoreCase("config")){
-          
         }else{mqtt_err_msg(control,"command null");}
       }
     }else{ //builtin driver
@@ -356,6 +365,17 @@ void command_pros(String receive){
           EEPROM.write(eepMotor[motor_number].DLY_L[0], temp_dla_l/256);
           EEPROM.write(eepMotor[motor_number].DLY_L[1], temp_dla_l%256);
           response_moter_config(control,command,drive,motor_number+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l);
+        }else if(command.equalsIgnoreCase("config")){
+          uint8_t  temp_brk = json["brk"];
+          uint32_t temp_max = json["max"];
+          HIGHT_MAX_I[motor_number] = temp_max;
+          EEPROM.write(eepMotor[motor_number].MAX[3], temp_max%256);
+          temp_max /= 256;
+          EEPROM.write(eepMotor[motor_number].MAX[2], temp_max%256);
+          temp_max /= 256;
+          EEPROM.write(eepMotor[motor_number].MAX[1], temp_max%256);
+          temp_max /= 256;
+          EEPROM.write(eepMotor[motor_number].MAX[0], temp_max%256);
         }else if(command.equalsIgnoreCase("run")){
           pinValues = read_shift_regs();
           builtin_dir[motor_number] = json["dir"];
@@ -409,8 +429,6 @@ void command_pros(String receive){
           Serial.print(motor_number);
           Serial.print(":");
           driver[motor_number].status();
-        }else if(command.equalsIgnoreCase("config")){
-          
         }else{mqtt_err_msg(control,"command null");}
       }
     }
@@ -601,7 +619,8 @@ void setup() {
     uint16_t temp_decel = EEPROM.read(eepDriver[index].DECEL[0])*256 + EEPROM.read(eepDriver[index].DECEL[1]);
     uint16_t temp_dla_s = EEPROM.read(eepDriver[index].DLY_S[0])*256 + EEPROM.read(eepDriver[index].DLY_S[1]);
     uint16_t temp_dla_l = EEPROM.read(eepDriver[index].DLY_L[0])*256 + EEPROM.read(eepDriver[index].DLY_L[1]);
-    HIGHT_MAX_O[index]  = EEPROM.read(eepDriver[index].MAX[0])*65536 + EEPROM.read(eepDriver[index].MAX[1])*256 + EEPROM.read(eepDriver[index].MAX[2]);
+    uint32_t temp_max[4] = {EEPROM.read(eepDriver[index].MAX[0]),EEPROM.read(eepDriver[index].MAX[1]),EEPROM.read(eepDriver[index].MAX[2]),EEPROM.read(eepDriver[index].MAX[3])}; 
+    HIGHT_MAX_O[index]  = temp_max[0]*256*256*256 + temp_max[1]*256*256 + temp_max[2]*256 + temp_max[3];
     driver[index].set_config(temp_accel, temp_decel, temp_dla_s, temp_dla_l);
     #ifdef DEBUG
       Serial.print("DRIVER "); Serial.print(index+1);
@@ -619,7 +638,8 @@ void setup() {
     uint16_t temp_decel = EEPROM.read(eepMotor[index].DECEL[0])*256 + EEPROM.read(eepMotor[index].DECEL[1]);
     uint16_t temp_dla_s = EEPROM.read(eepMotor[index].DLY_S[0])*256 + EEPROM.read(eepMotor[index].DLY_S[1]);
     uint16_t temp_dla_l = EEPROM.read(eepMotor[index].DLY_L[0])*256 + EEPROM.read(eepMotor[index].DLY_L[1]);
-    HIGHT_MAX_I[index]  = EEPROM.read(eepMotor[index].MAX[0])*65536 + EEPROM.read(eepMotor[index].MAX[1])*256 + EEPROM.read(eepMotor[index].MAX[2]);
+    uint32_t temp_max[4] = {EEPROM.read(eepMotor[index].MAX[0]),EEPROM.read(eepMotor[index].MAX[1]),EEPROM.read(eepMotor[index].MAX[2]),EEPROM.read(eepMotor[index].MAX[3])}; 
+    HIGHT_MAX_I[index]  = temp_max[0]*256*256*256 + temp_max[1]*256*256 + temp_max[2]*256 + temp_max[3];
     builtin[index].set_config(temp_accel, temp_decel, temp_dla_s, temp_dla_l);
     #ifdef DEBUG
       Serial.print("BUILT_IN ");Serial.print(index+1);
