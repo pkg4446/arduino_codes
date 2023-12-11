@@ -1,4 +1,5 @@
 {"ctrl":"sensor","cmd":"read"}
+{"ctrl":"sensor","cmd":"set","opt":0,"num":4}
 
 {"ctrl":"motor","cmd":"set","opt":0,"num":2,"accel":30,"decel":30,"dla_s":1,"dla_l":100}
 {"ctrl":"motor","cmd":"config","opt":0,"num":2,"max":1000000,"brk":1}

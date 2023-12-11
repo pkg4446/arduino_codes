@@ -32,10 +32,10 @@ BYTES_VAL_T read_shift_regs()
 boolean swich_values(uint8_t pin, BYTES_VAL_T pinValues, bool type)
 {
   if(pin >= DATA_WIDTH){
-    return (false&&type);
+    return false;
   }else if((pinValues >> pin) & 1){
-    return (true&&type);
+    return !(type^true);
   }else{
-    return (false&&type);
+    return !(type^false);
   }
 }

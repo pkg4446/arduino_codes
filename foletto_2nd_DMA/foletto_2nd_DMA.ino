@@ -60,7 +60,7 @@ uint32_t HIGHT_MAX_O[DRIVER_O] = {9999,};
 uint32_t HIGHT_MAX_I[DRIVER_I] = {9999,};
 uint8_t  BRAKE_O[DRIVER_O] = {0,};
 uint8_t  BRAKE_I[DRIVER_I] = {0,};
-bool     SENSOR_ON[DATA_WIDTH] = {true,};
+bool     SENSOR_ON[DATA_WIDTH+1] = {false,};
 /******
 {
     "ctrl":  "motor",
@@ -134,7 +134,7 @@ void builtin_stepper(){
     for(uint8_t index=0; index<6; index++){
       if(builtin_run[index] && (builtin_time - builtin_interval[index] > builtin_speed[index] + 200)){
         builtin_interval[index] = builtin_time;
-        if(!swich_values(builtin_limit[index], pinValues)){
+        if(!swich_values(builtin_limit[index], pinValues, SENSOR_ON[builtin_limit[index]])){
           digitalWrite(stepMotor[index].PWM, true);
           builtin_pulse_swich[index] = true;
           #ifdef DEBUG_STEP
@@ -143,7 +143,7 @@ void builtin_stepper(){
           Serial.println(builtin_speed[index]);
           #endif
         }else{
-          if(builtin_pulse_add[index]-- > 1){ //추가 스탭 이동
+          if(builtin_pulse_add[index]-- > 0){ //추가 스탭 이동
             digitalWrite(stepMotor[index].PWM, true);
             builtin_pulse_swich[index] = true;
           }else{
@@ -313,6 +313,14 @@ void command_pros(String receive){
     /**********************************************/
     if(command.equalsIgnoreCase("read")){
       read_pin_values();
+    }else if(command.equalsIgnoreCase("set")){
+      uint8_t sensor_num = json["num"];
+      if(sensor_num<DATA_WIDTH){
+        uint8_t sensor_on_type = json["opt"];
+        EEPROM.write(EEP_SENSOR_ON[sensor_num], sensor_on_type);
+      }else{
+        mqtt_err_msg(control,"select wrong");
+      }
     }else{mqtt_err_msg(control,"command null");}
     /**********************************************/
   }else if(control.equalsIgnoreCase("motor")){
@@ -358,7 +366,8 @@ void command_pros(String receive){
           if(relay_busy){
             mqtt_err_msg(control,"relay is busy");
           }else{
-            driver[motor_number].run_drive(stepDriver[motor_number],json["dir"],json["limit"],json["step"],HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],json["add"]);
+            uint8_t limit_number = json["limit"];
+            driver[motor_number].run_drive(stepDriver[motor_number],json["dir"],limit_number,SENSOR_ON[limit_number],json["step"],HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],json["add"]);
             response_moter_status("motor", "run", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos());
           }
         }else if(command.equalsIgnoreCase("status")){
@@ -638,11 +647,13 @@ void setup() {
     mqtt.subscribe(&request);
     Serial.print("mqtt_subscribe:");  Serial.println(AIO_Subscribe);
   }
+  SENSOR_ON[DATA_WIDTH] = true;
   for (uint8_t index = 0; index < DATA_WIDTH; index++){
-    if(EEPROM.read(EEP_SENSOR_ON[index]) == 0) SENSOR_ON[index] = false;
+    uint8_t sensor_on = EEPROM.read(EEP_SENSOR_ON[index]);
+    if(sensor_on == 0){SENSOR_ON[index] = false;}
+    else{SENSOR_ON[index] = true;}
     #ifdef DEBUG
-      Serial.print("sensor");
-      Serial.print(index);
+      Serial.print("sensor");Serial.print(index);
       Serial.print(" on state is ");
       Serial.println(SENSOR_ON[index]);
     #endif
@@ -663,7 +674,7 @@ void setup() {
       Serial.print(", d_shot:");Serial.print(temp_dla_s);
       Serial.print(", d_long:");Serial.print(temp_dla_l);
       Serial.print(", max:");Serial.print(HIGHT_MAX_O[index]);
-      Serial.print(", max:");Serial.print(BRAKE_O[index]);
+      Serial.print(", brake:");Serial.print(BRAKE_O[index]);
       Serial.println(".");
     #endif
   }

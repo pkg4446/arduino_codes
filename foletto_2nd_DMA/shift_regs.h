@@ -6,4 +6,4 @@
 
 void shift_regs_init();
 BYTES_VAL_T read_shift_regs();
-boolean swich_values(uint8_t pin, BYTES_VAL_T pinValues);
+boolean swich_values(uint8_t pin, BYTES_VAL_T pinValues, bool type);

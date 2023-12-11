@@ -58,12 +58,18 @@
     "cmd":  "read"
 }
 // sensor read response
-{"ctrl":"sensor","cmd":"read"}
 {
     "id":   "<board-id>",     // 제어보드 고유 id
     "ctrl": "sensor_read",
     "cmd":  "read",
     "opt":  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], //배열 순서대로 0~15번 센서값 0:false,1:true
+}
+// sensor read request
+{
+    "ctrl": "sensor",
+    "cmd":  "set",
+    "opt":  1,          //nomal open = 1, nomal close = 0
+    "num":  3           //sensor number 0~16
 }
 
 // step motor ctrl request "config" *eeprom 사용

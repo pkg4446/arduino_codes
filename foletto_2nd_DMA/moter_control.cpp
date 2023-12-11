@@ -59,7 +59,7 @@ uint16_t MOTOR::decel_step(){return decel;}
 uint16_t MOTOR::delay_short(){return dla_s;}
 uint16_t MOTOR::delay_long(){return dla_l;}
 
-void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, uint32_t step, uint32_t hight_max, uint8_t brake, uint32_t extra){
+void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, bool sensor_on, uint32_t step, uint32_t hight_max, uint8_t brake, uint32_t extra){
   if(limit_sw>15) Zero_set = true;
   boolean celerations = false;
   float  speed_change_ac = 0.0;
@@ -103,7 +103,7 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, uint
       }else{
         adjust = 0;
         //---------check this**********----------- limit sw pin
-        if(swich_values(limit_sw, read_shift_regs())){
+        if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
           Zero_set = true;
           Position = hight_max;
           if(extra-- <= 1) break; //when push the limit sw, stop
@@ -138,7 +138,7 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, uint
       }else{
         adjust = 0;
         //---------check this**********----------- limit sw pin
-        if(swich_values(limit_sw, read_shift_regs())){
+        if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
           Zero_set = true;
           Position = 0;
           if(extra-- <= 1) break; //when push the limit sw, stop
