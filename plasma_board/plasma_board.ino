@@ -14,7 +14,7 @@ HardwareSerial nxSerial(2);
 #define UPDATE_INTERVAL 1000UL
 
 #define DEBUG
-#define DEBUG_ZE03
+//#define DEBUG_ZE03
 
 /******************** ZE03-O3 ********************/
 uint8_t ZE03[9] = {0,};
@@ -45,13 +45,23 @@ void Serial_process() {
   if(ch==0x03){
     Serial_buf[Serial_num] = 0x00;
     Serial.println(Serial_buf);
-    //command_pros(Serial_buf);
+    command_pros();
     Serial_num = 0;
   }else if(ch==0x02){
     Serial_num = 0;
   }else{
     Serial_buf[ Serial_num++ ] = ch;
     Serial_num %= SERIAL_MAX;
+  }
+}
+
+void command_pros(){
+  if(Serial_buf[0] == 'C' && Serial_buf[1] == 'M' && Serial_buf[2] == 'D' ){
+    if(Serial_buf[4] == 'R' && Serial_buf[5] == 'U' && Serial_buf[6] == 'N' ){
+      Serial.println("System RUN");
+    }else if(Serial_buf[4] == 'P' && Serial_buf[5] == 'U' && Serial_buf[6] == 'S' ){
+      Serial.println("System PUASE");
+    }
   }
 }
 
@@ -104,7 +114,7 @@ void ZE03_O3(){
   }
 }
 /******************** Function ********************/
-
+/********************* SET UP *********************/
 void setup() {
   Serial.begin(115200);
   if (!EEPROM.begin(EEPROM_SIZE)){
@@ -123,11 +133,13 @@ void setup() {
   }
   Serial.println("System all green");
 }
+/******************** SET UP ********************/
+/********************* LOOP *********************/
 void loop() {
   ZE03_O3();
   DisplayConnect();
 }
-
+/********************* LOOP *********************/
 void relayOnOff(int8_t pinNumber) {
   digitalWrite(Relay[pinNumber], true);
   delay(1000);
