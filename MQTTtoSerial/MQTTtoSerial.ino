@@ -216,6 +216,7 @@ void setup() {
   Serial.print("subscribe: ");
   Serial.print(topic_sub);
   Serial.println(" - MQTT Connected");
+  Serial.println("ver 1.0.0");
 }//End Of Setup()
 
 void reconnect(){
@@ -226,6 +227,7 @@ void reconnect(){
     if (mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
       Serial.println("connected");
       digitalWrite(led_pin[3], true);
+      ESP.restart();
     } else {
       digitalWrite(led_pin[3], false);
       Serial.print("failed with state ");
