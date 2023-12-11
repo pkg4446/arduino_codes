@@ -656,7 +656,6 @@ void setup() {
       Serial.print(", max:");Serial.print(BRAKE_O[index]);
       Serial.println(".");
     #endif
-    if(online) response_moter_config("motor","set",true,index+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l);
   }
   for (uint8_t index = 0; index < DRIVER_I; index++){
     uint16_t temp_accel = EEPROM.read(eepMotor[index].ACCEL[0])*256 + EEPROM.read(eepMotor[index].ACCEL[1]);
@@ -677,7 +676,6 @@ void setup() {
       Serial.print(", brake:");Serial.print(BRAKE_I[index]);
       Serial.println(".");
     #endif
-    if(online) response_moter_config("motor","set",false,index+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l);
   }
 }//********** End Of Setup() **********//
 
