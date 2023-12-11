@@ -318,6 +318,12 @@ void command_pros(String receive){
       if(sensor_num<DATA_WIDTH){
         uint8_t sensor_on_type = json["opt"];
         EEPROM.write(EEP_SENSOR_ON[sensor_num], sensor_on_type);
+        if(sensor_on_type == 0){
+          SENSOR_ON[sensor_num] = false;
+        }else{
+          SENSOR_ON[sensor_num] = true;
+        }
+        set_pin_values();
       }else{
         mqtt_err_msg(control,"select wrong");
       }
@@ -549,12 +555,31 @@ void read_pin_values(){
 
     String json = "{\"id\":\"";
     json += AIO_Subscribe;
-    json += "\",\"ctrl\":\"sensor_read\",\"sensor\":[";
+    json += "\",\"ctrl\":\"sensor\",\"cmd\":\"read\",\"sensor\":[";
 
-    for(int i = 0; i < DATA_WIDTH; i++)
+    for(int index = 0; index < DATA_WIDTH; index++)
     {
-      json += (pinValues >> i) & 1;
-      if(i != DATA_WIDTH-1) json += ",";
+      json += (pinValues >> index) & 1;
+      if(index != DATA_WIDTH-1) json += ",";
+    }
+    json += "]}";
+    
+    char buffer[json.length() + 1];
+    json.toCharArray(buffer, json.length() + 1);
+    mqtt_response(buffer);
+}
+
+void set_pin_values(){
+    pinValues = read_shift_regs();
+
+    String json = "{\"id\":\"";
+    json += AIO_Subscribe;
+    json += "\",\"ctrl\":\"sensor\",\"cmd\":\"set\",\"sensor\":[";
+
+    for(int index = 0; index < DATA_WIDTH; index++)
+    {
+      json += SENSOR_ON[index];
+      if(index != DATA_WIDTH-1) json += ",";
     }
     json += "]}";
     
