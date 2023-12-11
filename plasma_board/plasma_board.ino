@@ -33,12 +33,12 @@ const int8_t led[3]   = {27,32,33};
 unsigned long prevUpdateTime = 0UL;
 /******************** Routine ********************/
 /******************** Variable *******************/
-uint16_t runtime_total_fix = 0;
-uint16_t runtime_run_fix   = 0;
-uint16_t runtime_pause_fix = 0;
-uint16_t runtime_total = 0;
-uint16_t runtime_run   = 0;
-uint16_t runtime_pause = 0;
+uint32_t runtime_total_fix = 0;
+uint32_t runtime_run_fix   = 0;
+uint32_t runtime_pause_fix = 0;
+uint32_t runtime_total = 0;
+uint32_t runtime_run   = 0;
+uint32_t runtime_pause = 0;
 bool runtime   = false;
 bool run_phase = false;
 /******************** Variable ********************/
@@ -105,7 +105,11 @@ void Serial_process() {
 }
 
 void command_pros(){
+  bool EEPROM_COMMIT = false;
   if(Serial_buf[0] == 'C' && Serial_buf[1] == 'M' && Serial_buf[2] == 'D' ){
+    Display("n_t", runtime_total_fix/10);
+    Display("n_r", runtime_run_fix/10);
+    Display("n_p", runtime_pause_fix/10);
     if(Serial_buf[4] == 'R' && Serial_buf[5] == 'U' && Serial_buf[6] == 'N' ){
       runtime   = true;
       run_phase = true;
@@ -114,15 +118,30 @@ void command_pros(){
       runtime_total = runtime_total_fix;
       runtime_run   = runtime_run_fix;
       runtime_pause = runtime_pause_fix;
-      Display("n_t", runtime_total_fix/10);
-      Display("n_r", runtime_run_fix/10);
-      Display("n_p", runtime_pause_fix/10);
     }
+  }else if(Serial_buf[0] == 'T' && Serial_buf[1] == 'N'){
+    EEPROM_COMMIT = true;
+    uint16_t numbers[2] = {Serial_buf[3],Serial_buf[4]};
+    EEPROM.write(EEP_Total[0], numbers[0]);
+    EEPROM.write(EEP_Total[1], numbers[1]);
+    runtime_total_fix = numbers[1]*256 + numbers[0];
+    runtime_total_fix *= 10;
+  }else if(Serial_buf[0] == 'O' && Serial_buf[1] == 'N'){
+    EEPROM_COMMIT = true;
+    uint16_t numbers[2] = {Serial_buf[3],Serial_buf[4]};
+    EEPROM.write(EEP_run[0], numbers[0]);
+    EEPROM.write(EEP_run[1], numbers[1]);
+    runtime_run_fix = numbers[1]*256 + numbers[0];
+    runtime_run_fix *= 10;
+  }else if(Serial_buf[0] == 'C' && Serial_buf[1] == 'N'){
+    EEPROM_COMMIT = true;
+    uint16_t numbers[2] = {Serial_buf[3],Serial_buf[4]};
+    EEPROM.write(EEP_pause[0], numbers[0]);
+    EEPROM.write(EEP_pause[1], numbers[1]);
+    runtime_pause_fix = numbers[1]*256 + numbers[0];
+    runtime_pause_fix *= 10;
   }
-  /*
-  EEPROM.write(a, b);
-  EEPROM.commit();
-  */
+ if(EEPROM_COMMIT) EEPROM.commit();
 }
 
 void DisplayConnect() {
@@ -191,15 +210,18 @@ void setup() {
     pinMode(led[index], OUTPUT);
     digitalWrite(led[index], true);
   }
-  runtime_total = EEPROM.read(EEP_Total[0]);
-  runtime_run   = EEPROM.read(EEP_run[0]);
-  runtime_pause = EEPROM.read(EEP_pause[0]);
-  runtime_total_fix = runtime_total*256 + EEPROM.read(EEP_Total[1]);
-  runtime_run_fix   = runtime_run*256   + EEPROM.read(EEP_run[1]);
-  runtime_pause_fix = runtime_pause*256 + EEPROM.read(EEP_pause[1]);
-  Display("n_t", runtime_total_fix);
-  Display("n_r", runtime_run_fix);
-  Display("n_p", runtime_pause_fix);
+  runtime_total = EEPROM.read(EEP_Total[1]);
+  runtime_run   = EEPROM.read(EEP_run[1]);
+  runtime_pause = EEPROM.read(EEP_pause[1]);
+  runtime_total_fix = runtime_total*256 + EEPROM.read(EEP_Total[0]);
+  runtime_run_fix   = runtime_run*256   + EEPROM.read(EEP_run[0]);
+  runtime_pause_fix = runtime_pause*256 + EEPROM.read(EEP_pause[0]);
+  runtime_total_fix *= 10;
+  runtime_run_fix   *= 10;
+  runtime_pause_fix *= 10;
+  Display("n_t", runtime_total_fix/10);
+  Display("n_r", runtime_run_fix/10);
+  Display("n_p", runtime_pause_fix/10);
 
   Serial.println("System all green");
 }
