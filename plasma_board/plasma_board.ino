@@ -16,7 +16,6 @@ HardwareSerial nxSerial(2);
 #define DEBUG
 //#define DEBUG_ZE03
 
-
 /******************** EEP ROM ********************/
 uint8_t EEP_Total[2] = {0,1};
 uint8_t EEP_run[2]   = {2,3};
@@ -33,23 +32,56 @@ const int8_t led[3]   = {27,32,33};
 /******************** Routine ********************/
 unsigned long prevUpdateTime = 0UL;
 /******************** Routine ********************/
-/******************** Variable ********************/
+/******************** Variable *******************/
 uint16_t runtime_total_fix = 0;
 uint16_t runtime_run_fix   = 0;
 uint16_t runtime_pause_fix = 0;
 uint16_t runtime_total = 0;
 uint16_t runtime_run   = 0;
 uint16_t runtime_pause = 0;
-/******************** Variable ********************/
-/******************** Function ********************/
 bool runtime   = false;
 bool run_phase = false;
-void plasma_run(){
-  if(runtime){
-    if(run_phase){
-
+/******************** Variable ********************/
+uint8_t pin_plazma   = 1;
+bool    plazma_state = false;
+/******************** Function ********************/
+void plasma_run(unsigned long millisec){
+  if(millisec - prevUpdateTime > 100){
+    prevUpdateTime = millisec;
+    if(runtime){
+      if(runtime_total-- > 0){
+        Display("n_t", runtime_total/10);
+        if(run_phase){
+          if(runtime_run-- > 0){
+            Display("n_r", runtime_run/10);
+            if(plazma_state != true){
+              plazma_state = true;
+              digitalWrite(Relay[pin_plazma], true);
+            }
+          }else{
+            run_phase = false;
+            runtime_pause = runtime_pause_fix;
+          }
+        }else{
+          if(runtime_pause-- > 0){
+            Display("n_p", runtime_pause/10);
+            if(plazma_state != false){
+              plazma_state = false;
+              digitalWrite(Relay[pin_plazma], false);
+            }
+          }else{
+            run_phase = true;
+            runtime_run = runtime_run_fix;
+          }
+        }
+      }else{
+        runtime = false;
+      }
     }else{
-      
+      if(plazma_state != false){
+        plazma_state = false;
+        digitalWrite(Relay[pin_plazma], false);
+      }
     }
   }
 }
@@ -75,14 +107,16 @@ void Serial_process() {
 void command_pros(){
   if(Serial_buf[0] == 'C' && Serial_buf[1] == 'M' && Serial_buf[2] == 'D' ){
     if(Serial_buf[4] == 'R' && Serial_buf[5] == 'U' && Serial_buf[6] == 'N' ){
-      
+      runtime   = true;
+      run_phase = true;
     }else if(Serial_buf[4] == 'P' && Serial_buf[5] == 'U' && Serial_buf[6] == 'S' ){
+      runtime   = false;
       runtime_total = runtime_total_fix;
       runtime_run   = runtime_run_fix;
       runtime_pause = runtime_pause_fix;
-      Display("n_t", runtime_total_fix);
-      Display("n_r", runtime_run_fix);
-      Display("n_p", runtime_pause_fix);
+      Display("n_t", runtime_total_fix/10);
+      Display("n_r", runtime_run_fix/10);
+      Display("n_p", runtime_pause_fix/10);
     }
   }
   /*
@@ -172,8 +206,10 @@ void setup() {
 /******************** SET UP ********************/
 /********************* LOOP *********************/
 void loop() {
-  ZE03_O3();
+  unsigned long millisec = millis();
   DisplayConnect();
+  ZE03_O3();
+  plasma_run(millisec);
 }
 /********************* LOOP *********************/
 void relayOnOff(int8_t pinNumber) {
