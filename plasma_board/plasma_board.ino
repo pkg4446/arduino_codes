@@ -76,6 +76,13 @@ void plasma_run(unsigned long millisec){
         }
       }else{
         runtime = false;
+        runtime_total = runtime_total_fix;
+        runtime_run   = runtime_run_fix;
+        runtime_pause = runtime_pause_fix;
+        Display("n_t", runtime_total_fix/10);
+        Display("n_r", runtime_run_fix/10);
+        Display("n_p", runtime_pause_fix/10);
+        Display("btn_main", 0);
       }
     }else{
       if(plazma_state != false){
@@ -126,6 +133,7 @@ void command_pros(){
     EEPROM.write(EEP_Total[1], numbers[1]);
     runtime_total_fix = numbers[1]*256 + numbers[0];
     runtime_total_fix *= 10;
+    Display("n_s_t", runtime_total_fix/10);
   }else if(Serial_buf[0] == 'O' && Serial_buf[1] == 'N'){
     EEPROM_COMMIT = true;
     uint16_t numbers[2] = {Serial_buf[3],Serial_buf[4]};
@@ -133,6 +141,7 @@ void command_pros(){
     EEPROM.write(EEP_run[1], numbers[1]);
     runtime_run_fix = numbers[1]*256 + numbers[0];
     runtime_run_fix *= 10;
+    Display("n_s_r", runtime_run_fix/10);
   }else if(Serial_buf[0] == 'C' && Serial_buf[1] == 'N'){
     EEPROM_COMMIT = true;
     uint16_t numbers[2] = {Serial_buf[3],Serial_buf[4]};
@@ -140,8 +149,9 @@ void command_pros(){
     EEPROM.write(EEP_pause[1], numbers[1]);
     runtime_pause_fix = numbers[1]*256 + numbers[0];
     runtime_pause_fix *= 10;
+    Display("n_s_p", runtime_pause_fix/10);
   }
- if(EEPROM_COMMIT) EEPROM.commit();
+  if(EEPROM_COMMIT) EEPROM.commit();
 }
 
 void DisplayConnect() {
