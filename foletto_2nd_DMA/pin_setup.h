@@ -1,6 +1,7 @@
 #pragma once
 
 #include "arduino.h"
+#include "shift_regs.h"
 
 #define LOAD 49 // PL=PL0=49 //out
 #define DIN  48 // Q7=PL1=48 //in
@@ -80,6 +81,8 @@ const EEP_STEP_ts eepMotor[DRIVER_I]={
    {{41,42},{61,62},{81,82},{101,102},{137,138,139,140},153},
    {{43,44},{63,64},{83,84},{103,104},{141,142,143,144},154}
 };
+const uint8_t SenSeq[DATA_WIDTH] =  {11,10,9,8,3,2,1,0,15,14,13,12,7,6,5,4};
+const uint8_t EEP_SENSOR_ON[DATA_WIDTH] = {155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170};
 /*
 typedef struct LOAD_ts{
    int8_t   DOUT;
@@ -114,5 +117,4 @@ const int dout[8] = {
 		PIN_PJ0};
 */
 // const uint8_t SenSeq[]={4,5,6,7,12,13,14,15,0,1,2,3,8,9,10,11};
-const uint8_t SenSeq[16]={11,10,9,8,3,2,1,0,15,14,13,12,7,6,5,4};
 const int LOADCELL_SCK_PIN = PIN_PB5;

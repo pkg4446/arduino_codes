@@ -60,6 +60,7 @@ uint32_t HIGHT_MAX_O[DRIVER_O] = {9999,};
 uint32_t HIGHT_MAX_I[DRIVER_I] = {9999,};
 uint8_t  BRAKE_O[DRIVER_O] = {0,};
 uint8_t  BRAKE_I[DRIVER_I] = {0,};
+bool     SENSOR_ON[DATA_WIDTH] = {true,};
 /******
 {
     "ctrl":  "motor",
@@ -636,6 +637,15 @@ void setup() {
     Serial.println(Ethernet.localIP());
     mqtt.subscribe(&request);
     Serial.print("mqtt_subscribe:");  Serial.println(AIO_Subscribe);
+  }
+  for (uint8_t index = 0; index < DATA_WIDTH; index++){
+    if(EEPROM.read(EEP_SENSOR_ON[index]) == 0) SENSOR_ON[index] = false;
+    #ifdef DEBUG
+      Serial.print("sensor");
+      Serial.print(index);
+      Serial.print(" on state is ");
+      Serial.println(SENSOR_ON[index]);
+    #endif
   }
   for (uint8_t index = 0; index < DRIVER_O; index++){
     uint16_t temp_accel = EEPROM.read(eepDriver[index].ACCEL[0])*256 + EEPROM.read(eepDriver[index].ACCEL[1]);
