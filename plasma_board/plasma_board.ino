@@ -16,27 +16,44 @@ HardwareSerial nxSerial(2);
 #define DEBUG
 //#define DEBUG_ZE03
 
+
+/******************** EEP ROM ********************/
+uint8_t EEP_Total[2] = {0,1};
+uint8_t EEP_run[2]   = {2,3};
+uint8_t EEP_pause[2] = {4,5};
+/******************** EEP ROM ********************/
 /******************** ZE03-O3 ********************/
 uint8_t ZE03[9] = {0,};
 uint8_t ZE03Index = 0;
 /******************** ZE03-O3 ********************/
-
 /******************** Pin Out ********************/
 const int8_t Relay[6] = {13,12,14,16,17,23};
 const int8_t led[3]   = {27,32,33};
 /******************** Pin Out ********************/
-
 /******************** Routine ********************/
 unsigned long prevUpdateTime = 0UL;
 /******************** Routine ********************/
-
 /******************** Variable ********************/
-uint8_t EEP_Total = 0;
-uint8_t EEP_run   = 0;
-uint8_t EEP_pause = 0;
+uint16_t runtime_total_fix = 0;
+uint16_t runtime_run_fix   = 0;
+uint16_t runtime_pause_fix = 0;
+uint16_t runtime_total = 0;
+uint16_t runtime_run   = 0;
+uint16_t runtime_pause = 0;
 /******************** Variable ********************/
-
 /******************** Function ********************/
+bool runtime   = false;
+bool run_phase = false;
+void plasma_run(){
+  if(runtime){
+    if(run_phase){
+
+    }else{
+      
+    }
+  }
+}
+
 char Serial_buf[SERIAL_MAX];
 int16_t Serial_num;
 void Serial_process() {
@@ -58,11 +75,20 @@ void Serial_process() {
 void command_pros(){
   if(Serial_buf[0] == 'C' && Serial_buf[1] == 'M' && Serial_buf[2] == 'D' ){
     if(Serial_buf[4] == 'R' && Serial_buf[5] == 'U' && Serial_buf[6] == 'N' ){
-      Serial.println("System RUN");
+      
     }else if(Serial_buf[4] == 'P' && Serial_buf[5] == 'U' && Serial_buf[6] == 'S' ){
-      Serial.println("System PUASE");
+      runtime_total = runtime_total_fix;
+      runtime_run   = runtime_run_fix;
+      runtime_pause = runtime_pause_fix;
+      Display("n_t", runtime_total_fix);
+      Display("n_r", runtime_run_fix);
+      Display("n_p", runtime_pause_fix);
     }
   }
+  /*
+  EEPROM.write(a, b);
+  EEPROM.commit();
+  */
 }
 
 void DisplayConnect() {
@@ -131,6 +157,16 @@ void setup() {
     pinMode(led[index], OUTPUT);
     digitalWrite(led[index], true);
   }
+  runtime_total = EEPROM.read(EEP_Total[0]);
+  runtime_run   = EEPROM.read(EEP_run[0]);
+  runtime_pause = EEPROM.read(EEP_pause[0]);
+  runtime_total_fix = runtime_total*256 + EEPROM.read(EEP_Total[1]);
+  runtime_run_fix   = runtime_run*256   + EEPROM.read(EEP_run[1]);
+  runtime_pause_fix = runtime_pause*256 + EEPROM.read(EEP_pause[1]);
+  Display("n_t", runtime_total_fix);
+  Display("n_r", runtime_run_fix);
+  Display("n_p", runtime_pause_fix);
+
   Serial.println("System all green");
 }
 /******************** SET UP ********************/
