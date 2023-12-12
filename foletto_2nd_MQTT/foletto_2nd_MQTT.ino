@@ -85,7 +85,7 @@ void builtin_stepper(){
       builtin_progress = true;
       if(!builtin_break[index] && BRAKE_I[index] !=0 && BRAKE_I[index] < 8) {
         builtin_break[index] = true;
-        digitalWrite(relay_pin[BRAKE_I[index]-1], false);  
+        digitalWrite(relay_pin[BRAKE_I[index]-1], true);  
         Serial.println("brake open");
       }//브레이크 풀기
     }
@@ -117,7 +117,7 @@ void builtin_stepper(){
             builtin_run[index] = false;
             if(builtin_break[index]){
               builtin_break[index] = false;
-              digitalWrite(relay_pin[BRAKE_I[index]-1], true);
+              digitalWrite(relay_pin[BRAKE_I[index]-1], false);
               Serial.println("limit detect");
             }//브레이크 잠금
             response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos());  //종료
@@ -135,7 +135,7 @@ void builtin_stepper(){
           builtin_run[index] = false;
           if(builtin_break[index]){
             builtin_break[index] = false;
-            digitalWrite(relay_pin[BRAKE_I[index]-1], true);
+            digitalWrite(relay_pin[BRAKE_I[index]-1], false);
             Serial.println("brake close");
           }//브레이크 잠금
           response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos());

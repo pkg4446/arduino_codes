@@ -80,7 +80,7 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, bool
   uint32_t distance_de = uint32_t(this->decel)+1;
   uint16_t adjust      = this->dla_l;
 
-  if(brake !=0 && brake < 8) digitalWrite(relay_pin[brake-1], false);  //브레이크 풀기
+  if(brake !=0 && brake < 8) digitalWrite(relay_pin[brake-1], true);  //브레이크 풀기
 
   if(direction){ //up
     for (uint32_t index=0; index < step; index++) {
@@ -155,5 +155,5 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, bool
     }
   }
 
-  if(brake !=0 && brake < 8) digitalWrite(relay_pin[brake-1], true);  //브레이크 잠금
+  if(brake !=0 && brake < 8) digitalWrite(relay_pin[brake-1], false);  //브레이크 잠금
 }

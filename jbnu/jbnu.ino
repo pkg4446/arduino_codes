@@ -162,6 +162,8 @@ HardwareSerial nxSerial(2);
 #define RX2 18
 #define TX2 19
 
+#define PWM1 0
+#define PWM2 1
 #define PIN_PWM1 2
 #define PIN_PWM2 15
 
@@ -187,24 +189,193 @@ const STEP_ts step_upper[STEP_NUM]={
    {10,11,13},
 };
 
-uint32_t  Position_under[STEP_NUM]     = {0,};
-uint32_t  Position_upper[STEP_NUM]     = {0,};
-bool      Direction_under[STEP_NUM]    = {false,};
-bool      Direction_upper[STEP_NUM]    = {false,};
-bool      Activation_under[STEP_NUM]   = {false,};
-bool      Activation_upper[STEP_NUM]   = {false,};
-unsigned long Interval_under[STEP_NUM] = {0UL,};
-unsigned long Interval_upper[STEP_NUM] = {0UL,};
+bool      NextStep_upper              = false;
+bool      NextStep_under              = false;
+uint32_t  Target_pos_upper[STEP_NUM]  = {0,};
+uint32_t  Target_pos_under[STEP_NUM]  = {0,};
 
-void postion_cal(){
+uint32_t  Position_upper[STEP_NUM]    = {0,};
+uint32_t  Position_under[STEP_NUM]    = {0,};
+bool      Direction_upper[STEP_NUM]   = {false,false,false};
+bool      Direction_under[STEP_NUM]   = {false,false,false};
+bool      Activation_upper[STEP_NUM]  = {false,false,false};
+bool      Activation_under[STEP_NUM]  = {false,false,false};
+uint16_t Interval_upper               = 1000;
+uint16_t Interval_under               = 1000;
+unsigned long Update_upper            = 0UL;
+unsigned long Update_under            = 0UL;
+
+void postion_cal_upper(){
+  if(NextStep_upper){
+    NextStep_upper = false;
+  }
   
 }
 
-void moter_run(){
-  
+void postion_cal_under(){
+  if(NextStep_under){
+    NextStep_under = false;
+  }
+}
+
+void moter_run(unsigned long millisec){
+  if(millisec - Update_upper > Interval_upper){
+    Update_upper = millisec;
+    NextStep_upper    = true;
+    for (uint8_t index = 0; index < STEP_NUM; index++){ 
+      if(Position_upper[index] != Target_pos_upper[index]){
+        if(!Activation_upper[index]){
+          Activation_upper[index] = true;
+          ioport.digitalWrite(step_upper[index].ENA, HIGH);
+        }
+        if(Position_upper[index] > Target_pos_upper[index]){
+          if(!Direction_upper[index]){
+            Direction_upper[index] = true;
+            ioport.digitalWrite(step_upper[index].DIR, HIGH);
+          }
+        }else{
+          if(Direction_upper[index]){
+            Direction_upper[index] = false;
+            ioport.digitalWrite(step_upper[index].DIR, LOW);
+          }
+        }
+        digitalWrite(step_upper[index].PUL, true);
+        if(Direction_upper[index]){
+          Position_upper[index] += 1;
+        }else{
+          if(Position_upper[index]>0) Position_upper[index] -= 1;
+        }
+        digitalWrite(step_upper[index].PUL, LOW);
+      }
+    }
+  }
+
+  if(millisec - Update_under > Interval_under){
+    Update_under = millisec;
+    NextStep_under    = true;
+    for (uint8_t index = 0; index < STEP_NUM; index++){
+      if(Position_under[index] != Target_pos_under[index]){
+        if(!Activation_under[index]){
+          Activation_under[index] = true;
+          ioport.digitalWrite(step_under[index].ENA, HIGH);
+        }
+        if(Position_under[index] > Target_pos_under[index]){
+          if(!Direction_under[index]){
+            Direction_under[index] = true;
+            ioport.digitalWrite(step_under[index].DIR, HIGH);
+          }
+        }else{
+          if(Direction_under[index]){
+            Direction_under[index] = false;
+            ioport.digitalWrite(step_under[index].DIR, LOW);
+          }
+        }
+        digitalWrite(step_under[index].PUL, true);
+        if(Direction_under[index]){
+          Position_under[index] += 1;
+        }else{
+          if(Position_under[index]>0) Position_under[index] -= 1;
+        }
+        digitalWrite(step_under[index].PUL, LOW);
+      }
+    }
+  }
+}
+
+void moter_sleep(unsigned long millisec){
+  for (uint8_t index = 0; index < STEP_NUM; index++){ 
+    if(Activation_upper[index] && (millisec - Update_upper > 10)){
+      Activation_upper[index] = false;
+      ioport.digitalWrite(step_upper[index].ENA, LOW);
+    }
+    if(Activation_under[index] && (millisec - Update_under > 10) ){
+      Activation_under[index] = false;
+      ioport.digitalWrite(step_under[index].ENA, LOW);
+    }
+  }
 }
 /******************************************* STEP  MOTOR *******************************************/
+/******************************************* SERIAL PROCESS ****************************************/
+#define SERIAL_MAX  8
+char Serial_buf[SERIAL_MAX];
+int16_t Serial_num;
+void Serial_process(char ch) {
+  if(ch==0x03){
+    Serial_buf[Serial_num] = 0x00;
+    Serial.println(Serial_buf);
+    command_pros();
+    Serial_num = 0;
+  }else if(ch==0x02){
+    Serial_num = 0;
+  }else{
+    Serial_buf[ Serial_num++ ] = ch;
+    Serial_num %= SERIAL_MAX;
+  }
+}
+//0x02 [0][1][2][3][n][n][n][n][0x00]
+void command_pros(){
+  if(Serial_buf[0] == 'M' && Serial_buf[1] == 'S' && Serial_buf[2] == 'I' && Serial_buf[3] == 'U'){
+    uint16_t buffer_num[2] = {Serial_buf[4],Serial_buf[5]};
+    Interval_upper = buffer_num[1]*256 + buffer_num[0];
+    Serial.print("0:");Serial.print(buffer_num[0]);Serial.print(",1:");Serial.print(buffer_num[1]);Serial.print(" = ");Serial.println(Interval_upper);
+  }else if(Serial_buf[0] == 'M' && Serial_buf[1] == 'S' && Serial_buf[2] == 'I' && Serial_buf[3] == 'D'){
+    uint16_t buffer_num[2] = {Serial_buf[4],Serial_buf[5]};
+    Interval_under = buffer_num[1]*256 + buffer_num[0];
+    Serial.print("0:");Serial.print(buffer_num[0]);Serial.print(",1:");Serial.print(buffer_num[1]);Serial.print(" = ");Serial.println(Interval_upper);
+  }else if(Serial_buf[0] == 'M' && Serial_buf[1] == 'P'){
+    if(Serial_buf[2] == 'U'){
+      if(Serial_buf[3] == 'X'){
 
+      }else if(Serial_buf[3] == 'Y'){
+
+      }else if(Serial_buf[3] == 'X'){
+
+      }
+    }else if(Serial_buf[2] == 'D'){
+      if(Serial_buf[3] == 'X'){
+
+      }else if(Serial_buf[3] == 'Y'){
+
+      }else if(Serial_buf[3] == 'X'){
+
+      }
+    }
+  }else if(Serial_buf[0] == 'M' && Serial_buf[1] == 'P'){
+
+  }else{
+    Serial.print("Is not command: ");Serial.println(Serial_buf);
+  }
+}
+
+void SerialConnect() {
+  if (Serial.available()) {
+    Serial_process(Serial.read());
+  }
+}
+/******************************************* SERIAL PROCESS ****************************************/
+/******************************************* NEXTION ***********************************************/
+void DisplayConnect() {
+  if (nxSerial.available()) {
+    Serial_process(nxSerial.read());
+  }
+}
+
+void send2Nextion(String cmd) {
+  nxSerial.print(cmd);
+  nxSerial.write(0xFF);
+  nxSerial.write(0xFF);
+  nxSerial.write(0xFF);
+}
+
+void Display(String IDs, uint16_t values) {
+  String cmd;
+  char buf[8] = { 0 };
+  sprintf(buf, "%d", values);
+  cmd = IDs + ".val=";
+  cmd += buf;
+  send2Nextion(cmd);
+}
+/******************************************* NEXTION ***********************************************/
 uint8_t pin_in[3] =  {32, 33, 25};
 
 uint8_t index_led = 0;
@@ -215,8 +386,14 @@ void setup() {
   Serial.begin(115200);
   ioport.begin();
   ioport.setClock(400000);
-  pinMode(pin_in[index], INPUT_PULLUP);
-  pinMode(pin_in[index], INPUT_PULLUP);
+  /*
+  ledcSetup(PWM1, 5000, 8);
+  ledcSetup(PWM2, 5000, 8);
+  ledcAttachPin(PIN_PWM1, PWM1);
+  ledcAttachPin(PIN_PWM2, PWM2);
+  ledcWrite(PWM1, 50);
+  ledcWrite(PWM2, 50);
+  */
   for (uint8_t index = 0; index < STEP_NUM; index++) {
     ioport.pinMode(step_under[index].ENA, OUTPUT);
     ioport.pinMode(step_under[index].DIR, OUTPUT);
@@ -228,10 +405,15 @@ void setup() {
   for (uint8_t index = 0; index < 3; index++) {
     pinMode(pin_in[index], INPUT_PULLUP);
   }
+  Serial.println("System all green");
 }
 /******************************************** S E T U P ********************************************/
 /********************************************* L O O P *********************************************/
 void loop() {
+  unsigned long millisec = millis();
+  SerialConnect();
+  moter_run(millisec);
+  moter_sleep(millisec);
   /*
     for (uint8_t index = 0; index < 3; index++) {
     Serial.print("limit sw ");
@@ -240,6 +422,7 @@ void loop() {
     Serial.println(digitalRead(pin_in[index]));
     }
   */
+  /*
   if (led_flage) {
     ioport.digitalWrite(step_upper[index_led].ENA, HIGH);
     ioport.digitalWrite(step_upper[index_led].DIR, HIGH);
@@ -268,7 +451,6 @@ void loop() {
       index_led = 0;
       led_flage = true;
     }
-  }
-  delay(1000);
+  */
 }
 /********************************************* L O O P *********************************************/
