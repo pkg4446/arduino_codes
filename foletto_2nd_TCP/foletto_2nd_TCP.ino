@@ -1,16 +1,12 @@
 /******************************** ver 1.1.0  ********************************/
-/******************************** 2023-12-10 ********************************/
+/******************************** 2023-12-12 ********************************/
 #include "pin_setup.h"
 #include "shift_regs.h"
 #include "moter_control.h"
 
 #include <EEPROM.h>
 #include <SPI.h>
-#include "Adafruit_MQTT.h"
-#include "Adafruit_MQTT_Client.h"
-
 #include <Ethernet.h>
-#include <EthernetClient.h>
 #include <Dns.h>
 #include <Dhcp.h>
 
@@ -22,31 +18,24 @@
 #define DRIVER_I  6
 
 #define DEBUG
-#define DEBUG_MQTT
+#define DEBUG_TCP
 //#define DEBUG_STEP
 //#define DEBUG_SHIFT_REGS
 
 /************************* Ethernet Client Setup *****************************/
-//byte mac[6] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, byte(random(0, 255))};
 byte mac[6] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0x00};
 
 IPAddress ip(192, 168, 0, random(0, 255));
 IPAddress myDns(192, 168, 0, 1);
-EthernetClient client;
-/************************* Mqtt Server Setup *********************************/
-#define AIO_SERVER      "mqtt.kro.kr"
-#define AIO_SERVER_PORT  1883
-#define AIO_USERNAME    "test"
-#define AIO_KEY         "test"
+IPAddress gateway(192, 168, 1, 1);
+IPAddress subnet(255, 255, 0, 0);
 
-const char* AIO_Publish = "foletto_pub_hub";
-char AIO_Subscribe[24]  = {0x00,};
-Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVER_PORT, AIO_USERNAME, AIO_KEY);
-// You don't need to change anything below this line!
-// Setup a mqtt 
-Adafruit_MQTT_Publish   response = Adafruit_MQTT_Publish(&mqtt,   AIO_Publish); //Adafruit_MQTT_Publish(&mqtt,   AIO_Publish, 1);
-Adafruit_MQTT_Subscribe request  = Adafruit_MQTT_Subscribe(&mqtt, AIO_Subscribe); //Adafruit_MQTT_Subscribe(&mqtt, AIO_Subscribe, 1);
-/************************* Mqtt End *********************************/
+#define SERVER_PORT 502
+
+EthernetServer TCPserver(SERVER_PORT);
+EthernetClient client;
+
+char device_id[24]  = {0x00,};
 /************************* values *********************************/
 MOTOR driver[DRIVER_O];
 MOTOR builtin[DRIVER_I];
@@ -180,9 +169,7 @@ void init_port_base(){
 char    Serial_buf[144];
 uint8_t Serial_num = 0;
 
-void Serial_process() {
-  char ch;
-  ch = Serial.read();
+void Serial_process(char ch) {
   if(ch=='}'){
     Serial_buf[Serial_num] = '}';
     Serial_buf[Serial_num+1] = 0x00;
@@ -197,43 +184,19 @@ void Serial_process() {
   }
 }
 
-//**********MQTT**********//
-void MQTT_connect() {
-  // Stop if already connected.
-  if (mqtt.connected()) {
-    return;
+//********** TCP **********//
+void TCP_requeset(){
+  if (client.available()) {
+    Ethernet.maintain();
+    Serial_process(client.read());
+  }else if (Serial.available()) {
+    Serial_process(Serial.read());
   }
-  Ethernet.maintain();
-  int8_t ret = mqtt.connect();
-  Serial.println("Connecting to MQTT.");
-  unsigned long interval_mqtt_retry = 0L;
-  while (ret != 0) { // connect will return 0 for connected
-    unsigned long mqtt_retry = millis();
-    if(Serial.available()) Serial_process();
-    if(mqtt_retry - interval_mqtt_retry > 1000){
-      Serial.println(mqtt.connectErrorString(ret));
-      mqtt.disconnect();
-      interval_mqtt_retry = mqtt_retry;
-      Serial.println("Retrying MQTT connection.");
-      ret = mqtt.connect();
-    }    
-  }
-  Serial.println("MQTT Connected!");
-}
-
-void mqtt_requeset(){
-  Adafruit_MQTT_Subscribe *subscription;
-  while ((subscription = mqtt.readSubscription(1))) {
-    if (subscription == &request) {
-      String receive = (char *)request.lastread;
-      command_pros(receive);
-    }//subscription
-  }//while
-}//mqtt_requeset()
+}//TCP_requeset()
 
 void command_pros(String receive){
-  #ifdef DEBUG_MQTT
-    Serial.print("MQTT: ");
+  #ifdef DEBUG_TCP
+    Serial.print("TCP: ");
     Serial.println(receive);
   #endif
   StaticJsonDocument<JSON_STACK> json;
@@ -241,26 +204,26 @@ void command_pros(String receive){
   String control = json["ctrl"];
   String command = json["cmd"];
 
-  if(control.equalsIgnoreCase("mqtt_sub")){    
-    String mqtt_sub_cmd = json["cmd"];
-    for(uint8_t index=0; index<mqtt_sub_cmd.length(); index++){
-      byte sub_char = mqtt_sub_cmd[index];
+  if(control.equalsIgnoreCase("dev_id")){    
+    String dev_id_cmd = json["cmd"];
+    for(uint8_t index=0; index<dev_id_cmd.length(); index++){
+      byte sub_char = dev_id_cmd[index];
       EEPROM.write(index+1, sub_char);
     }
-    EEPROM.write(mqtt_sub_cmd.length()+1, 0x00);
-    Serial.print(mqtt_sub_cmd);
+    EEPROM.write(dev_id_cmd.length()+1, 0x00);
+    Serial.print(dev_id_cmd);
   }else if(control.equalsIgnoreCase("macaddr")){
     uint8_t macaddr = json["cmd"];
     EEPROM.write(0, macaddr);
   }
 
-  mqtt_receive(control,command);
+  tcp_receive(control,command);
   /************************************************/
   if(control.equalsIgnoreCase("relay")){
     /**********************************************/
     int8_t relay_number = json["num"];
     if(relay_number<1 || relay_number>7){
-      mqtt_err_msg(control,"select wrong");
+      tcp_err_msg(control,"select wrong");
     }else if(command.equalsIgnoreCase("onoff")){
       relay_number -= 1;
       int16_t duration  = json["opt"];
@@ -274,7 +237,7 @@ void command_pros(String receive){
       bool status = json["opt"];
       digitalWrite(relay_pin[relay_number], status);
       relay_status_change(relay_number+1, status);
-    }else{mqtt_err_msg(control,"command null");}
+    }else{tcp_err_msg(control,"command null");}
     /**********************************************/
   }else if(control.equalsIgnoreCase("sensor")){
     /**********************************************/
@@ -292,16 +255,16 @@ void command_pros(String receive){
         }
         set_pin_values();
       }else{
-        mqtt_err_msg(control,"select wrong");
+        tcp_err_msg(control,"select wrong");
       }
-    }else{mqtt_err_msg(control,"command null");}
+    }else{tcp_err_msg(control,"command null");}
     /**********************************************/
   }else if(control.equalsIgnoreCase("motor")){
     uint8_t motor_number = json["num"];
     bool    drive        = json["opt"];
     if(drive){ //(MD5-HD14)
       if(motor_number<1 || motor_number>4){
-        mqtt_err_msg(control,"select wrong");
+        tcp_err_msg(control,"select wrong");
       }else{
         motor_number -= 1;
         if(command.equalsIgnoreCase("set")){
@@ -337,7 +300,7 @@ void command_pros(String receive){
             if(relay_state[index]) relay_busy = true;
           }
           if(relay_busy){
-            mqtt_err_msg(control,"relay is busy");
+            tcp_err_msg(control,"relay is busy");
           }else{
             uint8_t limit_number = json["limit"];
             driver[motor_number].run_drive(stepDriver[motor_number],json["dir"],limit_number,SENSOR_ON[limit_number],json["step"],HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],json["add"]);
@@ -348,11 +311,11 @@ void command_pros(String receive){
           Serial.print(motor_number);
           Serial.print(":");
           driver[motor_number].status();
-        }else{mqtt_err_msg(control,"command null");}
+        }else{tcp_err_msg(control,"command null");}
       }
     }else{ //builtin driver
       if(motor_number<1 || motor_number>6){
-        mqtt_err_msg(control,"select wrong");
+        tcp_err_msg(control,"select wrong");
       }else{
         motor_number -= 1;
         if(command.equalsIgnoreCase("set")){
@@ -435,27 +398,27 @@ void command_pros(String receive){
           Serial.print(motor_number);
           Serial.print(":");
           driver[motor_number].status();
-        }else{mqtt_err_msg(control,"command null");}
+        }else{tcp_err_msg(control,"command null");}
       }
     }
   }else{
     Serial.println("nope");
-    mqtt_err_msg("null","command error");
+    tcp_err_msg("null","command error");
   }
 }//mqtt_requeset()
 
-void mqtt_response(const char* send_data){
-  if (online && !response.publish(send_data)) {
-    mqtt_response(send_data);
+void tcp_response(const char* send_data){
+  if (client.connected()) {
+    client.write(send_data);
+    Ethernet.maintain();
   }else{
-    Serial.print("mqtt response ok: ");
-    Serial.println(send_data);
+    Serial.println("disconnect");
   }
 }
 
-void mqtt_err_msg(String type, String error_msg){
+void tcp_err_msg(String type, String error_msg){
   DynamicJsonDocument res(JSON_STACK);
-  res["id"]   = AIO_Subscribe;
+  res["id"]   = device_id;
   res["ctrl"] = "error";
   res["cmd"]  = type;
   res["err"]  = error_msg;
@@ -464,19 +427,19 @@ void mqtt_err_msg(String type, String error_msg){
   serializeJson(res, json);
   char buffer[json.length() + 1];
   json.toCharArray(buffer, json.length() + 1);
-  mqtt_response(buffer);
+  tcp_response(buffer);
 }
 
-void mqtt_receive(String control, String command){
+void tcp_receive(String control, String command){
   String json = "{\"ID\":\""+ String(device_id) +",\"ctrl\":\"receive\",\"cmd\":\""+control+",\"opt\":\""+command+"\"}";
   char buffer[json.length() + 1];
   json.toCharArray(buffer, json.length() + 1);
-  mqtt_response(buffer);
+  tcp_response(buffer);
 }
 //**********End Of MQTT**********//
 void response_moter_config(String control, String command, bool drive, uint8_t motor_number, uint16_t v_accel, uint16_t v_decel, uint16_t v_dla_s, uint16_t v_dla_l){
   DynamicJsonDocument res(JSON_STACK);
-  res["id"]    = AIO_Subscribe;
+  res["id"]    = device_id;
   res["ctrl"]  = control;
   res["cmd"]   = command;
   res["opt"]   = drive;
@@ -490,12 +453,12 @@ void response_moter_config(String control, String command, bool drive, uint8_t m
   serializeJson(res, json);
   char buffer[json.length() + 1];
   json.toCharArray(buffer, json.length() + 1);
-  mqtt_response(buffer);
+  tcp_response(buffer);
 }
 
 void response_moter_status(String ctrl, String command, bool drive, uint8_t number, bool zero, uint32_t pos){
   DynamicJsonDocument res(JSON_STACK);
-  res["id"]   = AIO_Subscribe;
+  res["id"]   = device_id;
   res["ctrl"] = ctrl;
   res["cmd"]  = command;
   res["opt"]  = drive;
@@ -507,50 +470,50 @@ void response_moter_status(String ctrl, String command, bool drive, uint8_t numb
   serializeJson(res, json);
   char buffer[json.length() + 1];
   json.toCharArray(buffer, json.length() + 1);
-  mqtt_response(buffer);
+  tcp_response(buffer);
 }
 
 void read_pin_values(){
-    pinValues = read_shift_regs();
+  pinValues = read_shift_regs();
 
-    String json = "{\"id\":\"";
-    json += AIO_Subscribe;
-    json += "\",\"ctrl\":\"sensor\",\"cmd\":\"read\",\"sensor\":[";
+  String json = "{\"id\":\"";
+  json += device_id;
+  json += "\",\"ctrl\":\"sensor\",\"cmd\":\"read\",\"sensor\":[";
 
-    for(int index = 0; index < DATA_WIDTH; index++)
-    {
-      json += (pinValues >> index) & 1;
-      if(index != DATA_WIDTH-1) json += ",";
-    }
-    json += "]}";
-    
-    char buffer[json.length() + 1];
-    json.toCharArray(buffer, json.length() + 1);
-    mqtt_response(buffer);
+  for(int index = 0; index < DATA_WIDTH; index++)
+  {
+    json += (pinValues >> index) & 1;
+    if(index != DATA_WIDTH-1) json += ",";
+  }
+  json += "]}";
+  
+  char buffer[json.length() + 1];
+  json.toCharArray(buffer, json.length() + 1);
+  tcp_response(buffer);
 }
 
 void set_pin_values(){
-    pinValues = read_shift_regs();
+  pinValues = read_shift_regs();
 
-    String json = "{\"id\":\"";
-    json += AIO_Subscribe;
-    json += "\",\"ctrl\":\"sensor\",\"cmd\":\"set\",\"sensor\":[";
+  String json = "{\"id\":\"";
+  json += device_id;
+  json += "\",\"ctrl\":\"sensor\",\"cmd\":\"set\",\"sensor\":[";
 
-    for(int index = 0; index < DATA_WIDTH; index++)
-    {
-      json += SENSOR_ON[index];
-      if(index != DATA_WIDTH-1) json += ",";
-    }
-    json += "]}";
-    
-    char buffer[json.length() + 1];
-    json.toCharArray(buffer, json.length() + 1);
-    mqtt_response(buffer);
+  for(int index = 0; index < DATA_WIDTH; index++)
+  {
+    json += SENSOR_ON[index];
+    if(index != DATA_WIDTH-1) json += ",";
+  }
+  json += "]}";
+  
+  char buffer[json.length() + 1];
+  json.toCharArray(buffer, json.length() + 1);
+  tcp_response(buffer);
 }
 
 void relay_status_change(uint8_t index, bool status){
   DynamicJsonDocument res(JSON_STACK);
-  res["id"]   = AIO_Subscribe;
+  res["id"]   = device_id;
   res["ctrl"] = "relay_hold";
   res["cmd"]  = index;
   res["opt"]  = status;
@@ -559,7 +522,7 @@ void relay_status_change(uint8_t index, bool status){
   serializeJson(res, json);
   char buffer[json.length() + 1];
   json.toCharArray(buffer, json.length() + 1);
-  mqtt_response(buffer);
+  tcp_response(buffer);
 }
 
 void relay_off_awiat(){
@@ -570,7 +533,7 @@ void relay_off_awiat(){
       relay_state[index] = false;
 
       DynamicJsonDocument res(JSON_STACK);
-      res["id"]   = AIO_Subscribe;
+      res["id"]   = device_id;
       res["ctrl"] = "relay";
       res["cmd"]  = index+1;
       res["opt"]  = uint16_t(sys_time - relay_start_time[index]);
@@ -579,7 +542,7 @@ void relay_off_awiat(){
       serializeJson(res, json);
       char buffer[json.length() + 1];
       json.toCharArray(buffer, json.length() + 1);
-      mqtt_response(buffer);
+      tcp_response(buffer);
     }
   }
 }
@@ -591,11 +554,9 @@ void setup() {
 
   mac[5] = byte(EEPROM.read(0));
   for (uint8_t index = 1; index < 25; index++){
-    AIO_Subscribe[index-1] = EEPROM.read(index);
+    device_id[index-1] = EEPROM.read(index);
   }
   
-  request  = Adafruit_MQTT_Subscribe(&mqtt, AIO_Subscribe);
-
   Ethernet.init(53);
 
   if (Ethernet.begin(mac) == 0) {
@@ -622,16 +583,8 @@ void setup() {
     builtin[index].init(stepMotor[index]);
   }
   init_port_base();
-  
-  if(online){
-    Serial.print(Ethernet.maintain());
-    Serial.print(" : ");
-    Serial.print(mac[5]);
-    Serial.print(" : DHCP assigned IP ");
-    Serial.println(Ethernet.localIP());
-    mqtt.subscribe(&request);
-    Serial.print("mqtt_subscribe:");  Serial.println(AIO_Subscribe);
-  }
+  TCPserver.begin();
+
   SENSOR_ON[DATA_WIDTH] = true;
   for (uint8_t index = 0; index < DATA_WIDTH; index++){
     uint8_t sensor_on = EEPROM.read(EEP_SENSOR_ON[index]);
@@ -683,31 +636,29 @@ void setup() {
       Serial.println(".");
     #endif
   }
+
+  if(online){    
+    Serial.print("MAC: ");
+    Serial.print(mac[5]);
+    Serial.print(", IP: ");
+    Serial.print(Ethernet.localIP());
+    Serial.print(", PORT: ");
+    Serial.println(SERVER_PORT);
+  }
 }//********** End Of Setup() **********//
 
 unsigned long mqtt_req  = 0UL;
 unsigned long mqtt_ping = 0UL;
 //********** loop **********//
 void loop() {
-  if(online){
-    MQTT_connect();
-    unsigned long mqtt_run = millis();
-    if(mqtt_run - mqtt_req > 1000){
-      mqtt_req = mqtt_run;
-      mqtt_requeset();
-    }
-    if(mqtt_run - mqtt_ping > 1000*10){
-      mqtt_ping = mqtt_run;
-      #ifdef DEBUG
-        Serial.println("Ping");
-      #endif
-      if (!mqtt.ping()) mqtt.disconnect();
-    }
-  }
-  if (Serial.available()) Serial_process();
-  
+  //unsigned long test_count1 = micros();
+  EthernetClient newClient = TCPserver.accept();
+  if(newClient && !client) client = newClient;
+  TCP_requeset();  
   relay_off_awiat();
   builtin_stepper();
+  //unsigned long test_count2 = micros();
+  //if(test_count2-test_count1 > 200) Serial.println(test_count2-test_count1);
   #ifdef DEBUG_SHIFT_REGS
     display_pin_values();
   #endif
