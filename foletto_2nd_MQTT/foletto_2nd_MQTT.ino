@@ -468,7 +468,7 @@ void mqtt_err_msg(String type, String error_msg){
 }
 
 void mqtt_receive(String control, String command){
-  String json = "{\"ID\":\""+ String(device_id) +",\"ctrl\":\"receive\",\"cmd\":\""+control+",\"opt\":\""+command+"\"}";
+  String json = "{\"ID\":\""+ String(AIO_Subscribe) +",\"ctrl\":\"receive\",\"cmd\":\""+control+",\"opt\":\""+command+"\"}";
   char buffer[json.length() + 1];
   json.toCharArray(buffer, json.length() + 1);
   mqtt_response(buffer);
