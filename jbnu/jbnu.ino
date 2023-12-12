@@ -167,7 +167,7 @@ HardwareSerial nxSerial(2);
 #define PIN_PWM1 2
 #define PIN_PWM2 15
 
-#define DEBUG
+//#define DEBUG_MONIT
 
 /******************************************* STEP  MOTOR *******************************************/
 #define STEP_NUM  3
@@ -317,27 +317,51 @@ void command_pros(){
   if(Serial_buf[0] == 'M' && Serial_buf[1] == 'S' && Serial_buf[2] == 'I' && Serial_buf[3] == 'U'){
     uint16_t buffer_num[2] = {Serial_buf[4],Serial_buf[5]};
     Interval_upper = buffer_num[1]*256 + buffer_num[0];
-    Serial.print("0:");Serial.print(buffer_num[0]);Serial.print(",1:");Serial.print(buffer_num[1]);Serial.print(" = ");Serial.println(Interval_upper);
+    Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 = ");Serial.println(Interval_upper);
   }else if(Serial_buf[0] == 'M' && Serial_buf[1] == 'S' && Serial_buf[2] == 'I' && Serial_buf[3] == 'D'){
     uint16_t buffer_num[2] = {Serial_buf[4],Serial_buf[5]};
     Interval_under = buffer_num[1]*256 + buffer_num[0];
-    Serial.print("0:");Serial.print(buffer_num[0]);Serial.print(",1:");Serial.print(buffer_num[1]);Serial.print(" = ");Serial.println(Interval_upper);
+    Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 = ");Serial.println(Interval_under);
   }else if(Serial_buf[0] == 'M' && Serial_buf[1] == 'P'){
     if(Serial_buf[2] == 'U'){
       if(Serial_buf[3] == 'X'){
-
+        uint32_t buffer_num[4] = {Serial_buf[4],Serial_buf[5],Serial_buf[6],Serial_buf[7]};
+        Target_pos_upper[0] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+        Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 + ");
+        Serial.print(buffer_num[2]);Serial.print("*256*256 + ");Serial.print(buffer_num[3]);Serial.print("*256*256*256 = ");
+        Serial.println(Target_pos_upper[0]);
       }else if(Serial_buf[3] == 'Y'){
-
+        uint32_t buffer_num[4] = {Serial_buf[4],Serial_buf[5],Serial_buf[6],Serial_buf[7]};
+        Target_pos_upper[1] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+         Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 + ");
+         Serial.print(buffer_num[2]);Serial.print("*256*256 + ");Serial.print(buffer_num[3]);Serial.print("*256*256*256 = ");
+        Serial.println(Target_pos_upper[1]);
       }else if(Serial_buf[3] == 'X'){
-
+        uint32_t buffer_num[4] = {Serial_buf[4],Serial_buf[5],Serial_buf[6],Serial_buf[7]};
+        Target_pos_upper[2] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+        Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 + ");
+        Serial.print(buffer_num[2]);Serial.print("*256*256 + ");Serial.print(buffer_num[3]);Serial.print("*256*256*256 = ");
+        Serial.println(Target_pos_upper[2]);
       }
     }else if(Serial_buf[2] == 'D'){
       if(Serial_buf[3] == 'X'){
-
+        uint32_t buffer_num[4] = {Serial_buf[4],Serial_buf[5],Serial_buf[6],Serial_buf[7]};
+        Target_pos_under[0] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+        Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 + ");
+        Serial.print(buffer_num[2]);Serial.print("*256*256 + ");Serial.print(buffer_num[3]);Serial.print("*256*256*256 = ");
+        Serial.println(Target_pos_under[0]);
       }else if(Serial_buf[3] == 'Y'){
-
+        uint32_t buffer_num[4] = {Serial_buf[4],Serial_buf[5],Serial_buf[6],Serial_buf[7]};
+        Target_pos_under[1] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+        Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 + ");
+        Serial.print(buffer_num[2]);Serial.print("*256*256 + ");Serial.print(buffer_num[3]);Serial.print("*256*256*256 = ");
+        Serial.println(Target_pos_under[1]);
       }else if(Serial_buf[3] == 'X'){
-
+        uint32_t buffer_num[4] = {Serial_buf[4],Serial_buf[5],Serial_buf[6],Serial_buf[7]};
+        Target_pos_under[2] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+        Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 + ");
+        Serial.print(buffer_num[2]);Serial.print("*256*256 + ");Serial.print(buffer_num[3]);Serial.print("*256*256*256 = ");
+        Serial.println(Target_pos_under[2]);
       }
     }
   }else if(Serial_buf[0] == 'M' && Serial_buf[1] == 'P'){
@@ -378,9 +402,6 @@ void Display(String IDs, uint16_t values) {
 /******************************************* NEXTION ***********************************************/
 uint8_t pin_in[3] =  {32, 33, 25};
 
-uint8_t index_led = 0;
-boolean led_flage = true;
-
 /******************************************** S E T U P ********************************************/
 void setup() {
   Serial.begin(115200);
@@ -408,6 +429,10 @@ void setup() {
   Serial.println("System all green");
 }
 /******************************************** S E T U P ********************************************/
+#ifdef DEBUG_MONIT
+  uint8_t index_led = 0;
+  boolean led_flage = true;
+#endif
 /********************************************* L O O P *********************************************/
 void loop() {
   unsigned long millisec = millis();
@@ -422,35 +447,36 @@ void loop() {
     Serial.println(digitalRead(pin_in[index]));
     }
   */
-  /*
-  if (led_flage) {
-    ioport.digitalWrite(step_upper[index_led].ENA, HIGH);
-    ioport.digitalWrite(step_upper[index_led].DIR, HIGH);
-    ioport.digitalWrite(step_under[index_led].ENA, HIGH);
-    ioport.digitalWrite(step_under[index_led].DIR, HIGH);
-    delay(200);
-    ioport.digitalWrite(step_upper[index_led].ENA, LOW);
-    ioport.digitalWrite(step_upper[index_led].DIR, LOW);
-    ioport.digitalWrite(step_under[index_led].ENA, LOW);
-    ioport.digitalWrite(step_under[index_led].DIR, LOW);
-    if (index_led < STEP_NUM) {
-      index_led++;
+  #ifdef DEBUG_MONIT
+    if (led_flage) {
+      ioport.digitalWrite(step_upper[index_led].ENA, HIGH);
+      ioport.digitalWrite(step_upper[index_led].DIR, HIGH);
+      ioport.digitalWrite(step_under[index_led].ENA, HIGH);
+      ioport.digitalWrite(step_under[index_led].DIR, HIGH);
+      delay(200);
+      ioport.digitalWrite(step_upper[index_led].ENA, LOW);
+      ioport.digitalWrite(step_upper[index_led].DIR, LOW);
+      ioport.digitalWrite(step_under[index_led].ENA, LOW);
+      ioport.digitalWrite(step_under[index_led].DIR, LOW);
+      if (index_led < STEP_NUM) {
+        index_led++;
+      } else {
+        index_led = 0;
+        led_flage = false;
+      }
     } else {
-      index_led = 0;
-      led_flage = false;
+      digitalWrite(step_upper[index_led].PUL, true);
+      digitalWrite(step_under[index_led].PUL, true);
+      delay(200);
+      digitalWrite(step_upper[index_led].PUL, LOW);
+      digitalWrite(step_under[index_led].PUL, LOW);
+      if (index_led < 6) {
+        index_led++;
+      } else {
+        index_led = 0;
+        led_flage = true;
+      }
     }
-  } else {
-    digitalWrite(step_upper[index_led].PUL, true);
-    digitalWrite(step_under[index_led].PUL, true);
-    delay(200);
-    digitalWrite(step_upper[index_led].PUL, LOW);
-    digitalWrite(step_under[index_led].PUL, LOW);
-    if (index_led < 6) {
-      index_led++;
-    } else {
-      index_led = 0;
-      led_flage = true;
-    }
-  */
+  #endif
 }
 /********************************************* L O O P *********************************************/
