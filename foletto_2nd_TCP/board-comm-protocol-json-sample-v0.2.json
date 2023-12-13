@@ -113,7 +113,7 @@
     "dla_l":100
 }
 
-// step motor ctrl request "run" (사용 전, 후, relay status change로 반드시 브레이크 off, on)
+// step motor ctrl request "run"
 {
     "ctrl":  "motor",
     "cmd":   "run",
@@ -125,6 +125,28 @@
     "add":   100, //리미트 인식 후 추가 진행 스탭 // 추가 스탭은 step 범위 이내에서 리미트를 인식할 경우만 작동함.
 }
 // step motor ctrl response "run"
+{
+    "id":   "<board-id>", // 제어보드 고유 id
+    "ctrl": "motor",
+    "cmd":  "run",
+    "opt":  false,
+    "num":  1,
+    "zero": false,
+    "pos":  100
+}
+
+// step motor ctrl request "repeat"
+{
+    "ctrl":  "motor",
+    "cmd":   "repeat",
+    "opt":   1,   //0내장 드라이버, 1외장드라이버(MD5-HD14)
+    "num":   1,   //motor type e.g. 1번 모터 // 0 to 255
+    "step":  100, //스탭 수 (n 스탭당 1회전) unsigned int32 - 0 to 4294967295        
+    "dir":   1,   //step motor direction (CW/CCW), 0:CW, 1:CCW
+    "limit": 4,   //모터 진행방향 리미트센서 번호 = sensor_read 번호, 16이상일 경우 인식 안함.
+    "rept":  3,   //반복횟수
+}
+// step motor ctrl response "repeat"
 {
     "id":   "<board-id>", // 제어보드 고유 id
     "ctrl": "motor",

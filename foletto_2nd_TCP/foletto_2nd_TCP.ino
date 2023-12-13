@@ -51,7 +51,8 @@ uint8_t  BRAKE_O[DRIVER_O] = {0,};
 uint8_t  BRAKE_I[DRIVER_I] = {0,};
 bool     SENSOR_ON[DATA_WIDTH+1] = {false,};
 /************************* values *********************************/
-uint8_t  shift_read       = 0;
+uint16_t  shift_read      = 0;
+uint16_t  shift_read_gqp  = 160;
 bool     builtin_run[6]   = {false,};
 bool     builtin_dir[6]   = {false,};
 bool     builtin_break[6] = {false,};
@@ -82,9 +83,13 @@ void builtin_stepper(){
   if(builtin_progress){
     digitalWrite(BUITIN_EN, true);
     unsigned long builtin_time = micros();
-    if(shift_read++ > 160){
+    if(shift_read++ > shift_read_gqp){
       pinValues  = read_shift_regs();
       shift_read = 0;
+      shift_read_gqp = 160;
+      for(uint8_t index=0; index<6; index++){
+        if(builtin_run[index]) shift_read_gqp += 160;
+      }
     }
 
     for(uint8_t index=0; index<6; index++){
@@ -306,6 +311,28 @@ void command_pros(String receive){
             driver[motor_number].run_drive(stepDriver[motor_number],json["dir"],limit_number,SENSOR_ON[limit_number],json["step"],HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],json["add"]);
             response_moter_status("motor", "run", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos());
           }
+        }else if(command.equalsIgnoreCase("repeat")){
+          /*************************************************************/
+          bool relay_busy = false;
+          for(uint8_t index = 0; index < 7; index++){
+            if(relay_state[index]) relay_busy = true;
+          }
+          if(relay_busy){
+            tcp_err_msg(control,"relay is busy");
+          }else{
+            uint8_t limit_number = json["limit"];
+            bool moter_direction = json["dir"];
+            uint8_t repeat_num   = json["rept"];
+            driver[motor_number].run_drive(stepDriver[motor_number],!moter_direction,limit_number,SENSOR_ON[limit_number],json["step"],HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);
+            //for
+            for(uint8_t index=0; index < repeat_num; index++){
+              driver[motor_number].run_drive(stepDriver[motor_number],moter_direction,16,true,json["step"],HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);                                //retrun
+              driver[motor_number].run_drive(stepDriver[motor_number],!moter_direction,limit_number,SENSOR_ON[limit_number],json["step"],HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);  //retrun
+            }
+            
+            response_moter_status("motor", "run", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos());
+            }
+          /*************************************************************/
         }else if(command.equalsIgnoreCase("status")){
           Serial.print("driver");
           Serial.print(motor_number);
@@ -412,7 +439,8 @@ void tcp_response(const char* send_data){
     client.write(send_data);
     Ethernet.maintain();
   }else{
-    Serial.println("disconnect");
+    Serial.print("disconnect: ");
+    Serial.println(send_data);
   }
 }
 
@@ -649,13 +677,20 @@ void setup() {
 
 unsigned long mqtt_req  = 0UL;
 unsigned long mqtt_ping = 0UL;
+bool client_connected = false;
 //********** loop **********//
 void loop() {
   //unsigned long test_count1 = micros();
   EthernetClient newClient = TCPserver.accept();
   if(newClient && !client){
     client = newClient;
+    client_connected = true;
     Serial.println("client connected");
+  }else if(client_connected){
+    if(!client.connected()){
+      client = TCPserver.available();
+      client_connected = false;
+    }
   }
   TCP_requeset();  
   relay_off_awiat();

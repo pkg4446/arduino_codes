@@ -7,7 +7,8 @@
 
 {"ctrl":"motor","cmd":"set","opt":1,"num":1,"accel":1000,"decel":1000,"dla_s":1,"dla_l":1000}
 {"ctrl":"motor","cmd":"config","opt":1,"num":1,"max":1000000,"brk":1}
-{"ctrl":"motor","cmd":"run","opt":1,"num":1,"step":3000,"dir":1,"limit":7,"add":10}
+{"ctrl":"motor","cmd":"run","opt":1,"num":4,"step":300,"dir":1,"limit":6,"add":10}
+{"ctrl":"motor","cmd":"repeat","opt":1,"num":4,"step":3000,"dir":1,"limit":6,"rept":3}
 
 
 {"ctrl":"motor","cmd":"status","opt":1,"num":1}
