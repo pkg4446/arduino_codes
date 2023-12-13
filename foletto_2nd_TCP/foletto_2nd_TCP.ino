@@ -436,15 +436,19 @@ void command_pros(String receive){
             uint8_t repeat_num   = json["repeat"];
             uint32_t run_step    = json["full_step"];
             uint8_t extra_run    = json["add_step"];
-            if(limit_number < 16) builtin[motor_number].run_moter(stepMotor[motor_number],motor_number,!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number]);
+            if(limit_number < 16) builtin[motor_number].run_moter(stepMotor[motor_number],motor_number,!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);
             for(uint8_t index=0; index < repeat_num; index++){
-              builtin[motor_number].run_moter(stepMotor[motor_number],motor_number,moter_direction,16,true,run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number]);                                //run
-              builtin[motor_number].run_moter(stepMotor[motor_number],motor_number,!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number]);  //retrun
+              delay(10); //풀스탭 작동 시 방향전환 딜레이
+              builtin[motor_number].run_moter(stepMotor[motor_number],motor_number,moter_direction,16,true,run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);                                //run
+              delay(10); //풀스탭 작동 시 방향전환 딜레이
+              builtin[motor_number].run_moter(stepMotor[motor_number],motor_number,!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);  //retrun
             }
             if(extra_run > 0){
               run_step = run_step * uint32_t(extra_run) / 100;
-              builtin[motor_number].run_moter(stepMotor[motor_number],motor_number,moter_direction,16,true,run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number]);                                //run
-              builtin[motor_number].run_moter(stepMotor[motor_number],motor_number,!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number]);  //retrun
+              delay(10); //풀스탭 작동 시 방향전환 딜레이
+              builtin[motor_number].run_moter(stepMotor[motor_number],motor_number,moter_direction,16,true,run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);                                //run
+              delay(10); //풀스탭 작동 시 방향전환 딜레이
+              builtin[motor_number].run_moter(stepMotor[motor_number],motor_number,!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);  //retrun
             }
             response_moter_status("motor", "repeat", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos());
             }
