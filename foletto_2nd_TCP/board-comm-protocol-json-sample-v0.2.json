@@ -136,16 +136,43 @@
 }
 
 // step motor ctrl request "repeat"
+// 외장드라이버 펌핑 모터 예제
+// repeat 3번 full step으로 반복 후, add_step이 50이면 full_step의 50% step만 반복
+// add_step: 0이면 full_step만 repeat만큼 반복(1주기를 repeat 만큼 반복)
+// 가감속 set 존재. 
 {
     "ctrl":  "motor",
     "cmd":   "repeat",
     "opt":   1,   //0내장 드라이버, 1외장드라이버(MD5-HD14)
     "num":   1,   //motor type e.g. 1번 모터 // 0 to 255
-    "step":  100, //스탭 수 (n 스탭당 1회전) unsigned int32 - 0 to 4294967295        
-    "dir":   1,   //step motor direction (CW/CCW), 0:CW, 1:CCW
-    "limit": 4,   //모터 진행방향 리미트센서 번호 = sensor_read 번호, 16이상일 경우 인식 안함.
-    "rept":  3,   //반복횟수
+    "full_step":  7000, // 펌핑 모터 풀 스텝 
+                  // unsigned int32 - 0 to 4294967295    
+    "add_step": 50, // repeat이 3회라면, 
+    "dir":   1,   // step motor direction (CW/CCW), 0:CW, 1:CCW
+                  // 펌핑 모터 내려가는 방향. 
+    "limit": 6,   // 펌핑 모터 home 센서
+                  // home에 위치해야 구동가능하고, 한 주기 펌핑한 뒤 home까지 위치해야함. 
+    "repeat":  5,   //반복횟수
 }
+
+// step motor ctrl request "repeat"
+// 내장드라이버 믹싱 모터 예제
+// repeat 3번 step만큼 1주기(dir값과 dir 반전값으로)를 repeat 만큼반복
+// 가감속 set 존재. 
+{
+    "ctrl":  "motor",
+    "cmd":   "repeat",
+    "opt":   0,   //0내장 드라이버, 1외장드라이버(MD5-HD14)
+    "num":   1,   //motor type e.g. 1번 모터 // 0 to 255
+    "full_step":  400, // 펌핑 모터 풀 스텝 
+                  // unsigned int32 - 0 to 4294967295    
+    "add_step": 0,
+    "dir":   1,     // step motor direction (CW/CCW), 0:CW, 1:CCW
+    "limit": 16,    // 믹싱 모터 limit 센서 X
+    "repeat":  3,   // 반복횟수
+}
+
+
 // step motor ctrl response "repeat"
 {
     "id":   "<board-id>", // 제어보드 고유 id

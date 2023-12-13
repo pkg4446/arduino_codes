@@ -4,11 +4,12 @@
 {"ctrl":"motor","cmd":"set","opt":0,"num":2,"accel":30,"decel":30,"dla_s":1,"dla_l":100}
 {"ctrl":"motor","cmd":"config","opt":0,"num":2,"max":1000000,"brk":1}
 {"ctrl":"motor","cmd":"run","opt":0,"num":2,"step":1000,"dir":1,"limit":4,"add":10}
+{"ctrl":"motor","cmd":"repeat","opt":0,"num":4,"full_step":3000,"add_step":50,"dir":1,"limit":6,"repeat":1}
 
 {"ctrl":"motor","cmd":"set","opt":1,"num":1,"accel":1000,"decel":1000,"dla_s":1,"dla_l":1000}
 {"ctrl":"motor","cmd":"config","opt":1,"num":1,"max":1000000,"brk":1}
 {"ctrl":"motor","cmd":"run","opt":1,"num":4,"step":300,"dir":1,"limit":6,"add":10}
-{"ctrl":"motor","cmd":"repeat","opt":1,"num":4,"step":3000,"dir":1,"limit":6,"rept":3}
+{"ctrl":"motor","cmd":"repeat","opt":1,"num":4,"full_step":3000,"add_step":50,"dir":1,"limit":6,"repeat":1}
 
 
 {"ctrl":"motor","cmd":"status","opt":1,"num":1}
