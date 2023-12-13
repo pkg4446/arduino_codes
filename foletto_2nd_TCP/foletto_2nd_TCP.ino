@@ -653,7 +653,10 @@ unsigned long mqtt_ping = 0UL;
 void loop() {
   //unsigned long test_count1 = micros();
   EthernetClient newClient = TCPserver.accept();
-  if(newClient && !client) client = newClient;
+  if(newClient && !client){
+    client = newClient;
+    Serial.println("client connected");
+  }
   TCP_requeset();  
   relay_off_awiat();
   builtin_stepper();
