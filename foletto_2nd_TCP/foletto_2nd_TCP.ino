@@ -1,5 +1,5 @@
-/******************************** ver 1.1.0  ********************************/
-/******************************** 2023-12-12 ********************************/
+/******************************** ver 1.1.1  ********************************/
+/******************************** 2023-12-13 ********************************/
 #include "pin_setup.h"
 #include "shift_regs.h"
 #include "moter_control.h"
@@ -424,7 +424,6 @@ void command_pros(String receive){
           builtin_pulse_start[motor_number] = builtin_pulse[motor_number] - builtin_pulse_start[motor_number];
           builtin_pulse_add[motor_number]   = json["add"];
         }else if(command.equalsIgnoreCase("repeat")){
-          /*************************************************************/
           bool relay_busy = false;
           for(uint8_t index = 0; index < 7; index++){
             if(relay_state[index]) relay_busy = true;
@@ -449,7 +448,6 @@ void command_pros(String receive){
             }
             response_moter_status("motor", "repeat", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos());
             }
-          /*************************************************************/
         }else if(command.equalsIgnoreCase("status")){
           Serial.print("builtin");
           Serial.print(motor_number);
