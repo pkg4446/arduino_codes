@@ -245,9 +245,8 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
       //if(Position > 1000) break; //if Position is higher than maximum hight, stop
       Position += 1;
       digitalWrite(moter_pins.PWM, true);
-      delayMicroseconds(50);
+      delayMicroseconds(24);
       digitalWrite(moter_pins.PWM, false);
-      delayMicroseconds(50);
       delayMicroseconds(adjust);
     }
   }else if(!direction){  //down
@@ -287,9 +286,8 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
         Zero_set = false;
       }
       digitalWrite(moter_pins.PWM, true);
-      delayMicroseconds(50);
+      delayMicroseconds(24);
       digitalWrite(moter_pins.PWM, false);
-      delayMicroseconds(50);
       delayMicroseconds(adjust);
     }
   }
