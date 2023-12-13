@@ -211,6 +211,7 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
   if(direction){ //up
     for (uint32_t index=0; index < step; index++) {
       //speed change
+      digitalWrite(moter_pins.PWM, true);
       if(Zero_set && (Position < hight_max)){
         if(celerations){
           if(index < distance_ac){
@@ -238,14 +239,15 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
       //---------check this**********---------- max hight
       //if(swich_values(limit_sw, read_shift_regs())) break; //when push the limit sw, stop
       //if(Position > 1000) break; //if Position is higher than maximum hight, stop
-      digitalWrite(moter_pins.PWM, true);
       Position += 1;
       digitalWrite(moter_pins.PWM, false);
+      delayMicroseconds(50);
       delayMicroseconds(adjust);
     }
   }else if(!direction){  //down
     for (uint32_t index=0; index<step; index++) {
       //speed change
+      digitalWrite(moter_pins.PWM, true);
       if(Zero_set){
         if(celerations){
           if(index < distance_ac){
@@ -270,13 +272,13 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
           break; //when push the limit sw, stop
         }
       }
-      digitalWrite(moter_pins.PWM, true);
       if(Position > 0){
         Position -= 1;
       }else{
         Zero_set = false;
       }
       digitalWrite(moter_pins.PWM, false);
+      delayMicroseconds(50);
       delayMicroseconds(adjust);
     }
   }
