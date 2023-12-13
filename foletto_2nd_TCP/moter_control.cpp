@@ -291,7 +291,6 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
       delayMicroseconds(adjust);
     }
   }
-
   if(brake !=0 && brake < 8) digitalWrite(relay_pin[brake-1], false);  //브레이크 잠금
   digitalWrite(BUITIN_EN, false);
 }
