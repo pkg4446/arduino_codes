@@ -180,6 +180,7 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
   uint32_t distance_de = uint32_t(this->decel)+1;
   uint16_t adjust      = this->dla_l;
 
+  digitalWrite(BUITIN_EN, true);
   if(brake !=0 && brake < 8) digitalWrite(relay_pin[brake-1], true);  //브레이크 풀기
 
   if(motor_number == 2 || motor_number == 3){
@@ -210,8 +211,7 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
 
   if(direction){ //up
     for (uint32_t index=0; index < step; index++) {
-      //speed change
-      digitalWrite(moter_pins.PWM, true);
+      //speed change      
       if(Zero_set && (Position < hight_max)){
         if(celerations){
           if(index < distance_ac){
@@ -240,14 +240,13 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
       //if(swich_values(limit_sw, read_shift_regs())) break; //when push the limit sw, stop
       //if(Position > 1000) break; //if Position is higher than maximum hight, stop
       Position += 1;
+      digitalWrite(moter_pins.PWM, true);
       digitalWrite(moter_pins.PWM, false);
-      delayMicroseconds(50);
       delayMicroseconds(adjust);
     }
   }else if(!direction){  //down
     for (uint32_t index=0; index<step; index++) {
       //speed change
-      digitalWrite(moter_pins.PWM, true);
       if(Zero_set){
         if(celerations){
           if(index < distance_ac){
@@ -277,11 +276,12 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
       }else{
         Zero_set = false;
       }
+      digitalWrite(moter_pins.PWM, true);
       digitalWrite(moter_pins.PWM, false);
-      delayMicroseconds(50);
       delayMicroseconds(adjust);
     }
   }
 
   if(brake !=0 && brake < 8) digitalWrite(relay_pin[brake-1], false);  //브레이크 잠금
+  digitalWrite(BUITIN_EN, false);
 }
