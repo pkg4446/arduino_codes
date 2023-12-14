@@ -14,11 +14,20 @@ EthernetClient client;
 
 char recieve[140];
 uint8_t char_index = 0;
+bool client_connected = false;
 
 void TCPServer() {
   // Wait for a TCP client from Arduino #1:
   EthernetClient newClient = TCPserver.accept();
-  if(newClient && !client) client = newClient;
+  if(newClient && !client){
+    client = newClient;
+    client_connected = true;
+  }else if(client_connected){
+    if(!client.connected()){
+      client = TCPserver.available();
+      client_connected = false;
+    }
+  }
   
   if (client) {
     unsigned long test1 = micros();
