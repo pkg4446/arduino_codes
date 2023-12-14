@@ -112,7 +112,7 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, bool
           if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
             Zero_set = true;
             Position = hight_max;
-            if(extra-- <= 1) break; //when push the limit sw, stop
+            if(extra-- <= 1) return; //when push the limit sw, stop
           }
         }else{
           speed = this->dla_s;
@@ -153,7 +153,7 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, bool
           if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
             Zero_set = true;
             Position = 0;
-            if(extra-- <= 1) break; //when push the limit sw, stop
+            if(extra-- <= 1) return; //when push the limit sw, stop
           }
         }else{
           speed = this->dla_s;
@@ -253,7 +253,7 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
           if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
             Zero_set = true;
             Position = hight_max;
-            break; //when push the limit sw, stop
+            return; //when push the limit sw, stop
           }
         }else{
           speed = this->dla_s;
@@ -294,7 +294,7 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
           if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
             Zero_set = true;
             Position = 0;
-            break; //when push the limit sw, stop
+            return; //when push the limit sw, stop
           }
         }else{
           speed = this->dla_s;
