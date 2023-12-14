@@ -85,7 +85,6 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool zero_dir, bool direction, uint8_t
   digitalWrite(moter_pins.DIR, direction!=zero_dir);
   
   if(direction){ //up
-    Serial.println("up");
     for (uint32_t index=0; index < step; index++) {
       //speed change
       if(Zero_set && (Position < hight_max)){
@@ -126,7 +125,6 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool zero_dir, bool direction, uint8_t
       delayMicroseconds(adjust);
     }
   }else{  //down
-    Serial.println("down");
     for (uint32_t index=0; index<step; index++) {
       //speed change
       if(Zero_set){
