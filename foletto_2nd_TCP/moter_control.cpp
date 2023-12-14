@@ -83,8 +83,9 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool zero_dir, bool direction, uint8_t
   if(brake !=0 && brake < 8) digitalWrite(relay_pin[brake-1], true);  //브레이크 풀기
   
   digitalWrite(moter_pins.DIR, direction!=zero_dir);
-
-  if(direction!=zero_dir){ //up
+  
+  if(direction){ //up
+    Serial.println("up");
     for (uint32_t index=0; index < step; index++) {
       //speed change
       if(Zero_set && (Position < hight_max)){
@@ -125,6 +126,7 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool zero_dir, bool direction, uint8_t
       delayMicroseconds(adjust);
     }
   }else{  //down
+    Serial.println("down");
     for (uint32_t index=0; index<step; index++) {
       //speed change
       if(Zero_set){
@@ -224,7 +226,7 @@ void MOTOR::run_moter(STEP_ts moter_pins, bool zero_dir, uint8_t motor_number, b
     }
   }
 
-  if(direction!=zero_dir){ //up
+  if(direction){ //up
     for (uint32_t index=0; index < step; index++) {
       //speed change      
       if(Zero_set && (Position < hight_max)){

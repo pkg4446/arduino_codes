@@ -125,7 +125,7 @@ void builtin_stepper(){
       if(builtin_pulse_swich[index] && builtin_run[index]){
         builtin_pulse_swich[index] = false;
         digitalWrite(stepMotor[index].PWM, false);
-        builtin[index].pos_update(builtin_dir[index]!=ZERO_DIR_I[index]);
+        builtin[index].pos_update(builtin_dir[index]);
         builtin_pulse[index]--;
         if(builtin_pulse[index] == 0){
           builtin_run[index] = false;
