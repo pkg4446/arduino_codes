@@ -102,7 +102,7 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, bool
           speed = this->dla_s;
         }
       }else{
-        if(limit_sw>15){
+        if(limit_sw<DATA_WIDTH){
           if(this->dla_s > 400){
             adjust = this->dla_s - 400;
           }else{
@@ -143,7 +143,7 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, bool
           speed = this->dla_s;
         }
       }else{
-        if(limit_sw>15){
+        if(limit_sw<DATA_WIDTH){
           if(this->dla_s > 400){
             adjust = this->dla_s - 400;
           }else{
@@ -162,7 +162,7 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, bool
       digitalWrite(moter_pins.PWM, true);
       if(Position > 0){
         Position -= 1;
-      }else if(limit_sw>15){
+      }else if(limit_sw<DATA_WIDTH){
         Zero_set = false;
       }
       digitalWrite(moter_pins.PWM, false);
@@ -243,7 +243,7 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
           speed = this->dla_s;
         }
       }else{
-        if(limit_sw>15){
+        if(limit_sw<DATA_WIDTH){
           if(this->dla_s > 400){
             adjust = this->dla_s - 400;
           }else{
@@ -284,7 +284,7 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
           speed = this->dla_s;
         }
       }else{
-        if(limit_sw>15){
+        if(limit_sw<DATA_WIDTH){
           if(this->dla_s > 400){
             adjust = this->dla_s - 400;
           }else{
@@ -302,7 +302,7 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
       }
       if(Position > 0){
         Position -= 1;
-      }else if(limit_sw>15){
+      }else if(limit_sw<DATA_WIDTH){
         Zero_set = false;
       }
       digitalWrite(moter_pins.PWM, true);
