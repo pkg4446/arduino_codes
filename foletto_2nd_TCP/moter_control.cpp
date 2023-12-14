@@ -102,16 +102,20 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, bool
           speed = this->dla_s;
         }
       }else{
-        if(this->dla_s > 400){
-          adjust = this->dla_s - 400;
+        if(limit_sw>15){
+          if(this->dla_s > 400){
+            adjust = this->dla_s - 400;
+          }else{
+            adjust = 0;
+          }
+          //---------check this**********----------- limit sw pin
+          if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
+            Zero_set = true;
+            Position = hight_max;
+            if(extra-- <= 1) break; //when push the limit sw, stop
+          }
         }else{
-          adjust = 0;
-        }
-        //---------check this**********----------- limit sw pin
-        if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
-          Zero_set = true;
-          Position = hight_max;
-          if(extra-- <= 1) break; //when push the limit sw, stop
+          speed = this->dla_s;
         }
       }
       //---------check this**********---------- max hight
@@ -142,22 +146,26 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, bool
           speed = this->dla_s;
         }
       }else{
-        if(this->dla_s > 400){
-          adjust = this->dla_s - 400;
+        if(limit_sw>15){
+          if(this->dla_s > 400){
+            adjust = this->dla_s - 400;
+          }else{
+            adjust = 0;
+          }
+          //---------check this**********----------- limit sw pin
+          if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
+            Zero_set = true;
+            Position = 0;
+            if(extra-- <= 1) break; //when push the limit sw, stop
+          }
         }else{
-          adjust = 0;
-        }
-        //---------check this**********----------- limit sw pin
-        if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
-          Zero_set = true;
-          Position = 0;
-          if(extra-- <= 1) break; //when push the limit sw, stop
+          speed = this->dla_s;
         }
       }
       digitalWrite(moter_pins.PWM, true);
       if(Position > 0){
         Position -= 1;
-      }else{
+      }else if(limit_sw>15){
         Zero_set = false;
       }
       digitalWrite(moter_pins.PWM, false);
@@ -238,16 +246,20 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
           speed = this->dla_s;
         }
       }else{
-        if(this->dla_s > 400){
-          adjust = this->dla_s - 400;
+        if(limit_sw>15){
+          if(this->dla_s > 400){
+            adjust = this->dla_s - 400;
+          }else{
+            adjust = 0;
+          }        
+          //---------check this**********----------- limit sw pin
+          if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
+            Zero_set = true;
+            Position = hight_max;
+            break; //when push the limit sw, stop
+          }
         }else{
-          adjust = 0;
-        }        
-        //---------check this**********----------- limit sw pin
-        if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
-          Zero_set = true;
-          Position = hight_max;
-          break; //when push the limit sw, stop
+          speed = this->dla_s;
         }
       }
       //---------check this**********---------- max hight
@@ -278,21 +290,25 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
           speed = this->dla_s;
         }
       }else{
-        if(this->dla_s > 400){
-          adjust = this->dla_s - 400;
+        if(limit_sw>15){
+          if(this->dla_s > 400){
+            adjust = this->dla_s - 400;
+          }else{
+            adjust = 0;
+          }
+          //---------check this**********----------- limit sw pin
+          if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
+            Zero_set = true;
+            Position = 0;
+            break; //when push the limit sw, stop
+          }
         }else{
-          adjust = 0;
-        }
-        //---------check this**********----------- limit sw pin
-        if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
-          Zero_set = true;
-          Position = 0;
-          break; //when push the limit sw, stop
+          speed = this->dla_s;
         }
       }
       if(Position > 0){
         Position -= 1;
-      }else{
+      }else if(limit_sw>15){
         Zero_set = false;
       }
       digitalWrite(moter_pins.PWM, true);
