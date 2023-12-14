@@ -23,6 +23,6 @@ class MOTOR{
 		uint16_t decel_step();
 		uint16_t delay_short();
 		uint16_t delay_long();
-		void run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, bool sensor_on, uint32_t step, uint32_t hight_max, uint8_t brake, uint32_t extra);
-		void run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, uint8_t limit_sw, bool sensor_on, uint32_t step, uint32_t hight_max, uint8_t brake);
+		void run_drive(STEP_ts moter_pins, bool zero_dir, bool direction, uint8_t limit_sw, bool sensor_on, uint32_t step, uint32_t hight_max, uint8_t brake, uint32_t extra);
+		void run_moter(STEP_ts moter_pins, bool zero_dir, uint8_t motor_number, bool direction, uint8_t limit_sw, bool sensor_on, uint32_t step, uint32_t hight_max, uint8_t brake);
 };

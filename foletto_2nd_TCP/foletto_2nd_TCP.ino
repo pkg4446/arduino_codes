@@ -312,7 +312,7 @@ void command_pros(String receive){
             tcp_err_msg(control,"relay is busy");
           }else{
             uint8_t limit_number = json["limit"];
-            driver[motor_number].run_drive(stepDriver[motor_number],json["dir"],limit_number,SENSOR_ON[limit_number],json["step"],HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],json["add"]);
+            driver[motor_number].run_drive(stepDriver[motor_number],ZERO_DIR_O[motor_number],json["dir"],limit_number,SENSOR_ON[limit_number],json["step"],HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],json["add"]);
             response_moter_status("motor", "run", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos());
           }
         }else if(command.equalsIgnoreCase("repeat")){
@@ -328,15 +328,15 @@ void command_pros(String receive){
             uint8_t repeat_num   = json["repeat"];
             uint32_t run_step    = json["full_step"];
             uint8_t extra_run    = json["add_step"];
-            if(limit_number < 16) driver[motor_number].run_drive(stepDriver[motor_number],!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);
+            if(limit_number < 16) driver[motor_number].run_drive(stepDriver[motor_number],ZERO_DIR_O[motor_number],!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);
             for(uint8_t index=0; index < repeat_num; index++){
-              driver[motor_number].run_drive(stepDriver[motor_number],moter_direction,16,true,run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);                                //run
-              driver[motor_number].run_drive(stepDriver[motor_number],!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);  //retrun
+              driver[motor_number].run_drive(stepDriver[motor_number],ZERO_DIR_O[motor_number],moter_direction,16,true,run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);                                //run
+              driver[motor_number].run_drive(stepDriver[motor_number],ZERO_DIR_O[motor_number],!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);  //retrun
             }
             if(extra_run > 0){
               run_step = run_step * uint32_t(extra_run) / 100;
-              driver[motor_number].run_drive(stepDriver[motor_number],moter_direction,16,true,run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);                                //run
-              driver[motor_number].run_drive(stepDriver[motor_number],!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);  //retrun
+              driver[motor_number].run_drive(stepDriver[motor_number],ZERO_DIR_O[motor_number],moter_direction,16,true,run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);                                //run
+              driver[motor_number].run_drive(stepDriver[motor_number],ZERO_DIR_O[motor_number],!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);  //retrun
             }
             response_moter_status("motor", "repeat", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos());
             }
@@ -385,9 +385,9 @@ void command_pros(String receive){
           pinValues = read_shift_regs();
           builtin_dir[motor_number] = json["dir"];
           if(motor_number == 2 || motor_number == 3){
-            digitalWrite(stepMotor[motor_number].DIR, builtin_dir[motor_number]);
+            digitalWrite(stepMotor[motor_number].DIR, builtin_dir[motor_number]^ZERO_DIR_I[motor_number]);
           }else{
-            if(builtin_dir[motor_number]){
+            if(builtin_dir[motor_number]^ZERO_DIR_I[motor_number]){
               if(motor_number == 0){
                 PORTE |= 0b01000000; //on
               }else if(motor_number == 1){
@@ -442,15 +442,15 @@ void command_pros(String receive){
             uint8_t repeat_num   = json["repeat"];
             uint32_t run_step    = json["full_step"];
             uint8_t extra_run    = json["add_step"];
-            if(limit_number < 16) builtin[motor_number].run_moter(stepMotor[motor_number],motor_number,!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);
+            if(limit_number < 16) builtin[motor_number].run_moter(stepMotor[motor_number],ZERO_DIR_I[motor_number],motor_number,!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);
             for(uint8_t index=0; index < repeat_num; index++){
-              builtin[motor_number].run_moter(stepMotor[motor_number],motor_number,moter_direction,16,true,run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);                                //run
-              builtin[motor_number].run_moter(stepMotor[motor_number],motor_number,!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);  //retrun
+              builtin[motor_number].run_moter(stepMotor[motor_number],ZERO_DIR_I[motor_number],motor_number,moter_direction,16,true,run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);                                //run
+              builtin[motor_number].run_moter(stepMotor[motor_number],ZERO_DIR_I[motor_number],motor_number,!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);  //retrun
             }
             if(extra_run > 0){
               run_step = run_step * uint32_t(extra_run) / 100;
-              builtin[motor_number].run_moter(stepMotor[motor_number],motor_number,moter_direction,16,true,run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);                                //run
-              builtin[motor_number].run_moter(stepMotor[motor_number],motor_number,!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);  //retrun
+              builtin[motor_number].run_moter(stepMotor[motor_number],ZERO_DIR_I[motor_number],motor_number,moter_direction,16,true,run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);                                //run
+              builtin[motor_number].run_moter(stepMotor[motor_number],ZERO_DIR_I[motor_number],motor_number,!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);  //retrun
             }
             response_moter_status("motor", "repeat", drive, motor_number +1, builtin[motor_number].get_zero_set(), builtin[motor_number].get_pos());
             }
@@ -691,7 +691,6 @@ void setup() {
     uint16_t temp_dla_s = EEPROM.read(eepMotor[index].DLY_S[0])*256 + EEPROM.read(eepMotor[index].DLY_S[1]);
     uint16_t temp_dla_l = EEPROM.read(eepMotor[index].DLY_L[0])*256 + EEPROM.read(eepMotor[index].DLY_L[1]);
     BRAKE_I[index]      = EEPROM.read(eepMotor[index].BRAKE);
-    ZERO_DIR_I[index]   = EEPROM.read(eepMotor[index].ZERO_DIR);
     uint32_t temp_max[4] = {EEPROM.read(eepMotor[index].MAX[0]),EEPROM.read(eepMotor[index].MAX[1]),EEPROM.read(eepMotor[index].MAX[2]),EEPROM.read(eepMotor[index].MAX[3])}; 
     HIGHT_MAX_I[index]  = temp_max[0]*256*256*256 + temp_max[1]*256*256 + temp_max[2]*256 + temp_max[3];
     builtin[index].set_config(temp_accel, temp_decel, temp_dla_s, temp_dla_l);
