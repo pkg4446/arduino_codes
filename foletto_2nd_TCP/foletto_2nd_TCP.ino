@@ -125,7 +125,7 @@ void builtin_stepper(){
       if(builtin_pulse_swich[index] && builtin_run[index]){
         builtin_pulse_swich[index] = false;
         digitalWrite(stepMotor[index].PWM, false);
-        builtin[index].pos_update(builtin_dir[index]^ZERO_DIR_I[index]);
+        builtin[index].pos_update(builtin_dir[index]!=ZERO_DIR_I[index]);
         builtin_pulse[index]--;
         if(builtin_pulse[index] == 0){
           builtin_run[index] = false;
@@ -389,9 +389,9 @@ void command_pros(String receive){
           pinValues = read_shift_regs();
           builtin_dir[motor_number] = json["dir"];
           if(motor_number == 2 || motor_number == 3){
-            digitalWrite(stepMotor[motor_number].DIR, builtin_dir[motor_number]^ZERO_DIR_I[motor_number]);
+            digitalWrite(stepMotor[motor_number].DIR, builtin_dir[motor_number]!=ZERO_DIR_I[motor_number]);
           }else{
-            if(builtin_dir[motor_number]^ZERO_DIR_I[motor_number]){
+            if(builtin_dir[motor_number]!=ZERO_DIR_I[motor_number]){
               if(motor_number == 0){
                 PORTE |= 0b01000000; //on
               }else if(motor_number == 1){
