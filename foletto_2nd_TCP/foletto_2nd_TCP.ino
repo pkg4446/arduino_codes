@@ -69,9 +69,9 @@ float  builtin_speed_f[6] = {0.00f,};
 float  builtin_speed_accel[6] = {0.00f,};
 float  builtin_speed_decel[6] = {0.00f,};
 unsigned long builtin_interval[6] = {0UL,};
-
+bool builtin_progress = false;
 void builtin_stepper(){
-  bool builtin_progress = false;
+  builtin_progress = false;
   for(uint8_t index=0; index<6; index++){
     if(builtin_run[index]){
       builtin_progress = true;
@@ -224,7 +224,11 @@ void command_pros(String receive){
     EEPROM.write(0, macaddr);
   }
 
-  tcp_receive(control,command);
+  if(!builtin_progress){
+    tcp_receive(control,command);
+  }else{
+    tcp_response("ACK");
+  }
   /************************************************/
   if(control.equalsIgnoreCase("relay")){
     /**********************************************/
@@ -540,22 +544,24 @@ void response_moter_status(String ctrl, String command, bool drive, uint8_t numb
 }
 
 void read_pin_values(){
-  pinValues = read_shift_regs();
+  if(!builtin_progress){
+    pinValues = read_shift_regs();
 
-  String json = "{\"id\":\"";
-  json += device_id;
-  json += "\",\"ctrl\":\"sensor\",\"cmd\":\"read\",\"sensor\":[";
+    String json = "{\"id\":\"";
+    json += device_id;
+    json += "\",\"ctrl\":\"sensor\",\"cmd\":\"read\",\"sensor\":[";
 
-  for(int index = 0; index < DATA_WIDTH; index++)
-  {
-    json += (pinValues >> index) & 1;
-    if(index != DATA_WIDTH-1) json += ",";
+    for(int index = 0; index < DATA_WIDTH; index++)
+    {
+      json += (pinValues >> index) & 1;
+      if(index != DATA_WIDTH-1) json += ",";
+    }
+    json += "]}";
+    
+    char buffer[json.length() + 1];
+    json.toCharArray(buffer, json.length() + 1);
+    tcp_response(buffer);
   }
-  json += "]}";
-  
-  char buffer[json.length() + 1];
-  json.toCharArray(buffer, json.length() + 1);
-  tcp_response(buffer);
 }
 
 void set_pin_values(){
