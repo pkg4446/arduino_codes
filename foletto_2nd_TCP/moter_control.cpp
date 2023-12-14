@@ -101,7 +101,11 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, bool
           speed = this->dla_s;
         }
       }else{
-        adjust = 0;
+        if(this->dla_s > 400){
+          adjust = this->dla_s - 400;
+        }else{
+          adjust = 0;
+        }
         //---------check this**********----------- limit sw pin
         if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
           Zero_set = true;
@@ -136,7 +140,11 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, bool
           speed = this->dla_s;
         }
       }else{
-        adjust = 0;
+        if(this->dla_s > 400){
+          adjust = this->dla_s - 400;
+        }else{
+          adjust = 0;
+        }
         //---------check this**********----------- limit sw pin
         if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
           Zero_set = true;
@@ -231,7 +239,7 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
         if(this->dla_s > 400){
           adjust = this->dla_s - 400;
         }else{
-          adjust = this->dla_s;
+          adjust = 0;
         }        
         //---------check this**********----------- limit sw pin
         if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
@@ -271,7 +279,7 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
         if(this->dla_s > 400){
           adjust = this->dla_s - 400;
         }else{
-          adjust = this->dla_s;
+          adjust = 0;
         }
         //---------check this**********----------- limit sw pin
         if(swich_values(limit_sw, read_shift_regs(), sensor_on)){
