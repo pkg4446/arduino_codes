@@ -292,6 +292,8 @@ void command_pros(String receive){
         }else if(command.equalsIgnoreCase("config")){
           uint8_t  temp_zero_dir = json["dir0"];
           EEPROM.write(eepDriver[motor_number].ZERO_DIR, temp_zero_dir);
+          if(temp_zero_dir != 1){ZERO_DIR_O[motor_number] = false;}
+          else{ZERO_DIR_O[motor_number] = true;}
           uint8_t  temp_brk = json["brk"];
           EEPROM.write(eepDriver[motor_number].BRAKE, temp_brk);
           uint32_t temp_max = json["max"];
@@ -370,6 +372,8 @@ void command_pros(String receive){
         }else if(command.equalsIgnoreCase("config")){
           uint8_t  temp_zero_dir = json["dir0"];
           EEPROM.write(eepMotor[motor_number].ZERO_DIR, temp_zero_dir);
+          if(temp_zero_dir != 1){ZERO_DIR_I[motor_number] = false;}
+          else{ZERO_DIR_I[motor_number] = true;}
           uint8_t  temp_brk = json["brk"];
           EEPROM.write(eepMotor[motor_number].BRAKE, temp_brk);
           uint32_t temp_max = json["max"];
