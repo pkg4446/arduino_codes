@@ -1,4 +1,4 @@
-/******************************** ver 1.1.2  ********************************/
+/******************************** ver 1.1.3  ********************************/
 /******************************** 2023-12-14 ********************************/
 #include "pin_setup.h"
 #include "shift_regs.h"
@@ -49,6 +49,8 @@ uint32_t HIGHT_MAX_O[DRIVER_O] = {9999,};
 uint32_t HIGHT_MAX_I[DRIVER_I] = {9999,};
 uint8_t  BRAKE_O[DRIVER_O] = {0,};
 uint8_t  BRAKE_I[DRIVER_I] = {0,};
+bool     ZERO_DIR_O[DRIVER_O] = {false,};
+bool     ZERO_DIR_I[DRIVER_I] = {false,};
 bool     SENSOR_ON[DATA_WIDTH+1] = {false,};
 /************************* values *********************************/
 uint16_t  shift_read      = 0;
@@ -288,6 +290,8 @@ void command_pros(String receive){
           EEPROM.write(eepDriver[motor_number].DLY_L[1], temp_dla_l%256);
           response_moter_config(control,command,drive,motor_number+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l);
         }else if(command.equalsIgnoreCase("config")){
+          uint8_t  temp_zero_dir = json["dir0"];
+          EEPROM.write(eepDriver[motor_number].ZERO_DIR, temp_zero_dir);
           uint8_t  temp_brk = json["brk"];
           EEPROM.write(eepDriver[motor_number].BRAKE, temp_brk);
           uint32_t temp_max = json["max"];
@@ -364,6 +368,8 @@ void command_pros(String receive){
           EEPROM.write(eepMotor[motor_number].DLY_L[1], temp_dla_l%256);
           response_moter_config(control,command,drive,motor_number+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l);
         }else if(command.equalsIgnoreCase("config")){
+          uint8_t  temp_zero_dir = json["dir0"];
+          EEPROM.write(eepMotor[motor_number].ZERO_DIR, temp_zero_dir);
           uint8_t  temp_brk = json["brk"];
           EEPROM.write(eepMotor[motor_number].BRAKE, temp_brk);
           uint32_t temp_max = json["max"];
@@ -653,6 +659,9 @@ void setup() {
     #endif
   }
   for (uint8_t index = 0; index < DRIVER_O; index++){
+    uint8_t zero_dir = EEPROM.read(eepDriver[index].ZERO_DIR);
+    if(zero_dir != 1){ZERO_DIR_O[index] = false;}
+    else{ZERO_DIR_O[index] = true;}
     uint16_t temp_accel = EEPROM.read(eepDriver[index].ACCEL[0])*256 + EEPROM.read(eepDriver[index].ACCEL[1]);
     uint16_t temp_decel = EEPROM.read(eepDriver[index].DECEL[0])*256 + EEPROM.read(eepDriver[index].DECEL[1]);
     uint16_t temp_dla_s = EEPROM.read(eepDriver[index].DLY_S[0])*256 + EEPROM.read(eepDriver[index].DLY_S[1]);
@@ -663,6 +672,7 @@ void setup() {
     driver[index].set_config(temp_accel, temp_decel, temp_dla_s, temp_dla_l);
     #ifdef DEBUG
       Serial.print("DRIVER "); Serial.print(index+1);
+      Serial.print(", zero_dir:");Serial.print(ZERO_DIR_O[index]);
       Serial.print(", accel:");Serial.print(temp_accel);
       Serial.print(", decel:");Serial.print(temp_decel);
       Serial.print(", d_shot:");Serial.print(temp_dla_s);
@@ -673,16 +683,21 @@ void setup() {
     #endif
   }
   for (uint8_t index = 0; index < DRIVER_I; index++){
+     uint8_t zero_dir = EEPROM.read(eepMotor[index].ZERO_DIR);
+    if(zero_dir != 1){ZERO_DIR_I[index] = false;}
+    else{ZERO_DIR_I[index] = true;}
     uint16_t temp_accel = EEPROM.read(eepMotor[index].ACCEL[0])*256 + EEPROM.read(eepMotor[index].ACCEL[1]);
     uint16_t temp_decel = EEPROM.read(eepMotor[index].DECEL[0])*256 + EEPROM.read(eepMotor[index].DECEL[1]);
     uint16_t temp_dla_s = EEPROM.read(eepMotor[index].DLY_S[0])*256 + EEPROM.read(eepMotor[index].DLY_S[1]);
     uint16_t temp_dla_l = EEPROM.read(eepMotor[index].DLY_L[0])*256 + EEPROM.read(eepMotor[index].DLY_L[1]);
     BRAKE_I[index]      = EEPROM.read(eepMotor[index].BRAKE);
+    ZERO_DIR_I[index]   = EEPROM.read(eepMotor[index].ZERO_DIR);
     uint32_t temp_max[4] = {EEPROM.read(eepMotor[index].MAX[0]),EEPROM.read(eepMotor[index].MAX[1]),EEPROM.read(eepMotor[index].MAX[2]),EEPROM.read(eepMotor[index].MAX[3])}; 
     HIGHT_MAX_I[index]  = temp_max[0]*256*256*256 + temp_max[1]*256*256 + temp_max[2]*256 + temp_max[3];
     builtin[index].set_config(temp_accel, temp_decel, temp_dla_s, temp_dla_l);
     #ifdef DEBUG
       Serial.print("BUILT_IN ");Serial.print(index+1);
+      Serial.print(", zero_dir:");Serial.print(ZERO_DIR_I[index]);
       Serial.print(", accel:");Serial.print(temp_accel);
       Serial.print(", decel:");Serial.print(temp_decel);
       Serial.print(", d_shot:");Serial.print(temp_dla_s);
