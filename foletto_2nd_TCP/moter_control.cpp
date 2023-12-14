@@ -118,9 +118,6 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool direction, uint8_t limit_sw, bool
           speed = this->dla_s;
         }
       }
-      //---------check this**********---------- max hight
-      //if(swich_values(limit_sw, read_shift_regs())) break; //when push the limit sw, stop
-      //if(Position > 1000) break; //if Position is higher than maximum hight, stop
       digitalWrite(moter_pins.PWM, true);
       Position += 1;
       digitalWrite(moter_pins.PWM, false);
@@ -262,9 +259,6 @@ void MOTOR::run_moter(STEP_ts moter_pins, uint8_t motor_number, bool direction, 
           speed = this->dla_s;
         }
       }
-      //---------check this**********---------- max hight
-      //if(swich_values(limit_sw, read_shift_regs())) break; //when push the limit sw, stop
-      //if(Position > 1000) break; //if Position is higher than maximum hight, stop
       Position += 1;
       digitalWrite(moter_pins.PWM, true);
       delayMicroseconds(4);

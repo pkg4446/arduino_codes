@@ -718,6 +718,7 @@ void loop() {
     if(!client.connected()){
       client = TCPserver.available();
       client_connected = false;
+      Serial.println("client disconnected");
     }
   }
   TCP_requeset();  
