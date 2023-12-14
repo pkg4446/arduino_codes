@@ -687,7 +687,7 @@ void setup() {
     #endif
   }
   for (uint8_t index = 0; index < DRIVER_I; index++){
-     uint8_t zero_dir = EEPROM.read(eepMotor[index].ZERO_DIR);
+    uint8_t zero_dir = EEPROM.read(eepMotor[index].ZERO_DIR);
     if(zero_dir != 1){ZERO_DIR_I[index] = false;}
     else{ZERO_DIR_I[index] = true;}
     uint16_t temp_accel = EEPROM.read(eepMotor[index].ACCEL[0])*256 + EEPROM.read(eepMotor[index].ACCEL[1]);
