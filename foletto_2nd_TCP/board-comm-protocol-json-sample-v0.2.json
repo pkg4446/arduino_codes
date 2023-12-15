@@ -6,6 +6,11 @@
     "cmd":  "ctrl",
     "opt":  "cmd"
 }
+//common: Immediate response, when inner step driver run.
+0
+
+
+
 //common: error response
 {
     "id":   "<board-id>",   // 제어보드 고유 id
