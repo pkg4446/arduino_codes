@@ -238,13 +238,20 @@ void TCP_requeset(){
 
 void command_pros(String receive){
   #ifdef DEBUG_TCP
+    Serial.println("======= receive =======");
     Serial.print("TCP: ");
     Serial.println(receive);
   #endif
+
   StaticJsonDocument<JSON_STACK> json;
   deserializeJson(json, receive);
   String control = json["ctrl"];
   String command = json["cmd"];
+
+  #ifdef DEBUG_TCP
+    Serial.print("ctrl: ");Serial.println(control);
+    Serial.print("cmd: ");Serial.println(command);
+  #endif
 
   if(control.equalsIgnoreCase("dev_id")){    
     String dev_id_cmd = json["cmd"];
@@ -258,7 +265,7 @@ void command_pros(String receive){
     uint8_t macaddr = json["cmd"];
     EEPROM.write(0, macaddr);
   }
-
+  
   if(!builtin_progress){
     tcp_receive(control,command);
   }else{
@@ -308,6 +315,12 @@ void command_pros(String receive){
   }else if(control.equalsIgnoreCase("motor")){
     uint8_t motor_number = json["num"];
     bool    drive        = json["opt"];
+    
+    #ifdef DEBUG_TCP
+      Serial.print("num: ");Serial.println(motor_number);
+      Serial.print("opt: ");Serial.println(drive);
+    #endif
+
     if(drive){ //(MD5-HD14)
       if(motor_number<1 || motor_number>4){
         tcp_err_msg(control,"select wrong");
@@ -336,6 +349,13 @@ void command_pros(String receive){
           uint8_t  temp_brk = json["brk"];
           EEPROM.write(eepDriver[motor_number].BRAKE, temp_brk);
           uint32_t temp_max = json["max"];
+
+          #ifdef DEBUG_TCP
+            Serial.print("dir0: ");Serial.println(temp_zero_dir);
+            Serial.print("brk: ");Serial.println(temp_brk);
+            Serial.print("max: ");Serial.println(temp_max);
+          #endif
+
           HIGHT_MAX_I[motor_number] = temp_max;
           EEPROM.write(eepDriver[motor_number].MAX[3], temp_max%256);
           temp_max /= 256;
@@ -354,8 +374,19 @@ void command_pros(String receive){
           }else if(H_bridge_run){
             tcp_err_msg(control,"H_bridge is busy");
           }else{
-            uint8_t limit_number = json["limit"];
-            driver[motor_number].run_drive(stepDriver[motor_number],ZERO_DIR_O[motor_number],json["dir"],limit_number,SENSOR_ON[limit_number],json["step"],HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],json["add"]);
+            uint8_t   limit_number     = json["limit"];
+            bool      driver_direction = json["dir"];
+            uint32_t  driver_step      = json["step"];
+            uint32_t  driver_add       = json["add"];
+
+            #ifdef DEBUG_TCP
+              Serial.print("step: ");Serial.println(driver_step);
+              Serial.print("limit: ");Serial.println(limit_number);
+              Serial.print("dir: ");Serial.println(driver_direction);
+              Serial.print("add: ");Serial.println(driver_add);
+            #endif
+
+            driver[motor_number].run_drive(stepDriver[motor_number],ZERO_DIR_O[motor_number],driver_direction,limit_number,SENSOR_ON[limit_number],driver_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],driver_add);
             response_moter_status("motor", "run", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos());
           }
         }else if(command.equalsIgnoreCase("repeat")){
@@ -373,6 +404,15 @@ void command_pros(String receive){
             uint8_t repeat_num   = json["repeat"];
             uint32_t run_step    = json["full_step"];
             uint8_t extra_run    = json["add_step"];
+
+            #ifdef DEBUG_TCP
+              Serial.print("limit: ");Serial.println(limit_number);
+              Serial.print("dir: ");Serial.println(moter_direction);
+              Serial.print("repeat: ");Serial.println(repeat_num);
+              Serial.print("full_step: ");Serial.println(run_step);
+              Serial.print("add_step: ");Serial.println(extra_run);
+            #endif
+
             if(limit_number < 16) driver[motor_number].run_drive(stepDriver[motor_number],ZERO_DIR_O[motor_number],!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);
             for(uint8_t index=0; index < repeat_num; index++){
               driver[motor_number].run_drive(stepDriver[motor_number],ZERO_DIR_O[motor_number],moter_direction,16,true,run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);                                //run
@@ -420,6 +460,13 @@ void command_pros(String receive){
           uint8_t  temp_brk = json["brk"];
           EEPROM.write(eepMotor[motor_number].BRAKE, temp_brk);
           uint32_t temp_max = json["max"];
+
+          #ifdef DEBUG_TCP
+            Serial.print("dir0: ");Serial.println(temp_zero_dir);
+            Serial.print("brk: ");Serial.println(temp_brk);
+            Serial.print("max: ");Serial.println(temp_max);
+          #endif
+
           HIGHT_MAX_I[motor_number] = temp_max;
           EEPROM.write(eepMotor[motor_number].MAX[3], temp_max%256);
           temp_max /= 256;
@@ -456,8 +503,17 @@ void command_pros(String receive){
               }
             }
           }
-          builtin_pulse[motor_number] = json["step"];
-          builtin_limit[motor_number] = json["limit"];
+          builtin_pulse[motor_number]     = json["step"];
+          builtin_limit[motor_number]     = json["limit"];
+          builtin_pulse_add[motor_number] = json["add"];
+          
+          #ifdef DEBUG_TCP
+            Serial.print("step: ");Serial.println(builtin_pulse[motor_number]);
+            Serial.print("limit: ");Serial.println(builtin_limit[motor_number]);
+            Serial.print("dir: ");Serial.println(builtin_dir[motor_number]);
+            Serial.print("add: ");Serial.println(builtin_pulse_add[motor_number]);
+          #endif
+
           builtin_run[motor_number]   = true;
           uint16_t spd_gap = builtin[motor_number].delay_long() - builtin[motor_number].delay_short();
           builtin_speed[motor_number]   = builtin[motor_number].delay_long();
@@ -466,6 +522,7 @@ void command_pros(String receive){
           builtin_pulse_end[motor_number]   = builtin[motor_number].decel_step()+1;
           builtin_speed_accel[motor_number] = (spd_gap*1.00)/(builtin_pulse_start[motor_number]*1.00);
           builtin_speed_decel[motor_number] = (spd_gap*1.00)/(builtin_pulse_end[motor_number]*1.00);
+
           #ifdef DEBUG
             Serial.print("spd_gap="); Serial.println(spd_gap);
             Serial.print("accel step="); Serial.print(builtin_pulse_start[motor_number]);
@@ -474,8 +531,8 @@ void command_pros(String receive){
             Serial.print(",decel="); Serial.println(builtin_speed_decel[motor_number]);
             Serial.print(",total_step="); Serial.println(builtin_pulse[motor_number]);
           #endif
+
           builtin_pulse_start[motor_number] = builtin_pulse[motor_number] - builtin_pulse_start[motor_number];
-          builtin_pulse_add[motor_number]   = json["add"];
         }else if(command.equalsIgnoreCase("repeat")){
           bool relay_busy = false;
           for(uint8_t index = 0; index < 7; index++){
@@ -491,6 +548,15 @@ void command_pros(String receive){
             uint8_t repeat_num   = json["repeat"];
             uint32_t run_step    = json["full_step"];
             uint8_t extra_run    = json["add_step"];
+            
+            #ifdef DEBUG_TCP
+              Serial.print("limit: ");Serial.println(limit_number);
+              Serial.print("dir: ");Serial.println(moter_direction);
+              Serial.print("repeat: ");Serial.println(repeat_num);
+              Serial.print("full_step: ");Serial.println(run_step);
+              Serial.print("add_step: ");Serial.println(extra_run);
+            #endif
+
             if(limit_number < 16) builtin[motor_number].run_moter(stepMotor[motor_number],ZERO_DIR_I[motor_number],motor_number,!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);
             for(uint8_t index=0; index < repeat_num; index++){
               builtin[motor_number].run_moter(stepMotor[motor_number],ZERO_DIR_I[motor_number],motor_number,moter_direction,16,true,run_step,HIGHT_MAX_I[motor_number],BRAKE_O[motor_number]);                                //run

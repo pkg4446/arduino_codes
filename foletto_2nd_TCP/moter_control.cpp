@@ -85,8 +85,8 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool zero_dir, bool direction, uint8_t
   digitalWrite(moter_pins.DIR, direction!=zero_dir);
   
   if(direction){ //up
+    //speed change
     for (uint32_t index=0; index < step; index++) {
-      //speed change
       if(Zero_set && (Position < hight_max)){
         if(celerations){
           if(index < distance_ac){
@@ -125,8 +125,8 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool zero_dir, bool direction, uint8_t
       delayMicroseconds(adjust);
     }
   }else{  //down
+    //speed change
     for (uint32_t index=0; index<step; index++) {
-      //speed change
       if(Zero_set){
         if(celerations){
           if(index < distance_ac){
