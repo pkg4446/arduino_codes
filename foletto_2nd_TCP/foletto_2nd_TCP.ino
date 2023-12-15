@@ -1,5 +1,5 @@
-/******************************** ver 1.1.3  ********************************/
-/******************************** 2023-12-14 ********************************/
+/******************************** ver 1.1.4  ********************************/
+/******************************** 2023-12-15 ********************************/
 #include "pin_setup.h"
 #include "shift_regs.h"
 #include "moter_control.h"
@@ -152,7 +152,38 @@ void builtin_stepper(){
 /***************/
 /***************/
 /***************/
-
+bool          H_bridge_run = false;
+uint8_t       H_bridge_port = 0;
+uint8_t       H_bridge_process = 0;
+unsigned long H_bridge_update = 0UL;
+uint16_t      H_bridge_update_interval = 0;
+bool          H_bridge_dir = 0;
+void H_bridge(){
+  if(H_bridge_run && ((millis() - H_bridge_update) > H_bridge_update_interval)){
+    H_bridge_update = millis();
+    if(H_bridge_process-- > 0){
+      digitalWrite(stepDriver[H_bridge_port].DIR,H_bridge_dir);
+      digitalWrite(stepDriver[H_bridge_port].PWM,!H_bridge_dir);
+      #ifdef DEBUG
+        Serial.print(H_bridge_process);
+        Serial.print(", direction:");
+        Serial.println(H_bridge_dir);
+      #endif
+      H_bridge_dir = !H_bridge_dir;
+    }else{
+      digitalWrite(stepDriver[H_bridge_port].DIR,H_bridge_run);
+      digitalWrite(stepDriver[H_bridge_port].PWM,H_bridge_run);
+      H_bridge_run = false;
+      #ifdef DEBUG
+        Serial.println("stop");
+      #endif
+    }
+  }
+}
+/***************/
+/***************/
+/***************/
+/***************/
 void init_port_base(){
   DDRE |= 0b11000100;
   DDRH |= 0b10000000;
@@ -316,6 +347,8 @@ void command_pros(String receive){
           }
           if(relay_busy){
             tcp_err_msg(control,"relay is busy");
+          }else if(H_bridge_run){
+            tcp_err_msg(control,"H_bridge is busy");
           }else{
             uint8_t limit_number = json["limit"];
             driver[motor_number].run_drive(stepDriver[motor_number],ZERO_DIR_O[motor_number],json["dir"],limit_number,SENSOR_ON[limit_number],json["step"],HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],json["add"]);
@@ -328,6 +361,8 @@ void command_pros(String receive){
           }
           if(relay_busy){
             tcp_err_msg(control,"relay is busy");
+          }else if(H_bridge_run){
+            tcp_err_msg(control,"H_bridge is busy");
           }else{
             uint8_t limit_number = json["limit"];
             bool moter_direction = json["dir"];
@@ -444,6 +479,8 @@ void command_pros(String receive){
           }
           if(relay_busy){
             tcp_err_msg(control,"relay is busy");
+          }else if(H_bridge_run){
+            tcp_err_msg(control,"H_bridge is busy");
           }else{
             uint8_t limit_number = json["limit"];
             bool moter_direction = json["dir"];
@@ -470,6 +507,24 @@ void command_pros(String receive){
         }else{tcp_err_msg(control,"command null");}
       }
     }
+  }else if(control.equalsIgnoreCase("hbridge")){
+    if(command.equalsIgnoreCase("run")){
+      H_bridge_port = json["num"];
+      if(H_bridge_port<1 || H_bridge_port>6){
+        tcp_err_msg(control,"select wrong");
+        H_bridge_port = 0;
+      }else{
+        H_bridge_port--;
+        H_bridge_run             = true;
+        H_bridge_update_interval = json["sec"];
+        H_bridge_process         = json["repeat"];
+        H_bridge_process        *= 2;
+      }      
+    }else if(command.equalsIgnoreCase("stop")){
+      digitalWrite(stepDriver[H_bridge_port].DIR,H_bridge_run);
+      digitalWrite(stepDriver[H_bridge_port].PWM,H_bridge_run);
+      H_bridge_run = false;
+    }else{tcp_err_msg(control,"command null");}
   }else{
     Serial.println("nope");
     tcp_err_msg("null","command error");
@@ -747,6 +802,7 @@ void loop() {
   }
   TCP_requeset();
   relay_off_awiat();
+  H_bridge();
   builtin_stepper();
   //unsigned long test_count2 = micros();
   //if(test_count2-test_count1 > 200) Serial.println(test_count2-test_count1);

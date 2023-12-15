@@ -196,6 +196,22 @@
     "pos":    999           // 모터 위치
 }
 
+// dc motor ctrl request "repeat"
+// 외장드라이버 포트로 H-bridge 사용
+{
+    "ctrl":   "hbridge",
+    "cmd":    "run",
+    "num":    1,    // motor type e.g. 1번 모터 // 0 to 255
+    "sec":    7000, // 한방향 회전시간 (milli sec) unsigned int 16
+    "repeat": 3    // 반복횟수 // 0 to 127
+}
+
+{
+    "ctrl":   "hbridge",
+    "cmd":    "stop"
+}
+//정지
+
 //스탭모터 리미트 사용하지 않는 경우는 센서 번호 >= 16
 //스탭모터 브레이크 사용하지 않는 경우는 브레이크 릴레이 번호 == 0
 //외부 드라이버(MD5-HD14)의 경우 단독으로만 작동 가능. 작동하는동안 외부 간섭 불가
