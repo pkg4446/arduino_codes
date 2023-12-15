@@ -13,6 +13,49 @@
     "cmd":  "ctrl",
     "err":  "err_msg"
 }
+//error response
+{
+    "id":   "<board-id>",   // 제어보드 고유 id
+    "ctrl": "error",
+    "cmd":  "null",
+    "err":  "control error"  // 본 문서에 정의된 기능이 아닌 명령어가 입력된 경우
+}
+//relay error response
+{
+    "id":   "<board-id>",   // 제어보드 고유 id
+    "ctrl": "error",
+    "cmd":  "relay",
+    "err":  //"select wrong"  // 릴레이 "num" 키가 1~7이 아닌경우
+            //"command null"  // "cmd" 키가 onoff, hold 가 아닌경우
+}
+//sensor error response
+{
+    "id":   "<board-id>",   // 제어보드 고유 id
+    "ctrl": "error",
+    "cmd":  "sensor",
+    "err":  //"select wrong"  // 센서 set 명령어에서 센서 번호 < 16 이 아닌경우
+            //"command null"  // "cmd" 키가 read, set 가 아닌경우
+}
+//moter error response
+{
+    "id":   "<board-id>",      // 제어보드 고유 id
+    "ctrl": "error",
+    "cmd":  "moter",
+    "err":  //"select wrong"     // 내장 스탭모터 번호가 1~6 이 아닌경우 또는, 외장 스탭모터 번호가 1~4 가 아닌경우
+            //"relay is busy"    // 릴레이 onoff 명령어 수행중 외장 스탭모터드라이버를 구동하거나, 내,외장 드라이버를 repeat 하는 경우
+            //"H_bridge is busy" // dc모터 구동 명령어 수행중 외장 스탭모터드라이버를 구동하거나, 내,외장 드라이버를 repeat 하는 경우
+            //"command null"     // "cmd"가 본 문서에 정의되지 않은 경우
+}
+
+//moter error response
+{
+    "id":   "<board-id>",      // 제어보드 고유 id
+    "ctrl": "error",
+    "cmd":  "hbridge",
+    "err":  //"select wrong"     // h-bridge 연결용 외장 스탭 드라이버 포트가 1~4가 아닌경우
+            //"command null"     // "cmd"가 본 문서에 정의되지 않은 경우
+}
+// error response END
 
 //macaddr set  *eeprom 사용
 {
