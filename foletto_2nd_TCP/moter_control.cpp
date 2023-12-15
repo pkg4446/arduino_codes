@@ -162,6 +162,7 @@ void MOTOR::run_drive(STEP_ts moter_pins, bool zero_dir, bool direction, uint8_t
       digitalWrite(moter_pins.PWM, true);
       if(Position > 0){
         Position -= 1;
+        if(Position <= extra) Zero_set = false;
       }else if(limit_sw<DATA_WIDTH){
         Zero_set = false;
       }
