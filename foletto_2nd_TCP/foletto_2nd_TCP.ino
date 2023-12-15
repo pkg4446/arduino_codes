@@ -177,6 +177,10 @@ void H_bridge(){
       #ifdef DEBUG
         Serial.println("stop");
       #endif
+      String json = "{\"ID\":\"" + String(device_id) + "\",\"ctrl\":\"hbridge\",\"cmd\":\"done\"}";
+      char buffer[json.length() + 1];
+      json.toCharArray(buffer, json.length() + 1);
+      tcp_response(buffer);
     }
   }
 }
@@ -556,7 +560,7 @@ void tcp_err_msg(String type, String error_msg){
 }
 
 void tcp_receive(String control, String command){
-  String json = "{\"ID\":\""+ String(device_id) +",\"ctrl\":\"receive\",\"cmd\":\""+control+",\"opt\":\""+command+"\"}";
+  String json = "{\"ID\":\""+ String(device_id) +"\",\"ctrl\":\"receive\",\"cmd\":\""+control+"\",\"opt\":\""+command+"\"}";
   char buffer[json.length() + 1];
   json.toCharArray(buffer, json.length() + 1);
   tcp_response(buffer);
