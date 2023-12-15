@@ -271,7 +271,7 @@ void command_pros(String receive){
   if(!builtin_progress){
     tcp_receive(control,command);
   }else{
-    tcp_response(0x00);
+    tcp_response("0");
   }
   /************************************************/
   if(control.equalsIgnoreCase("relay")){
