@@ -17,8 +17,8 @@
 #define DRIVER_O  4
 #define DRIVER_I  6
 
-#define DEBUG
-#define DEBUG_TCP
+//#define DEBUG
+//#define DEBUG_TCP
 //#define DEBUG_STEP
 //#define DEBUG_SHIFT_REGS
 
