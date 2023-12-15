@@ -47,32 +47,34 @@ BYTES_VAL_T pinValues;
 /************************* values *********************************/
 uint32_t HIGHT_MAX_O[DRIVER_O] = {9999,};
 uint32_t HIGHT_MAX_I[DRIVER_I] = {9999,};
-uint8_t  BRAKE_O[DRIVER_O] = {0,};
-uint8_t  BRAKE_I[DRIVER_I] = {0,};
-bool     ZERO_DIR_O[DRIVER_O] = {false,};
-bool     ZERO_DIR_I[DRIVER_I] = {false,};
+uint8_t  BRAKE_O[DRIVER_O]     = {0,};
+uint8_t  BRAKE_I[DRIVER_I]     = {0,};
+bool     ZERO_DIR_O[DRIVER_O]  = {false,};
+bool     ZERO_DIR_I[DRIVER_I]  = {false,};
 bool     SENSOR_ON[DATA_WIDTH+1] = {false,};
 /************************* values *********************************/
 uint16_t  shift_read      = 0;
 uint16_t  shift_read_gqp  = 160;
-bool     builtin_run[6]   = {false,};
-bool     builtin_dir[6]   = {false,};
-bool     builtin_break[6] = {false,};
-bool     builtin_pulse_swich[6] = {false,};
-uint32_t builtin_pulse[6] = {0,};
-uint32_t builtin_pulse_add[6]   = {0,};
-uint32_t builtin_pulse_start[6] = {0,};
-uint32_t builtin_pulse_end[6]   = {0,};
-uint8_t  builtin_limit[6] = {16,};
-uint16_t builtin_speed[6] = {0L,};
-float  builtin_speed_f[6] = {0.00f,};
-float  builtin_speed_accel[6] = {0.00f,};
-float  builtin_speed_decel[6] = {0.00f,};
-unsigned long builtin_interval[6] = {0UL,};
+
+bool     builtin_run[DRIVER_I]         = {false,};
+bool     builtin_dir[DRIVER_I]         = {false,};
+bool     builtin_break[DRIVER_I]       = {false,};
+bool     builtin_pulse_swich[DRIVER_I] = {false,};
+uint32_t builtin_pulse[DRIVER_I]       = {0,};
+uint32_t builtin_pulse_add[DRIVER_I]   = {0,};
+uint32_t builtin_pulse_start[DRIVER_I] = {0,};
+uint32_t builtin_pulse_end[DRIVER_I]   = {0,};
+uint8_t  builtin_limit[DRIVER_I]       = {16,};
+uint16_t builtin_speed[DRIVER_I]       = {0L,};
+float    builtin_speed_f[DRIVER_I]     = {0.00f,};
+float    builtin_speed_accel[DRIVER_I] = {0.00f,};
+float    builtin_speed_decel[DRIVER_I] = {0.00f,};
+unsigned long builtin_interval[DRIVER_I] = {0UL,};
+
 bool builtin_progress = false;
 void builtin_stepper(){
   builtin_progress = false;
-  for(uint8_t index=0; index<6; index++){
+  for(uint8_t index=0; index<DRIVER_I; index++){
     if(builtin_run[index]){
       builtin_progress = true;
       if(!builtin_break[index] && BRAKE_I[index] !=0 && BRAKE_I[index] < 8) {
@@ -89,12 +91,12 @@ void builtin_stepper(){
       pinValues  = read_shift_regs();
       shift_read = 0;
       shift_read_gqp = 160;
-      for(uint8_t index=0; index<6; index++){
+      for(uint8_t index=0; index<DRIVER_I; index++){
         if(builtin_run[index]) shift_read_gqp += 160;
       }
     }
 
-    for(uint8_t index=0; index<6; index++){
+    for(uint8_t index=0; index<DRIVER_I; index++){
       if(builtin_run[index] && (builtin_time - builtin_interval[index] > builtin_speed[index] + 200)){
         builtin_interval[index] = builtin_time;
         if(!swich_values(builtin_limit[index], pinValues, SENSOR_ON[builtin_limit[index]])){
@@ -121,7 +123,7 @@ void builtin_stepper(){
         }
       }
     }
-    for(uint8_t index=0; index<6; index++){
+    for(uint8_t index=0; index<DRIVER_I; index++){
       if(builtin_pulse_swich[index] && builtin_run[index]){
         builtin_pulse_swich[index] = false;
         digitalWrite(stepMotor[index].PWM, false);
