@@ -531,7 +531,7 @@ void command_pros(String receive){
     }else{tcp_err_msg(control,"command null");}
   }else{
     Serial.println("nope");
-    tcp_err_msg("null","command error");
+    tcp_err_msg("null","control error");
   }
 }//mqtt_requeset()
 
