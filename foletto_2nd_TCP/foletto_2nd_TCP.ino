@@ -17,7 +17,7 @@
 #define DRIVER_O  4
 #define DRIVER_I  6
 
-//#define DEBUG
+#define DEBUG
 //#define DEBUG_TCP
 //#define DEBUG_STEP
 //#define DEBUG_SHIFT_REGS
@@ -358,7 +358,7 @@ void command_pros(String receive){
             Serial.print("max: ");Serial.println(temp_max);
           #endif
 
-          HIGHT_MAX_I[motor_number] = temp_max;
+          HIGHT_MAX_O[motor_number] = temp_max;
           EEPROM.write(eepDriver[motor_number].MAX[3], temp_max%256);
           temp_max /= 256;
           EEPROM.write(eepDriver[motor_number].MAX[2], temp_max%256);
@@ -366,7 +366,8 @@ void command_pros(String receive){
           EEPROM.write(eepDriver[motor_number].MAX[1], temp_max%256);
           temp_max /= 256;
           EEPROM.write(eepDriver[motor_number].MAX[0], temp_max%256);
-          response_moter_config(control,command,drive,motor_number+1,temp_max,temp_brk,temp_zero_dir);
+
+          response_moter_config(control,command,drive,motor_number+1,HIGHT_MAX_O[motor_number],temp_brk,temp_zero_dir);
         }else if(command.equalsIgnoreCase("run")){
           bool relay_busy = false;
           for(uint8_t index = 0; index < 7; index++){
@@ -478,7 +479,8 @@ void command_pros(String receive){
           EEPROM.write(eepMotor[motor_number].MAX[1], temp_max%256);
           temp_max /= 256;
           EEPROM.write(eepMotor[motor_number].MAX[0], temp_max%256);
-          response_moter_config(control,command,drive,motor_number+1,temp_max,temp_brk,temp_zero_dir);
+
+          response_moter_config(control,command,drive,motor_number+1,HIGHT_MAX_I[motor_number],temp_brk,temp_zero_dir);
         }else if(command.equalsIgnoreCase("run")){
           pinValues = read_shift_regs();
           builtin_dir[motor_number] = json["dir"];
@@ -655,14 +657,14 @@ void response_moter_set(String control, String command, bool drive, uint8_t moto
   tcp_response(buffer);
 }
 
-void response_moter_config(String control, String command, bool drive, uint8_t motor_number, uint32_t max, uint8_t brk, uint8_t dir0){
+void response_moter_config(String control, String command, bool drive, uint8_t motor_number, uint32_t max_hight, uint8_t brk, uint8_t dir0){
   DynamicJsonDocument res(JSON_STACK);
   res["id"]    = device_id;
   res["ctrl"]  = control;
   res["cmd"]   = command;
   res["opt"]   = drive;
   res["num"]   = motor_number;
-  res["max"]   = max;
+  res["max"]   = max_hight;
   res["brk"]   = brk;
   res["dir0"]  = dir0;
 
