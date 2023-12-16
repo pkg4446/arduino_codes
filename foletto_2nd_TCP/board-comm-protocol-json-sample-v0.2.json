@@ -16,14 +16,16 @@
     "id":   "<board-id>",   // 제어보드 고유 id
     "ctrl": "error",
     "cmd":  "ctrl",
-    "err":  "err_msg"
+    "err":  "err_msg",
+    "pk":   0~255
 }
 //error response
 {
     "id":   "<board-id>",   // 제어보드 고유 id
     "ctrl": "error",
     "cmd":  "null",
-    "err":  "control error"  // 본 문서에 정의된 기능이 아닌 명령어가 입력된 경우
+    "err":  "control error",  // 본 문서에 정의된 기능이 아닌 명령어가 입력된 경우
+    "pk":   0~255
 }
 //relay error response
 {
@@ -32,6 +34,7 @@
     "cmd":  "relay",
     "err":  //"select wrong"  // 릴레이 "num" 키가 1~7이 아닌경우
             //"command null"  // "cmd" 키가 onoff, hold 가 아닌경우
+    "pk":   0~255
 }
 //sensor error response
 {
@@ -50,6 +53,7 @@
             //"relay is busy"    // 릴레이 onoff 명령어 수행중 외장 스탭모터드라이버를 구동하거나, 내,외장 드라이버를 repeat 하는 경우
             //"H_bridge is busy" // dc모터 구동 명령어 수행중 외장 스탭모터드라이버를 구동하거나, 내,외장 드라이버를 repeat 하는 경우
             //"command null"     // "cmd"가 본 문서에 정의되지 않은 경우
+    "pk":   0~255
 }
 
 //moter error response
@@ -59,6 +63,7 @@
     "cmd":  "hbridge",
     "err":  //"select wrong"     // h-bridge 연결용 외장 스탭 드라이버 포트가 1~4가 아닌경우
             //"command null"     // "cmd"가 본 문서에 정의되지 않은 경우
+    "pk":   0~255
 }
 // error response END
 
@@ -97,34 +102,39 @@
     "ctrl": "relay",
     "cmd":  "hold",
     "num":  3,
-    "opt":  true            // bool
+    "opt":  true,            // bool
+    "pk":   0~255
 }
 
 // sensor read request
 {
     "ctrl": "sensor",
-    "cmd":  "read"
+    "cmd":  "read",
+    "pk":   0~255
 }
 // sensor read response
 {
     "id":   "<board-id>",     // 제어보드 고유 id
     "ctrl": "sensor",
     "cmd":  "read",
-    "opt":  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] //배열 순서대로 0~15번 센서값 0:false,1:true
+    "opt":  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], //배열 순서대로 0~15번 센서값 0:false,1:true
+    "pk":   0~255
 }
 // sensor set request
 {
     "ctrl": "sensor",
     "cmd":  "set",
     "opt":  1,          //nomal open = 1, nomal close = 0
-    "num":  3           //sensor number 0~16
+    "num":  3,           //sensor number 0~16
+    "pk":   0~255
 }
 // sensor set response
 {
     "id":   "<board-id>",     // 제어보드 고유 id
     "ctrl": "sensor",
     "cmd":  "set",
-    "sensor":[1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1] //배열 순서대로 0~15번 센서 on 일때 출력값 0:false,1:true
+    "sensor":[1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1], //배열 순서대로 0~15번 센서 on 일때 출력값 0:false,1:true
+    "pk":   0~255
 }
 
 // step motor ctrl request "config" *eeprom 사용
@@ -135,7 +145,8 @@
     "num":   1,    //motor type e.g. 1번 모터 // 0 to 255
     "max":   1000, //unsigned int 36, 가동 최대 거리 //리미트 한쪽에만 있을 경우, 리미트 인식 후 pos가 0이 되고, 이후 최대 max 까지만 회전
     "brk":   1,    //브레이크 릴레이 번호,
-    "dir0":  0     //원점 회귀방향, 0,1 일때 서로 반대, 기본값 0
+    "dir0":  0,     //원점 회귀방향, 0,1 일때 서로 반대, 기본값 0
+    "pk":   0~255
 }
 // step motor ctrl response "config"
 {
@@ -147,6 +158,7 @@
     "max":  1000,
     "brk":  1,
     "dir0": 0,
+    "pk":   0~255
 }
 
 // step motor ctrl request "set"    *eeprom 사용

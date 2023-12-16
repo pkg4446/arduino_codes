@@ -45,6 +45,8 @@ bool relay_state[7];
 bool online = false;
 BYTES_VAL_T pinValues;
 /************************* values *********************************/
+uint8_t  packet;
+/************************* values *********************************/
 uint32_t HIGHT_MAX_O[DRIVER_O] = {9999,};
 uint32_t HIGHT_MAX_I[DRIVER_I] = {9999,};
 uint8_t  BRAKE_O[DRIVER_O]     = {0,};
@@ -70,6 +72,8 @@ float    builtin_speed_f[DRIVER_I]     = {0.00f,};
 float    builtin_speed_accel[DRIVER_I] = {0.00f,};
 float    builtin_speed_decel[DRIVER_I] = {0.00f,};
 unsigned long builtin_interval[DRIVER_I] = {0UL,};
+/************************* values *********************************/
+
 
 bool builtin_progress = false;
 void builtin_stepper(){
@@ -118,7 +122,7 @@ void builtin_stepper(){
               digitalWrite(relay_pin[BRAKE_I[index]-1], false);
               Serial.println("limit detect");
             }//브레이크 잠금
-            response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos());  //종료
+            response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos(), packet);  //종료
           }
         }
       }
@@ -136,7 +140,7 @@ void builtin_stepper(){
             digitalWrite(relay_pin[BRAKE_I[index]-1], false);
             Serial.println("brake close");
           }//브레이크 잠금
-          response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos());
+          response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos(), packet);
         }else if(builtin_pulse[index] >= builtin_pulse_start[index]){
           builtin_speed_f[index] -= builtin_speed_accel[index];
           builtin_speed[index] = builtin_speed_f[index] + 0.01;
@@ -249,6 +253,7 @@ void command_pros(String receive){
   deserializeJson(json, receive);
   String control = json["ctrl"];
   String command = json["cmd"];
+  packet         = json["pk"];
 
   #ifdef DEBUG_TCP
     Serial.print("ctrl: ");Serial.println(control);
@@ -278,7 +283,7 @@ void command_pros(String receive){
     /**********************************************/
     int8_t relay_number = json["num"];
     if(relay_number<1 || relay_number>7){
-      tcp_err_msg(control,"select wrong");
+      tcp_err_msg(control,"select wrong", packet);
     }else if(command.equalsIgnoreCase("onoff")){
       relay_number -= 1;
       int16_t duration  = json["opt"];
@@ -291,13 +296,13 @@ void command_pros(String receive){
       relay_number -= 1;
       bool status = json["opt"];
       digitalWrite(relay_pin[relay_number], status);
-      relay_status_change(relay_number+1, status);
-    }else{tcp_err_msg(control,"command null");}
+      relay_status_change(relay_number+1, status, packet);
+    }else{tcp_err_msg(control,"command null", packet);}
     /**********************************************/
   }else if(control.equalsIgnoreCase("sensor")){
     /**********************************************/
     if(command.equalsIgnoreCase("read")){
-      read_pin_values();
+      read_pin_values(packet);
     }else if(command.equalsIgnoreCase("set")){
       uint8_t sensor_num = json["num"];
       if(sensor_num<DATA_WIDTH){
@@ -308,11 +313,11 @@ void command_pros(String receive){
         }else{
           SENSOR_ON[sensor_num] = true;
         }
-        set_pin_values();
+        set_pin_values(packet);
       }else{
-        tcp_err_msg(control,"select wrong");
+        tcp_err_msg(control,"select wrong", packet);
       }
-    }else{tcp_err_msg(control,"command null");}
+    }else{tcp_err_msg(control,"command null", packet);}
     /**********************************************/
   }else if(control.equalsIgnoreCase("motor")){
     uint8_t motor_number = json["num"];
@@ -325,7 +330,7 @@ void command_pros(String receive){
 
     if(drive){ //(MD5-HD14)
       if(motor_number<1 || motor_number>4){
-        tcp_err_msg(control,"select wrong");
+        tcp_err_msg(control,"select wrong", packet);
       }else{
         motor_number -= 1;
         if(command.equalsIgnoreCase("set")){
@@ -367,16 +372,16 @@ void command_pros(String receive){
           temp_max /= 256;
           EEPROM.write(eepDriver[motor_number].MAX[0], temp_max%256);
 
-          response_moter_config(control,command,drive,motor_number+1,HIGHT_MAX_O[motor_number],temp_brk,temp_zero_dir);
+          response_moter_config(control,command,drive,motor_number+1,HIGHT_MAX_O[motor_number],temp_brk,temp_zero_dir, packet);
         }else if(command.equalsIgnoreCase("run")){
           bool relay_busy = false;
           for(uint8_t index = 0; index < 7; index++){
             if(relay_state[index]) relay_busy = true;
           }
           if(relay_busy){
-            tcp_err_msg(control,"relay is busy");
+            tcp_err_msg(control,"relay is busy", packet);
           }else if(H_bridge_run){
-            tcp_err_msg(control,"H_bridge is busy");
+            tcp_err_msg(control,"H_bridge is busy", packet);
           }else{
             uint8_t   limit_number     = json["limit"];
             bool      driver_direction = json["dir"];
@@ -391,7 +396,7 @@ void command_pros(String receive){
             #endif
 
             driver[motor_number].run_drive(stepDriver[motor_number],ZERO_DIR_O[motor_number],driver_direction,limit_number,SENSOR_ON[limit_number],driver_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],driver_add);
-            response_moter_status("motor", "run", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos());
+            response_moter_status("motor", "run", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos(), packet);
           }
         }else if(command.equalsIgnoreCase("repeat")){
           bool relay_busy = false;
@@ -399,9 +404,9 @@ void command_pros(String receive){
             if(relay_state[index]) relay_busy = true;
           }
           if(relay_busy){
-            tcp_err_msg(control,"relay is busy");
+            tcp_err_msg(control,"relay is busy", packet);
           }else if(H_bridge_run){
-            tcp_err_msg(control,"H_bridge is busy");
+            tcp_err_msg(control,"H_bridge is busy", packet);
           }else{
             uint8_t limit_number = json["limit"];
             bool moter_direction = json["dir"];
@@ -427,18 +432,18 @@ void command_pros(String receive){
               driver[motor_number].run_drive(stepDriver[motor_number],ZERO_DIR_O[motor_number],moter_direction,16,true,run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);                                //run
               driver[motor_number].run_drive(stepDriver[motor_number],ZERO_DIR_O[motor_number],!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_O[motor_number],BRAKE_O[motor_number],0);  //retrun
             }
-            response_moter_status("motor", "repeat", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos());
+            response_moter_status("motor", "repeat", drive, motor_number +1, driver[motor_number].get_zero_set(), driver[motor_number].get_pos(), packet);
             }
         }else if(command.equalsIgnoreCase("status")){
           Serial.print("driver");
           Serial.print(motor_number);
           Serial.print(":");
           driver[motor_number].status();
-        }else{tcp_err_msg(control,"command null");}
+        }else{tcp_err_msg(control,"command null", packet);}
       }
     }else{ //builtin driver
       if(motor_number<1 || motor_number>6){
-        tcp_err_msg(control,"select wrong");
+        tcp_err_msg(control,"select wrong", packet);
       }else{
         motor_number -= 1;
         if(command.equalsIgnoreCase("set")){
@@ -480,7 +485,7 @@ void command_pros(String receive){
           temp_max /= 256;
           EEPROM.write(eepMotor[motor_number].MAX[0], temp_max%256);
 
-          response_moter_config(control,command,drive,motor_number+1,HIGHT_MAX_I[motor_number],temp_brk,temp_zero_dir);
+          response_moter_config(control,command,drive,motor_number+1,HIGHT_MAX_I[motor_number],temp_brk,temp_zero_dir, packet);
         }else if(command.equalsIgnoreCase("run")){
           pinValues = read_shift_regs();
           builtin_dir[motor_number] = json["dir"];
@@ -545,9 +550,9 @@ void command_pros(String receive){
             if(relay_state[index]) relay_busy = true;
           }
           if(relay_busy){
-            tcp_err_msg(control,"relay is busy");
+            tcp_err_msg(control,"relay is busy", packet);
           }else if(H_bridge_run){
-            tcp_err_msg(control,"H_bridge is busy");
+            tcp_err_msg(control,"H_bridge is busy", packet);
           }else{
             uint8_t limit_number = json["limit"];
             bool moter_direction = json["dir"];
@@ -573,21 +578,21 @@ void command_pros(String receive){
               builtin[motor_number].run_moter(stepMotor[motor_number],ZERO_DIR_I[motor_number],motor_number,moter_direction,16,true,run_step,HIGHT_MAX_I[motor_number],BRAKE_I[motor_number]);                                //run
               builtin[motor_number].run_moter(stepMotor[motor_number],ZERO_DIR_I[motor_number],motor_number,!moter_direction,limit_number,SENSOR_ON[limit_number],run_step,HIGHT_MAX_I[motor_number],BRAKE_I[motor_number]);  //retrun
             }
-            response_moter_status("motor", "repeat", drive, motor_number +1, builtin[motor_number].get_zero_set(), builtin[motor_number].get_pos());
+            response_moter_status("motor", "repeat", drive, motor_number +1, builtin[motor_number].get_zero_set(), builtin[motor_number].get_pos(), packet);
             }
         }else if(command.equalsIgnoreCase("status")){
           Serial.print("builtin");
           Serial.print(motor_number);
           Serial.print(":");
           driver[motor_number].status();
-        }else{tcp_err_msg(control,"command null");}
+        }else{tcp_err_msg(control,"command null", packet);}
       }
     }
   }else if(control.equalsIgnoreCase("hbridge")){
     if(command.equalsIgnoreCase("run")){
       H_bridge_port = json["num"];
       if(H_bridge_port<1 || H_bridge_port>6){
-        tcp_err_msg(control,"select wrong");
+        tcp_err_msg(control,"select wrong", packet);
         H_bridge_port = 0;
       }else{
         H_bridge_port--;
@@ -600,10 +605,10 @@ void command_pros(String receive){
       digitalWrite(stepDriver[H_bridge_port].DIR,H_bridge_run);
       digitalWrite(stepDriver[H_bridge_port].PWM,H_bridge_run);
       H_bridge_run = false;
-    }else{tcp_err_msg(control,"command null");}
+    }else{tcp_err_msg(control,"command null", packet);}
   }else{
     Serial.println("nope");
-    tcp_err_msg("null","control error");
+    tcp_err_msg("null","control error", packet);
   }
 }//mqtt_requeset()
 
@@ -617,12 +622,13 @@ void tcp_response(const char* send_data){
   }
 }
 
-void tcp_err_msg(String type, String error_msg){
+void tcp_err_msg(String type, String error_msg, uint8_t pk){
   DynamicJsonDocument res(JSON_STACK);
   res["id"]   = device_id;
   res["ctrl"] = "error";
   res["cmd"]  = type;
   res["err"]  = error_msg;
+  res["pk"]   = pk;
   
   String json="";
   serializeJson(res, json);
@@ -657,7 +663,7 @@ void response_moter_set(String control, String command, bool drive, uint8_t moto
   tcp_response(buffer);
 }
 
-void response_moter_config(String control, String command, bool drive, uint8_t motor_number, uint32_t max_hight, uint8_t brk, uint8_t dir0){
+void response_moter_config(String control, String command, bool drive, uint8_t motor_number, uint32_t max_hight, uint8_t brk, uint8_t dir0, uint8_t pk){
   DynamicJsonDocument res(JSON_STACK);
   res["id"]    = device_id;
   res["ctrl"]  = control;
@@ -667,6 +673,7 @@ void response_moter_config(String control, String command, bool drive, uint8_t m
   res["max"]   = max_hight;
   res["brk"]   = brk;
   res["dir0"]  = dir0;
+  res["pk"]    = pk;
 
   String json="";
   serializeJson(res, json);
@@ -675,7 +682,7 @@ void response_moter_config(String control, String command, bool drive, uint8_t m
   tcp_response(buffer);
 }
 
-void response_moter_status(String ctrl, String command, bool drive, uint8_t number, bool zero, uint32_t pos){
+void response_moter_status(String ctrl, String command, bool drive, uint8_t number, bool zero, uint32_t pos, uint8_t pk){
   DynamicJsonDocument res(JSON_STACK);
   res["id"]   = device_id;
   res["ctrl"] = ctrl;
@@ -684,6 +691,7 @@ void response_moter_status(String ctrl, String command, bool drive, uint8_t numb
   res["num"]  = number;
   res["zero"] = zero;
   res["pos"]  = pos;
+  res["pk"]    = pk;
 
   String json="";
   serializeJson(res, json);
@@ -692,7 +700,7 @@ void response_moter_status(String ctrl, String command, bool drive, uint8_t numb
   tcp_response(buffer);
 }
 
-void read_pin_values(){
+void read_pin_values(uint8_t pk){
   if(!builtin_progress){
     pinValues = read_shift_regs();
 
@@ -705,7 +713,9 @@ void read_pin_values(){
       json += (pinValues >> index) & 1;
       if(index != DATA_WIDTH-1) json += ",";
     }
-    json += "]}";
+    json += "],\"ctrl\":";
+    json += pk;
+    json += "}";
     
     char buffer[json.length() + 1];
     json.toCharArray(buffer, json.length() + 1);
@@ -713,7 +723,7 @@ void read_pin_values(){
   }
 }
 
-void set_pin_values(){
+void set_pin_values(uint8_t pk){
   pinValues = read_shift_regs();
 
   String json = "{\"id\":\"";
@@ -725,19 +735,22 @@ void set_pin_values(){
     json += SENSOR_ON[index];
     if(index != DATA_WIDTH-1) json += ",";
   }
-  json += "]}";
+  json += "],\"ctrl\":";
+  json += pk;
+  json += "}";
   
   char buffer[json.length() + 1];
   json.toCharArray(buffer, json.length() + 1);
   tcp_response(buffer);
 }
 
-void relay_status_change(uint8_t index, bool status){
+void relay_status_change(uint8_t index, bool status, uint8_t pk){
   DynamicJsonDocument res(JSON_STACK);
   res["id"]   = device_id;
   res["ctrl"] = "relay_hold";
   res["cmd"]  = index;
   res["opt"]  = status;
+  res["pk"]   = pk;
 
   String json="";
   serializeJson(res, json);
