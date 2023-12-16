@@ -352,7 +352,7 @@ void command_pros(String receive){
           EEPROM.write(eepDriver[motor_number].DLY_S[1], temp_dla_s%256);
           EEPROM.write(eepDriver[motor_number].DLY_L[0], temp_dla_l/256);
           EEPROM.write(eepDriver[motor_number].DLY_L[1], temp_dla_l%256);
-          response_moter_set(control,command,drive,motor_number+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l);
+          response_moter_set(control,command,drive,motor_number+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l,packet);
         }else if(command.equalsIgnoreCase("config")){
           uint8_t  temp_zero_dir = json["dir0"];
           EEPROM.write(eepDriver[motor_number].ZERO_DIR, temp_zero_dir);
@@ -465,7 +465,7 @@ void command_pros(String receive){
           EEPROM.write(eepMotor[motor_number].DLY_S[1], temp_dla_s%256);
           EEPROM.write(eepMotor[motor_number].DLY_L[0], temp_dla_l/256);
           EEPROM.write(eepMotor[motor_number].DLY_L[1], temp_dla_l%256);
-          response_moter_set(control,command,drive,motor_number+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l);
+          response_moter_set(control,command,drive,motor_number+1,temp_accel,temp_decel,temp_dla_s,temp_dla_l,packet);
         }else if(command.equalsIgnoreCase("config")){
           uint8_t  temp_zero_dir = json["dir0"];
           EEPROM.write(eepMotor[motor_number].ZERO_DIR, temp_zero_dir);
@@ -652,7 +652,7 @@ void tcp_receive(String control, String command){
   tcp_response(buffer);
 }
 //**********End Of MQTT**********//
-void response_moter_set(String control, String command, bool drive, uint8_t motor_number, uint16_t v_accel, uint16_t v_decel, uint16_t v_dla_s, uint16_t v_dla_l){
+void response_moter_set(String control, String command, bool drive, uint8_t motor_number, uint16_t v_accel, uint16_t v_decel, uint16_t v_dla_s, uint16_t v_dla_l, uint8_t pk){
   DynamicJsonDocument res(JSON_STACK);
   res["id"]    = device_id;
   res["ctrl"]  = control;
@@ -663,6 +663,7 @@ void response_moter_set(String control, String command, bool drive, uint8_t moto
   res["decel"] = v_decel;
   res["dla_s"] = v_dla_s;
   res["dla_l"] = v_dla_l;
+  res["pk"]    = pk;
 
   String json="";
   serializeJson(res, json);

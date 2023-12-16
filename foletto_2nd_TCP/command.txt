@@ -1,29 +1,32 @@
-{"ctrl":"sensor","cmd":"read"}
-{"ctrl":"sensor","cmd":"set","opt":0,"num":4}
+{"ctrl":"sensor","cmd":"read","pk":9}
+{"ctrl":"sensor","cmd":"set","opt":0,"num":4,"pk":9}
+
+{"ctrl":"relay","cmd":"onoff","num":2,"opt": 1000,"pk":9}
+{"ctrl":"relay","cmd":"hold","num":3,"opt": 1,"pk":9}
 
 {"ctrl":"motor","cmd":"set","opt":0,"num":2,"accel":30,"decel":30,"dla_s":1,"dla_l":100}
-{"ctrl":"motor","cmd":"config","opt":0,"num":2,"max":1000000,"brk":1,"dir0":1}
-{"ctrl":"motor","cmd":"run","opt":0,"num":2,"step":1000,"dir":1,"limit":4,"add":10}
-{"ctrl":"motor","cmd":"repeat","opt":0,"num":4,"full_step":3000,"add_step":50,"dir":1,"limit":6,"repeat":1}
+{"ctrl":"motor","cmd":"config","opt":0,"num":2,"max":1000000,"brk":1,"dir0":1,"pk":9}
+{"ctrl":"motor","cmd":"run","opt":0,"num":2,"step":1000,"dir":1,"limit":4,"add":10,"pk":9}
+{"ctrl":"motor","cmd":"repeat","opt":0,"num":4,"full_step":3000,"add_step":50,"dir":1,"limit":6,"repeat":1,"pk":9}
 
 {"ctrl":"motor","cmd":"set","opt":1,"num":4,"accel":1000,"decel":1000,"dla_s":1,"dla_l":1000}
-{"ctrl":"motor","cmd":"config","opt":1,"num":4,"max":1000000,"brk":1,"dir0":1}
-{"ctrl":"motor","cmd":"run","opt":1,"num":4,"step":300,"dir":1,"limit":6,"add":10}
-{"ctrl":"motor","cmd":"repeat","opt":1,"num":4,"full_step":3000,"add_step":50,"dir":1,"limit":6,"repeat":1}
+{"ctrl":"motor","cmd":"config","opt":1,"num":4,"max":1000000,"brk":1,"dir0":1,"pk":9}
+{"ctrl":"motor","cmd":"run","opt":1,"num":4,"step":300,"dir":1,"limit":6,"add":10,"pk":9}
+{"ctrl":"motor","cmd":"repeat","opt":1,"num":4,"full_step":3000,"add_step":50,"dir":1,"limit":6,"repeat":1,"pk":9}
 
-{"ctrl":"hbridge","cmd":"run","num":1,"sec":7000,"repeat":3}
+{"ctrl":"hbridge","cmd":"run","num":1,"sec":7000,"repeat":3,"pk":9}
 
-{"ctrl":"motor","cmd":"status","opt":1,"num":1}
-{"ctrl":"motor","cmd":"status","opt":1,"num":2}
-{"ctrl":"motor","cmd":"status","opt":1,"num":3}
-{"ctrl":"motor","cmd":"status","opt":1,"num":4}
+{"ctrl":"motor","cmd":"status","opt":1,"num":1,"pk":9}
+{"ctrl":"motor","cmd":"status","opt":1,"num":2,"pk":9}
+{"ctrl":"motor","cmd":"status","opt":1,"num":3,"pk":9}
+{"ctrl":"motor","cmd":"status","opt":1,"num":4,"pk":9}
 
-{"ctrl":"motor","cmd":"status","opt":0,"num":1}
-{"ctrl":"motor","cmd":"status","opt":0,"num":2}
-{"ctrl":"motor","cmd":"status","opt":0,"num":3}
-{"ctrl":"motor","cmd":"status","opt":0,"num":4}
-{"ctrl":"motor","cmd":"status","opt":0,"num":5}
-{"ctrl":"motor","cmd":"status","opt":0,"num":6}
+{"ctrl":"motor","cmd":"status","opt":0,"num":1,"pk":9}
+{"ctrl":"motor","cmd":"status","opt":0,"num":2,"pk":9}
+{"ctrl":"motor","cmd":"status","opt":0,"num":3,"pk":9}
+{"ctrl":"motor","cmd":"status","opt":0,"num":4,"pk":9}
+{"ctrl":"motor","cmd":"status","opt":0,"num":5,"pk":9}
+{"ctrl":"motor","cmd":"status","opt":0,"num":6,"pk":9}
 
 {"ctrl":"dev_id","cmd":"foletto_2nd_f"}
 {"ctrl":"macaddr","cmd":"250"}
