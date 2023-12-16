@@ -170,7 +170,8 @@
     "accel": 10,  //가속 구간 스탭 수 unsigned int16 - 0 to 65535
     "decel": 5,   //감속 구간 스탭 수 unsigned int16 - 0 to 65535
     "dla_s": 1,   //unsigned int 16, 모터 스탭간격 micro sec, delay_short
-    "dla_l": 100  //unsigned int 16, 모터 스탭간격 micro sec, delay_long > delay_short    
+    "dla_l": 100, //unsigned int 16, 모터 스탭간격 micro sec, delay_long > delay_short    
+    "pk":   0~255
 }
 // step motor ctrl response "set"
 {
@@ -182,7 +183,8 @@
     "accel": 10,
     "decel": 5,
     "dla_s": 1,
-    "dla_l": 100
+    "dla_l": 100,
+    "pk":   0~255
 }
 
 // step motor ctrl request "run"
