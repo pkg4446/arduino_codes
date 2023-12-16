@@ -43,6 +43,7 @@
     "cmd":  "sensor",
     "err":  //"select wrong"  // 센서 set 명령어에서 센서 번호 < 16 이 아닌경우
             //"command null"  // "cmd" 키가 read, set 가 아닌경우
+    "pk":   0~255
 }
 //moter error response
 {
@@ -84,7 +85,8 @@
     "ctrl": "relay",
     "cmd":  "onoff",    // onoff, hold
     "num":  1,          // relay number e.g. 1번 relay, unsigned char (0 to 255), relay number e.g. (1~7 relay)
-    "opt":  1000        // onoff: unsigned short 0 to 65,535, e.g. 1000 ms, // hold: bool
+    "opt":  1000,       // onoff: unsigned short 0 to 65,535, e.g. 1000 ms, // hold: bool
+    "pk":   0~255
 }
 // relay response, onoff
 {
@@ -229,6 +231,7 @@
     "limit": 6,   // 펌핑 모터 home 센서
                   // home에 위치해야 구동가능하고, 한 주기 펌핑한 뒤 home까지 위치해야함. 
     "repeat":  5,   //반복횟수
+    "pk":   0~255
 }
 
 // step motor ctrl request "repeat"
@@ -246,6 +249,7 @@
     "dir":   1,     // step motor direction (CW/CCW), 0:CW, 1:CCW
     "limit": 16,    // 믹싱 모터 limit 센서 X
     "repeat":  3,   // 반복횟수
+    "pk":   0~255
 }
 
 
