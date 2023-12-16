@@ -655,7 +655,7 @@ void response_moter_set(String control, String command, bool drive, uint8_t moto
   tcp_response(buffer);
 }
 
-void response_moter_config(String control, String command, bool drive, uint8_t motor_number, uint32_t max, uint8_t brk, uint8_t dir0,){
+void response_moter_config(String control, String command, bool drive, uint8_t motor_number, uint32_t max, uint8_t brk, uint8_t dir0){
   DynamicJsonDocument res(JSON_STACK);
   res["id"]    = device_id;
   res["ctrl"]  = control;
