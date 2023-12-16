@@ -137,6 +137,17 @@
     "brk":   1,    //브레이크 릴레이 번호,
     "dir0":  0     //원점 회귀방향, 0,1 일때 서로 반대, 기본값 0
 }
+// step motor ctrl response "config"
+{
+    "id":   "foletto_2nd_f",
+    "ctrl": "motor",
+    "cmd":  "set",
+    "opt":  true,
+    "num":  1,
+    "max":  1000,
+    "brk":  1,
+    "dir0": 0,
+}
 
 // step motor ctrl request "set"    *eeprom 사용
 {
@@ -151,15 +162,15 @@
 }
 // step motor ctrl response "set"
 {
-    "id":"foletto_2nd_f",
-    "ctrl":"motor",
-    "cmd":"set",
-    "opt":false,
-    "num":1,
-    "accel":10,
-    "decel":5,
-    "dla_s":1,
-    "dla_l":100
+    "id":    "foletto_2nd_f",
+    "ctrl":  "motor",
+    "cmd":   "set",
+    "opt":   false,
+    "num":   1,
+    "accel": 10,
+    "decel": 5,
+    "dla_s": 1,
+    "dla_l": 100
 }
 
 // step motor ctrl request "run"
