@@ -93,7 +93,8 @@
     "ctrl": "relay",
     "cmd":  "onoff",
     "num":  3,
-    "opt":  1001            // 실제 릴레이 작동시간(시스템 시간상 +2 miili sec 정도 차이가 날 수 있음 )
+    "opt":  1001,           // 실제 릴레이 작동시간(시스템 시간상 +-2 miili sec 정도 차이가 날 수 있음 )
+    "pk":   0~255
 }
 // relay response, hold
 {"ctrl":"relay","cmd":"hold","num":3,"opt": 1}
@@ -195,6 +196,7 @@
     "dir":   1,   //step motor direction (CW/CCW), 0:CW, 1:CCW
     "limit": 4,   //모터 진행방향 리미트센서 번호 = sensor_read 번호, 16이상일 경우 인식 안함.
     "add":   100, //리미트 인식 후 추가 진행 스탭 // 추가 스탭은 step 범위 이내에서 리미트를 인식할 경우만 작동함.
+    "pk":   0~255
 }
 // step motor ctrl response "run"
 {
@@ -204,7 +206,8 @@
     "opt":  false,
     "num":  1,
     "zero": false,
-    "pos":  100
+    "pos":  100,
+    "pk":   0~255
 }
 
 // step motor ctrl request "repeat"
@@ -254,6 +257,7 @@
     "num":  1,
     "zero": false,
     "pos":  100
+    "pk":   0~255
 }
 
 // step motor ctrl response
@@ -265,6 +269,7 @@
     "num":    1,            // 모터 번호
     "zero":   false,        // 영점 확인 여부
     "pos":    999           // 모터 위치
+    "pk":     0~255
 }
 
 // dc motor ctrl request "repeat"
@@ -274,12 +279,14 @@
     "cmd":    "run",
     "num":    1,    // motor type e.g. 1번 모터 // 0 to 255
     "sec":    7000, // 한방향 회전시간 (milli sec) unsigned int 16
-    "repeat": 3    // 반복횟수 // 0 to 127
+    "repeat": 3,    // 반복횟수 // 0 to 127
+    "pk":   0~255
 }
 
 {
     "ctrl":   "hbridge",
-    "cmd":    "stop"
+    "cmd":    "stop",
+    "pk":   0~255
 }
 //정지
 
@@ -287,7 +294,8 @@
 {
     "id":     "<board-id>", // 제어보드 고유 id
     "ctrl":   "hbridge",
-    "cmd":    "done"
+    "cmd":    "done",
+    "pk":   0~255
 }
 //
 

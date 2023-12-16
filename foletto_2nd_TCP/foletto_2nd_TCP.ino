@@ -16,6 +16,7 @@
 
 #define DRIVER_O  4
 #define DRIVER_I  6
+#define RELAY     7
 
 //#define DEBUG
 //#define DEBUG_TCP
@@ -39,13 +40,16 @@ char device_id[24]  = {0x00,};
 /************************* values *********************************/
 MOTOR driver[DRIVER_O];
 MOTOR builtin[DRIVER_I];
-unsigned long relay_start_time[7] = {0UL,};
-unsigned long relay_end_time[7]   = {0UL,};
-bool relay_state[7];
+unsigned long relay_start_time[RELAY] = {0UL,};
+unsigned long relay_end_time[RELAY]   = {0UL,};
+bool relay_state[RELAY];
 bool online = false;
 BYTES_VAL_T pinValues;
 /************************* values *********************************/
-uint8_t  packet;
+uint8_t  packet                = 0;
+uint8_t  packet_h_bridge       = 0;
+uint8_t  packet_relay[RELAY]   = {0,};
+uint8_t  packet_step[DRIVER_I] = {0,};
 /************************* values *********************************/
 uint32_t HIGHT_MAX_O[DRIVER_O] = {9999,};
 uint32_t HIGHT_MAX_I[DRIVER_I] = {9999,};
@@ -122,7 +126,7 @@ void builtin_stepper(){
               digitalWrite(relay_pin[BRAKE_I[index]-1], false);
               Serial.println("limit detect");
             }//브레이크 잠금
-            response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos(), packet);  //종료
+            response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos(), packet_step[index]);  //종료
           }
         }
       }
@@ -140,7 +144,7 @@ void builtin_stepper(){
             digitalWrite(relay_pin[BRAKE_I[index]-1], false);
             Serial.println("brake close");
           }//브레이크 잠금
-          response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos(), packet);
+          response_moter_status("motor", "run", 0, index +1, builtin[index].get_zero_set(), builtin[index].get_pos(), packet_step[index]);
         }else if(builtin_pulse[index] >= builtin_pulse_start[index]){
           builtin_speed_f[index] -= builtin_speed_accel[index];
           builtin_speed[index] = builtin_speed_f[index] + 0.01;
@@ -183,7 +187,7 @@ void H_bridge(){
       #ifdef DEBUG
         Serial.println("stop");
       #endif
-      String json = "{\"ID\":\"" + String(device_id) + "\",\"ctrl\":\"hbridge\",\"cmd\":\"done\"}";
+      String json = "{\"ID\":\"" + String(device_id) + "\",\"ctrl\":\"hbridge\",\"cmd\":\"done\",\"pk\":"+ String(packet_h_bridge) +"}";
       char buffer[json.length() + 1];
       json.toCharArray(buffer, json.length() + 1);
       tcp_response(buffer);
@@ -282,7 +286,7 @@ void command_pros(String receive){
   if(control.equalsIgnoreCase("relay")){
     /**********************************************/
     int8_t relay_number = json["num"];
-    if(relay_number<1 || relay_number>7){
+    if(relay_number<1 || relay_number>RELAY){
       tcp_err_msg(control,"select wrong", packet);
     }else if(command.equalsIgnoreCase("onoff")){
       relay_number -= 1;
@@ -292,6 +296,7 @@ void command_pros(String receive){
       unsigned long sys_time = millis();
       relay_start_time[relay_number] = sys_time;
       relay_end_time[relay_number]   = sys_time + duration;
+      packet_relay[relay_number]     = packet;
     }else if(command.equalsIgnoreCase("hold")){
       relay_number -= 1;
       bool status = json["opt"];
@@ -533,6 +538,8 @@ void command_pros(String receive){
           builtin_pulse_end[motor_number]   = builtin[motor_number].decel_step()+1;
           builtin_speed_accel[motor_number] = (spd_gap*1.00)/(builtin_pulse_start[motor_number]*1.00);
           builtin_speed_decel[motor_number] = (spd_gap*1.00)/(builtin_pulse_end[motor_number]*1.00);
+          
+          packet_step[motor_number]       = packet;
 
           #ifdef DEBUG
             Serial.print("spd_gap="); Serial.println(spd_gap);
@@ -600,6 +607,7 @@ void command_pros(String receive){
         H_bridge_update_interval = json["sec"];
         H_bridge_process         = json["repeat"];
         H_bridge_process        *= 2;
+        packet_h_bridge          = packet;
       }      
     }else if(command.equalsIgnoreCase("stop")){
       digitalWrite(stepDriver[H_bridge_port].DIR,H_bridge_run);
@@ -761,7 +769,7 @@ void relay_status_change(uint8_t index, bool status, uint8_t pk){
 
 void relay_off_awiat(){
   unsigned long sys_time = millis();  
-  for (uint8_t index = 0; index<7 ; index++) {
+  for (uint8_t index = 0; index<RELAY ; index++) {
     if(relay_state[index] && (relay_end_time[index] <= sys_time)){
       digitalWrite(relay_pin[index], false);
       relay_state[index] = false;
@@ -771,6 +779,7 @@ void relay_off_awiat(){
       res["ctrl"] = "relay";
       res["cmd"]  = index+1;
       res["opt"]  = uint16_t(sys_time - relay_start_time[index]);
+      res["pk"]   = packet_relay[index];
 
       String json="";
       serializeJson(res, json);
