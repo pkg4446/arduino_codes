@@ -27,6 +27,8 @@ const boolean pin_off = true;
 bool mesh_info = false;
 bool mesh_send = false;
 
+uint8_t liquid_sensor = 0;
+
 class PCA9539 {
   public:
     PCA9539(uint8_t address);                       // constructor
@@ -635,21 +637,23 @@ void sensor_level(unsigned long millisec) {
       }
     }//use_honey
     mesh.update();
-    if((use_honey_f && use_honey) && (use_water_f && use_water) && (sensor_state_w || sensor_state_h)){ //센서가 고장일 경우
+    if(((use_honey_f && use_honey) || (use_water_f && use_water)) && (sensor_state_w || sensor_state_h)){ //센서가 고장일 경우
       //알람 보내기
-      if (err_sensor > 254) {
-        if(sensor_state_w && sensor_state_h){
-          ERR_Message = "SENSOR=ERR=LEVEL=ALL=0=0;";
-        }else if(sensor_state_w){
-          ERR_Message = "SENSOR=ERR=LEVEL=WATER=0=0;";
-        }else{
-          ERR_Message = "SENSOR=ERR=LEVEL=HONEY=0=0;";
-        }        
-        mesh.sendBroadcast(ERR_Message);
-        err_sensor  = 0;
-      }
-      else {
-        err_sensor++;
+      if(liquid_sensor++<2){
+        if (err_sensor > 254) {
+          if(sensor_state_w && sensor_state_h){
+            ERR_Message = "SENSOR=ERR=LEVEL=ALL=0=0;";
+          }else if(sensor_state_w){
+            ERR_Message = "SENSOR=ERR=LEVEL=WATER=0=0;";
+          }else{
+            ERR_Message = "SENSOR=ERR=LEVEL=HONEY=0=0;";
+          }        
+          mesh.sendBroadcast(ERR_Message);
+          err_sensor  = 0;
+        }
+        else {
+          err_sensor++;
+        }
       }
     } else {
       
