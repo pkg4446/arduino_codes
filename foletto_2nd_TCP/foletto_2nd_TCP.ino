@@ -280,7 +280,7 @@ void command_pros(String receive){
   if(!builtin_progress){
     tcp_receive(control,command,packet);
   }else{
-    char response_str[2] = {(packet%10)+48,0x00};
+    char response_str[2] = {0x30,0x00};
     tcp_response(response_str);
   }
   /************************************************/
