@@ -278,9 +278,10 @@ void command_pros(String receive){
   }
   
   if(!builtin_progress){
-    tcp_receive(control,command);
+    tcp_receive(control,command,packet);
   }else{
-    tcp_response("0");
+    char response_str[2] = {(packet%10)+48,0x00};
+    tcp_response(response_str);
   }
   /************************************************/
   if(control.equalsIgnoreCase("relay")){
@@ -645,8 +646,8 @@ void tcp_err_msg(String type, String error_msg, uint8_t pk){
   tcp_response(buffer);
 }
 
-void tcp_receive(String control, String command){
-  String json = "{\"ID\":\""+ String(device_id) +"\",\"ctrl\":\"receive\",\"cmd\":\""+control+"\",\"opt\":\""+command+"\"}";
+void tcp_receive(String control, String command, uint8_t pk){
+  String json = "{\"ID\":\""+ String(device_id) +"\",\"ctrl\":\"receive\",\"cmd\":\""+control+"\",\"opt\":\""+command+"\",\"pk\":\""+pk+"\"}";
   char buffer[json.length() + 1];
   json.toCharArray(buffer, json.length() + 1);
   tcp_response(buffer);
@@ -722,7 +723,7 @@ void read_pin_values(uint8_t pk){
       json += (pinValues >> index) & 1;
       if(index != DATA_WIDTH-1) json += ",";
     }
-    json += "],\"ctrl\":";
+    json += "],\"pk\":";
     json += pk;
     json += "}";
     
@@ -744,7 +745,7 @@ void set_pin_values(uint8_t pk){
     json += SENSOR_ON[index];
     if(index != DATA_WIDTH-1) json += ",";
   }
-  json += "],\"ctrl\":";
+  json += "],\"pk\":";
   json += pk;
   json += "}";
   
