@@ -1,5 +1,5 @@
-/******************************** ver 1.2.3  ********************************/
-/******************************** 2023-12-17 ********************************/
+/******************************** ver 1.2.4  ********************************/
+/******************************** 2023-12-18 ********************************/
 #include "pin_setup.h"
 #include "shift_regs.h"
 #include "moter_control.h"
@@ -280,8 +280,8 @@ void command_pros(String receive){
   if(!builtin_progress){
     tcp_receive(control,command,packet);
   }else{
-    char response_str[2] = {0x30,0x00};
-    tcp_response(response_str);
+    //char response_str[2] = {0x30,0x00};
+    tcp_response("0");
   }
   /************************************************/
   if(control.equalsIgnoreCase("relay")){
