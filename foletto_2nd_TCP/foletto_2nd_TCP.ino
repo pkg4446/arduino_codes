@@ -187,7 +187,7 @@ void H_bridge(){
       #ifdef DEBUG
         Serial.println("stop");
       #endif
-      String json = "{\"ID\":\"" + String(device_id) + "\",\"ctrl\":\"hbridge\",\"cmd\":\"done\",\"pk\":"+ String(packet_h_bridge) +"}";
+      String json = "{\"ID\":\"" + String(device_id) + "\",\"ctrl\":\"hbridge\",\"cmd\":\"done\",\"pk\":"+ packet_h_bridge +"}";
       char buffer[json.length() + 1];
       json.toCharArray(buffer, json.length() + 1);
       tcp_response(buffer);
@@ -280,8 +280,8 @@ void command_pros(String receive){
   if(!builtin_progress){
     tcp_receive(control,command,packet);
   }else{
-    //char response_str[2] = {0x30,0x00};
-    tcp_response("0");
+    char response_str[2] = {0x30,0x00};
+    tcp_response(response_str);
   }
   /************************************************/
   if(control.equalsIgnoreCase("relay")){
@@ -637,7 +637,7 @@ void tcp_err_msg(String type, String error_msg, uint8_t pk){
   res["ctrl"] = "error";
   res["cmd"]  = type;
   res["err"]  = error_msg;
-  res["pk"]   = String(pk);
+  res["pk"]   = pk;
   
   String json="";
   serializeJson(res, json);
@@ -647,7 +647,7 @@ void tcp_err_msg(String type, String error_msg, uint8_t pk){
 }
 
 void tcp_receive(String control, String command, uint8_t pk){
-  String json = "{\"ID\":\""+ String(device_id) +"\",\"ctrl\":\"receive\",\"cmd\":\""+control+"\",\"opt\":\""+command+"\",\"pk\":\""+String(pk)+"\"}";
+  String json = "{\"ID\":\""+ String(device_id) +"\",\"ctrl\":\"receive\",\"cmd\":\""+control+"\",\"opt\":\""+command+"\",\"pk\":"pk+"}";
   char buffer[json.length() + 1];
   json.toCharArray(buffer, json.length() + 1);
   tcp_response(buffer);
@@ -664,7 +664,7 @@ void response_moter_set(String control, String command, bool drive, uint8_t moto
   res["decel"] = v_decel;
   res["dla_s"] = v_dla_s;
   res["dla_l"] = v_dla_l;
-  res["pk"]    = String(pk);
+  res["pk"]    = pk;
 
   String json="";
   serializeJson(res, json);
@@ -683,7 +683,7 @@ void response_moter_config(String control, String command, bool drive, uint8_t m
   res["max"]   = max_hight;
   res["brk"]   = brk;
   res["dir0"]  = dir0;
-  res["pk"]    = String(pk);
+  res["pk"]    = pk;
 
   String json="";
   serializeJson(res, json);
@@ -701,7 +701,7 @@ void response_moter_status(String ctrl, String command, bool drive, uint8_t numb
   res["num"]  = number;
   res["zero"] = zero;
   res["pos"]  = pos;
-  res["pk"]   = String(pk);
+  res["pk"]   = pk;
 
   String json="";
   serializeJson(res, json);
@@ -724,7 +724,7 @@ void read_pin_values(uint8_t pk){
       if(index != DATA_WIDTH-1) json += ",";
     }
     json += "],\"pk\":";
-    json += String(pk);
+    json += pk;
     json += "}";
     
     char buffer[json.length() + 1];
@@ -746,7 +746,7 @@ void set_pin_values(uint8_t pk){
     if(index != DATA_WIDTH-1) json += ",";
   }
   json += "],\"pk\":";
-  json += String(pk);
+  json += pk;
   json += "}";
   
   char buffer[json.length() + 1];
@@ -760,7 +760,7 @@ void relay_status_change(uint8_t index, bool status, uint8_t pk){
   res["ctrl"] = "relay_hold";
   res["cmd"]  = index;
   res["opt"]  = status;
-  res["pk"]   = String(pk);
+  res["pk"]   = pk;
 
   String json="";
   serializeJson(res, json);
