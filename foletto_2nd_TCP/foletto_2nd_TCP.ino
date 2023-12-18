@@ -1,5 +1,5 @@
-/******************************** ver 1.2.4  ********************************/
-/******************************** 2023-12-18 ********************************/
+/******************************** ver 1.2.3  ********************************/
+/******************************** 2023-12-17 ********************************/
 #include "pin_setup.h"
 #include "shift_regs.h"
 #include "moter_control.h"
@@ -647,7 +647,7 @@ void tcp_err_msg(String type, String error_msg, uint8_t pk){
 }
 
 void tcp_receive(String control, String command, uint8_t pk){
-  String json = "{\"ID\":\""+ String(device_id) +"\",\"ctrl\":\"receive\",\"cmd\":\""+control+"\",\"opt\":\""+command+"\",\"pk\":"pk+"}";
+  String json = "{\"ID\":\""+ String(device_id) +"\",\"ctrl\":\"receive\",\"cmd\":\""+control+"\",\"opt\":\""+command+"\",\"pk\":"+pk+"}";
   char buffer[json.length() + 1];
   json.toCharArray(buffer, json.length() + 1);
   tcp_response(buffer);
@@ -781,7 +781,7 @@ void relay_off_awiat(){
       res["ctrl"] = "relay";
       res["cmd"]  = index+1;
       res["opt"]  = uint16_t(sys_time - relay_start_time[index]);
-      res["pk"]   = String(packet_relay[index]);
+      res["pk"]   = packet_relay[index];
 
       String json="";
       serializeJson(res, json);
