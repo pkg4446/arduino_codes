@@ -15,7 +15,6 @@ class HEAD
         HEAD();
         ~HEAD();
         void meiosis(HEAD *mother, HEAD *father);
+        void blend(HEAD *mother, HEAD *father, bool gender);
         void status();
-        String  mutation_string(String mother, String father);
-        uint8_t mutation_uint8_t(uint8_t mother, uint8_t father);
 };

@@ -1,5 +1,5 @@
-#include "Head.h"
-#include "arduino.h"
+#include "heredity.h"
+#include "Body.h"
 
 #define RAND_NUM   100
 #define RAND_FLAGE 2
@@ -37,11 +37,20 @@ HEAD::~HEAD(){
 void HEAD::meiosis(HEAD *mother, HEAD *father){
     
     color_hair = mutation_string(mother->color_hair,father->color_hair);
-    color_eye  = mutation_string(mother->color_eye,father->color_eye);
-    hair       = mother->hair;
-    eyelid     = mother->eyelid;
-    dimple     = mother->dimple;
-    bald       = mother->bald;
+    color_eye  = mutation_string(mother->color_eye, father->color_eye);
+    hair       = mutation_u8(mother->hair,          father->hair);
+    eyelid     = mutation_bool(mother->eyelid,      father->eyelid);
+    dimple     = mutation_bool(mother->dimple,      father->dimple);
+    bald       = mutation_bool(mother->bald,        father->bald);
+}
+
+void HEAD::blend(HEAD *mother, HEAD *father, bool gender){
+    color_hair = mutation_string(mother->color_hair,father->color_hair);
+    color_eye  = mutation_string(mother->color_eye, father->color_eye);
+    hair       = mutation_u8(mother->hair,          father->hair);
+    eyelid     = mutation_bool(mother->eyelid,      father->eyelid);
+    dimple     = mutation_bool(mother->dimple,      father->dimple);
+    bald       = mutation_bool(mother->bald,        father->bald);
 }
 
 void HEAD::status(){
@@ -53,20 +62,3 @@ void HEAD::status(){
     Serial.print("bald: ");      Serial.println(bald);
 }
 
-String HEAD::mutation_string(String mother, String father){
-    bool flage = random(RAND_FLAGE);
-    if(flage){
-        return father;
-    }else{
-        return mother;
-    }
-}
-
-uint8_t HEAD::mutation_uint8_t(uint8_t mother, uint8_t father){
-    bool flage = random(RAND_FLAGE);
-    if(flage){
-        return father;
-    }else{
-        return mother;
-    }
-}

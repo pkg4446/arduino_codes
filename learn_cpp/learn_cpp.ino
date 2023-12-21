@@ -1,18 +1,19 @@
-#include "Head.h"
+#include "Body.h"
 
 void setup() {
-    Serial.begin(115200);
-    HEAD *h1 = new HEAD();
-    h1->status();
-    HEAD *h2 = new HEAD();
-    h2->status();
-    HEAD *h3 = new HEAD();
-    h3->meiosis(h1,h2);
-    h3->status();
+  randomSeed(analogRead(0));
+  Serial.begin(115200);
+  HEAD *h1 = new HEAD();
+  h1->status();
+  HEAD *h2 = new HEAD();
+  h2->status();
+  HEAD *h3 = new HEAD();
+  h3->meiosis(h1,h2);
+  h3->status();
 
-    delete h1;
-    delete h2;
-    delete h3;
+  delete h1;
+  delete h2;
+  delete h3;
 }
 
 void loop() {
