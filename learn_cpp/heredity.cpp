@@ -1,6 +1,29 @@
-#include "Body.h"
+#include "heredity.h"
 
 #define RAND_FLAGE 2
+//distribution table
+//0.13 ,0.26 ,0.39 ,0.52 ,0.67 ,0.84 ,1.04 ,1.28 ,1.65
+uint16_t gaussian_range(uint16_t average, uint16_t standard_deviation){
+    uint16_t response = average;
+    uint8_t stage     = random(50);
+    bool flage        = random(RAND_FLAGE);
+    uint16_t range    = 0;
+
+    if(stage<5){range = standard_deviation*13/100;}
+    else if(stage<10){range = standard_deviation*26/100;}
+    else if(stage<15){range = standard_deviation*39/100;}
+    else if(stage<20){range = standard_deviation*52/100;}
+    else if(stage<25){range = standard_deviation*67/100;}
+    else if(stage<30){range = standard_deviation*84/100;}
+    else if(stage<35){range = standard_deviation*104/100;}
+    else if(stage<40){range = standard_deviation*128/100;}
+    else if(stage<45){range = standard_deviation*126/100;}
+
+    if(flage){response += range;}
+    else{response -= range;}
+
+    return response;
+}
 
 String mutation_string(String mother, String father){
     bool flage = random(RAND_FLAGE);
