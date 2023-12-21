@@ -18,6 +18,7 @@ uint16_t gaussian_range(uint16_t average, uint16_t standard_deviation){
     else if(stage<35){range = standard_deviation*104/100;}
     else if(stage<40){range = standard_deviation*128/100;}
     else if(stage<45){range = standard_deviation*126/100;}
+    else{range = standard_deviation*4;}
 
     if(flage){response += range;}
     else{response -= range;}
@@ -25,6 +26,24 @@ uint16_t gaussian_range(uint16_t average, uint16_t standard_deviation){
     return response;
 }
 
+uint16_t get_gaussian(uint16_t average, uint16_t standard_deviation, uint16_t value){
+    uint16_t gap = 0;
+    if(average>value){
+        gap = average - value;
+    }else{
+        gap = value - average;
+    }
+    uint32_t response = uint32_t(gap) * 100 / uint32_t(standard_deviation);
+    return uint16_t(response);
+}
+
+uint16_t change_gender(uint16_t ex_average, uint16_t average, uint16_t standard_deviation, uint16_t value, uint16_t ratio){
+    uint16_t response = 0;
+    if(value > ex_average){response = average + (ratio*standard_deviation/100);}
+    else{response = average - (ratio*standard_deviation/100);}
+    return response;
+}
+/*******************************************************************************************/
 String mutation_string(String mother, String father){
     bool flage = random(RAND_FLAGE);
     if(flage){

@@ -12,6 +12,7 @@ HardwareSerial nxSerial(2);
 #define TX2 19
 
 #define UPDATE_INTERVAL 1000UL
+#define RELAY_MAX 6
 
 #define DEBUG
 //#define DEBUG_ZE03
@@ -26,7 +27,7 @@ uint8_t ZE03[9] = {0,};
 uint8_t ZE03Index = 0;
 /******************** ZE03-O3 ********************/
 /******************** Pin Out ********************/
-const int8_t Relay[6] = {13,12,14,16,17,23};
+const int8_t Relay[RELAY_MAX] = {13,12,14,16,17,23};
 const int8_t led[3]   = {27,32,33};
 /******************** Pin Out ********************/
 /******************** Routine ********************/
@@ -56,7 +57,10 @@ void plasma_run(unsigned long millisec){
             Display("n_r", runtime_run/10);
             if(plazma_state != true){
               plazma_state = true;
-              digitalWrite(Relay[pin_plazma], true);
+              for(uint8_t index=0; index<RELAY_MAX; index++){
+                digitalWrite(Relay[index], true);
+              }
+              //digitalWrite(Relay[pin_plazma], true);
             }
           }else{
             run_phase = false;
@@ -67,7 +71,10 @@ void plasma_run(unsigned long millisec){
             Display("n_p", runtime_pause/10);
             if(plazma_state != false){
               plazma_state = false;
-              digitalWrite(Relay[pin_plazma], false);
+              for(uint8_t index=0; index<RELAY_MAX; index++){
+                digitalWrite(Relay[index], false);
+              }
+              //digitalWrite(Relay[pin_plazma], false);
             }
           }else{
             run_phase = true;
@@ -87,7 +94,10 @@ void plasma_run(unsigned long millisec){
     }else{
       if(plazma_state != false){
         plazma_state = false;
-        digitalWrite(Relay[pin_plazma], false);
+        for(uint8_t index=0; index<RELAY_MAX; index++){
+          digitalWrite(Relay[index], false);
+        }
+        //digitalWrite(Relay[pin_plazma], false);
       }
     }
   }

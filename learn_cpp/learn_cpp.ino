@@ -16,17 +16,21 @@ void setup() {
   father_head->status();
   father_body->status();
 
-  HEAD *appearance_head = new HEAD();
-  BODY *appearance_body = new BODY(true);
-  appearance_head->blend(mother_head, father_head, gender);
-  appearance_head->status();
-  appearance_body->status();
+  HEAD *my_head = new HEAD();
+  BODY *my_body = new BODY(gender);
+  my_head->blend(mother_head, father_head, gender);
+  my_head->status();
+  my_body->meiosis(mother_body,father_body);
+  my_body->status();
 
   Serial.print("Gender:");Serial.println(gender);
 
   delete mother_head;
+  delete mother_body;
   delete father_head;
-  delete appearance_head;
+  delete father_body;
+  delete my_head;
+  delete my_body;
 }
 
 void loop() {

@@ -85,7 +85,7 @@ BODY::BODY(bool gender) { //생성자
         hip       = gaussian_range(930,43);
         leg_ratio = gaussian_range(453,20);
     }else{
-        height    = gaussian_range(1612,56);
+        height    = gaussian_range(1612,59);
         chest     = gaussian_range(700,77);
         waist     = gaussian_range(600,65);
         hip       = gaussian_range(880,70);
@@ -110,7 +110,48 @@ void BODY::change(BODY *gene){
 }
 /*******************************************************************************************/
 void BODY::meiosis(BODY *mother, BODY *father){
+    
+    if(random(RAND_FLAGE) == 0){blood_A = mother->blood_A;}
+    else{blood_A = mother->blood_B;}
+    if(random(RAND_FLAGE) == 0){blood_B = father->blood_A;}
+    else{blood_B = father->blood_B;}
+    
+    body_color = mutation_u8(mother->body_color, father->body_color);
+    breast     = mother->breast;
 
+    uint16_t temp_value = 0;
+
+    if(gen_xy){
+        temp_value = change_gender(1612,1750,60,mother->height,get_gaussian(1612,59,mother->height));
+        height = mutation_u16(temp_value, father->height);
+
+        temp_value = change_gender(700,930,53,mother->chest,get_gaussian(700,77,mother->chest));
+        chest = mutation_u16(temp_value, father->chest);
+
+        temp_value = change_gender(600,770,50,mother->waist,get_gaussian(600,65,mother->waist));
+        waist = mutation_u16(temp_value, father->waist);
+
+        temp_value = change_gender(880,930,43,mother->hip,get_gaussian(880,70,mother->hip));
+        hip = mutation_u16(temp_value, father->hip);
+
+        temp_value = change_gender(458,453,20,mother->waist,get_gaussian(458,18,mother->leg_ratio));
+        leg_ratio = mutation_u16(temp_value, father->leg_ratio);
+    }else{
+        temp_value = change_gender(1750,1612,59,mother->waist,get_gaussian(1750,60,father->height));
+        height = mutation_u16(mother->height, temp_value);
+
+        temp_value = change_gender(930,700,77,mother->waist,get_gaussian(930,53,father->chest));
+        chest = mutation_u16(mother->chest, temp_value);
+
+        temp_value = change_gender(770,600,65,mother->waist,get_gaussian(770,50,father->waist));
+        waist = mutation_u16(mother->waist, temp_value);
+
+        temp_value = change_gender(930,880,70,mother->waist,get_gaussian(930,43,father->hip));
+        hip = mutation_u16(mother->hip, temp_value);
+
+        temp_value = change_gender(453,758,18,mother->waist,get_gaussian(453,20,father->leg_ratio));
+        leg_ratio = mutation_u16(mother->leg_ratio, temp_value);
+    }
 }
 /*******************************************************************************************/
 void BODY::blend(BODY *mother, BODY *father, bool gender){
@@ -143,7 +184,7 @@ void BODY::status(){
     Serial.println("*************************************");
     Serial.print("blood type: ");Serial.println(blood_type);
     Serial.print("skin color: ");Serial.print(body_color);Serial.print(" : ");Serial.println(color_body);
-    if(!gen_xy) Serial.print("breast    : ");Serial.println(breast);
+    if(!gen_xy){Serial.print("breast    : ");Serial.println(breast);}
     Serial.print("height    : ");Serial.println(height);
     Serial.print("chest     : ");Serial.println(chest);
     Serial.print("waist     : ");Serial.println(waist);
