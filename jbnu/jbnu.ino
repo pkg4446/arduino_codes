@@ -421,13 +421,11 @@ void setup() {
     ioport.pinMode(step_under[index].DIR, OUTPUT);
     ioport.digitalWrite(step_under[index].DIR, LOW);
     pinMode(step_under[index].PUL, OUTPUT);
-    pinMode(step_under[index].PUL, LOW);
     ioport.pinMode(step_upper[index].ENA, OUTPUT);
     ioport.digitalWrite(step_upper[index].ENA, LOW);
     ioport.pinMode(step_upper[index].DIR, OUTPUT);
     ioport.digitalWrite(step_upper[index].DIR, LOW);
     pinMode(step_upper[index].PUL, OUTPUT);
-    pinMode(step_upper[index].PUL, LOW);
   }
   for (uint8_t index = 0; index < 3; index++) {
     pinMode(pin_in[index], INPUT_PULLUP);
