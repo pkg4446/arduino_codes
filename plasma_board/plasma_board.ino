@@ -215,10 +215,14 @@ void ZE03_O3(){
           Serial.println(O3_PPM);
         #endif
         Display("n_O3", O3_PPM);
-        if(sens_run && (O3_PPM > 5)){
+        if(!sens_run && (O3_PPM > 5)){
           if(plazma_state != false){
             plazma_state = false;
             relay_all(false);
+            runtime       = false;
+            runtime_total = runtime_total_fix;
+            runtime_run   = runtime_run_fix;
+            runtime_pause = runtime_pause_fix;
             //digitalWrite(Relay[pin_plazma], false);
           }
         }
