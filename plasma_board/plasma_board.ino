@@ -45,7 +45,14 @@ bool run_phase = false;
 /******************** Variable ********************/
 uint8_t pin_plazma   = 1;
 bool    plazma_state = false;
+bool    sens_run     = false;
 /******************** Function ********************/
+void relay_all(bool state){
+  for(uint8_t index=0; index<RELAY_MAX; index++){
+    digitalWrite(Relay[index], state);
+  }
+}
+
 void plasma_run(unsigned long millisec){
   if(millisec - prevUpdateTime > 100){
     prevUpdateTime = millisec;
@@ -57,9 +64,7 @@ void plasma_run(unsigned long millisec){
             Display("n_r", runtime_run/10);
             if(plazma_state != true){
               plazma_state = true;
-              for(uint8_t index=0; index<RELAY_MAX; index++){
-                digitalWrite(Relay[index], true);
-              }
+              relay_all(true);
               //digitalWrite(Relay[pin_plazma], true);
             }
           }else{
@@ -71,9 +76,7 @@ void plasma_run(unsigned long millisec){
             Display("n_p", runtime_pause/10);
             if(plazma_state != false){
               plazma_state = false;
-              for(uint8_t index=0; index<RELAY_MAX; index++){
-                digitalWrite(Relay[index], false);
-              }
+              relay_all(false);
               //digitalWrite(Relay[pin_plazma], false);
             }
           }else{
@@ -94,9 +97,7 @@ void plasma_run(unsigned long millisec){
     }else{
       if(plazma_state != false){
         plazma_state = false;
-        for(uint8_t index=0; index<RELAY_MAX; index++){
-          digitalWrite(Relay[index], false);
-        }
+        relay_all(false);
         //digitalWrite(Relay[pin_plazma], false);
       }
     }
@@ -160,6 +161,12 @@ void command_pros(){
     runtime_pause_fix = numbers[1]*256 + numbers[0];
     runtime_pause_fix *= 10;
     Display("n_s_p", runtime_pause_fix/10);
+  }else if(Serial_buf[0] == 'S' && Serial_buf[1] == 'E' && Serial_buf[2] == 'N' && Serial_buf[3] == 'S'){
+   if(Serial_buf[5] == 'O' && Serial_buf[6] == 'N'){
+    sens_run = true;
+   }else if(Serial_buf[5] == 'F' && Serial_buf[6] == 'F'){
+    sens_run = false;
+   }
   }
   if(EEPROM_COMMIT) EEPROM.commit();
 }
@@ -208,6 +215,13 @@ void ZE03_O3(){
           Serial.println(O3_PPM);
         #endif
         Display("n_O3", O3_PPM);
+        if(sens_run && (O3_PPM > 5)){
+          if(plazma_state != false){
+            plazma_state = false;
+            relay_all(false);
+            //digitalWrite(Relay[pin_plazma], false);
+          }
+        }
       }
     }
   }
