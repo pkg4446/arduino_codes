@@ -45,7 +45,7 @@ bool run_phase = false;
 /******************** Variable ********************/
 uint8_t pin_plazma   = 1;
 bool    plazma_state = false;
-bool    sens_run     = false;
+bool    sens_run     = true;
 /******************** Function ********************/
 void relay_all(bool state){
   for(uint8_t index=0; index<RELAY_MAX; index++){
@@ -164,8 +164,10 @@ void command_pros(){
   }else if(Serial_buf[0] == 'S' && Serial_buf[1] == 'E' && Serial_buf[2] == 'N' && Serial_buf[3] == 'S'){
    if(Serial_buf[5] == 'O' && Serial_buf[6] == 'N'){
     sens_run = true;
+    Display("n_O3", 201);
    }else if(Serial_buf[5] == 'F' && Serial_buf[6] == 'F'){
     sens_run = false;
+    Display("n_O3", 202);
    }
   }
   if(EEPROM_COMMIT) EEPROM.commit();
@@ -215,7 +217,7 @@ void ZE03_O3(){
           Serial.println(O3_PPM);
         #endif
         Display("n_O3", O3_PPM);
-        if(!sens_run && (O3_PPM > 5)){
+        if(sens_run && (O3_PPM > 5)){
           if(plazma_state != false){
             plazma_state = false;
             relay_all(false);
