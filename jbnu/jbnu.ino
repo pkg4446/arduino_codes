@@ -333,8 +333,8 @@ void command_pros(){
       }else if(Serial_buf[3] == 'Y'){
         uint32_t buffer_num[4] = {Serial_buf[4],Serial_buf[5],Serial_buf[6],Serial_buf[7]};
         Target_pos_upper[1] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
-         Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 + ");
-         Serial.print(buffer_num[2]);Serial.print("*256*256 + ");Serial.print(buffer_num[3]);Serial.print("*256*256*256 = ");
+        Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 + ");
+        Serial.print(buffer_num[2]);Serial.print("*256*256 + ");Serial.print(buffer_num[3]);Serial.print("*256*256*256 = ");
         Serial.println(Target_pos_upper[1]);
       }else if(Serial_buf[3] == 'X'){
         uint32_t buffer_num[4] = {Serial_buf[4],Serial_buf[5],Serial_buf[6],Serial_buf[7]};
@@ -417,11 +417,17 @@ void setup() {
   */
   for (uint8_t index = 0; index < STEP_NUM; index++) {
     ioport.pinMode(step_under[index].ENA, OUTPUT);
+    ioport.digitalWrite(step_under[index].ENA, LOW);
     ioport.pinMode(step_under[index].DIR, OUTPUT);
+    ioport.digitalWrite(step_under[index].DIR, LOW);
     pinMode(step_under[index].PUL, OUTPUT);
+    pinMode(step_under[index].PUL, LOW);
     ioport.pinMode(step_upper[index].ENA, OUTPUT);
+    ioport.digitalWrite(step_upper[index].ENA, LOW);
     ioport.pinMode(step_upper[index].DIR, OUTPUT);
+    ioport.digitalWrite(step_upper[index].DIR, LOW);
     pinMode(step_upper[index].PUL, OUTPUT);
+    pinMode(step_upper[index].PUL, LOW);
   }
   for (uint8_t index = 0; index < 3; index++) {
     pinMode(pin_in[index], INPUT_PULLUP);
@@ -453,7 +459,7 @@ void loop() {
       ioport.digitalWrite(step_upper[index_led].DIR, HIGH);
       ioport.digitalWrite(step_under[index_led].ENA, HIGH);
       ioport.digitalWrite(step_under[index_led].DIR, HIGH);
-      delay(200);
+      delay(300);
       ioport.digitalWrite(step_upper[index_led].ENA, LOW);
       ioport.digitalWrite(step_upper[index_led].DIR, LOW);
       ioport.digitalWrite(step_under[index_led].ENA, LOW);
@@ -467,7 +473,7 @@ void loop() {
     } else {
       digitalWrite(step_upper[index_led].PUL, true);
       digitalWrite(step_under[index_led].PUL, true);
-      delay(200);
+      delay(300);
       digitalWrite(step_upper[index_led].PUL, LOW);
       digitalWrite(step_under[index_led].PUL, LOW);
       if (index_led < 6) {
