@@ -452,10 +452,7 @@ void setup() {
   Serial.println("System all green");
 }
 /******************************************** S E T U P ********************************************/
-#ifdef DEBUG_MONIT
-  uint8_t index_led = 0;
-  boolean led_flage = true;
-#endif
+
 /********************************************* L O O P *********************************************/
 void loop() {
   unsigned long millisec = millis();
@@ -473,31 +470,39 @@ void loop() {
   */
 
   #ifdef DEBUG_MONIT
-    if (led_flage) {
-      ioport.digitalWrite(step_upper[index_led].ENA, true);
-      ioport.digitalWrite(step_upper[index_led].DIR, true);
-      ioport.digitalWrite(step_under[index_led].ENA, true);
-      ioport.digitalWrite(step_under[index_led].DIR, true);
-      delay(300);
-      ioport.digitalWrite(step_upper[index_led].ENA, false);
-      ioport.digitalWrite(step_upper[index_led].DIR, false);
-      ioport.digitalWrite(step_under[index_led].ENA, false);
-      ioport.digitalWrite(step_under[index_led].DIR, false);
-      if (++index_led >= STEP_NUM) {
-        index_led = 0;
-        led_flage = false;
-      }
-    } else {
-      digitalWrite(step_upper[index_led].PUL, true);
-      digitalWrite(step_under[index_led].PUL, true);
-      delay(300);
-      digitalWrite(step_upper[index_led].PUL, false);
-      digitalWrite(step_under[index_led].PUL, false);
-      if (++index_led >= STEP_NUM) {
-        index_led = 0;
-        led_flage = true;
-      }
-    }
+    pin_led_check();
   #endif
 }
 /********************************************* L O O P *********************************************/
+
+#ifdef DEBUG_MONIT
+  uint8_t index_led = 0;
+  boolean led_flage = true;
+void pin_led_check(){
+  if (led_flage) {
+    ioport.digitalWrite(step_upper[index_led].ENA, true);
+    ioport.digitalWrite(step_upper[index_led].DIR, true);
+    ioport.digitalWrite(step_under[index_led].ENA, true);
+    ioport.digitalWrite(step_under[index_led].DIR, true);
+    delay(300);
+    ioport.digitalWrite(step_upper[index_led].ENA, false);
+    ioport.digitalWrite(step_upper[index_led].DIR, false);
+    ioport.digitalWrite(step_under[index_led].ENA, false);
+    ioport.digitalWrite(step_under[index_led].DIR, false);
+    if (++index_led >= STEP_NUM) {
+      index_led = 0;
+      led_flage = false;
+    }
+  } else {
+    digitalWrite(step_upper[index_led].PUL, true);
+    digitalWrite(step_under[index_led].PUL, true);
+    delay(300);
+    digitalWrite(step_upper[index_led].PUL, false);
+    digitalWrite(step_under[index_led].PUL, false);
+    if (++index_led >= STEP_NUM) {
+      index_led = 0;
+      led_flage = true;
+    }
+  }
+}
+#endif
