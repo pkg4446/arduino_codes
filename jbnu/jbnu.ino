@@ -1,14 +1,11 @@
 #include "Arduino.h"
 #include "Wire.h"
 
-#define DEBUG 1
+/******************************************* PCA9555 LIB *******************************************/
 #define NXP_INPUT      0
 #define NXP_OUTPUT     2
-#define NXP_INVERT     4
 #define NXP_CONFIG     6
 
-
-/******************************************* PCA9555 LIB *******************************************/
 class PCA9555 {
   public:
     PCA9555(uint8_t address, int interruptPin = -1);     // optional interrupt pin in second argument
@@ -486,9 +483,7 @@ void loop() {
       ioport.digitalWrite(step_upper[index_led].DIR, false);
       ioport.digitalWrite(step_under[index_led].ENA, false);
       ioport.digitalWrite(step_under[index_led].DIR, false);
-      if (index_led < STEP_NUM) {
-        index_led++;
-      } else {
+      if (++index_led >= STEP_NUM) {
         index_led = 0;
         led_flage = false;
       }
@@ -498,9 +493,7 @@ void loop() {
       delay(300);
       digitalWrite(step_upper[index_led].PUL, false);
       digitalWrite(step_under[index_led].PUL, false);
-      if (index_led < 6) {
-        index_led++;
-      } else {
+      if (++index_led >= STEP_NUM) {
         index_led = 0;
         led_flage = true;
       }
