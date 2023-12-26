@@ -70,7 +70,6 @@ bool PCA9555::begin() {
     return true;
   }
 }
-
 void PCA9555::pinMode(uint8_t pin, uint8_t IOMode) {
   if (pin <= 15) {
     if (IOMode == OUTPUT) {
@@ -82,7 +81,6 @@ void PCA9555::pinMode(uint8_t pin, uint8_t IOMode) {
     I2CSetValue(_address, NXP_CONFIG + 1, _configurationRegister_high);
   }
 }
-
 uint8_t PCA9555::digitalRead(uint8_t pin) {
   uint16_t _inputData = 0;
   if (pin > 15 ) return 255;
@@ -94,7 +92,6 @@ uint8_t PCA9555::digitalRead(uint8_t pin) {
     return false;
   }
 }
-
 void PCA9555::digitalWrite(uint8_t pin, uint8_t value) {
   if (pin > 15 ) {
     _error = 255;            // invalid pin
@@ -112,7 +109,6 @@ void PCA9555::pinStates() {
   _stateOfPins = I2CGetValue(_address, NXP_INPUT);
   _stateOfPins |= I2CGetValue(_address, NXP_INPUT + 1) << 8;
 }
-
 // Returns to user the state of desired pin
 uint8_t PCA9555::stateOfPin(uint8_t pin) {
   if ((_stateOfPins & (1 << pin)) > 0) {
@@ -121,18 +117,15 @@ uint8_t PCA9555::stateOfPin(uint8_t pin) {
     return false;
   }
 }
-
 void PCA9555::setClock(uint32_t clockFrequency) {
   Wire.setClock(clockFrequency);
 }
-
 void PCA9555::alertISR()
 {
   if (instancePointer != 0) {
     instancePointer->pinStates(); // Points to the actual ISR
   }
 }
-
 uint16_t PCA9555::I2CGetValue(uint8_t address, uint8_t reg) {
   uint16_t _inputData;
   Wire.beginTransmission(address);          // setup read registers
@@ -144,7 +137,6 @@ uint16_t PCA9555::I2CGetValue(uint8_t address, uint8_t reg) {
   _inputData = Wire.read();
   return _inputData;
 }
-
 void PCA9555::I2CSetValue(uint8_t address, uint8_t reg, uint8_t value) {
   Wire.beginTransmission(address);              // setup direction registers
   Wire.write(reg);                              // pointer to configuration register address 0
@@ -166,47 +158,100 @@ HardwareSerial nxSerial(2);
 
 //#define DEBUG_MONIT
 
+
+/******************************************* NEXTION ***********************************************/
+void DisplayConnect() {
+  if (nxSerial.available()) {
+    Serial_process(nxSerial.read());
+  }
+}
+
+void send2Nextion(String cmd) {
+  nxSerial.print(cmd);
+  nxSerial.write(0xFF);
+  nxSerial.write(0xFF);
+  nxSerial.write(0xFF);
+}
+
+void Display(String IDs, uint32_t values) {
+  String cmd;
+  char buf[8] = { 0 };
+  sprintf(buf, "%d", values);
+  cmd = IDs + ".val=";
+  cmd += buf;
+  send2Nextion(cmd);
+}
+/******************************************* NEXTION ***********************************************/
 /******************************************* STEP  MOTOR *******************************************/
 #define STEP_NUM  3
 
 typedef struct STEP_ts{
-	int8_t   ENA;
-	int8_t   DIR;
-	int8_t   PUL;
+	int8_t   ENA;   //Enable
+	int8_t   DIR;   //Direction
+	int8_t   PUL;   //Pulse
 }STEP_ts;
 //uint8_t pin_out[6] = {4, 26, 27, 14, 12, 13};
-const STEP_ts step_under[STEP_NUM]={
+const STEP_ts step_upper[STEP_NUM]={
    {15,9,4},
    {14,8,26},
    {13,0,27},
 };
-const STEP_ts step_upper[STEP_NUM]={
+const STEP_ts step_under[STEP_NUM]={
    {12,1,14},
    {11,2,12},
    {10,3,13},
 };
 
-bool      NextStep_upper              = false;
-bool      NextStep_under              = false;
-uint32_t  Target_pos_upper[STEP_NUM]  = {0,};
-uint32_t  Target_pos_under[STEP_NUM]  = {0,};
+typedef struct STEP_CTR_ts{
+	int32_t DEST;  //Destination
+	int32_t POS;   //Position
+	bool    DIR;   //Direction
+	bool    ACT;   //Actibation
+}STEP_CTR_ts;
+STEP_CTR_ts upper_ctr[STEP_NUM]={
+   {0,0,false,false},
+   {0,0,false,false},
+   {0,0,false,false},
+};
+STEP_CTR_ts under_ctr[STEP_NUM]={
+   {0,0,false,false},
+   {0,0,false,false},
+   {0,0,false,false},
+};
 
-uint32_t  Position_upper[STEP_NUM]    = {0,};
-uint32_t  Position_under[STEP_NUM]    = {0,};
-bool      Direction_upper[STEP_NUM]   = {false,false,false};
-bool      Direction_under[STEP_NUM]   = {false,false,false};
-bool      Activation_upper[STEP_NUM]  = {false,false,false};
-bool      Activation_under[STEP_NUM]  = {false,false,false};
-uint16_t Interval_upper               = 1000;
-uint16_t Interval_under               = 1000;
-unsigned long Update_upper            = 0UL;
-unsigned long Update_under            = 0UL;
+uint8_t   nextion_page        = 0;
+
+bool      stepmoter_work      = false;
+bool      stepmoter_sync      = false;
+bool      NextStep_upper      = false;
+bool      NextStep_under      = false;
+
+bool      manual_mode         = false;
+bool      manual_mode_work    = false;
+char      manual_command[2]   = {0x00,0x00};
+unsigned long Update_manual   = 0UL;
+
+bool  Cal_pul_upper[STEP_NUM] = {false,};
+bool  Cal_pul_under[STEP_NUM] = {false,};
+
+uint16_t Interval_upper       = 1000;
+uint16_t Interval_upper_cal   = 1000;
+uint16_t Interval_under       = 1000;
+uint16_t Interval_under_cal   = 1000;
+
+unsigned long Update_upper    = 0UL;
+unsigned long Update_under    = 0UL;
 
 void postion_cal_upper(){
   if(NextStep_upper){
     NextStep_upper = false;
+
+    Cal_pul_upper[0] = false;
+    upper_ctr[0].DIR = true; //방향 계산
+
+    Interval_upper_cal = 1000;//속도 계산 *1.414, 1.732
+
   }
-  
 }
 
 void postion_cal_under(){
@@ -215,83 +260,126 @@ void postion_cal_under(){
   }
 }
 
-void moter_run(unsigned long millisec){
-
-  if(millisec - Update_upper > Interval_upper){
-    Update_upper = millisec;
-    NextStep_upper    = true;
-    for (uint8_t index = 0; index < STEP_NUM; index++){ 
-      if(Position_upper[index] != Target_pos_upper[index]){
-        if(!Activation_upper[index]){
-          Activation_upper[index] = true;
-          ioport.digitalWrite(step_upper[index].ENA, true);
-        }
-        if(Position_upper[index] > Target_pos_upper[index]){
-          if(!Direction_upper[index]){
-            Direction_upper[index] = true;
-            ioport.digitalWrite(step_upper[index].DIR, true);
+void moter_run(unsigned long *millisec){
+  postion_cal_upper();
+  postion_cal_under();
+  if(stepmoter_work){
+    if(!NextStep_upper && (*millisec - Update_upper > Interval_upper_cal)){
+      Update_upper   = *millisec;
+      NextStep_upper = true;
+      for (uint8_t index = 0; index < STEP_NUM; index++){ 
+        if(Cal_pul_upper[index]){
+          if(!upper_ctr[index].ACT){
+            upper_ctr[index].ACT = true;
+            ioport.digitalWrite(step_upper[index].ENA, true);
           }
-        }else{
-          if(Direction_upper[index]){
-            Direction_upper[index] = false;
-            ioport.digitalWrite(step_upper[index].DIR, false);
+          ioport.digitalWrite(step_upper[index].DIR, upper_ctr[index].DIR);
+          digitalWrite(step_upper[index].PUL, true);
+        }
+      }
+      for (uint8_t index = 0; index < STEP_NUM; index++){ //pulse on time delay
+        if(Cal_pul_upper[index]){
+          if(upper_ctr[index].DIR){
+            upper_ctr[index].POS += 1;
+          }else{
+            if(upper_ctr[index].POS > 0) upper_ctr[index].POS -= 1;
           }
+          digitalWrite(step_upper[index].PUL, false);
         }
-        digitalWrite(step_upper[index].PUL, true);
-        if(Direction_upper[index]){
-          Position_upper[index] += 1;
-        }else{
-          if(Position_upper[index]>0) Position_upper[index] -= 1;
-        }
-        digitalWrite(step_upper[index].PUL, false);
       }
     }
-  }
 
-  if(millisec - Update_under > Interval_under){
-    Update_under = millisec;
-    NextStep_under    = true;
-    for (uint8_t index = 0; index < STEP_NUM; index++){
-      if(Position_under[index] != Target_pos_under[index]){
-        if(!Activation_under[index]){
-          Activation_under[index] = true;
-          ioport.digitalWrite(step_under[index].ENA, true);
-        }
-        if(Position_under[index] > Target_pos_under[index]){
-          if(!Direction_under[index]){
-            Direction_under[index] = true;
-            ioport.digitalWrite(step_under[index].DIR, true);
+    if(!NextStep_under && (*millisec - Update_under > Interval_under_cal)){
+      Update_under   = *millisec;
+      NextStep_under = true;
+      for (uint8_t index = 0; index < STEP_NUM; index++){
+        if(Cal_pul_under[index]){
+          if(!under_ctr[index].ACT){
+            under_ctr[index].ACT = true;
+            ioport.digitalWrite(step_under[index].ENA, true);
           }
-        }else{
-          if(Direction_under[index]){
-            Direction_under[index] = false;
-            ioport.digitalWrite(step_under[index].DIR, false);
+          ioport.digitalWrite(step_under[index].DIR, under_ctr[index].DIR);
+          digitalWrite(step_under[index].PUL, true);
+        }
+      }
+      for (uint8_t index = 0; index < STEP_NUM; index++){ //pulse on time delay
+        if(Cal_pul_under[index]){
+          if(under_ctr[index].DIR){
+            under_ctr[index].POS += 1;
+          }else{
+            if(under_ctr[index].POS > 0) under_ctr[index].POS -= 1;
           }
+          digitalWrite(step_under[index].PUL, false);
         }
-        digitalWrite(step_under[index].PUL, true);
-        if(Direction_under[index]){
-          Position_under[index] += 1;
-        }else{
-          if(Position_under[index]>0) Position_under[index] -= 1;
-        }
-        digitalWrite(step_under[index].PUL, false);
       }
     }
+    //HMI Position refresh here.
+    if(nextion_page == 0){
+      Display("nTX",upper_ctr[0].POS);
+      Display("nTY",upper_ctr[1].POS);
+      Display("nTZ",upper_ctr[2].POS);
+      Display("nBX",under_ctr[0].POS);
+      Display("nBY",under_ctr[1].POS);
+      Display("nBZ",under_ctr[2].POS);
+    }
   }
-}
+}//moter_run()
 
-void moter_sleep(unsigned long millisec){
+void moter_sleep(unsigned long *millisec){
   for (uint8_t index = 0; index < STEP_NUM; index++){ 
-    if(Activation_upper[index] && (millisec - Update_upper > 10)){
-      Activation_upper[index] = false;
+    if(under_ctr[index].ACT && (*millisec - Update_upper > 10)){
+      under_ctr[index].ACT = false;
       ioport.digitalWrite(step_upper[index].ENA, false);
     }
-    if(Activation_under[index] && (millisec - Update_under > 10) ){
-      Activation_under[index] = false;
+    if(under_ctr[index].ACT && (*millisec - Update_under > 10) ){
+      under_ctr[index].ACT = false;
       ioport.digitalWrite(step_under[index].ENA, false);
     }
   }
-}
+}//moter_sleep()
+
+void moter_manual(unsigned long *millisec){
+  if(manual_mode){
+    if(*millisec - Update_manual > 1){
+      bool up_down         = false;
+      uint8_t moter_number = 0;
+      if(manual_command[0] == 'T'){up_down = true;}
+      if(manual_command[1] == 'Y'){moter_number = 1;}
+      else if(manual_command[1] == 'Z'){moter_number = 2;}
+      if(up_down){
+        ioport.digitalWrite(step_upper[moter_number].ENA, true);
+        ioport.digitalWrite(step_upper[moter_number].DIR, true);
+        digitalWrite(step_upper[moter_number].PUL, true);
+        if(upper_ctr[moter_number].DIR){
+          upper_ctr[moter_number].POS += 1;
+        }else{
+          if(upper_ctr[moter_number].POS > 0) upper_ctr[moter_number].POS -= 1;
+        }
+      }else{
+        ioport.digitalWrite(step_under[moter_number].ENA, true);
+        ioport.digitalWrite(step_under[moter_number].DIR, false);
+        digitalWrite(step_under[moter_number].PUL, true);
+        if(under_ctr[moter_number].DIR){
+          under_ctr[moter_number].POS += 1;
+        }else{
+          if(under_ctr[moter_number].POS > 0) under_ctr[moter_number].POS -= 1;
+        }
+      }
+      Update_manual     = *millisec;
+      manual_mode_work  = true;
+      if(up_down){
+        digitalWrite(step_upper[moter_number].PUL, false);
+      }else{
+        digitalWrite(step_under[moter_number].PUL, false);
+      }
+    }
+  }else if(manual_mode_work){
+    for (uint8_t index = 0; index < STEP_NUM; index++) {
+      ioport.digitalWrite(step_under[index].ENA, false);
+      ioport.digitalWrite(step_upper[index].ENA, false);
+    }
+  }//manual mode off
+}//moter_manual()
 /******************************************* STEP  MOTOR *******************************************/
 /******************************************* SERIAL PROCESS ****************************************/
 #define SERIAL_MAX  8
@@ -310,77 +398,109 @@ void Serial_process(char ch) {
     Serial_num %= SERIAL_MAX;
   }
 }
-//0x02 [0][1][2][3][n][n][n][n][0x00]
-void command_pros(){
-  if(Serial_buf[0] == 'W' && Serial_buf[1] == 'O' && Serial_buf[2] == 'R' && Serial_buf[3] == 'K'){
+void page_zero(){
+  Display("btn_run",stepmoter_work);
+  Display("btn_sync",stepmoter_sync);
 
-    if(Serial_buf[5] == 'O' && Serial_buf[6] == 'N'){}
-    else if(Serial_buf[5] == 'F' && Serial_buf[6] == 'F'){}
+  Display("nTS",Interval_upper);
+  Display("nTX_T",upper_ctr[0].DEST);
+  Display("nTY_T",upper_ctr[1].DEST);
+  Display("nTZ_T",upper_ctr[2].DEST);
+  Display("nTX",upper_ctr[0].POS);
+  Display("nTY",upper_ctr[1].POS);
+  Display("nTZ",upper_ctr[2].POS);
+
+  Display("nBS",Interval_under);
+  Display("nBX_T",under_ctr[0].DEST);
+  Display("nBY_T",under_ctr[1].DEST);
+  Display("nBZ_T",under_ctr[2].DEST);
+  Display("nBX",under_ctr[0].POS);
+  Display("nBY",under_ctr[1].POS);
+  Display("nBZ",under_ctr[2].POS);
+}
+//0x02 [0][1][2][3][4][5][6][0x00] 0x03
+void command_pros(){
+  if(Serial_buf[0] == 'P' && Serial_buf[1] == 'A' && Serial_buf[2] == 'G' && Serial_buf[3] == 'E'){
+
+    if(Serial_buf[5] == '0'){
+      nextion_page = 0;
+      page_zero();
+    }else if(Serial_buf[5] == '1'){
+      nextion_page = 1;
+    }else if(Serial_buf[5] == '2'){
+      nextion_page = 2;
+    }
+
+  }else if(Serial_buf[0] == 'W' && Serial_buf[1] == 'O' && Serial_buf[2] == 'R' && Serial_buf[3] == 'K'){
+
+    if(Serial_buf[5] == 'O' && Serial_buf[6] == 'N'){     stepmoter_work = true;}
+    else if(Serial_buf[5] == 'F' && Serial_buf[6] == 'F'){stepmoter_work = false;}
 
   }else if(Serial_buf[0] == 'S' && Serial_buf[1] == 'Y' && Serial_buf[2] == 'N' && Serial_buf[3] == 'C'){
 
-    if(Serial_buf[5] == 'O' && Serial_buf[6] == 'N'){}
-    else if(Serial_buf[5] == 'F' && Serial_buf[6] == 'F'){}
-    
+    if(Serial_buf[5] == 'O' && Serial_buf[6] == 'N'){
+      stepmoter_work = false;
+      stepmoter_sync = true;
+      //좌표 계산 다시
+    }else if(Serial_buf[5] == 'F' && Serial_buf[6] == 'F'){
+      stepmoter_work = false;
+      stepmoter_sync = false;
+      //좌표 계산 다시
+    }
+
   }else if(Serial_buf[0] == 'M' && Serial_buf[1] == 'N'){
 
     if(Serial_buf[3] == 'O' && Serial_buf[4] == 'F' && Serial_buf[4] == 'F'){
-      //Manual_stop
+      manual_mode     = false; //Manual_stop
     }else if(Serial_buf[3] == 'Z' && Serial_buf[4] == 'R'){
       if(Serial_buf[6] == 'T'){       //Zero_set = top
         for (uint8_t index = 0; index < STEP_NUM; index++){
-          Target_pos_upper[index] = 0;
+          upper_ctr[index].POS = 0;
         }
       }else if(Serial_buf[6] == 'B'){ //Zero_set = bottom
         for (uint8_t index = 0; index < STEP_NUM; index++){
-          Target_pos_under[index] = 0;
+          under_ctr[index].POS = 0;
         }
       }
       Serial.println("Zero set");
-    }else if(Serial_buf[3] == 'T' && Serial_buf[4] == 'X'){
-
-    }else if(Serial_buf[3] == 'T' && Serial_buf[4] == 'Y'){
-
-    }else if(Serial_buf[3] == 'T' && Serial_buf[4] == 'Z'){
-
-    }else if(Serial_buf[3] == 'D' && Serial_buf[4] == 'X'){
-
-    }else if(Serial_buf[3] == 'D' && Serial_buf[4] == 'Y'){
-
-    }else if(Serial_buf[3] == 'D' && Serial_buf[4] == 'Z'){
-
-    }//Manual_run
+    }else{
+      manual_mode       = true;
+      manual_command[0] = Serial_buf[3];
+      manual_command[1] = Serial_buf[4];
+    }
 
   }else if(Serial_buf[0] == 'C' && Serial_buf[1] == 'T'){
-
+    stepmoter_work = false;
+    //좌표 계산 다시
     if(Serial_buf[2] == 'S'){ //Top stepper moving speed change
       uint16_t buffer_num[2] = {Serial_buf[3],Serial_buf[4]};
       Interval_upper = buffer_num[1]*256 + buffer_num[0];
     }else if(Serial_buf[2] == 'X'){
       uint32_t buffer_num[4] = {Serial_buf[3],Serial_buf[4],Serial_buf[5],Serial_buf[6]};
-      Target_pos_upper[0] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+      upper_ctr[0].DEST = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
     }else if(Serial_buf[2] == 'Y'){
       uint32_t buffer_num[4] = {Serial_buf[3],Serial_buf[4],Serial_buf[5],Serial_buf[6]};
-      Target_pos_upper[1] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+      upper_ctr[1].DEST = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
     }else if(Serial_buf[2] == 'Z'){
       uint32_t buffer_num[4] = {Serial_buf[3],Serial_buf[4],Serial_buf[5],Serial_buf[6]};
-      Target_pos_upper[2] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+      upper_ctr[2].DEST = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
     }//Top stepper target position change
 
   }else if(Serial_buf[0] == 'C' && Serial_buf[1] == 'B' && Serial_buf[2] == 'S'){
-
+    stepmoter_work = false;
+    //좌표 계산 다시
     if(Serial_buf[2] == 'S'){ //Bottom stepper moving speed change
       uint16_t buffer_num[2] = {Serial_buf[3],Serial_buf[4]};
       Interval_under = buffer_num[1]*256 + buffer_num[0];
     }else if(Serial_buf[2] == 'X'){
       uint32_t buffer_num[4] = {Serial_buf[3],Serial_buf[4],Serial_buf[5],Serial_buf[6]};
-      Target_pos_under[0] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+      under_ctr[0].DEST = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
     }else if(Serial_buf[2] == 'Y'){
       uint32_t buffer_num[4] = {Serial_buf[3],Serial_buf[4],Serial_buf[5],Serial_buf[6]};
-      Target_pos_under[1] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+      under_ctr[1].DEST = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
     }else if(Serial_buf[2] == 'Z'){
       uint32_t buffer_num[4] = {Serial_buf[3],Serial_buf[4],Serial_buf[5],Serial_buf[6]};
-      Target_pos_under[2] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+      under_ctr[2].DEST = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
     }//Bottom stepper target position change
 
   }else{
@@ -394,29 +514,7 @@ void SerialConnect() {
   }
 }
 /******************************************* SERIAL PROCESS ****************************************/
-/******************************************* NEXTION ***********************************************/
-void DisplayConnect() {
-  if (nxSerial.available()) {
-    Serial_process(nxSerial.read());
-  }
-}
 
-void send2Nextion(String cmd) {
-  nxSerial.print(cmd);
-  nxSerial.write(0xFF);
-  nxSerial.write(0xFF);
-  nxSerial.write(0xFF);
-}
-
-void Display(String IDs, uint16_t values) {
-  String cmd;
-  char buf[8] = { 0 };
-  sprintf(buf, "%d", values);
-  cmd = IDs + ".val=";
-  cmd += buf;
-  send2Nextion(cmd);
-}
-/******************************************* NEXTION ***********************************************/
 uint8_t pin_in[3] =  {32, 33, 25};
 
 /******************************************** S E T U P ********************************************/
@@ -449,6 +547,9 @@ void setup() {
   for (uint8_t index = 0; index < 3; index++) {
     pinMode(pin_in[index], INPUT_PULLUP);
   }
+
+  send2Nextion("page 0");
+  page_zero();
   Serial.println("System all green");
 }
 /******************************************** S E T U P ********************************************/
@@ -457,9 +558,9 @@ void setup() {
 void loop() {
   unsigned long millisec = millis();
   SerialConnect();
-  moter_run(millisec);
-  moter_sleep(millisec);
-
+  moter_run(&millisec);
+  moter_sleep(&millisec);
+  moter_manual(&millisec);
   /*
     for (uint8_t index = 0; index < 3; index++) {
     Serial.print("limit sw ");
