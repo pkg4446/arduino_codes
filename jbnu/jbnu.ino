@@ -58,7 +58,7 @@ PCA9555::PCA9555(uint8_t address, int interruptPin) {
   Wire.begin();                      // start I2C communication
   if (interruptPin >= 0) {
     instancePointer = this;
-    attachInterrupt(digitalPinToInterrupt(interruptPin), PCA9555::alertISR, LOW); // Set to low for button presses
+    attachInterrupt(digitalPinToInterrupt(interruptPin), PCA9555::alertISR, false); // Set to low for button presses
   }
 }
 
@@ -92,9 +92,9 @@ uint8_t PCA9555::digitalRead(uint8_t pin) {
   _inputData  = I2CGetValue(_address, NXP_INPUT);
   _inputData |= I2CGetValue(_address, NXP_INPUT + 1) << 8;
   if ((_inputData & (1 << pin)) > 0) {
-    return HIGH;
+    return true;
   } else {
-    return LOW;
+    return false;
   }
 }
 
@@ -119,9 +119,9 @@ void PCA9555::pinStates() {
 // Returns to user the state of desired pin
 uint8_t PCA9555::stateOfPin(uint8_t pin) {
   if ((_stateOfPins & (1 << pin)) > 0) {
-    return HIGH;
+    return true;
   } else {
-    return LOW;
+    return false;
   }
 }
 
@@ -179,14 +179,14 @@ typedef struct STEP_ts{
 }STEP_ts;
 //uint8_t pin_out[6] = {4, 26, 27, 14, 12, 13};
 const STEP_ts step_under[STEP_NUM]={
-   {0,1,4},
-   {2,3,26},
-   {4,5,27},
+   {15,9,4},
+   {14,8,26},
+   {13,0,27},
 };
 const STEP_ts step_upper[STEP_NUM]={
-   {6,7,14},
-   {8,9,12},
-   {10,11,13},
+   {12,1,14},
+   {11,2,12},
+   {10,3,13},
 };
 
 bool      NextStep_upper              = false;
@@ -219,6 +219,7 @@ void postion_cal_under(){
 }
 
 void moter_run(unsigned long millisec){
+
   if(millisec - Update_upper > Interval_upper){
     Update_upper = millisec;
     NextStep_upper    = true;
@@ -226,17 +227,17 @@ void moter_run(unsigned long millisec){
       if(Position_upper[index] != Target_pos_upper[index]){
         if(!Activation_upper[index]){
           Activation_upper[index] = true;
-          ioport.digitalWrite(step_upper[index].ENA, HIGH);
+          ioport.digitalWrite(step_upper[index].ENA, true);
         }
         if(Position_upper[index] > Target_pos_upper[index]){
           if(!Direction_upper[index]){
             Direction_upper[index] = true;
-            ioport.digitalWrite(step_upper[index].DIR, HIGH);
+            ioport.digitalWrite(step_upper[index].DIR, true);
           }
         }else{
           if(Direction_upper[index]){
             Direction_upper[index] = false;
-            ioport.digitalWrite(step_upper[index].DIR, LOW);
+            ioport.digitalWrite(step_upper[index].DIR, false);
           }
         }
         digitalWrite(step_upper[index].PUL, true);
@@ -245,7 +246,7 @@ void moter_run(unsigned long millisec){
         }else{
           if(Position_upper[index]>0) Position_upper[index] -= 1;
         }
-        digitalWrite(step_upper[index].PUL, LOW);
+        digitalWrite(step_upper[index].PUL, false);
       }
     }
   }
@@ -257,17 +258,17 @@ void moter_run(unsigned long millisec){
       if(Position_under[index] != Target_pos_under[index]){
         if(!Activation_under[index]){
           Activation_under[index] = true;
-          ioport.digitalWrite(step_under[index].ENA, HIGH);
+          ioport.digitalWrite(step_under[index].ENA, true);
         }
         if(Position_under[index] > Target_pos_under[index]){
           if(!Direction_under[index]){
             Direction_under[index] = true;
-            ioport.digitalWrite(step_under[index].DIR, HIGH);
+            ioport.digitalWrite(step_under[index].DIR, true);
           }
         }else{
           if(Direction_under[index]){
             Direction_under[index] = false;
-            ioport.digitalWrite(step_under[index].DIR, LOW);
+            ioport.digitalWrite(step_under[index].DIR, false);
           }
         }
         digitalWrite(step_under[index].PUL, true);
@@ -276,7 +277,7 @@ void moter_run(unsigned long millisec){
         }else{
           if(Position_under[index]>0) Position_under[index] -= 1;
         }
-        digitalWrite(step_under[index].PUL, LOW);
+        digitalWrite(step_under[index].PUL, false);
       }
     }
   }
@@ -286,11 +287,11 @@ void moter_sleep(unsigned long millisec){
   for (uint8_t index = 0; index < STEP_NUM; index++){ 
     if(Activation_upper[index] && (millisec - Update_upper > 10)){
       Activation_upper[index] = false;
-      ioport.digitalWrite(step_upper[index].ENA, LOW);
+      ioport.digitalWrite(step_upper[index].ENA, false);
     }
     if(Activation_under[index] && (millisec - Update_under > 10) ){
       Activation_under[index] = false;
-      ioport.digitalWrite(step_under[index].ENA, LOW);
+      ioport.digitalWrite(step_under[index].ENA, false);
     }
   }
 }
@@ -314,57 +315,76 @@ void Serial_process(char ch) {
 }
 //0x02 [0][1][2][3][n][n][n][n][0x00]
 void command_pros(){
-  if(Serial_buf[0] == 'M' && Serial_buf[1] == 'S' && Serial_buf[2] == 'I' && Serial_buf[3] == 'U'){
-    uint16_t buffer_num[2] = {Serial_buf[4],Serial_buf[5]};
-    Interval_upper = buffer_num[1]*256 + buffer_num[0];
-    Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 = ");Serial.println(Interval_upper);
-  }else if(Serial_buf[0] == 'M' && Serial_buf[1] == 'S' && Serial_buf[2] == 'I' && Serial_buf[3] == 'D'){
-    uint16_t buffer_num[2] = {Serial_buf[4],Serial_buf[5]};
-    Interval_under = buffer_num[1]*256 + buffer_num[0];
-    Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 = ");Serial.println(Interval_under);
-  }else if(Serial_buf[0] == 'M' && Serial_buf[1] == 'P'){
-    if(Serial_buf[2] == 'U'){
-      if(Serial_buf[3] == 'X'){
-        uint32_t buffer_num[4] = {Serial_buf[4],Serial_buf[5],Serial_buf[6],Serial_buf[7]};
-        Target_pos_upper[0] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
-        Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 + ");
-        Serial.print(buffer_num[2]);Serial.print("*256*256 + ");Serial.print(buffer_num[3]);Serial.print("*256*256*256 = ");
-        Serial.println(Target_pos_upper[0]);
-      }else if(Serial_buf[3] == 'Y'){
-        uint32_t buffer_num[4] = {Serial_buf[4],Serial_buf[5],Serial_buf[6],Serial_buf[7]};
-        Target_pos_upper[1] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
-        Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 + ");
-        Serial.print(buffer_num[2]);Serial.print("*256*256 + ");Serial.print(buffer_num[3]);Serial.print("*256*256*256 = ");
-        Serial.println(Target_pos_upper[1]);
-      }else if(Serial_buf[3] == 'X'){
-        uint32_t buffer_num[4] = {Serial_buf[4],Serial_buf[5],Serial_buf[6],Serial_buf[7]};
-        Target_pos_upper[2] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
-        Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 + ");
-        Serial.print(buffer_num[2]);Serial.print("*256*256 + ");Serial.print(buffer_num[3]);Serial.print("*256*256*256 = ");
-        Serial.println(Target_pos_upper[2]);
+  if(Serial_buf[0] == 'W' && Serial_buf[1] == 'O' && Serial_buf[2] == 'R' && Serial_buf[3] == 'K'){
+
+    if(Serial_buf[5] == 'O' && Serial_buf[6] == 'N'){}
+    else if(Serial_buf[5] == 'F' && Serial_buf[6] == 'F'){}
+
+  }else if(Serial_buf[0] == 'S' && Serial_buf[1] == 'Y' && Serial_buf[2] == 'N' && Serial_buf[3] == 'C'){
+
+    if(Serial_buf[5] == 'O' && Serial_buf[6] == 'N'){}
+    else if(Serial_buf[5] == 'F' && Serial_buf[6] == 'F'){}
+    
+  }else if(Serial_buf[0] == 'M' && Serial_buf[1] == 'N'){
+
+    if(Serial_buf[3] == 'O' && Serial_buf[4] == 'F' && Serial_buf[4] == 'F'){
+      //Manual_stop
+    }else if(Serial_buf[3] == 'Z' && Serial_buf[4] == 'R'){
+      if(Serial_buf[6] == 'T'){       //Zero_set = top
+        for (uint8_t index = 0; index < STEP_NUM; index++){
+          Target_pos_upper[index] = 0;
+        }
+      }else if(Serial_buf[6] == 'B'){ //Zero_set = bottom
+        for (uint8_t index = 0; index < STEP_NUM; index++){
+          Target_pos_under[index] = 0;
+        }
       }
-    }else if(Serial_buf[2] == 'D'){
-      if(Serial_buf[3] == 'X'){
-        uint32_t buffer_num[4] = {Serial_buf[4],Serial_buf[5],Serial_buf[6],Serial_buf[7]};
-        Target_pos_under[0] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
-        Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 + ");
-        Serial.print(buffer_num[2]);Serial.print("*256*256 + ");Serial.print(buffer_num[3]);Serial.print("*256*256*256 = ");
-        Serial.println(Target_pos_under[0]);
-      }else if(Serial_buf[3] == 'Y'){
-        uint32_t buffer_num[4] = {Serial_buf[4],Serial_buf[5],Serial_buf[6],Serial_buf[7]};
-        Target_pos_under[1] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
-        Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 + ");
-        Serial.print(buffer_num[2]);Serial.print("*256*256 + ");Serial.print(buffer_num[3]);Serial.print("*256*256*256 = ");
-        Serial.println(Target_pos_under[1]);
-      }else if(Serial_buf[3] == 'X'){
-        uint32_t buffer_num[4] = {Serial_buf[4],Serial_buf[5],Serial_buf[6],Serial_buf[7]};
-        Target_pos_under[2] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
-        Serial.print(buffer_num[0]);Serial.print(" + ");Serial.print(buffer_num[1]);Serial.print("*256 + ");
-        Serial.print(buffer_num[2]);Serial.print("*256*256 + ");Serial.print(buffer_num[3]);Serial.print("*256*256*256 = ");
-        Serial.println(Target_pos_under[2]);
-      }
-    }
-  }else if(Serial_buf[0] == 'M' && Serial_buf[1] == 'P'){
+      Serial.println("Zero set");
+    }else if(Serial_buf[3] == 'T' && Serial_buf[4] == 'X'){
+
+    }else if(Serial_buf[3] == 'T' && Serial_buf[4] == 'Y'){
+
+    }else if(Serial_buf[3] == 'T' && Serial_buf[4] == 'Z'){
+
+    }else if(Serial_buf[3] == 'D' && Serial_buf[4] == 'X'){
+
+    }else if(Serial_buf[3] == 'D' && Serial_buf[4] == 'Y'){
+
+    }else if(Serial_buf[3] == 'D' && Serial_buf[4] == 'Z'){
+
+    }//Manual_run
+
+  }else if(Serial_buf[0] == 'C' && Serial_buf[1] == 'T'){
+
+    if(Serial_buf[2] == 'S'){ //Top stepper moving speed change
+      uint16_t buffer_num[2] = {Serial_buf[3],Serial_buf[4]};
+      Interval_upper = buffer_num[1]*256 + buffer_num[0];
+    }else if(Serial_buf[2] == 'X'){
+      uint32_t buffer_num[4] = {Serial_buf[3],Serial_buf[4],Serial_buf[5],Serial_buf[6]};
+      Target_pos_upper[0] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+    }else if(Serial_buf[2] == 'Y'){
+      uint32_t buffer_num[4] = {Serial_buf[3],Serial_buf[4],Serial_buf[5],Serial_buf[6]};
+      Target_pos_upper[1] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+    }else if(Serial_buf[2] == 'Z'){
+      uint32_t buffer_num[4] = {Serial_buf[3],Serial_buf[4],Serial_buf[5],Serial_buf[6]};
+      Target_pos_upper[2] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+    }//Top stepper target position change
+
+  }else if(Serial_buf[0] == 'C' && Serial_buf[1] == 'B' && Serial_buf[2] == 'S'){
+
+    if(Serial_buf[2] == 'S'){ //Bottom stepper moving speed change
+      uint16_t buffer_num[2] = {Serial_buf[3],Serial_buf[4]};
+      Interval_under = buffer_num[1]*256 + buffer_num[0];
+    }else if(Serial_buf[2] == 'X'){
+      uint32_t buffer_num[4] = {Serial_buf[3],Serial_buf[4],Serial_buf[5],Serial_buf[6]};
+      Target_pos_under[0] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+    }else if(Serial_buf[2] == 'Y'){
+      uint32_t buffer_num[4] = {Serial_buf[3],Serial_buf[4],Serial_buf[5],Serial_buf[6]};
+      Target_pos_under[1] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+    }else if(Serial_buf[2] == 'Z'){
+      uint32_t buffer_num[4] = {Serial_buf[3],Serial_buf[4],Serial_buf[5],Serial_buf[6]};
+      Target_pos_under[2] = buffer_num[3]*256*256*256 + buffer_num[2]*256*256 + buffer_num[1]*256 + buffer_num[0];
+    }//Bottom stepper target position change
 
   }else{
     Serial.print("Is not command: ");Serial.println(Serial_buf);
@@ -415,18 +435,20 @@ void setup() {
   ledcWrite(PWM1, 50);
   ledcWrite(PWM2, 50);
   */
+
   for (uint8_t index = 0; index < STEP_NUM; index++) {
     ioport.pinMode(step_under[index].ENA, OUTPUT);
-    ioport.digitalWrite(step_under[index].ENA, LOW);
+    ioport.digitalWrite(step_under[index].ENA, false);
     ioport.pinMode(step_under[index].DIR, OUTPUT);
-    ioport.digitalWrite(step_under[index].DIR, LOW);
+    ioport.digitalWrite(step_under[index].DIR, false);
     pinMode(step_under[index].PUL, OUTPUT);
     ioport.pinMode(step_upper[index].ENA, OUTPUT);
-    ioport.digitalWrite(step_upper[index].ENA, LOW);
+    ioport.digitalWrite(step_upper[index].ENA, false);
     ioport.pinMode(step_upper[index].DIR, OUTPUT);
-    ioport.digitalWrite(step_upper[index].DIR, LOW);
+    ioport.digitalWrite(step_upper[index].DIR, false);
     pinMode(step_upper[index].PUL, OUTPUT);
   }
+
   for (uint8_t index = 0; index < 3; index++) {
     pinMode(pin_in[index], INPUT_PULLUP);
   }
@@ -443,6 +465,7 @@ void loop() {
   SerialConnect();
   moter_run(millisec);
   moter_sleep(millisec);
+
   /*
     for (uint8_t index = 0; index < 3; index++) {
     Serial.print("limit sw ");
@@ -451,17 +474,18 @@ void loop() {
     Serial.println(digitalRead(pin_in[index]));
     }
   */
+
   #ifdef DEBUG_MONIT
     if (led_flage) {
-      ioport.digitalWrite(step_upper[index_led].ENA, HIGH);
-      ioport.digitalWrite(step_upper[index_led].DIR, HIGH);
-      ioport.digitalWrite(step_under[index_led].ENA, HIGH);
-      ioport.digitalWrite(step_under[index_led].DIR, HIGH);
+      ioport.digitalWrite(step_upper[index_led].ENA, true);
+      ioport.digitalWrite(step_upper[index_led].DIR, true);
+      ioport.digitalWrite(step_under[index_led].ENA, true);
+      ioport.digitalWrite(step_under[index_led].DIR, true);
       delay(300);
-      ioport.digitalWrite(step_upper[index_led].ENA, LOW);
-      ioport.digitalWrite(step_upper[index_led].DIR, LOW);
-      ioport.digitalWrite(step_under[index_led].ENA, LOW);
-      ioport.digitalWrite(step_under[index_led].DIR, LOW);
+      ioport.digitalWrite(step_upper[index_led].ENA, false);
+      ioport.digitalWrite(step_upper[index_led].DIR, false);
+      ioport.digitalWrite(step_under[index_led].ENA, false);
+      ioport.digitalWrite(step_under[index_led].DIR, false);
       if (index_led < STEP_NUM) {
         index_led++;
       } else {
@@ -472,8 +496,8 @@ void loop() {
       digitalWrite(step_upper[index_led].PUL, true);
       digitalWrite(step_under[index_led].PUL, true);
       delay(300);
-      digitalWrite(step_upper[index_led].PUL, LOW);
-      digitalWrite(step_under[index_led].PUL, LOW);
+      digitalWrite(step_upper[index_led].PUL, false);
+      digitalWrite(step_under[index_led].PUL, false);
       if (index_led < 6) {
         index_led++;
       } else {
