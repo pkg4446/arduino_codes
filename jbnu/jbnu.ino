@@ -496,8 +496,8 @@ void command_pros() {
       uint32_t distance_upper[STEP_NUM] = {0,};
       uint32_t distance_under[STEP_NUM] = {0,};
 
-      uint32_t min_upper = 1;
-      uint32_t min_under = 1;
+      uint32_t max_upper = 1;
+      uint32_t max_under = 1;
 
       for (uint8_t index = 0; index < STEP_NUM; index++){
         upper_ctr[index].START = upper_ctr[index].POS;
@@ -512,7 +512,9 @@ void command_pros() {
             distance_upper[index] = upper_ctr[index].START - upper_ctr[index].DEST;
             upper_ctr[index].DIR  = false;
           }
-          min_upper = distance_upper[index];
+          max_upper = distance_upper[index];
+        }else{
+          upper_cal[index].RUN = false;
         }
         if(under_ctr[index].DEST != under_ctr[index].START){
           under_cal[index].RUN = true;
@@ -523,35 +525,37 @@ void command_pros() {
             distance_under[index] = under_ctr[index].START - under_ctr[index].DEST;
             under_ctr[index].DIR  = false;
           }
-          min_under = distance_under[index];
+          max_under = distance_under[index];
+        }else{
+          under_cal[index].RUN = false;
         }
       }
 
       for (uint8_t index = 1; index < STEP_NUM; index++){
         if(upper_cal[index-1].RUN && upper_cal[index].RUN){
           if(distance_upper[index-1] > distance_upper[index] ){
-            if(distance_upper[index] < min_upper) min_upper = distance_upper[index];
+            if(distance_upper[index-1] > max_upper) max_upper = distance_upper[index-1];
           }else if(distance_upper[index-1] < distance_upper[index]){
-            if(distance_upper[index-1] < min_upper) min_upper = distance_upper[index-1];
+            if(distance_upper[index] > max_upper) max_upper = distance_upper[index];
           }
 
           if(distance_under[index-1] > distance_under[index] ){
-            if(distance_under[index] < min_under) min_under = distance_under[index];
+            if(distance_under[index-1] > max_under) max_under = distance_under[index-1];
           }else if(distance_under[index-1] < distance_under[index]){
-            if(distance_under[index-1] < min_under) min_under = distance_under[index-1];
+            if(distance_under[index] > max_under) max_under = distance_under[index];
           }
         }
       }
 
-      Serial.print("min_upper: ");Serial.println(min_upper);
-      Serial.print("min_under: ");Serial.println(min_under);
+      Serial.print("max_upper: ");Serial.println(max_upper);
+      Serial.print("max_under: ");Serial.println(max_under);
       
       for (uint8_t index = 0; index < STEP_NUM; index++){
         if(upper_cal[index].RUN){
-          upper_cal[index].RATIO = distance_upper[index]/min_upper;
+          upper_cal[index].RATIO = max_upper/distance_upper[index];
         }
         if(under_cal[index].RUN){
-          under_cal[index].RATIO = distance_under[index]/min_under;
+          under_cal[index].RATIO = max_under/distance_under[index];
         }
       }
       
