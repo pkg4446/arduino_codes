@@ -241,6 +241,7 @@ uint8_t nextion_page = 0;
 
 bool stepmoter_work = false;
 bool stepmoter_sync = false;
+bool postions_sync  = false;
 bool NextStep_upper = false;
 bool NextStep_under = false;
 
@@ -516,18 +517,27 @@ void command_pros() {
         }else{
           upper_cal[index].RUN = false;
         }
-        if(under_ctr[index].DEST != under_ctr[index].START){
-          under_cal[index].RUN = true;
-          if(under_ctr[index].DEST - under_ctr[index].START > 0){
-            distance_under[index] = under_ctr[index].DEST - under_ctr[index].START;
-            under_ctr[index].DIR  = true;
-          }else{
-            distance_under[index] = under_ctr[index].START - under_ctr[index].DEST;
-            under_ctr[index].DIR  = false;
+        if(stepmoter_sync){ ///////////////////////////////////here
+          under_cal[index].RUN = upper_cal[index].RUN;
+          if(upper_ctr[index].POS != under_ctr[index].POS){
+            under_ctr[index].RUN = true; //under module move to upper module position.
+            sync_postions = true;
           }
-          max_under = distance_under[index];
-        }else{
-          under_cal[index].RUN = false;
+        }
+        else{
+          if(under_ctr[index].DEST != under_ctr[index].START){
+            under_cal[index].RUN = true;
+            if(under_ctr[index].DEST - under_ctr[index].START > 0){
+              distance_under[index] = under_ctr[index].DEST - under_ctr[index].START;
+              under_ctr[index].DIR  = true;
+            }else{
+              distance_under[index] = under_ctr[index].START - under_ctr[index].DEST;
+              under_ctr[index].DIR  = false;
+            }
+            max_under = distance_under[index];
+          }else{
+            under_cal[index].RUN = false;
+          }
         }
       }
 
@@ -572,6 +582,12 @@ void command_pros() {
     if (Serial_buf[5] == 'O' && Serial_buf[6] == 'N') {
       stepmoter_work = false;
       stepmoter_sync = true;
+      under_ctr[0].DEST = upper_ctr[0].DEST;
+      under_ctr[1].DEST = upper_ctr[1].DEST;
+      under_ctr[2].DEST = upper_ctr[2].DEST;
+      Display("nBX_T", under_ctr[0].DEST);
+      Display("nBY_T", under_ctr[1].DEST);
+      Display("nBZ_T", under_ctr[2].DEST);
       //좌표 계산 다시
     } else if (Serial_buf[5] == 'F' && Serial_buf[6] == 'F') {
       stepmoter_work = false;
