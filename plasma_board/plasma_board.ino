@@ -14,6 +14,8 @@ HardwareSerial nxSerial(2);
 #define UPDATE_INTERVAL 1000UL
 #define RELAY_MAX 6
 
+#define TIMEUNIT 600  //100milisec * TIMEUNIT
+
 #define DEBUG
 //#define DEBUG_ZE03
 
@@ -58,10 +60,10 @@ void plasma_run(unsigned long millisec){
     prevUpdateTime = millisec;
     if(runtime){
       if(runtime_total-- > 0){
-        Display("n_t", runtime_total/10);
+        Display("n_t", runtime_total/TIMEUNIT);
         if(run_phase){
           if(runtime_run-- > 0){
-            Display("n_r", runtime_run/10);
+            Display("n_r", runtime_run/TIMEUNIT);
             if(plazma_state != true){
               plazma_state = true;
               relay_all(true);
@@ -73,7 +75,7 @@ void plasma_run(unsigned long millisec){
           }
         }else{
           if(runtime_pause-- > 0){
-            Display("n_p", runtime_pause/10);
+            Display("n_p", runtime_pause/TIMEUNIT);
             if(plazma_state != false){
               plazma_state = false;
               relay_all(false);
@@ -89,9 +91,9 @@ void plasma_run(unsigned long millisec){
         runtime_total = runtime_total_fix;
         runtime_run   = runtime_run_fix;
         runtime_pause = runtime_pause_fix;
-        Display("n_t", runtime_total_fix/10);
-        Display("n_r", runtime_run_fix/10);
-        Display("n_p", runtime_pause_fix/10);
+        Display("n_t", runtime_total_fix/TIMEUNIT);
+        Display("n_r", runtime_run_fix/TIMEUNIT);
+        Display("n_p", runtime_pause_fix/TIMEUNIT);
         Display("btn_main", 0);
       }
     }else{
@@ -125,9 +127,9 @@ void Serial_process() {
 void command_pros(){
   bool EEPROM_COMMIT = false;
   if(Serial_buf[0] == 'C' && Serial_buf[1] == 'M' && Serial_buf[2] == 'D' ){
-    Display("n_t", runtime_total_fix/10);
-    Display("n_r", runtime_run_fix/10);
-    Display("n_p", runtime_pause_fix/10);
+    Display("n_t", runtime_total_fix/TIMEUNIT);
+    Display("n_r", runtime_run_fix/TIMEUNIT);
+    Display("n_p", runtime_pause_fix/TIMEUNIT);
     if(Serial_buf[4] == 'R' && Serial_buf[5] == 'U' && Serial_buf[6] == 'N' ){
       runtime   = true;
       run_phase = true;
@@ -143,24 +145,24 @@ void command_pros(){
     EEPROM.write(EEP_Total[0], numbers[0]);
     EEPROM.write(EEP_Total[1], numbers[1]);
     runtime_total_fix = numbers[1]*256 + numbers[0];
-    runtime_total_fix *= 10;
-    Display("n_s_t", runtime_total_fix/10);
+    runtime_total_fix *= TIMEUNIT;
+    Display("n_s_t", runtime_total_fix/TIMEUNIT);
   }else if(Serial_buf[0] == 'O' && Serial_buf[1] == 'N'){
     EEPROM_COMMIT = true;
     uint16_t numbers[2] = {Serial_buf[3],Serial_buf[4]};
     EEPROM.write(EEP_run[0], numbers[0]);
     EEPROM.write(EEP_run[1], numbers[1]);
     runtime_run_fix = numbers[1]*256 + numbers[0];
-    runtime_run_fix *= 10;
-    Display("n_s_r", runtime_run_fix/10);
+    runtime_run_fix *= TIMEUNIT;
+    Display("n_s_r", runtime_run_fix/TIMEUNIT);
   }else if(Serial_buf[0] == 'C' && Serial_buf[1] == 'N'){
     EEPROM_COMMIT = true;
     uint16_t numbers[2] = {Serial_buf[3],Serial_buf[4]};
     EEPROM.write(EEP_pause[0], numbers[0]);
     EEPROM.write(EEP_pause[1], numbers[1]);
     runtime_pause_fix = numbers[1]*256 + numbers[0];
-    runtime_pause_fix *= 10;
-    Display("n_s_p", runtime_pause_fix/10);
+    runtime_pause_fix *= TIMEUNIT;
+    Display("n_s_p", runtime_pause_fix/TIMEUNIT);
   }else if(Serial_buf[0] == 'S' && Serial_buf[1] == 'E' && Serial_buf[2] == 'N' && Serial_buf[3] == 'S'){
    if(Serial_buf[5] == 'O' && Serial_buf[6] == 'N'){
     sens_run = true;
@@ -213,7 +215,7 @@ void ZE03_O3(){
             Serial.print(ZE03[Index],HEX);
             Serial.print(",");
           }
-          Serial.print(" O3_PPM/10: ");
+          Serial.print(" O3_PPM/TIMEUNIT: ");
           Serial.println(O3_PPM);
         #endif
         Display("n_O3", O3_PPM);
@@ -256,12 +258,12 @@ void setup() {
   runtime_total_fix = runtime_total*256 + EEPROM.read(EEP_Total[0]);
   runtime_run_fix   = runtime_run*256   + EEPROM.read(EEP_run[0]);
   runtime_pause_fix = runtime_pause*256 + EEPROM.read(EEP_pause[0]);
-  runtime_total_fix *= 10;
-  runtime_run_fix   *= 10;
-  runtime_pause_fix *= 10;
-  Display("n_t", runtime_total_fix/10);
-  Display("n_r", runtime_run_fix/10);
-  Display("n_p", runtime_pause_fix/10);
+  runtime_total_fix *= TIMEUNIT;
+  runtime_run_fix   *= TIMEUNIT;
+  runtime_pause_fix *= TIMEUNIT;
+  Display("n_t", runtime_total_fix/TIMEUNIT);
+  Display("n_r", runtime_run_fix/TIMEUNIT);
+  Display("n_p", runtime_pause_fix/TIMEUNIT);
 
   Serial.println("System all green");
 }
