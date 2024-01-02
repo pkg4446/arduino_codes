@@ -259,28 +259,21 @@ unsigned long Update_under = 0UL;
 
 void postion_cal_upper() {
   if (!NextStep_upper) {
+    
     NextStep_upper   = true;
     uint8_t Interval_upper_count = 0;
-    uint8_t Interval_under_count = 0;
     bool ctr_temp[3] = {false,};
     for (uint8_t index = 0; index < STEP_NUM; index++){
-      if(upper_cal[index].RUN && (++upper_cal[index].COUNT >= upper_cal[index].RATIO)){
+      if(upper_cal[index].RUN && (upper_ctr[index].DEST != upper_ctr[index].POS) && (++upper_cal[index].COUNT >= upper_cal[index].RATIO)){
         upper_cal[index].COUNT = 0;
         upper_cal[index].PUL   = true;
         Interval_upper_count++;
       }
-      if(under_cal[index].RUN && (++under_cal[index].COUNT >= under_cal[index].RATIO)){
-        under_cal[index].COUNT = 0;
-        under_cal[index].PUL   = true;
-        Interval_under_count++;
-      }
     }
 
-    Interval_upper_cal = Interval_upper;
-    Interval_under_cal = Interval_under;
+    Interval_upper_cal = 100; //Interval_upper;
 
     float Interval_upper_float = Interval_upper;
-    float Interval_under_float = Interval_under;    
 
     if(Interval_upper_count == 1){
       Interval_upper_float *= 1.414;
@@ -288,9 +281,25 @@ void postion_cal_upper() {
     }else if(Interval_upper_count == 2){
       Interval_upper_float *= 1.732;
       Interval_upper_cal    = Interval_upper_float;
-    }else{
-      Interval_upper_cal = Interval_upper;
     }
+  }
+}
+
+void postion_cal_under() {
+  if (!NextStep_under) {
+    NextStep_under = true;    
+    uint8_t Interval_under_count = 0;
+    for (uint8_t index = 0; index < STEP_NUM; index++){
+      if(under_cal[index].RUN && (under_ctr[index].DEST != under_ctr[index].POS) && (++under_cal[index].COUNT >= under_cal[index].RATIO)){
+        under_cal[index].COUNT = 0;
+        under_cal[index].PUL   = true;
+        Interval_under_count++;
+      }
+    }
+    
+    Interval_under_cal = 100; //Interval_under;
+
+    float Interval_under_float = Interval_under;
 
     if(Interval_under_count == 1){
       Interval_under_float *= 1.414;
@@ -298,19 +307,7 @@ void postion_cal_upper() {
     }else if(Interval_under_count == 2){
       Interval_under_float *= 1.732;
       Interval_under_cal = Interval_under_float;
-    }else{
-      Interval_under_cal = Interval_under;
     }
-    Serial.print("Interval_upper_cal:");
-    Serial.println(Interval_upper_cal);
-    Serial.print("Interval_under_cal");
-    Serial.println(Interval_under_cal);
-  }
-}
-
-void postion_cal_under() {
-  if (NextStep_under) {
-    NextStep_under = true;
   }
 }
 
@@ -333,6 +330,7 @@ void moter_run(unsigned long *millisec) {
       }
       for (uint8_t index = 0; index < STEP_NUM; index++) {  //pulse on time delay
         if (upper_cal[index].PUL) {
+          upper_cal[index].PUL = false;
           if (upper_ctr[index].DIR) {
             upper_ctr[index].POS += 1;
           } else {
@@ -358,6 +356,7 @@ void moter_run(unsigned long *millisec) {
       }
       for (uint8_t index = 0; index < STEP_NUM; index++) {  //pulse on time delay
         if (under_cal[index].PUL) {
+          under_cal[index].PUL = false;
           if (under_ctr[index].DIR) {
             under_ctr[index].POS += 1;
           } else {
@@ -367,6 +366,7 @@ void moter_run(unsigned long *millisec) {
         }
       }
     }
+
     //HMI Position refresh here.
     if (nextion_page == 0) {
       Display("nTX", upper_ctr[0].POS);
@@ -492,9 +492,7 @@ void command_pros() {
 
   } else if (Serial_buf[0] == 'W' && Serial_buf[1] == 'O' && Serial_buf[2] == 'R' && Serial_buf[3] == 'K') {
 
-    if (Serial_buf[5] == 'O' && Serial_buf[6] == 'N') {
-      stepmoter_work = true;
-      
+    if (Serial_buf[5] == 'O' && Serial_buf[6] == 'N') {      
       uint32_t distance_upper[STEP_NUM] = {0,};
       uint32_t distance_under[STEP_NUM] = {0,};
 
@@ -507,7 +505,6 @@ void command_pros() {
 
         if(upper_ctr[index].DEST != upper_ctr[index].START){
           upper_cal[index].RUN = true;
-          min_upper = upper_ctr[index].POS;
           if(upper_ctr[index].DEST - upper_ctr[index].START > 0){
             distance_upper[index] = upper_ctr[index].DEST - upper_ctr[index].START;
             upper_ctr[index].DIR  = true;
@@ -515,10 +512,10 @@ void command_pros() {
             distance_upper[index] = upper_ctr[index].START - upper_ctr[index].DEST;
             upper_ctr[index].DIR  = false;
           }
+          min_upper = distance_upper[index];
         }
         if(under_ctr[index].DEST != under_ctr[index].START){
           under_cal[index].RUN = true;
-          min_under = under_ctr[index].POS;
           if(under_ctr[index].DEST - under_ctr[index].START > 0){
             distance_under[index] = under_ctr[index].DEST - under_ctr[index].START;
             under_ctr[index].DIR  = true;
@@ -526,6 +523,7 @@ void command_pros() {
             distance_under[index] = under_ctr[index].START - under_ctr[index].DEST;
             under_ctr[index].DIR  = false;
           }
+          min_under = distance_under[index];
         }
       }
 
@@ -544,6 +542,9 @@ void command_pros() {
           }
         }
       }
+
+      Serial.print("min_upper: ");Serial.println(min_upper);
+      Serial.print("min_under: ");Serial.println(min_under);
       
       for (uint8_t index = 0; index < STEP_NUM; index++){
         if(upper_cal[index].RUN){
@@ -553,11 +554,10 @@ void command_pros() {
           under_cal[index].RATIO = distance_under[index]/min_under;
         }
       }
-
-      Serial.print("min_upper: ");Serial.println(min_upper);
-      Serial.print("min_under: ");Serial.println(min_under);
-
+      
       stepmoter_work = true;
+      NextStep_upper = false;
+      NextStep_under = false;
       
     } else if (Serial_buf[5] == 'F' && Serial_buf[6] == 'F') {
       stepmoter_work = false;
@@ -616,7 +616,7 @@ void command_pros() {
       upper_ctr[2].DEST = buffer_num[3] * 256 * 256 * 256 + buffer_num[2] * 256 * 256 + buffer_num[1] * 256 + buffer_num[0];
     }  //Top stepper target position change
 
-  } else if (Serial_buf[0] == 'C' && Serial_buf[1] == 'B' && Serial_buf[2] == 'S') {
+  } else if (Serial_buf[0] == 'C' && Serial_buf[1] == 'B') {
     stepmoter_work = false;
     //좌표 계산 다시
     if (Serial_buf[2] == 'S') {  //Bottom stepper moving speed change
