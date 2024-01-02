@@ -155,6 +155,8 @@ HardwareSerial nxSerial(2);
 #define PIN_PWM1 2
 #define PIN_PWM2 15
 
+#define SPEED_EXCHANGE_TIME 1200000
+
 //#define DEBUG_MONIT
 
 
@@ -185,8 +187,8 @@ void Display(String IDs, uint32_t values) {
 #define STEP_NUM 3
 
 typedef struct STEP_ts {
-  int8_t ENA;  //Enable
   int8_t DIR;  //Direction
+  int8_t ENA;  //Enable
   int8_t PUL;  //Pulse
 } STEP_ts;
 //uint8_t pin_out[6] = {4, 26, 27, 14, 12, 13};
@@ -202,22 +204,39 @@ const STEP_ts step_under[STEP_NUM] = {
 };
 
 typedef struct STEP_CTR_ts {
-  int32_t DEST;  //Destination
-  int32_t POS;   //Position
-  bool DIR;      //Direction
-  bool ACT;      //Actibation
+  int32_t DEST;   //Destination
+  int32_t START;  //Start point
+  int32_t POS;    //Position
+  bool DIR;       //Direction
+  bool ACT;       //Actibation
 } STEP_CTR_ts;
 STEP_CTR_ts upper_ctr[STEP_NUM] = {
-  { 0, 0, false, false },
-  { 0, 0, false, false },
-  { 0, 0, false, false },
+  { 0, 0, 0, false, false },
+  { 0, 0, 0, false, false },
+  { 0, 0, 0, false, false },
 };
 STEP_CTR_ts under_ctr[STEP_NUM] = {
-  { 0, 0, false, false },
-  { 0, 0, false, false },
-  { 0, 0, false, false },
+  { 0, 0, 0, false, false },
+  { 0, 0, 0, false, false },
+  { 0, 0, 0, false, false },
 };
 
+typedef struct STEP_CAL_ts {
+  bool    PUL;   //Pulse flage
+  bool    RUN;   //Axis run flage
+  int32_t RATIO; //Distance ratio
+  int32_t COUNT; //Stap ratio count
+} STEP_CAL_ts;
+STEP_CAL_ts upper_cal[STEP_NUM] = {
+  { 0, false, 0, 0 },
+  { 0, false, 0, 0 },
+  { 0, false, 0, 0 },
+};
+STEP_CAL_ts under_cal[STEP_NUM] = {
+  { 0, false, 0, 0 },
+  { 0, false, 0, 0 },
+  { 0, false, 0, 0 },
+};
 uint8_t nextion_page = 0;
 
 bool stepmoter_work = false;
@@ -230,47 +249,80 @@ bool manual_mode_work = false;
 char manual_command[3] = { 0x00, 0x00, 0x00 };
 unsigned long Update_manual = 0UL;
 
-bool Cal_pul_upper[STEP_NUM] = {
-  false,
-};
-bool Cal_pul_under[STEP_NUM] = {
-  false,
-};
-
-uint16_t Interval_upper = 1000;
-uint16_t Interval_upper_cal = 1000;
-uint16_t Interval_under = 1000;
-uint16_t Interval_under_cal = 1000;
+uint32_t Interval_upper = SPEED_EXCHANGE_TIME;
+uint32_t Interval_upper_cal = SPEED_EXCHANGE_TIME;
+uint32_t Interval_under = SPEED_EXCHANGE_TIME;
+uint32_t Interval_under_cal = SPEED_EXCHANGE_TIME;
 
 unsigned long Update_upper = 0UL;
 unsigned long Update_under = 0UL;
 
 void postion_cal_upper() {
-  if (NextStep_upper) {
-    NextStep_upper = false;
+  if (!NextStep_upper) {
+    NextStep_upper   = true;
+    uint8_t Interval_upper_count = 0;
+    uint8_t Interval_under_count = 0;
+    bool ctr_temp[3] = {false,};
+    for (uint8_t index = 0; index < STEP_NUM; index++){
+      if(upper_cal[index].RUN && (++upper_cal[index].COUNT >= upper_cal[index].RATIO)){
+        upper_cal[index].COUNT = 0;
+        upper_cal[index].PUL   = true;
+        Interval_upper_count++;
+      }
+      if(under_cal[index].RUN && (++under_cal[index].COUNT >= under_cal[index].RATIO)){
+        under_cal[index].COUNT = 0;
+        under_cal[index].PUL   = true;
+        Interval_under_count++;
+      }
+    }
 
-    Cal_pul_upper[0] = false;
-    upper_ctr[0].DIR = true;  //방향 계산
+    Interval_upper_cal = Interval_upper;
+    Interval_under_cal = Interval_under;
 
-    Interval_upper_cal = 1000;  //속도 계산 *1.414, 1.732
+    float Interval_upper_float = Interval_upper;
+    float Interval_under_float = Interval_under;    
+
+    if(Interval_upper_count == 1){
+      Interval_upper_float *= 1.414;
+      Interval_upper_cal    = Interval_upper_float;
+    }else if(Interval_upper_count == 2){
+      Interval_upper_float *= 1.732;
+      Interval_upper_cal    = Interval_upper_float;
+    }else{
+      Interval_upper_cal = Interval_upper;
+    }
+
+    if(Interval_under_count == 1){
+      Interval_under_float *= 1.414;
+      Interval_under_cal = Interval_under_float;
+    }else if(Interval_under_count == 2){
+      Interval_under_float *= 1.732;
+      Interval_under_cal = Interval_under_float;
+    }else{
+      Interval_under_cal = Interval_under;
+    }
+    Serial.print("Interval_upper_cal:");
+    Serial.println(Interval_upper_cal);
+    Serial.print("Interval_under_cal");
+    Serial.println(Interval_under_cal);
   }
 }
 
 void postion_cal_under() {
   if (NextStep_under) {
-    NextStep_under = false;
+    NextStep_under = true;
   }
 }
 
 void moter_run(unsigned long *millisec) {
-  postion_cal_upper();
-  postion_cal_under();
   if (stepmoter_work) {
-    if (!NextStep_upper && (*millisec - Update_upper > Interval_upper_cal)) {
-      Update_upper = *millisec;
-      NextStep_upper = true;
+    postion_cal_upper();
+    postion_cal_under();
+    if (NextStep_upper && (*millisec - Update_upper > Interval_upper_cal)) {
+      Update_upper   = *millisec;
+      NextStep_upper = false;
       for (uint8_t index = 0; index < STEP_NUM; index++) {
-        if (Cal_pul_upper[index]) {
+        if (upper_cal[index].PUL) {
           if (!upper_ctr[index].ACT) {
             upper_ctr[index].ACT = true;
             ioport.digitalWrite(step_upper[index].ENA, false);
@@ -280,7 +332,7 @@ void moter_run(unsigned long *millisec) {
         }
       }
       for (uint8_t index = 0; index < STEP_NUM; index++) {  //pulse on time delay
-        if (Cal_pul_upper[index]) {
+        if (upper_cal[index].PUL) {
           if (upper_ctr[index].DIR) {
             upper_ctr[index].POS += 1;
           } else {
@@ -291,11 +343,11 @@ void moter_run(unsigned long *millisec) {
       }
     }
 
-    if (!NextStep_under && (*millisec - Update_under > Interval_under_cal)) {
-      Update_under = *millisec;
-      NextStep_under = true;
+    if (NextStep_under && (*millisec - Update_under > Interval_under_cal)) {
+      Update_under   = *millisec;
+      NextStep_under = false;
       for (uint8_t index = 0; index < STEP_NUM; index++) {
-        if (Cal_pul_under[index]) {
+        if (under_cal[index].PUL) {
           if (!under_ctr[index].ACT) {
             under_ctr[index].ACT = true;
             ioport.digitalWrite(step_under[index].ENA, false);
@@ -305,7 +357,7 @@ void moter_run(unsigned long *millisec) {
         }
       }
       for (uint8_t index = 0; index < STEP_NUM; index++) {  //pulse on time delay
-        if (Cal_pul_under[index]) {
+        if (under_cal[index].PUL) {
           if (under_ctr[index].DIR) {
             under_ctr[index].POS += 1;
           } else {
@@ -347,7 +399,7 @@ void moter_manual(unsigned long *millisec) {
       bool mn_dir = false;
       uint8_t moter_number = 0;
       if (manual_command[0] == 'T') { up_down = true; }
-      if (manual_command[2] == 'D') { mn_dir = true; }
+      if (manual_command[2] == 'U') { mn_dir = true; }
       if (manual_command[1] == 'Y') {
         moter_number = 1;
       } else if (manual_command[1] == 'Z') {
@@ -409,8 +461,7 @@ void Serial_process(char ch) {
 void page_zero() {
   Display("btn_run", stepmoter_work);
   Display("btn_sync", stepmoter_sync);
-
-  Display("nTS", Interval_upper);
+  Display("nTS", SPEED_EXCHANGE_TIME/Interval_upper);
   Display("nTX_T", upper_ctr[0].DEST);
   Display("nTY_T", upper_ctr[1].DEST);
   Display("nTZ_T", upper_ctr[2].DEST);
@@ -418,7 +469,7 @@ void page_zero() {
   Display("nTY", upper_ctr[1].POS);
   Display("nTZ", upper_ctr[2].POS);
 
-  Display("nBS", Interval_under);
+  Display("nBS", SPEED_EXCHANGE_TIME/Interval_under);
   Display("nBX_T", under_ctr[0].DEST);
   Display("nBY_T", under_ctr[1].DEST);
   Display("nBZ_T", under_ctr[2].DEST);
@@ -443,6 +494,71 @@ void command_pros() {
 
     if (Serial_buf[5] == 'O' && Serial_buf[6] == 'N') {
       stepmoter_work = true;
+      
+      uint32_t distance_upper[STEP_NUM] = {0,};
+      uint32_t distance_under[STEP_NUM] = {0,};
+
+      uint32_t min_upper = 1;
+      uint32_t min_under = 1;
+
+      for (uint8_t index = 0; index < STEP_NUM; index++){
+        upper_ctr[index].START = upper_ctr[index].POS;
+        under_ctr[index].START = under_ctr[index].POS;
+
+        if(upper_ctr[index].DEST != upper_ctr[index].START){
+          upper_cal[index].RUN = true;
+          min_upper = upper_ctr[index].POS;
+          if(upper_ctr[index].DEST - upper_ctr[index].START > 0){
+            distance_upper[index] = upper_ctr[index].DEST - upper_ctr[index].START;
+            upper_ctr[index].DIR  = true;
+          }else{
+            distance_upper[index] = upper_ctr[index].START - upper_ctr[index].DEST;
+            upper_ctr[index].DIR  = false;
+          }
+        }
+        if(under_ctr[index].DEST != under_ctr[index].START){
+          under_cal[index].RUN = true;
+          min_under = under_ctr[index].POS;
+          if(under_ctr[index].DEST - under_ctr[index].START > 0){
+            distance_under[index] = under_ctr[index].DEST - under_ctr[index].START;
+            under_ctr[index].DIR  = true;
+          }else{
+            distance_under[index] = under_ctr[index].START - under_ctr[index].DEST;
+            under_ctr[index].DIR  = false;
+          }
+        }
+      }
+
+      for (uint8_t index = 1; index < STEP_NUM; index++){
+        if(upper_cal[index-1].RUN && upper_cal[index].RUN){
+          if(distance_upper[index-1] > distance_upper[index] ){
+            if(distance_upper[index] < min_upper) min_upper = distance_upper[index];
+          }else if(distance_upper[index-1] < distance_upper[index]){
+            if(distance_upper[index-1] < min_upper) min_upper = distance_upper[index-1];
+          }
+
+          if(distance_under[index-1] > distance_under[index] ){
+            if(distance_under[index] < min_under) min_under = distance_under[index];
+          }else if(distance_under[index-1] < distance_under[index]){
+            if(distance_under[index-1] < min_under) min_under = distance_under[index-1];
+          }
+        }
+      }
+      
+      for (uint8_t index = 0; index < STEP_NUM; index++){
+        if(upper_cal[index].RUN){
+          upper_cal[index].RATIO = distance_upper[index]/min_upper;
+        }
+        if(under_cal[index].RUN){
+          under_cal[index].RATIO = distance_under[index]/min_under;
+        }
+      }
+
+      Serial.print("min_upper: ");Serial.println(min_upper);
+      Serial.print("min_under: ");Serial.println(min_under);
+
+      stepmoter_work = true;
+      
     } else if (Serial_buf[5] == 'F' && Serial_buf[6] == 'F') {
       stepmoter_work = false;
     }
@@ -486,7 +602,9 @@ void command_pros() {
     //좌표 계산 다시
     if (Serial_buf[2] == 'S') {  //Top stepper moving speed change
       uint16_t buffer_num[2] = { Serial_buf[3], Serial_buf[4] };
-      Interval_upper = buffer_num[1] * 256 + buffer_num[0];
+      uint32_t speed_temp    = buffer_num[1] * 256 + buffer_num[0]; //20um per step // step/20*60*1000=1um/min
+      Interval_upper = SPEED_EXCHANGE_TIME/speed_temp;
+      Serial.print("Interval_upper: ");Serial.println(Interval_upper);
     } else if (Serial_buf[2] == 'X') {
       uint32_t buffer_num[4] = { Serial_buf[3], Serial_buf[4], Serial_buf[5], Serial_buf[6] };
       upper_ctr[0].DEST = buffer_num[3] * 256 * 256 * 256 + buffer_num[2] * 256 * 256 + buffer_num[1] * 256 + buffer_num[0];
@@ -503,7 +621,9 @@ void command_pros() {
     //좌표 계산 다시
     if (Serial_buf[2] == 'S') {  //Bottom stepper moving speed change
       uint16_t buffer_num[2] = { Serial_buf[3], Serial_buf[4] };
-      Interval_under = buffer_num[1] * 256 + buffer_num[0];
+      uint32_t speed_temp    = buffer_num[1] * 256 + buffer_num[0]; //20um per step // step/20*60*1000=1um/min
+      Interval_under = SPEED_EXCHANGE_TIME/speed_temp;
+      Serial.print("Interval_under: ");Serial.println(Interval_under);
     } else if (Serial_buf[2] == 'X') {
       uint32_t buffer_num[4] = { Serial_buf[3], Serial_buf[4], Serial_buf[5], Serial_buf[6] };
       under_ctr[0].DEST = buffer_num[3] * 256 * 256 * 256 + buffer_num[2] * 256 * 256 + buffer_num[1] * 256 + buffer_num[0];
@@ -547,12 +667,12 @@ void setup() {
 
   for (uint8_t index = 0; index < STEP_NUM; index++) {
     ioport.pinMode(step_under[index].ENA, OUTPUT);
-    ioport.digitalWrite(step_under[index].ENA, false);
+    ioport.digitalWrite(step_under[index].ENA, true);
     ioport.pinMode(step_under[index].DIR, OUTPUT);
     ioport.digitalWrite(step_under[index].DIR, false);
     pinMode(step_under[index].PUL, OUTPUT);
     ioport.pinMode(step_upper[index].ENA, OUTPUT);
-    ioport.digitalWrite(step_upper[index].ENA, false);
+    ioport.digitalWrite(step_upper[index].ENA, true);
     ioport.pinMode(step_upper[index].DIR, OUTPUT);
     ioport.digitalWrite(step_upper[index].DIR, false);
     pinMode(step_upper[index].PUL, OUTPUT);
