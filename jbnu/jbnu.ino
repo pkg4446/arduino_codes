@@ -517,11 +517,15 @@ void command_pros() {
         }else{
           upper_cal[index].RUN = false;
         }
-        if(stepmoter_sync){ ///////////////////////////////////here
+        if(stepmoter_sync){
           under_cal[index].RUN = upper_cal[index].RUN;
           if(upper_ctr[index].POS != under_ctr[index].POS){
             under_ctr[index].RUN = true; //under module move to upper module position.
             sync_postions = true;
+            /*************** here **************//*
+            여기에 거리계산
+            distance_under[index] 쓰고, sync 일 경우 under를 upper과 같이 사용.
+            *//***********************************/
           }
         }
         else{
@@ -588,6 +592,9 @@ void command_pros() {
       Display("nBX_T", under_ctr[0].DEST);
       Display("nBY_T", under_ctr[1].DEST);
       Display("nBZ_T", under_ctr[2].DEST);
+
+      Interval_under = Interval_upper;
+      Display("nBS", SPEED_EXCHANGE_TIME/Interval_under);
       //좌표 계산 다시
     } else if (Serial_buf[5] == 'F' && Serial_buf[6] == 'F') {
       stepmoter_work = false;
