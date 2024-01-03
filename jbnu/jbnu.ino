@@ -284,14 +284,14 @@ void postion_cal_upper() {
         upper_cal[index].COUNT = 0;
         upper_cal[index].PUL   = true;
         Interval_count++;
-        Serial.println("upper pulse");
       }
       if(upper_ctr[index].DEST == upper_ctr[index].POS) upper_cal[index].RUN = false;
     }    
-    Interval_upper_cal = Interval_upper/SPEED_RATIO_MODIFY;
-
+    
     float Interval_upper_float = Interval_upper;
-    if(Interval_count == 2){
+    if(Interval_count == 1){
+      Interval_upper_cal = Interval_upper/SPEED_RATIO_MODIFY;
+    }else if(Interval_count == 2){
       Interval_upper_float *= 1.414/SPEED_RATIO_MODIFY;
       Interval_upper_cal    = Interval_upper_float;
     }else if(Interval_count == 3){
@@ -313,10 +313,11 @@ void postion_cal_under() {
       }
       if(under_ctr[index].DEST == under_ctr[index].POS) under_cal[index].RUN = false;
     }
-    Interval_under_cal = Interval_under/SPEED_RATIO_MODIFY;
 
     float Interval_under_float = Interval_under;
-    if(Interval_count == 2){
+    if(Interval_count == 1){
+      Interval_under_cal = Interval_under/SPEED_RATIO_MODIFY;
+    }else if(Interval_count == 2){
       Interval_under_float *= 1.414/SPEED_RATIO_MODIFY;
       Interval_under_cal = Interval_under_float;
     }else if(Interval_count == 3){
@@ -328,21 +329,22 @@ void postion_cal_under() {
 
 void postion_cal_sync() {
   if (!NextStep_sync) {
-    NextStep_sync = true;    
+    NextStep_sync = true;
     uint8_t Interval_count = 0;
     for (uint8_t index = 0; index < STEP_NUM; index++){
       if(sync_cal[index].RUN && (sync_ctr[index].DEST != sync_ctr[index].POS) && (++sync_cal[index].COUNT >= sync_cal[index].RATIO)){
         sync_cal[index].COUNT = 0;
         sync_cal[index].PUL   = true;
         Interval_count++;
-        Serial.println("sync pulse");
       }
       if(sync_ctr[index].DEST == sync_ctr[index].POS) sync_cal[index].RUN = false;
     }
-    Interval_sync_cal = Interval_upper/SPEED_RATIO_MODIFY;
+    
 
     float Interval_sync_float = Interval_upper;
-    if(Interval_count == 2){
+    if(Interval_count == 1){
+      Interval_sync_cal = Interval_upper/SPEED_RATIO_MODIFY;
+    }else if(Interval_count == 1){
       Interval_sync_float *= 1.414/SPEED_RATIO_MODIFY;
       Interval_sync_cal = Interval_sync_float;
     }else if(Interval_count == 3){
@@ -355,9 +357,7 @@ void postion_cal_sync() {
 void moter_run(unsigned long *millisec) {
   if (stepmoter_work) {
     if(postions_sync){
-
       postion_cal_sync();
-
       if (NextStep_sync && (*millisec - Update_sync > Interval_sync_cal)) {
         Update_sync   = *millisec;
         NextStep_sync = false;
@@ -388,7 +388,6 @@ void moter_run(unsigned long *millisec) {
     }else{
       postion_cal_upper();
       postion_cal_under();
-
       if (NextStep_upper && (*millisec - Update_upper > Interval_upper_cal)) {
         Update_upper   = *millisec;
         NextStep_upper = false;
@@ -603,7 +602,8 @@ void command_pros() {
           under_ctr[0].DEST = upper_ctr[0].DEST;
           under_ctr[1].DEST = upper_ctr[1].DEST;
           under_ctr[2].DEST = upper_ctr[2].DEST;
-          Interval_sync = Interval_upper;
+          Interval_sync     = Interval_upper;
+          Interval_sync_cal = Interval_upper/SPEED_RATIO_MODIFY;
 
           Display("nBX_T", under_ctr[0].DEST);
           Display("nBY_T", under_ctr[1].DEST);
@@ -627,7 +627,7 @@ void command_pros() {
               distance_sync[index] = sync_ctr[index].START - sync_ctr[index].DEST;
               sync_ctr[index].DIR  = false;
             }
-            max_under = distance_sync[index];
+            max_sync = distance_sync[index];
           }else{
             sync_cal[index].RUN = false;
           }
@@ -673,10 +673,6 @@ void command_pros() {
         }
       }
 
-      Serial.print("max_upper: ");Serial.println(max_upper);
-      Serial.print("max_under: ");Serial.println(max_under);
-      Serial.print("max_sync: " );Serial.println(max_sync);
-      
       for (uint8_t index = 0; index < STEP_NUM; index++){
         if(upper_cal[index].RUN){
           upper_cal[index].RATIO = SPEED_RATIO_MODIFY*max_upper/distance_upper[index];
@@ -744,8 +740,8 @@ void command_pros() {
     if (Serial_buf[2] == 'S') {  //Top stepper moving speed change
       uint16_t buffer_num[2] = { Serial_buf[3], Serial_buf[4] };
       uint32_t speed_temp    = buffer_num[1] * 256 + buffer_num[0]; //20um per step // step/20*60*1000=1um/min
-      Interval_upper = SPEED_EXCHANGE_TIME/speed_temp;
-      Serial.print("Interval_upper: ");Serial.println(Interval_upper);
+      Interval_upper     = SPEED_EXCHANGE_TIME/speed_temp;
+      Interval_upper_cal = Interval_upper/SPEED_RATIO_MODIFY;
     } else if (Serial_buf[2] == 'X') {
       uint32_t buffer_num[4] = { Serial_buf[3], Serial_buf[4], Serial_buf[5], Serial_buf[6] };
       upper_ctr[0].DEST = buffer_num[3] * 256 * 256 * 256 + buffer_num[2] * 256 * 256 + buffer_num[1] * 256 + buffer_num[0];
@@ -763,8 +759,8 @@ void command_pros() {
     if (Serial_buf[2] == 'S') {  //Bottom stepper moving speed change
       uint16_t buffer_num[2] = { Serial_buf[3], Serial_buf[4] };
       uint32_t speed_temp    = buffer_num[1] * 256 + buffer_num[0]; //20um per step // step/20*60*1000=1um/min
-      Interval_under = SPEED_EXCHANGE_TIME/speed_temp;
-      Serial.print("Interval_under: ");Serial.println(Interval_under);
+      Interval_under     = SPEED_EXCHANGE_TIME/speed_temp;
+      Interval_under_cal = Interval_under/SPEED_RATIO_MODIFY;
     } else if (Serial_buf[2] == 'X') {
       uint32_t buffer_num[4] = { Serial_buf[3], Serial_buf[4], Serial_buf[5], Serial_buf[6] };
       under_ctr[0].DEST = buffer_num[3] * 256 * 256 * 256 + buffer_num[2] * 256 * 256 + buffer_num[1] * 256 + buffer_num[0];
