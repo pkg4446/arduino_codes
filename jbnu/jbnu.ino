@@ -534,7 +534,7 @@ void moter_manual(unsigned long *millisec) {
         ioport.digitalWrite(step_upper[moter_number].ENA, false);
         ioport.digitalWrite(step_upper[moter_number].DIR, mn_dir);
         digitalWrite(step_upper[moter_number].PUL, true);
-        if (upper_ctr[moter_number].DIR) {
+        if (mn_dir) {
           upper_ctr[moter_number].POS += 1;
         } else {
           if (upper_ctr[moter_number].POS > 0) upper_ctr[moter_number].POS -= 1;
@@ -543,7 +543,7 @@ void moter_manual(unsigned long *millisec) {
         ioport.digitalWrite(step_under[moter_number].ENA, false);
         ioport.digitalWrite(step_under[moter_number].DIR, mn_dir);
         digitalWrite(step_under[moter_number].PUL, true);
-        if (under_ctr[moter_number].DIR) {
+        if (mn_dir) {
           under_ctr[moter_number].POS += 1;
         } else {
           if (under_ctr[moter_number].POS > 0) under_ctr[moter_number].POS -= 1;
