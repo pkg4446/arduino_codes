@@ -341,9 +341,9 @@ void postion_cal_under() {
         Interval_under_float  = Interval_under_float/1.732/SPEED_RATIO_MODIFY;
         Interval_under_cal    = Interval_under_float;
       }else if(queue_index[1] > 0 && (interval_queue[1][queue_index[1]-1] == interval_queue[1][queue_index[1]])){
-          Interval_under_cal  = Interval_upper/SPEED_RATIO_MODIFY;
+          Interval_under_cal  = Interval_under/SPEED_RATIO_MODIFY;
       }else if(queue_index[1] == 0 && interval_queue[1][2] == interval_queue[1][0]){
-          Interval_under_cal  = Interval_upper/SPEED_RATIO_MODIFY;
+          Interval_under_cal  = Interval_under/SPEED_RATIO_MODIFY;
       }else{
         Interval_under_float  = Interval_under_float/1.414/SPEED_RATIO_MODIFY;
         Interval_under_cal    = Interval_under_float;
@@ -576,7 +576,7 @@ void Serial_process(char ch) {
     Serial.println(Serial_buf);
     command_pros();
     Serial_num = 0;
-  } else if (ch == 0x02 && Serial_num < 4) {
+  } else if (ch == 0x02 && Serial_num < 3) {
     Serial_num = 0;
   } else {
     Serial_buf[Serial_num++] = ch;
@@ -630,31 +630,10 @@ void command_pros() {
         upper_ctr[index].START = upper_ctr[index].POS;
         under_ctr[index].START = under_ctr[index].POS;
 
-        if(upper_ctr[index].DEST != upper_ctr[index].START){
-          upper_cal[index].RUN = true;
-          if(upper_ctr[index].DEST - upper_ctr[index].START > 0){
-            distance_upper[index] = upper_ctr[index].DEST - upper_ctr[index].START;
-            upper_ctr[index].DIR  = true;
-          }else{
-            distance_upper[index] = upper_ctr[index].START - upper_ctr[index].DEST;
-            upper_ctr[index].DIR  = false;
-          }
-          max_upper = distance_upper[index];
-        }else{
-          upper_cal[index].RUN = false;
-        }
-
         if(stepmoter_sync){
-          under_ctr[0].DEST = upper_ctr[0].DEST;
-          under_ctr[1].DEST = upper_ctr[1].DEST;
-          under_ctr[2].DEST = upper_ctr[2].DEST;
+          under_ctr[index].DEST = upper_ctr[index].DEST;
           Interval_sync     = Interval_upper;
           Interval_sync_cal = Interval_upper/SPEED_RATIO_MODIFY;
-
-          Display("nBX_T", under_ctr[0].DEST);
-          Display("nBY_T", under_ctr[1].DEST);
-          Display("nBZ_T", under_ctr[2].DEST);
-          Display("nBS", SPEED_EXCHANGE_TIME/Interval_upper);
 
           if(under_ctr[index].POS != upper_ctr[index].POS){
             postions_sync = true;
@@ -679,6 +658,20 @@ void command_pros() {
           }
         }
 
+        if(upper_ctr[index].DEST != upper_ctr[index].START){
+          upper_cal[index].RUN = true;
+          if(upper_ctr[index].DEST - upper_ctr[index].START > 0){
+            distance_upper[index] = upper_ctr[index].DEST - upper_ctr[index].START;
+            upper_ctr[index].DIR  = true;
+          }else{
+            distance_upper[index] = upper_ctr[index].START - upper_ctr[index].DEST;
+            upper_ctr[index].DIR  = false;
+          }
+          max_upper = distance_upper[index];
+        }else{
+          upper_cal[index].RUN = false;
+        }
+
         if(under_ctr[index].DEST != under_ctr[index].START){
           under_cal[index].RUN = true;
           if(under_ctr[index].DEST - under_ctr[index].START > 0){
@@ -694,6 +687,11 @@ void command_pros() {
         }
 
       }
+
+      Display("nBX_T", under_ctr[0].DEST);
+      Display("nBY_T", under_ctr[1].DEST);
+      Display("nBZ_T", under_ctr[2].DEST);
+      if(stepmoter_sync) Display("nBS", SPEED_EXCHANGE_TIME/Interval_upper);
 
       for (uint8_t index = 1; index < STEP_NUM; index++){
         if(upper_cal[index-1].RUN && upper_cal[index].RUN){
