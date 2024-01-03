@@ -382,11 +382,11 @@ void moter_run(unsigned long *millisec) {
 
 void moter_sleep(unsigned long *millisec) {
   for (uint8_t index = 0; index < STEP_NUM; index++) {
-    if (under_ctr[index].ACT && (*millisec - Update_upper > 10)) {
+    if (under_ctr[index].ACT && (*millisec - Update_upper > 5)) {
       under_ctr[index].ACT = false;
       ioport.digitalWrite(step_upper[index].ENA, true);
     }
-    if (under_ctr[index].ACT && (*millisec - Update_under > 10)) {
+    if (under_ctr[index].ACT && (*millisec - Update_under > 5)) {
       under_ctr[index].ACT = false;
       ioport.digitalWrite(step_under[index].ENA, true);
     }

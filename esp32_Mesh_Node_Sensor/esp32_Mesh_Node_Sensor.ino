@@ -798,7 +798,7 @@ void serial_monit(unsigned long millisec){
 unsigned long timer_restart = 0;
 uint8_t restart_count       = 0;
 void mesh_restart(unsigned long millisec){
-  if(millisec - timer_restart > 1000*60*60){
+  if(millisec - timer_restart > 1000*60){
     timer_restart = millisec;
     if(restart_count++ > 60) ESP.restart();
   }
