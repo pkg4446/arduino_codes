@@ -280,6 +280,31 @@ unsigned long Update_sync  = 0UL;
 uint8_t interval_queue[3][3] = {{0,},};
 uint8_t queue_index[3]       = {0,};
 
+void interval_cal(uint8_t *queue_interval[3], uint8_t *index_queue, uint32_t *Interval_val, uint32_t *Interval_cal, uint8_t *count_Interval, uint8_t *Axis_index){
+  float Interval_float = *Interval_val;
+  if(*count_Interval == 1){
+    if(*queue_interval[0] != *queue_interval[1] && *queue_interval[1] != *queue_interval[2] && *queue_interval[2] != *queue_interval[0]){
+      Interval_float  = Interval_float/1.732/SPEED_RATIO_MODIFY;
+      *Interval_cal   = Interval_float;
+    }else if(*index_queue > 0 && (*queue_interval[*index_queue-1] == *queue_interval[*index_queue])){
+      *Interval_cal   = *Interval_val/SPEED_RATIO_MODIFY;
+    }else if(*index_queue == 0 && *queue_interval[2] == *queue_interval[0]){
+      *Interval_cal   = *Interval_val/SPEED_RATIO_MODIFY;
+    }else{
+      Interval_float  = Interval_float/1.414/SPEED_RATIO_MODIFY;
+      *Interval_cal   = Interval_float;
+    }
+    *queue_interval[*index_queue++] = *Axis_index;
+    if(*index_queue >= 3) *index_queue = 0;
+  }else if(*count_Interval == 2){
+    Interval_float  = Interval_float*1.414/SPEED_RATIO_MODIFY;
+    *Interval_cal   = Interval_float;
+  }else if(*count_Interval == 3){
+    Interval_float  = Interval_float*1.732/SPEED_RATIO_MODIFY;
+    *Interval_cal   = Interval_float;
+  }
+}
+
 void postion_cal_upper() {
   if (!NextStep_upper) {
     NextStep_upper   = true;
