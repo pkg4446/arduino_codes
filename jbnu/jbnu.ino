@@ -267,6 +267,7 @@ bool manual_mode = false;
 bool manual_mode_work = false;
 char manual_command[3] = { 0x00, 0x00, 0x00 };
 unsigned long Update_manual = 0UL;
+unsigned long run_time      = 0UL;
 
 uint32_t Interval_upper = SPEED_EXCHANGE_TIME;
 uint32_t Interval_upper_cal = SPEED_EXCHANGE_TIME*TIME_UNIT/SPEED_RATIO_MODIFY;
@@ -461,15 +462,15 @@ void moter_run(unsigned long *microsec) {
 
     //HMI Position refresh here.
     if (nextion_page == 0) {
-      Display("nTX", upper_ctr[0].POS);
-      Display("nTY", upper_ctr[1].POS);
-      Display("nTZ", upper_ctr[2].POS);
-      Display("nBX", under_ctr[0].POS);
-      Display("nBY", under_ctr[1].POS);
-      Display("nBZ", under_ctr[2].POS);
+      if(upper_cal[0].COUNT == 0) Display("nTX", upper_ctr[0].POS);
+      if(upper_cal[0].COUNT == 0) Display("nTY", upper_ctr[1].POS);
+      if(upper_cal[0].COUNT == 0) Display("nTZ", upper_ctr[2].POS);
+      if(under_cal[0].COUNT == 0 && sync_cal[0].COUNT == 0) Display("nBX", under_ctr[0].POS);
+      if(under_cal[1].COUNT == 0 && sync_cal[1].COUNT == 0) Display("nBY", under_ctr[1].POS);
+      if(under_cal[2].COUNT == 0 && sync_cal[2].COUNT == 0) Display("nBZ", under_ctr[2].POS);
       if(!stepmoter_work){
         Display("btn_run", stepmoter_work);
-        Serial.println("END");
+        Serial.print("RunTime: ");Serial.println(millis()-run_time);
       }
     }
 
@@ -724,6 +725,8 @@ void command_pros() {
       NextStep_upper = false;
       NextStep_under = false;
       NextStep_sync  = false;
+
+      run_time = millis();
       
     } else if (Serial_buf[5] == 'F' && Serial_buf[6] == 'F') {
       stepmoter_work = false;
