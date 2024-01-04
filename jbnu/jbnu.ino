@@ -698,6 +698,12 @@ void command_pros() {
 
       }
 
+      /*************
+       2*x = distance_upper[0]/distance_upper[1]*y + distance_upper[0]/distance_upper[2]*z;
+       2*y = distance_upper[1]/distance_upper[0]*x + distance_upper[1]/distance_upper[2]*z;
+       2*z = distance_upper[2]/distance_upper[0]*x + distance_upper[2]/distance_upper[1]*y;
+      ***************/
+
       Display("nBX_T", under_ctr[0].DEST);
       Display("nBY_T", under_ctr[1].DEST);
       Display("nBZ_T", under_ctr[2].DEST);
