@@ -156,12 +156,11 @@ HardwareSerial nxSerial(2);
 #define PIN_PWM2 15
 
 #define SPEED_EXCHANGE_TIME 1200000
-
 #define SPEED_RATIO_MODIFY  100
 #define SPEED_MAX_um_min    1200
 /*
 #define SPEED_RATIO_MODIFY  10
-#define SPEED_MAX_um_min    12000
+#define SPEED_MAX_um_min    7000
 */
 //#define DEBUG_MONIT
 
@@ -281,7 +280,6 @@ unsigned long Update_sync  = 0UL;
 uint8_t interval_queue[3][3] = {{0,},};
 uint8_t queue_index[3]       = {0,};
 
-
 void interval_cal(uint8_t *queue_interval, uint8_t *index_queue, uint32_t *Interval_val, uint32_t *Interval_cal, uint8_t *count_Interval, uint8_t *Axis_index){
   float Interval_float = *Interval_val;
   if(*count_Interval == 1){
@@ -319,6 +317,7 @@ void postion_cal_upper() {
         upper_cal[index].PUL   = true;
         Interval_count++;
         Axis_num = index;
+        Serial.println("PUL");
       }
       if(upper_ctr[index].DEST == upper_ctr[index].POS) upper_cal[index].RUN = false;
     }
