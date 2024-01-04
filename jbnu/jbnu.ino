@@ -162,9 +162,9 @@ HardwareSerial nxSerial(2);
 #define SPEED_MAX_um_min    1200
 /*
 #define SPEED_RATIO_MODIFY  10
-#define SPEED_MAX_um_min    7000
+#define SPEED_MAX_um_min    12000
 */
-#define DEBUG_MONIT
+//#define DEBUG_MONIT
 
 
 /******************************************* NEXTION ***********************************************/
