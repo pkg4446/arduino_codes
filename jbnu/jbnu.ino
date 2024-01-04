@@ -1,6 +1,6 @@
 #include "Arduino.h"
 #include "Wire.h"
-
+/******************************************* Ver 0.1.0   *******************************************/
 /******************************************* PCA9555 LIB *******************************************/
 #define NXP_INPUT 0
 #define NXP_OUTPUT 2
@@ -234,25 +234,25 @@ STEP_CTR_ts sync_ctr[STEP_NUM] = {
 };
 
 typedef struct STEP_CAL_ts {
-  bool    PUL;   //Pulse flage
-  bool    RUN;   //Axis run flage
-  int32_t RATIO; //Distance ratio
-  int32_t COUNT; //Stap ratio count
+  bool    PUL;      //Pulse flage
+  bool    RUN;      //Axis run flage
+  float   CONST[2]; //funstion constant
+  int32_t COUNT;    //Stap ratio count
 } STEP_CAL_ts;
 STEP_CAL_ts upper_cal[STEP_NUM] = {
-  { 0, false, 0, 0 },
-  { 0, false, 0, 0 },
-  { 0, false, 0, 0 },
+  { 0, false, {0,0}, 0 },
+  { 0, false, {0,0}, 0 },
+  { 0, false, {0,0}, 0 },
 };
 STEP_CAL_ts under_cal[STEP_NUM] = {
-  { 0, false, 0, 0 },
-  { 0, false, 0, 0 },
-  { 0, false, 0, 0 },
+  { 0, false, {0,0}, 0 },
+  { 0, false, {0,0}, 0 },
+  { 0, false, {0,0}, 0 },
 };
 STEP_CAL_ts sync_cal[STEP_NUM] = {
-  { 0, false, 0, 0 },
-  { 0, false, 0, 0 },
-  { 0, false, 0, 0 },
+  { 0, false, {0,0}, 0 },
+  { 0, false, {0,0}, 0 },
+  { 0, false, {0,0}, 0 },
 };
 uint8_t nextion_page = 0;
 
@@ -318,7 +318,7 @@ void interval_cal(uint8_t *queue_interval, uint8_t *index_queue, uint32_t *Inter
     Serial.print(" , index_queue: ");Serial.print(*index_queue);Serial.print(" , interval: ");Serial.println(*Interval_cal);
   #endif
  }
-
+/// modify here ///
 void postion_cal_upper() {
   if (!NextStep_upper) {
     NextStep_upper   = true;
@@ -698,16 +698,44 @@ void command_pros() {
 
       }
 
-      /*************
-       2*x = distance_upper[0]/distance_upper[1]*y + distance_upper[0]/distance_upper[2]*z;
-       2*y = distance_upper[1]/distance_upper[0]*x + distance_upper[1]/distance_upper[2]*z;
-       2*z = distance_upper[2]/distance_upper[0]*x + distance_upper[2]/distance_upper[1]*y;
-      ***************/
-
       Display("nBX_T", under_ctr[0].DEST);
       Display("nBY_T", under_ctr[1].DEST);
       Display("nBZ_T", under_ctr[2].DEST);
 
+      
+      for (uint8_t index = 0; index < STEP_NUM; index++) {
+        uint8_t first_const  = 0;
+        uint8_t second_const = 1;
+        if(index == 0){
+          first_const  = 1;
+          second_const = 2;
+        }else if(index == 1){
+          second_const = 2;
+        }
+
+        if(distance_upper[first_const] != 0)  upper_cal[index].CONST[0] = float(distance_upper[index])/float(distance_upper[first_const])/2;
+        else  upper_cal[index].CONST[0] = 1;
+        if(distance_upper[second_const] != 0) upper_cal[index].CONST[1] = float(distance_upper[index])/float(distance_upper[second_const])/2;
+        else  upper_cal[index].CONST[1] = 1;
+
+        if(distance_under[first_const] != 0)  under_cal[index].CONST[0] = float(distance_under[index])/float(distance_under[first_const])/2;
+        else  under_cal[index].CONST[0] = 1;
+        if(distance_under[second_const] != 0) under_cal[index].CONST[1] = float(distance_under[index])/float(distance_under[second_const])/2;
+        else  under_cal[index].CONST[1] = 1;
+
+        if(distance_sync[first_const] != 0)  sync_cal[index].CONST[0] = float(distance_sync[index])/float(distance_sync[first_const])/2;
+        else  sync_cal[index].CONST[0] = 1;
+        if(distance_sync[second_const] != 0) sync_cal[index].CONST[1] = float(distance_sync[index])/float(distance_sync[second_const])/2;
+        else  sync_cal[index].CONST[1] = 1;
+      }
+
+      /*************
+       2*x = distance_x/distance_y*y + distance_x/distance_z*z;
+       2*y = distance_y/distance_x*x + distance_y/distance_z*z;
+       2*z = distance_z/distance_x*x + distance_z/distance_y*y;
+      ***************/
+
+      //remain time calculte
       for (uint8_t index = 1; index < STEP_NUM; index++){
         if(upper_cal[index-1].RUN && upper_cal[index].RUN){
           if(distance_upper[index-1] > distance_upper[index] ){
@@ -750,18 +778,6 @@ void command_pros() {
         }
       }
 
-      for (uint8_t index = 0; index < STEP_NUM; index++){
-        if(upper_cal[index].RUN){
-          upper_cal[index].RATIO = SPEED_RATIO_MODIFY*max_upper/distance_upper[index];
-        }
-        if(under_cal[index].RUN){
-          under_cal[index].RATIO = SPEED_RATIO_MODIFY*max_under/distance_under[index];
-        }
-        if(sync_cal[index].RUN){
-          sync_cal[index].RATIO  = SPEED_RATIO_MODIFY*max_sync/distance_sync[index];
-        }
-      }
-      
       stepmoter_work = true;
       NextStep_upper = false;
       NextStep_under = false;
