@@ -317,7 +317,6 @@ void postion_cal_upper() {
         upper_cal[index].PUL   = true;
         Interval_count++;
         Axis_num = index;
-        Serial.println("PUL");
       }
       if(upper_ctr[index].DEST == upper_ctr[index].POS) upper_cal[index].RUN = false;
     }
@@ -466,7 +465,10 @@ void moter_run(unsigned long *millisec) {
       Display("nBX", under_ctr[0].POS);
       Display("nBY", under_ctr[1].POS);
       Display("nBZ", under_ctr[2].POS);
-      if(!stepmoter_work) Display("btn_run", stepmoter_work);
+      if(!stepmoter_work){
+        Display("btn_run", stepmoter_work);
+        Serial.println("END");
+      }
     }
 
   }
