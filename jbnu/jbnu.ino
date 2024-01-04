@@ -760,6 +760,8 @@ void command_pros() {
 
       time_remain_upper = max_upper;
       time_remain_under = max_under + max_sync;
+      Display("nTTR", (time_remain_upper--)*Interval_upper/1000);
+      Display("nBTR", (time_remain_under--)*Interval_under/1000);
 
       run_time = millis();
       
