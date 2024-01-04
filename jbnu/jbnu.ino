@@ -368,7 +368,10 @@ void postion_cal_sync() {
         sync_cal[index].PUL   = true;
         Interval_count++;
         Axis_num = index;
-        if(index == max_sync_index) Display("nBTR", (time_remain_under--)*Interval_under/1000);
+        if(index == max_sync_index){
+          Display("nTTR", time_remain_upper*Interval_upper/1000);
+          Display("nBTR", (time_remain_under--)*Interval_under/1000);
+        }
       }
       if(sync_ctr[index].DEST == sync_ctr[index].POS) sync_cal[index].RUN = false;
     }
@@ -760,8 +763,8 @@ void command_pros() {
 
       time_remain_upper = max_upper;
       time_remain_under = max_under + max_sync;
-      Display("nTTR", (time_remain_upper--)*Interval_upper/1000);
-      Display("nBTR", (time_remain_under--)*Interval_under/1000);
+      if(max_upper!=1) Display("nTTR", (time_remain_upper--)*Interval_upper/1000);
+      if(max_under!=1 || max_sync!=1) Display("nBTR", (time_remain_under--)*Interval_under/1000);
 
       run_time = millis();
       
