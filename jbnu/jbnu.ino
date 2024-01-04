@@ -156,8 +156,10 @@ HardwareSerial nxSerial(2);
 #define PIN_PWM2 15
 
 #define SPEED_EXCHANGE_TIME 1200000
+#define TIME_UNIT           1000
+
 #define SPEED_RATIO_MODIFY  100
-#define SPEED_MAX_um_min    1200
+#define SPEED_MAX_um_min    700
 /*
 #define SPEED_RATIO_MODIFY  10
 #define SPEED_MAX_um_min    7000
@@ -267,11 +269,11 @@ char manual_command[3] = { 0x00, 0x00, 0x00 };
 unsigned long Update_manual = 0UL;
 
 uint32_t Interval_upper = SPEED_EXCHANGE_TIME;
-uint32_t Interval_upper_cal = SPEED_EXCHANGE_TIME;
+uint32_t Interval_upper_cal = SPEED_EXCHANGE_TIME*TIME_UNIT/SPEED_RATIO_MODIFY;
 uint32_t Interval_under = SPEED_EXCHANGE_TIME;
-uint32_t Interval_under_cal = SPEED_EXCHANGE_TIME;
+uint32_t Interval_under_cal = SPEED_EXCHANGE_TIME*TIME_UNIT/SPEED_RATIO_MODIFY;
 uint32_t Interval_sync = SPEED_EXCHANGE_TIME;
-uint32_t Interval_sync_cal = SPEED_EXCHANGE_TIME;
+uint32_t Interval_sync_cal = SPEED_EXCHANGE_TIME*TIME_UNIT/SPEED_RATIO_MODIFY;
 
 unsigned long Update_upper = 0UL;
 unsigned long Update_under = 0UL;
@@ -284,24 +286,24 @@ void interval_cal(uint8_t *queue_interval, uint8_t *index_queue, uint32_t *Inter
   float Interval_float = *Interval_val;
   if(*count_Interval == 1){
     if(*queue_interval != *(queue_interval+1) && *(queue_interval+1) != *(queue_interval+2) && *(queue_interval+2) != *queue_interval){
-      Interval_float  = Interval_float/1.732/SPEED_RATIO_MODIFY;
+      Interval_float  = Interval_float/1.732*TIME_UNIT/SPEED_RATIO_MODIFY;
       *Interval_cal   = Interval_float;
     }else if(*index_queue > 0 && (*(queue_interval+(*index_queue-1))== *(queue_interval+(*index_queue)))){
-      *Interval_cal   = *Interval_val/SPEED_RATIO_MODIFY;
+      *Interval_cal   = *Interval_val*TIME_UNIT/SPEED_RATIO_MODIFY;
     }else if(*index_queue == 0 && *(queue_interval+2) == *queue_interval){
-      *Interval_cal   = *Interval_val/SPEED_RATIO_MODIFY;
+      *Interval_cal   = *Interval_val*TIME_UNIT/SPEED_RATIO_MODIFY;
     }else{
-      Interval_float  = Interval_float/1.414/SPEED_RATIO_MODIFY;
+      Interval_float  = Interval_float/1.414*TIME_UNIT/SPEED_RATIO_MODIFY;
       *Interval_cal   = Interval_float;
     }
     *(queue_interval+(*index_queue)) = *Axis_index;
     *index_queue += 1;
     if(*index_queue >= 3) *index_queue = 0;
   }else if(*count_Interval == 2){
-    Interval_float  = Interval_float*1.414/SPEED_RATIO_MODIFY;
+    Interval_float  = Interval_float*1.414*TIME_UNIT/SPEED_RATIO_MODIFY;
     *Interval_cal   = Interval_float;
   }else if(*count_Interval == 3){
-    Interval_float  = Interval_float*1.732/SPEED_RATIO_MODIFY;
+    Interval_float  = Interval_float*1.732*TIME_UNIT/SPEED_RATIO_MODIFY;
     *Interval_cal   = Interval_float;
   }
 }
@@ -360,12 +362,12 @@ void postion_cal_sync() {
   }
 }
 
-void moter_run(unsigned long *millisec) {
+void moter_run(unsigned long *microsec) {
   if (stepmoter_work) {
     if(postions_sync){
       postion_cal_sync();
-      if (NextStep_sync && (*millisec - Update_sync > Interval_sync_cal)) {
-        Update_sync   = *millisec;
+      if (NextStep_sync && (*microsec - Update_sync > Interval_sync_cal)) {
+        Update_sync   = *microsec;
         NextStep_sync = false;
         for (uint8_t index = 0; index < STEP_NUM; index++) {
           if (sync_cal[index].PUL) {
@@ -394,8 +396,8 @@ void moter_run(unsigned long *millisec) {
     }else{
       postion_cal_upper();
       postion_cal_under();
-      if (NextStep_upper && (*millisec - Update_upper > Interval_upper_cal)) {
-        Update_upper   = *millisec;
+      if (NextStep_upper && (*microsec - Update_upper > Interval_upper_cal)) {
+        Update_upper   = *microsec;
         NextStep_upper = false;
         for (uint8_t index = 0; index < STEP_NUM; index++) {
           if (upper_cal[index].PUL) {
@@ -420,8 +422,8 @@ void moter_run(unsigned long *millisec) {
         }
       }
 
-      if (NextStep_under && (*millisec - Update_under > Interval_under_cal)) {
-        Update_under   = *millisec;
+      if (NextStep_under && (*microsec - Update_under > Interval_under_cal)) {
+        Update_under   = *microsec;
         NextStep_under = false;
         for (uint8_t index = 0; index < STEP_NUM; index++) {
           if (under_cal[index].PUL) {
@@ -450,8 +452,8 @@ void moter_run(unsigned long *millisec) {
     if(postions_sync  && !sync_cal[0].RUN && !sync_cal[1].RUN && !sync_cal[2].RUN){
       postions_sync = false;
       flushing();
-      Update_upper = *millisec;
-      Update_under = *millisec;
+      Update_upper = *microsec;
+      Update_under = *microsec;
       Interval_upper_cal = Interval_sync_cal;
       Interval_under_cal = Interval_sync_cal;
     }
@@ -485,22 +487,23 @@ void flushing(){
   }
 }
 
-void moter_sleep(unsigned long *millisec) {
+void moter_sleep(unsigned long *microsec) {
   for (uint8_t index = 0; index < STEP_NUM; index++) {
-    if (under_ctr[index].ACT && (*millisec - Update_upper > 0)) {
+    if (under_ctr[index].ACT && (*microsec - Update_upper > 0)) {
       under_ctr[index].ACT = false;
       ioport.digitalWrite(step_upper[index].ENA, true);
     }
-    if (under_ctr[index].ACT && (*millisec - Update_under > 0)) {
+    if (under_ctr[index].ACT && (*microsec - Update_under > 0)) {
       under_ctr[index].ACT = false;
       ioport.digitalWrite(step_under[index].ENA, true);
     }
   }
 }  //moter_sleep()
 
-void moter_manual(unsigned long *millisec) {
+void moter_manual() {
   if (manual_mode) {
-    if (*millisec - Update_manual > 1) {
+    unsigned long manual_sec = millis();
+    if (manual_sec - Update_manual > 1) {
       bool up_down = false;
       bool mn_dir = false;
       uint8_t moter_number = 0;
@@ -530,7 +533,7 @@ void moter_manual(unsigned long *millisec) {
           if (under_ctr[moter_number].POS > 0) under_ctr[moter_number].POS -= 1;
         }
       }
-      Update_manual = *millisec;
+      Update_manual = manual_sec;
       manual_mode_work = true;
       if (up_down) {
         digitalWrite(step_upper[moter_number].PUL, false);
@@ -776,7 +779,7 @@ void command_pros() {
       uint32_t speed_temp    = buffer_num[1] * 256 + buffer_num[0]; //20um per step // step/20*60*1000=1um/min
       if(speed_temp>SPEED_MAX_um_min) speed_temp = SPEED_MAX_um_min;
       Interval_upper     = SPEED_EXCHANGE_TIME/speed_temp;
-      Interval_upper_cal = Interval_upper/SPEED_RATIO_MODIFY;
+      Interval_upper_cal = Interval_upper*TIME_UNIT/SPEED_RATIO_MODIFY;
     } else if (Serial_buf[2] == 'X') {
       uint32_t buffer_num[4] = { Serial_buf[3], Serial_buf[4], Serial_buf[5], Serial_buf[6] };
       upper_ctr[0].DEST = buffer_num[3] * 256 * 256 * 256 + buffer_num[2] * 256 * 256 + buffer_num[1] * 256 + buffer_num[0];
@@ -796,7 +799,7 @@ void command_pros() {
       uint32_t speed_temp    = buffer_num[1] * 256 + buffer_num[0]; //20um per step // step/20*60*1000=1um/min
       if(speed_temp>SPEED_MAX_um_min) speed_temp = SPEED_MAX_um_min;
       Interval_under     = SPEED_EXCHANGE_TIME/speed_temp;
-      Interval_under_cal = Interval_under/SPEED_RATIO_MODIFY;
+      Interval_under_cal = Interval_under*TIME_UNIT/SPEED_RATIO_MODIFY;
     } else if (Serial_buf[2] == 'X') {
       uint32_t buffer_num[4] = { Serial_buf[3], Serial_buf[4], Serial_buf[5], Serial_buf[6] };
       under_ctr[0].DEST = buffer_num[3] * 256 * 256 * 256 + buffer_num[2] * 256 * 256 + buffer_num[1] * 256 + buffer_num[0];
@@ -863,12 +866,12 @@ void setup() {
 
 /********************************************* L O O P *********************************************/
 void loop() {
-  unsigned long millisec = millis();
+  unsigned long microsec = micros();
   SerialConnect();
   DisplayConnect();
-  moter_run(&millisec);
-  moter_sleep(&millisec);
-  moter_manual(&millisec);
+  moter_run(&microsec);
+  moter_sleep(&microsec);
+  moter_manual();
   /*
     for (uint8_t index = 0; index < 3; index++) {
     Serial.print("limit sw ");
