@@ -156,11 +156,12 @@ HardwareSerial nxSerial(2);
 #define PIN_PWM2 15
 
 #define SPEED_EXCHANGE_TIME 1200000
+
 #define SPEED_RATIO_MODIFY  100
-#define SPEED_MAX_um_min    700
+#define SPEED_MAX_um_min    1200
 /*
 #define SPEED_RATIO_MODIFY  10
-#define SPEED_MAX_um_min    7000
+#define SPEED_MAX_um_min    12000
 */
 //#define DEBUG_MONIT
 
@@ -280,21 +281,23 @@ unsigned long Update_sync  = 0UL;
 uint8_t interval_queue[3][3] = {{0,},};
 uint8_t queue_index[3]       = {0,};
 
-void interval_cal(uint8_t *queue_interval[3], uint8_t *index_queue, uint32_t *Interval_val, uint32_t *Interval_cal, uint8_t *count_Interval, uint8_t *Axis_index){
+
+void interval_cal(uint8_t *queue_interval, uint8_t *index_queue, uint32_t *Interval_val, uint32_t *Interval_cal, uint8_t *count_Interval, uint8_t *Axis_index){
   float Interval_float = *Interval_val;
   if(*count_Interval == 1){
-    if(*queue_interval[0] != *queue_interval[1] && *queue_interval[1] != *queue_interval[2] && *queue_interval[2] != *queue_interval[0]){
+    if(*queue_interval != *(queue_interval+1) && *(queue_interval+1) != *(queue_interval+2) && *(queue_interval+2) != *queue_interval){
       Interval_float  = Interval_float/1.732/SPEED_RATIO_MODIFY;
       *Interval_cal   = Interval_float;
-    }else if(*index_queue > 0 && (*queue_interval[*index_queue-1] == *queue_interval[*index_queue])){
+    }else if(*index_queue > 0 && (*(queue_interval+(*index_queue-1))== *(queue_interval+(*index_queue)))){
       *Interval_cal   = *Interval_val/SPEED_RATIO_MODIFY;
-    }else if(*index_queue == 0 && *queue_interval[2] == *queue_interval[0]){
+    }else if(*index_queue == 0 && *(queue_interval+2) == *queue_interval){
       *Interval_cal   = *Interval_val/SPEED_RATIO_MODIFY;
     }else{
       Interval_float  = Interval_float/1.414/SPEED_RATIO_MODIFY;
       *Interval_cal   = Interval_float;
     }
-    *queue_interval[*index_queue++] = *Axis_index;
+    *(queue_interval+(*index_queue)) = *Axis_index;
+    *index_queue += 1;
     if(*index_queue >= 3) *index_queue = 0;
   }else if(*count_Interval == 2){
     Interval_float  = Interval_float*1.414/SPEED_RATIO_MODIFY;
@@ -304,33 +307,6 @@ void interval_cal(uint8_t *queue_interval[3], uint8_t *index_queue, uint32_t *In
     *Interval_cal   = Interval_float;
   }
 }
-
-/*
-void interval_cal(uint8_t *queue_interval[3], uint8_t *index_queue, uint32_t *Interval_val, uint32_t *Interval_cal, uint8_t *count_Interval, uint8_t *Axis_index){
-  uint32_t Interval_int = *Interval_val;
-  if(*count_Interval == 1){
-    if(*queue_interval[0] != *queue_interval[1] && *queue_interval[1] != *queue_interval[2] && *queue_interval[2] != *queue_interval[0]){
-      Interval_int  = Interval_int*1000/SPEED_RATIO_MODIFY/1732;
-      *Interval_cal = Interval_int;
-    }else if(*index_queue > 0 && (*queue_interval[*index_queue-1] == *queue_interval[*index_queue])){
-      *Interval_cal = *Interval_val/SPEED_RATIO_MODIFY;
-    }else if(*index_queue == 0 && *queue_interval[2] == *queue_interval[0]){
-      *Interval_cal = *Interval_val/SPEED_RATIO_MODIFY;
-    }else{
-      Interval_int  = Interval_int*1000/SPEED_RATIO_MODIFY/1414;
-      *Interval_cal = Interval_int;
-    }
-    *queue_interval[*index_queue++] = *Axis_index;
-    if(*index_queue >= 3) *index_queue = 0;
-  }else if(*count_Interval == 2){
-    Interval_int  = Interval_int/SPEED_RATIO_MODIFY*1414/1000;
-    *Interval_cal = Interval_int;
-  }else if(*count_Interval == 3){
-    Interval_int  = Interval_int/SPEED_RATIO_MODIFY*1732/1000;
-    *Interval_cal = Interval_int;
-  }
-}
-*/
 
 void postion_cal_upper() {
   if (!NextStep_upper) {
@@ -346,38 +322,13 @@ void postion_cal_upper() {
       }
       if(upper_ctr[index].DEST == upper_ctr[index].POS) upper_cal[index].RUN = false;
     }
-
-    interval_cal(interval_queue[0], queue_index[0], &Interval_upper, &Interval_upper_cal, &Interval_count, &Axis_num);
-    /*
-    float Interval_upper_float = Interval_upper;
-    if(Interval_count == 1){
-      if(interval_queue[0][0] != interval_queue[0][1] && interval_queue[0][1] != interval_queue[0][2] && interval_queue[0][2] != interval_queue[0][0]){
-        Interval_upper_float  = Interval_upper_float/1.732/SPEED_RATIO_MODIFY;
-        Interval_upper_cal    = Interval_upper_float;
-      }else if(queue_index[0] > 0 && (interval_queue[0][queue_index[0]-1] == interval_queue[0][queue_index[0]])){
-          Interval_upper_cal  = Interval_upper/SPEED_RATIO_MODIFY;
-      }else if(queue_index[0] == 0 && interval_queue[0][2] == interval_queue[0][0]){
-          Interval_upper_cal  = Interval_upper/SPEED_RATIO_MODIFY;
-      }else{
-        Interval_upper_float  = Interval_upper_float/1.414/SPEED_RATIO_MODIFY;
-        Interval_upper_cal    = Interval_upper_float;
-      }
-      interval_queue[0][queue_index[0]++] = Axis_num;
-      if(queue_index[0] >= 3) queue_index[0] = 0;
-    }else if(Interval_count == 2){
-      Interval_upper_float  = Interval_upper_float*1.414/SPEED_RATIO_MODIFY;
-      Interval_upper_cal    = Interval_upper_float;
-    }else if(Interval_count == 3){
-      Interval_upper_float  = Interval_upper_float*1.732/SPEED_RATIO_MODIFY;
-      Interval_upper_cal    = Interval_upper_float;
-    }
-    */
+    interval_cal(&interval_queue[0][0], &queue_index[0], &Interval_upper, &Interval_upper_cal, &Interval_count, &Axis_num);
   }
 }
 
 void postion_cal_under() {
   if (!NextStep_under) {
-    NextStep_under = true;    
+    NextStep_under = true;
     uint8_t Interval_count = 0;
     uint8_t Axis_num = 0;
     for (uint8_t index = 0; index < STEP_NUM; index++){
@@ -389,29 +340,7 @@ void postion_cal_under() {
       }
       if(under_ctr[index].DEST == under_ctr[index].POS) under_cal[index].RUN = false;
     }
-
-    float Interval_under_float = Interval_under;
-    if(Interval_count == 1){
-      if(interval_queue[1][0] != interval_queue[1][1] && interval_queue[1][1] != interval_queue[1][2] && interval_queue[1][2] != interval_queue[1][0]){
-        Interval_under_float  = Interval_under_float/1.732/SPEED_RATIO_MODIFY;
-        Interval_under_cal    = Interval_under_float;
-      }else if(queue_index[1] > 0 && (interval_queue[1][queue_index[1]-1] == interval_queue[1][queue_index[1]])){
-          Interval_under_cal  = Interval_under/SPEED_RATIO_MODIFY;
-      }else if(queue_index[1] == 0 && interval_queue[1][2] == interval_queue[1][0]){
-          Interval_under_cal  = Interval_under/SPEED_RATIO_MODIFY;
-      }else{
-        Interval_under_float  = Interval_under_float/1.414/SPEED_RATIO_MODIFY;
-        Interval_under_cal    = Interval_under_float;
-      }
-      interval_queue[1][queue_index[1]++] = Axis_num;
-      if(queue_index[1] >= 3) queue_index[1] = 0;
-    }else if(Interval_count == 2){
-      Interval_under_float  = Interval_under_float*1.414/SPEED_RATIO_MODIFY;
-      Interval_under_cal    = Interval_under_float;
-    }else if(Interval_count == 3){
-      Interval_under_float  = Interval_under_float*1.732/SPEED_RATIO_MODIFY;
-      Interval_under_cal    = Interval_under_float;
-    }
+    interval_cal(&interval_queue[1][0], &queue_index[1], &Interval_under, &Interval_under_cal, &Interval_count, &Axis_num);
   }
 }
 
@@ -429,29 +358,7 @@ void postion_cal_sync() {
       }
       if(sync_ctr[index].DEST == sync_ctr[index].POS) sync_cal[index].RUN = false;
     }
-
-    float Interval_sync_float = Interval_upper;
-    if(Interval_count == 1){
-      if(interval_queue[2][0] != interval_queue[2][1] && interval_queue[2][1] != interval_queue[2][2] && interval_queue[2][2] != interval_queue[2][0]){
-        Interval_sync_float   = Interval_sync_float/1.732/SPEED_RATIO_MODIFY;
-        Interval_sync_cal     = Interval_sync_float;
-      }else if(queue_index[2] > 0 && (interval_queue[2][queue_index[2]-1] == interval_queue[2][queue_index[2]])){
-          Interval_sync_cal   = Interval_upper/SPEED_RATIO_MODIFY;
-      }else if(queue_index[2] == 0 && interval_queue[2][2] == interval_queue[2][0]){
-          Interval_sync_cal   = Interval_upper/SPEED_RATIO_MODIFY;
-      }else{
-        Interval_sync_float  = Interval_sync_float/1.414/SPEED_RATIO_MODIFY;
-        Interval_sync_cal    = Interval_sync_float;
-      }
-      interval_queue[2][queue_index[2]++] = Axis_num;
-      if(queue_index[2] >= 3) queue_index[2] = 0;
-    }else if(Interval_count == 1){
-      Interval_sync_float   = Interval_sync_float*1.414/SPEED_RATIO_MODIFY;
-      Interval_sync_cal     = Interval_sync_float;
-    }else if(Interval_count == 3){
-      Interval_sync_float   = Interval_sync_float*1.732/SPEED_RATIO_MODIFY;
-      Interval_sync_cal     = Interval_sync_float;
-    }
+    interval_cal(&interval_queue[2][0], &queue_index[2], &Interval_upper, &Interval_sync_cal, &Interval_count, &Axis_num);
   }
 }
 
@@ -542,7 +449,14 @@ void moter_run(unsigned long *millisec) {
       }
     }
 
-    if(postions_sync  && !sync_cal[0].RUN && !sync_cal[1].RUN && !sync_cal[2].RUN) postions_sync = false;
+    if(postions_sync  && !sync_cal[0].RUN && !sync_cal[1].RUN && !sync_cal[2].RUN){
+      postions_sync = false;
+      flushing();
+      Update_upper = *millisec;
+      Update_under = *millisec;
+      Interval_upper_cal = Interval_sync_cal;
+      Interval_under_cal = Interval_sync_cal;
+    }
     if(!postions_sync && !upper_cal[0].RUN && !upper_cal[1].RUN && !upper_cal[2].RUN && !under_cal[0].RUN && !under_cal[1].RUN && !under_cal[2].RUN) stepmoter_work = false;
 
     //HMI Position refresh here.
@@ -559,13 +473,24 @@ void moter_run(unsigned long *millisec) {
   }
 }  //moter_run()
 
+void flushing(){
+  for (uint8_t index = 0; index < STEP_NUM; index++){
+    upper_cal[index].COUNT = 0;
+    under_cal[index].COUNT = 0;
+    sync_cal[index].COUNT  = 0;
+    upper_cal[index].PUL   = false;
+    under_cal[index].PUL   = false;
+    sync_cal[index].PUL    = false;
+  }
+}
+
 void moter_sleep(unsigned long *millisec) {
   for (uint8_t index = 0; index < STEP_NUM; index++) {
-    if (under_ctr[index].ACT && (*millisec - Update_upper > 5)) {
+    if (under_ctr[index].ACT && (*millisec - Update_upper > 0)) {
       under_ctr[index].ACT = false;
       ioport.digitalWrite(step_upper[index].ENA, true);
     }
-    if (under_ctr[index].ACT && (*millisec - Update_under > 5)) {
+    if (under_ctr[index].ACT && (*millisec - Update_under > 0)) {
       under_ctr[index].ACT = false;
       ioport.digitalWrite(step_under[index].ENA, true);
     }
@@ -681,14 +606,22 @@ void command_pros() {
       uint32_t max_under = 1;
       uint32_t max_sync  = 1;
 
+      flushing();
+
+      if(stepmoter_sync){
+        Interval_sync      = Interval_upper;
+        Interval_sync_cal  = Interval_upper_cal;
+        Interval_under     = Interval_upper;
+        Interval_under_cal = Interval_upper_cal;
+        Display("nBS", SPEED_EXCHANGE_TIME/Interval_upper);
+      }
+
       for (uint8_t index = 0; index < STEP_NUM; index++){
         upper_ctr[index].START = upper_ctr[index].POS;
         under_ctr[index].START = under_ctr[index].POS;
 
         if(stepmoter_sync){
           under_ctr[index].DEST = upper_ctr[index].DEST;
-          Interval_sync     = Interval_upper;
-          Interval_sync_cal = Interval_upper/SPEED_RATIO_MODIFY;
 
           if(under_ctr[index].POS != upper_ctr[index].POS){
             postions_sync = true;
@@ -746,7 +679,6 @@ void command_pros() {
       Display("nBX_T", under_ctr[0].DEST);
       Display("nBY_T", under_ctr[1].DEST);
       Display("nBZ_T", under_ctr[2].DEST);
-      if(stepmoter_sync) Display("nBS", SPEED_EXCHANGE_TIME/Interval_upper);
 
       for (uint8_t index = 1; index < STEP_NUM; index++){
         if(upper_cal[index-1].RUN && upper_cal[index].RUN){
@@ -804,10 +736,12 @@ void command_pros() {
       Display("nBY_T", upper_ctr[1].DEST);
       Display("nBZ_T", upper_ctr[2].DEST);
       Display("nBS", SPEED_EXCHANGE_TIME/Interval_upper);
+      Display("btn_run", stepmoter_work);
       //좌표 계산 다시
     } else if (Serial_buf[5] == 'F' && Serial_buf[6] == 'F') {
       stepmoter_work = false;
       stepmoter_sync = false;
+      Display("btn_run", stepmoter_work);
       //좌표 계산 다시
     }
 
