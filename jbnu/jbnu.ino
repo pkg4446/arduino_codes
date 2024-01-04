@@ -256,6 +256,12 @@ STEP_CAL_ts sync_cal[STEP_NUM] = {
 };
 uint8_t nextion_page = 0;
 
+uint32_t time_remain_upper = 0;
+uint32_t time_remain_under = 0;
+uint8_t  max_upper_index   = 0;
+uint8_t  max_under_index   = 0;
+uint8_t  max_sync_index    = 0;
+
 bool stepmoter_work = false;
 bool stepmoter_sync = false;
 bool postions_sync  = false;
@@ -324,6 +330,7 @@ void postion_cal_upper() {
         upper_cal[index].PUL   = true;
         Interval_count++;
         Axis_num = index;
+        if(index == max_upper_index) Display("nTTR", (time_remain_upper--)*Interval_upper/1000);
       }
       if(upper_ctr[index].DEST == upper_ctr[index].POS) upper_cal[index].RUN = false;
     }
@@ -342,6 +349,7 @@ void postion_cal_under() {
         under_cal[index].PUL   = true;
         Interval_count++;
         Axis_num = index;
+        if(index == max_under_index) Display("nBTR", (time_remain_under--)*Interval_under/1000);
       }
       if(under_ctr[index].DEST == under_ctr[index].POS) under_cal[index].RUN = false;
     }
@@ -360,6 +368,7 @@ void postion_cal_sync() {
         sync_cal[index].PUL   = true;
         Interval_count++;
         Axis_num = index;
+        if(index == max_sync_index) Display("nBTR", (time_remain_under--)*Interval_under/1000);
       }
       if(sync_ctr[index].DEST == sync_ctr[index].POS) sync_cal[index].RUN = false;
     }
@@ -693,23 +702,41 @@ void command_pros() {
       for (uint8_t index = 1; index < STEP_NUM; index++){
         if(upper_cal[index-1].RUN && upper_cal[index].RUN){
           if(distance_upper[index-1] > distance_upper[index] ){
-            if(distance_upper[index-1] > max_upper) max_upper = distance_upper[index-1];
+            if(distance_upper[index-1] > max_upper){
+              max_upper = distance_upper[index-1];
+              max_upper_index = index-1;
+            }
           }else if(distance_upper[index-1] < distance_upper[index]){
-            if(distance_upper[index] > max_upper) max_upper = distance_upper[index];
+            if(distance_upper[index] > max_upper){
+              max_upper = distance_upper[index];
+              max_upper_index = index;
+            }
           }
         }
         if(under_cal[index-1].RUN && under_cal[index].RUN){
           if(distance_under[index-1] > distance_under[index] ){
-            if(distance_under[index-1] > max_under) max_under = distance_under[index-1];
+            if(distance_under[index-1] > max_under){
+              max_under = distance_under[index-1];
+              max_under_index = index-1;
+            }
           }else if(distance_under[index-1] < distance_under[index]){
-            if(distance_under[index] > max_under) max_under = distance_under[index];
+            if(distance_under[index] > max_under){
+              max_under = distance_under[index];
+              max_under_index = index;
+            }
           }
         }
         if(sync_cal[index-1].RUN && sync_cal[index].RUN){
           if(distance_sync[index-1] > distance_sync[index] ){
-            if(distance_sync[index-1] > max_sync) max_sync = distance_sync[index-1];
+            if(distance_sync[index-1] > max_sync){
+              max_sync = distance_sync[index-1];
+              max_sync_index = index-1;
+            }
           }else if(distance_sync[index-1] < distance_sync[index]){
-            if(distance_sync[index] > max_sync) max_sync = distance_sync[index];
+            if(distance_sync[index] > max_sync){
+              max_sync = distance_sync[index];
+              max_sync_index = index;
+            }
           }
         }
       }
@@ -730,6 +757,9 @@ void command_pros() {
       NextStep_upper = false;
       NextStep_under = false;
       NextStep_sync  = false;
+
+      time_remain_upper = max_upper;
+      time_remain_under = max_under + max_sync;
 
       run_time = millis();
       
