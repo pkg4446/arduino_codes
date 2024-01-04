@@ -159,12 +159,12 @@ HardwareSerial nxSerial(2);
 #define TIME_UNIT           1000
 
 #define SPEED_RATIO_MODIFY  100
-#define SPEED_MAX_um_min    700
+#define SPEED_MAX_um_min    1200
 /*
 #define SPEED_RATIO_MODIFY  10
 #define SPEED_MAX_um_min    7000
 */
-//#define DEBUG_MONIT
+#define DEBUG_MONIT
 
 
 /******************************************* NEXTION ***********************************************/
@@ -286,28 +286,32 @@ uint8_t queue_index[3]       = {0,};
 void interval_cal(uint8_t *queue_interval, uint8_t *index_queue, uint32_t *Interval_val, uint32_t *Interval_cal, uint8_t *count_Interval, uint8_t *Axis_index){
   float Interval_float = *Interval_val;
   if(*count_Interval == 1){
+    *(queue_interval+(*index_queue)) = *Axis_index;
     if(*queue_interval != *(queue_interval+1) && *(queue_interval+1) != *(queue_interval+2) && *(queue_interval+2) != *queue_interval){
-      Interval_float  = Interval_float/1.732*TIME_UNIT/SPEED_RATIO_MODIFY;
+      Interval_float  = TIME_UNIT/SPEED_RATIO_MODIFY*Interval_float/1.732;
       *Interval_cal   = Interval_float;
-    }else if(*index_queue > 0 && (*(queue_interval+(*index_queue-1))== *(queue_interval+(*index_queue)))){
-      *Interval_cal   = *Interval_val*TIME_UNIT/SPEED_RATIO_MODIFY;
+    }else if(*index_queue > 0 && (*(queue_interval+(*index_queue-1)) == *(queue_interval+(*index_queue)))){
+      *Interval_cal   = TIME_UNIT/SPEED_RATIO_MODIFY*(*Interval_val);
     }else if(*index_queue == 0 && *(queue_interval+2) == *queue_interval){
-      *Interval_cal   = *Interval_val*TIME_UNIT/SPEED_RATIO_MODIFY;
+      *Interval_cal   = TIME_UNIT/SPEED_RATIO_MODIFY*(*Interval_val);
     }else{
-      Interval_float  = Interval_float/1.414*TIME_UNIT/SPEED_RATIO_MODIFY;
+      Interval_float  = TIME_UNIT/SPEED_RATIO_MODIFY*Interval_float/1.414;
       *Interval_cal   = Interval_float;
     }
-    *(queue_interval+(*index_queue)) = *Axis_index;
     *index_queue += 1;
     if(*index_queue >= 3) *index_queue = 0;
   }else if(*count_Interval == 2){
-    Interval_float  = Interval_float*1.414*TIME_UNIT/SPEED_RATIO_MODIFY;
+    Interval_float  = TIME_UNIT/SPEED_RATIO_MODIFY*Interval_float*1.414;
     *Interval_cal   = Interval_float;
   }else if(*count_Interval == 3){
-    Interval_float  = Interval_float*1.732*TIME_UNIT/SPEED_RATIO_MODIFY;
+    Interval_float  = TIME_UNIT/SPEED_RATIO_MODIFY*Interval_float*1.732;
     *Interval_cal   = Interval_float;
   }
-}
+  #ifdef DEBUG_MONIT
+    Serial.print("arr: ");Serial.print(*(queue_interval));Serial.print(",");Serial.print(*(queue_interval+1));Serial.print(",");Serial.print(*(queue_interval+2));
+    Serial.print(" , index_queue: ");Serial.print(*index_queue);Serial.print(" , interval: ");Serial.println(*Interval_cal);
+  #endif
+ }
 
 void postion_cal_upper() {
   if (!NextStep_upper) {
@@ -323,7 +327,7 @@ void postion_cal_upper() {
       }
       if(upper_ctr[index].DEST == upper_ctr[index].POS) upper_cal[index].RUN = false;
     }
-    interval_cal(&interval_queue[0][0], &queue_index[0], &Interval_upper, &Interval_upper_cal, &Interval_count, &Axis_num);
+    if(Interval_count != 0) interval_cal(&interval_queue[0][0], &queue_index[0], &Interval_upper, &Interval_upper_cal, &Interval_count, &Axis_num);
   }
 }
 
@@ -341,7 +345,7 @@ void postion_cal_under() {
       }
       if(under_ctr[index].DEST == under_ctr[index].POS) under_cal[index].RUN = false;
     }
-    interval_cal(&interval_queue[1][0], &queue_index[1], &Interval_under, &Interval_under_cal, &Interval_count, &Axis_num);
+    if(Interval_count != 0) interval_cal(&interval_queue[1][0], &queue_index[1], &Interval_under, &Interval_under_cal, &Interval_count, &Axis_num);
   }
 }
 
@@ -359,7 +363,7 @@ void postion_cal_sync() {
       }
       if(sync_ctr[index].DEST == sync_ctr[index].POS) sync_cal[index].RUN = false;
     }
-    interval_cal(&interval_queue[2][0], &queue_index[2], &Interval_upper, &Interval_sync_cal, &Interval_count, &Axis_num);
+    if(Interval_count != 0) interval_cal(&interval_queue[2][0], &queue_index[2], &Interval_upper, &Interval_sync_cal, &Interval_count, &Axis_num);
   }
 }
 
@@ -369,6 +373,7 @@ void moter_run(unsigned long *microsec) {
       postion_cal_sync();
       if (NextStep_sync && (*microsec - Update_sync > Interval_sync_cal)) {
         Update_sync   = *microsec;
+        Update_under  = *microsec;
         NextStep_sync = false;
         for (uint8_t index = 0; index < STEP_NUM; index++) {
           if (sync_cal[index].PUL) {
@@ -376,7 +381,7 @@ void moter_run(unsigned long *microsec) {
               sync_ctr[index].ACT = true;
               ioport.digitalWrite(step_under[index].ENA, false);
             }
-            ioport.digitalWrite(step_under[index].DIR, sync_ctr[index].DIR);
+            if(sync_ctr[index].POS == sync_ctr[index].START) ioport.digitalWrite(step_under[index].DIR, sync_ctr[index].DIR);
             digitalWrite(step_under[index].PUL, true);
           }
         }
@@ -406,7 +411,7 @@ void moter_run(unsigned long *microsec) {
               upper_ctr[index].ACT = true;
               ioport.digitalWrite(step_upper[index].ENA, false);
             }
-            ioport.digitalWrite(step_upper[index].DIR, upper_ctr[index].DIR);
+            if(upper_ctr[index].POS == upper_ctr[index].START) ioport.digitalWrite(step_upper[index].DIR, upper_ctr[index].DIR);
             digitalWrite(step_upper[index].PUL, true);
           }
         }
@@ -432,7 +437,7 @@ void moter_run(unsigned long *microsec) {
               under_ctr[index].ACT = true;
               ioport.digitalWrite(step_under[index].ENA, false);
             }
-            ioport.digitalWrite(step_under[index].DIR, under_ctr[index].DIR);
+            if(under_ctr[index].POS == under_ctr[index].START) ioport.digitalWrite(step_under[index].DIR, under_ctr[index].DIR);
             digitalWrite(step_under[index].PUL, true);
           }
         }
@@ -490,11 +495,11 @@ void flushing(){
 
 void moter_sleep(unsigned long *microsec) {
   for (uint8_t index = 0; index < STEP_NUM; index++) {
-    if (under_ctr[index].ACT && (*microsec - Update_upper > 0)) {
-      under_ctr[index].ACT = false;
+    if (upper_ctr[index].ACT && (*microsec - Update_upper > TIME_UNIT*100)) {
+      upper_ctr[index].ACT = false;
       ioport.digitalWrite(step_upper[index].ENA, true);
     }
-    if (under_ctr[index].ACT && (*microsec - Update_under > 0)) {
+    if ((under_ctr[index].ACT||sync_ctr[index].ACT) && (*microsec - Update_under > TIME_UNIT*100)) {
       under_ctr[index].ACT = false;
       ioport.digitalWrite(step_under[index].ENA, true);
     }
@@ -883,41 +888,5 @@ void loop() {
     Serial.println(digitalRead(pin_in[index]));
     }
   */
-
-#ifdef DEBUG_MONIT
-  pin_led_check();
-#endif
 }
 /********************************************* L O O P *********************************************/
-
-#ifdef DEBUG_MONIT
-uint8_t index_led = 0;
-boolean led_flage = true;
-void pin_led_check() {
-  if (led_flage) {
-    ioport.digitalWrite(step_upper[index_led].ENA, true);
-    ioport.digitalWrite(step_upper[index_led].DIR, true);
-    ioport.digitalWrite(step_under[index_led].ENA, true);
-    ioport.digitalWrite(step_under[index_led].DIR, true);
-    delay(300);
-    ioport.digitalWrite(step_upper[index_led].ENA, false);
-    ioport.digitalWrite(step_upper[index_led].DIR, false);
-    ioport.digitalWrite(step_under[index_led].ENA, false);
-    ioport.digitalWrite(step_under[index_led].DIR, false);
-    if (++index_led >= STEP_NUM) {
-      index_led = 0;
-      led_flage = false;
-    }
-  } else {
-    digitalWrite(step_upper[index_led].PUL, true);
-    digitalWrite(step_under[index_led].PUL, true);
-    delay(300);
-    digitalWrite(step_upper[index_led].PUL, false);
-    digitalWrite(step_under[index_led].PUL, false);
-    if (++index_led >= STEP_NUM) {
-      index_led = 0;
-      led_flage = true;
-    }
-  }
-}
-#endif
