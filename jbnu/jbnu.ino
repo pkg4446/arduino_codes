@@ -319,7 +319,7 @@ void linear_upper() {
       uint8_t Axis_run = 0;
       if(upper_cal[index].RUN && (upper_ctr[index].DEST != upper_ctr[index].POS)){
         bool pulse_on_flage = false;
-        if(time_remain_upper > 2){
+        if(time_remain_upper > 9){
           if(upper_cal[index].CONST[0] != 0) Axis_run++;
           if(upper_cal[index].CONST[1] != 0) Axis_run++;
           if(Axis_run == 0 ){ pulse_on_flage = true;}
@@ -350,7 +350,7 @@ void linear_under() {
       uint8_t Axis_run = 0;
       if(under_cal[index].RUN && (under_ctr[index].DEST != under_ctr[index].POS)){
         bool pulse_on_flage = false;
-        if(time_remain_under > 2){
+        if(time_remain_under > 9){
           if(under_cal[index].CONST[0] != 0) Axis_run++;
           if(under_cal[index].CONST[1] != 0) Axis_run++;
           if(Axis_run == 0 ){ pulse_on_flage = true;}
@@ -381,7 +381,7 @@ void linear_sync() {
       uint8_t Axis_run = 0;
       if(sync_cal[index].RUN && (under_ctr[index].DEST != under_ctr[index].POS)){
         bool pulse_on_flage = false;
-        if(time_remain_under > 2){
+        if(time_remain_under > 9){
           if(sync_cal[index].CONST[0] != 0) Axis_run++;
           if(sync_cal[index].CONST[1] != 0) Axis_run++;
           if(Axis_run == 0 ){ pulse_on_flage = true;}
@@ -587,16 +587,6 @@ void linear_run() {
 void moter_run(unsigned long *microsec) {
   if (stepmoter_work) {
 
-    //HMI Position refresh here.
-    if (nextion_page == 0) {
-      if (upper_cal[0].PUL) Display("nTX", upper_ctr[0].POS-1);
-      if (upper_cal[1].PUL) Display("nTY", upper_ctr[1].POS-1);
-      if (upper_cal[2].PUL) Display("nTZ", upper_ctr[2].POS-1);
-      if (under_cal[0].PUL || sync_cal[0].PUL) Display("nBX", under_ctr[0].POS-1);
-      if (under_cal[1].PUL || sync_cal[1].PUL) Display("nBY", under_ctr[1].POS-1);
-      if (under_cal[2].PUL || sync_cal[2].PUL) Display("nBZ", under_ctr[2].POS-1);
-    }
-    
     if(postions_sync){
       linear_sync();
       if (NextStep_sync && (*microsec - Update_sync > Interval_sync_cal)) {
@@ -611,19 +601,22 @@ void moter_run(unsigned long *microsec) {
             }
             if(sync_ctr[index].POS == sync_ctr[index].START) ioport.digitalWrite(step_under[index].DIR, sync_ctr[index].DIR);
             digitalWrite(step_under[index].PUL, true);
-          }
-        }
-        for (uint8_t index = 0; index < STEP_NUM; index++) {  //pulse on time delay
-          if (sync_cal[index].PUL) {
+            
             sync_cal[index].PUL = false;
             if (sync_ctr[index].DIR) {
               sync_ctr[index].POS += 1;
             } else {
               if (sync_ctr[index].POS > 0) sync_ctr[index].POS -= 1;
             }
+            //HMI Position refresh here.
+            if (nextion_page == 0) {
+              if (index == 0) Display("nBX", under_ctr[0].POS);
+              else if (index == 1) Display("nBY", under_ctr[1].POS);
+              else if (index == 2) Display("nBZ", under_ctr[2].POS);
+            }
             digitalWrite(step_under[index].PUL, false);
+            under_ctr[index].POS = sync_ctr[index].POS;
           }
-          under_ctr[index].POS = sync_ctr[index].POS;
         }
       }
 
@@ -645,11 +638,18 @@ void moter_run(unsigned long *microsec) {
         }
         for (uint8_t index = 0; index < STEP_NUM; index++) {  //pulse on time delay
           if (upper_cal[index].PUL) {
+            
             upper_cal[index].PUL = false;
             if (upper_ctr[index].DIR) {
               upper_ctr[index].POS += 1;
             } else {
               if (upper_ctr[index].POS > 0) upper_ctr[index].POS -= 1;
+            }
+            //HMI Position refresh here.
+            if (nextion_page == 0) {
+              if (index == 0) Display("nTX", upper_ctr[0].POS);
+              else if (index == 1) Display("nTY", upper_ctr[1].POS);
+              else if (index == 2) Display("nTZ", upper_ctr[2].POS);
             }
             digitalWrite(step_upper[index].PUL, false);
           }
@@ -667,20 +667,24 @@ void moter_run(unsigned long *microsec) {
             }
             if(under_ctr[index].POS == under_ctr[index].START) ioport.digitalWrite(step_under[index].DIR, under_ctr[index].DIR);
             digitalWrite(step_under[index].PUL, true);
-          }
-        }
-        for (uint8_t index = 0; index < STEP_NUM; index++) {  //pulse on time delay
-          if (under_cal[index].PUL) {
-            under_cal[index].PUL = false;
-            if (under_ctr[index].DIR) {
+
+             under_cal[index].PUL = false;
+             if (under_ctr[index].DIR) {
               under_ctr[index].POS += 1;
             } else {
               if (under_ctr[index].POS > 0) under_ctr[index].POS -= 1;
+            }
+            //HMI Position refresh here.
+            if (nextion_page == 0) {
+              if (index == 0) Display("nBX", under_ctr[0].POS);
+              else if (index == 1) Display("nBY", under_ctr[1].POS);
+              else if (index == 2) Display("nBZ", under_ctr[2].POS);
             }
             digitalWrite(step_under[index].PUL, false);
           }
         }
       }
+
     }
 
     if(postions_sync  && !sync_cal[0].RUN && !sync_cal[1].RUN && !sync_cal[2].RUN){
