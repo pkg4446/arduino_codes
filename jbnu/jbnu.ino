@@ -331,7 +331,7 @@ void linear_upper() {
           if(uint32_t(coordinate) != upper_ctr[index].POS) pulse_on_flage = true;
         }
 
-        if(time_remain_upper_index++ > 3){
+        if(time_remain_upper_index++ > 250){
           time_remain_upper_index = 0;
           if(time_remain_upper_check != time_remain_upper){
             time_remain_upper_check = time_remain_upper;
@@ -373,7 +373,7 @@ void linear_under() {
           if(uint32_t(coordinate) != under_ctr[index].POS) pulse_on_flage = true;
         }
 
-        if(time_remain_under_index++ > 3){
+        if(time_remain_under_index++ > 250){
           time_remain_under_index = 0;
           if(time_remain_under_check != time_remain_under){
             time_remain_under_check = time_remain_under;
@@ -415,7 +415,7 @@ void linear_sync() {
           if(uint32_t(coordinate) != sync_ctr[index].POS) pulse_on_flage = true;
         }
 
-        if(time_remain_under_index++ > 3){
+        if(time_remain_under_index++ > 250){
           time_remain_under_index = 0;
           if(time_remain_under_check != time_remain_under){
             time_remain_under_check = time_remain_under;
