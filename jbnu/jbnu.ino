@@ -331,7 +331,7 @@ void linear_upper() {
           if(uint32_t(coordinate) != upper_ctr[index].POS) pulse_on_flage = true;
         }
 
-        if(time_remain_upper_index++ > 250){
+        if(time_remain_upper_index++ > 3){
           time_remain_upper_index = 0;
           if(time_remain_upper_check != time_remain_upper){
             time_remain_upper_check = time_remain_upper;
@@ -373,7 +373,7 @@ void linear_under() {
           if(uint32_t(coordinate) != under_ctr[index].POS) pulse_on_flage = true;
         }
 
-        if(time_remain_under_index++ > 250){
+        if(time_remain_under_index++ > 3){
           time_remain_under_index = 0;
           if(time_remain_under_check != time_remain_under){
             time_remain_under_check = time_remain_under;
@@ -415,7 +415,7 @@ void linear_sync() {
           if(uint32_t(coordinate) != sync_ctr[index].POS) pulse_on_flage = true;
         }
 
-        if(time_remain_under_index++ > 250){
+        if(time_remain_under_index++ > 3){
           time_remain_under_index = 0;
           if(time_remain_under_check != time_remain_under){
             time_remain_under_check = time_remain_under;
@@ -477,7 +477,7 @@ void linear_run() {
 
         sync_cal[index].RUN    = true; //under module move to upper module position.
         
-        if(sync_ctr[index].DEST - sync_ctr[index].START > 0){
+        if(sync_ctr[index].DEST >= sync_ctr[index].START){
           distance_sync[index] = sync_ctr[index].DEST - sync_ctr[index].START;
           sync_ctr[index].DIR  = true;
         }else{
@@ -492,7 +492,7 @@ void linear_run() {
 
     if(upper_ctr[index].DEST != upper_ctr[index].START){
       upper_cal[index].RUN = true;
-      if(upper_ctr[index].DEST - upper_ctr[index].START > 0){
+      if(upper_ctr[index].DEST >= upper_ctr[index].START){
         distance_upper[index] = upper_ctr[index].DEST - upper_ctr[index].START;
         upper_ctr[index].DIR  = true;
       }else{
@@ -506,7 +506,7 @@ void linear_run() {
 
     if(under_ctr[index].DEST != under_ctr[index].START){
       under_cal[index].RUN = true;
-      if(under_ctr[index].DEST - under_ctr[index].START > 0){
+      if(under_ctr[index].DEST >= under_ctr[index].START){
         distance_under[index] = under_ctr[index].DEST - under_ctr[index].START;
         under_ctr[index].DIR  = true;
       }else{
@@ -536,27 +536,24 @@ void linear_run() {
 
     upper_cal[index].XYZ[0] = first_const;
     upper_cal[index].XYZ[1] = second_const;
+    upper_cal[index].CONST[0] = 0;
+    upper_cal[index].CONST[1] = 0;
+    if(distance_upper[first_const] != 0)  upper_cal[index].CONST[0] = float(distance_upper[index])/float(distance_upper[first_const]);
+    if(distance_upper[second_const] != 0) upper_cal[index].CONST[1] = float(distance_upper[index])/float(distance_upper[second_const]);
 
     under_cal[index].XYZ[0] = first_const;
     under_cal[index].XYZ[1] = second_const;
+    under_cal[index].CONST[0] = 0;
+    under_cal[index].CONST[1] = 0;
+    if(distance_under[first_const] != 0)  under_cal[index].CONST[0] = float(distance_under[index])/float(distance_under[first_const]);
+    if(distance_under[second_const] != 0) under_cal[index].CONST[1] = float(distance_under[index])/float(distance_under[second_const]);
 
     sync_cal[index].XYZ[0] = first_const;
     sync_cal[index].XYZ[1] = second_const;
-
-    if(distance_upper[first_const] != 0)  upper_cal[index].CONST[0] = float(distance_upper[index])/float(distance_upper[first_const]);
-    else  upper_cal[index].CONST[0] = 0;
-    if(distance_upper[second_const] != 0) upper_cal[index].CONST[1] = float(distance_upper[index])/float(distance_upper[second_const]);
-    else  upper_cal[index].CONST[1] = 0;
-
-    if(distance_under[first_const] != 0)  under_cal[index].CONST[0] = float(distance_under[index])/float(distance_under[first_const]);
-    else  under_cal[index].CONST[0] = 0;
-    if(distance_under[second_const] != 0) under_cal[index].CONST[1] = float(distance_under[index])/float(distance_under[second_const]);
-    else  under_cal[index].CONST[1] = 0;
-
+    sync_cal[index].CONST[0] = 0;
+    sync_cal[index].CONST[1] = 0;
     if(distance_sync[first_const] != 0)  sync_cal[index].CONST[0] = float(distance_sync[index])/float(distance_sync[first_const]);
-    else  sync_cal[index].CONST[0] = 0;
     if(distance_sync[second_const] != 0) sync_cal[index].CONST[1] = float(distance_sync[index])/float(distance_sync[second_const]);
-    else  sync_cal[index].CONST[1] = 0;
   }
 
   /*************
