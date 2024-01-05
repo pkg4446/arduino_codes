@@ -1,6 +1,6 @@
 #include "Arduino.h"
 #include "Wire.h"
-/******************************************* Ver 0.1.0   *******************************************/
+/******************************************* Ver 0.2.0   *******************************************/
 /******************************************* PCA9555 LIB *******************************************/
 #define NXP_INPUT 0
 #define NXP_OUTPUT 2
@@ -237,22 +237,21 @@ typedef struct STEP_CAL_ts {
   bool    PUL;      //Pulse flage
   bool    RUN;      //Axis run flage
   float   CONST[2]; //funstion constant
-  int32_t COUNT;    //Stap ratio count
 } STEP_CAL_ts;
 STEP_CAL_ts upper_cal[STEP_NUM] = {
-  { 0, false, {0,0}, 0 },
-  { 0, false, {0,0}, 0 },
-  { 0, false, {0,0}, 0 },
+  { 0, false, {0,0} },
+  { 0, false, {0,0} },
+  { 0, false, {0,0} },
 };
 STEP_CAL_ts under_cal[STEP_NUM] = {
-  { 0, false, {0,0}, 0 },
-  { 0, false, {0,0}, 0 },
-  { 0, false, {0,0}, 0 },
+  { 0, false, {0,0} },
+  { 0, false, {0,0} },
+  { 0, false, {0,0} },
 };
 STEP_CAL_ts sync_cal[STEP_NUM] = {
-  { 0, false, {0,0}, 0 },
-  { 0, false, {0,0}, 0 },
-  { 0, false, {0,0}, 0 },
+  { 0, false, {0,0} },
+  { 0, false, {0,0} },
+  { 0, false, {0,0} },
 };
 uint8_t nextion_page = 0;
 
@@ -479,12 +478,12 @@ void moter_run(unsigned long *microsec) {
 
     //HMI Position refresh here.
     if (nextion_page == 0) {
-      if(upper_cal[0].COUNT == 0) Display("nTX", upper_ctr[0].POS);
-      if(upper_cal[0].COUNT == 0) Display("nTY", upper_ctr[1].POS);
-      if(upper_cal[0].COUNT == 0) Display("nTZ", upper_ctr[2].POS);
-      if(under_cal[0].COUNT == 0 && sync_cal[0].COUNT == 0) Display("nBX", under_ctr[0].POS);
-      if(under_cal[1].COUNT == 0 && sync_cal[1].COUNT == 0) Display("nBY", under_ctr[1].POS);
-      if(under_cal[2].COUNT == 0 && sync_cal[2].COUNT == 0) Display("nBZ", under_ctr[2].POS);
+      Display("nTX", upper_ctr[0].POS);
+      Display("nTY", upper_ctr[1].POS);
+      Display("nTZ", upper_ctr[2].POS);
+      Display("nBX", under_ctr[0].POS);
+      Display("nBY", under_ctr[1].POS);
+      Display("nBZ", under_ctr[2].POS);
       if(!stepmoter_work){
         Display("btn_run", stepmoter_work);
         Serial.print("RunTime: ");Serial.println(millis()-run_time);
@@ -496,9 +495,6 @@ void moter_run(unsigned long *microsec) {
 
 void flushing(){
   for (uint8_t index = 0; index < STEP_NUM; index++){
-    upper_cal[index].COUNT = 0;
-    under_cal[index].COUNT = 0;
-    sync_cal[index].COUNT  = 0;
     upper_cal[index].PUL   = false;
     under_cal[index].PUL   = false;
     sync_cal[index].PUL    = false;
