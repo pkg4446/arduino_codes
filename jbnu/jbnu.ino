@@ -284,7 +284,7 @@ unsigned long Update_sync  = 0UL;
 uint8_t interval_queue[3][3] = {{0,},};
 uint8_t queue_index[3]       = {0,};
 
-void interval_cal(uint8_t *queue_interval, uint8_t *index_queue, uint32_t *Interval_val, uint32_t *Interval_cal, uint8_t *count_Interval, uint8_t *Axis_index){
+void interval_linear_cal(uint8_t *queue_interval, uint8_t *index_queue, uint32_t *Interval_val, uint32_t *Interval_cal, uint8_t *count_Interval, uint8_t *Axis_index){
   float Interval_float = *Interval_val;
   if(*count_Interval == 1){
     *(queue_interval+(*index_queue)) = *Axis_index;
@@ -352,7 +352,7 @@ void linear_upper() {
       }
       if(upper_ctr[index].DEST == upper_ctr[index].POS) upper_cal[index].RUN = false;
     }
-    if(Interval_count != 0) interval_cal(&interval_queue[0][0], &queue_index[0], &Interval_upper, &Interval_upper_cal, &Interval_count, &Axis_num);
+    if(Interval_count != 0) interval_linear_cal(&interval_queue[0][0], &queue_index[0], &Interval_upper, &Interval_upper_cal, &Interval_count, &Axis_num);
   }
 }
 
@@ -394,7 +394,7 @@ void linear_under() {
       }
       if(under_ctr[index].DEST == under_ctr[index].POS) under_cal[index].RUN = false;
     }
-    if(Interval_count != 0) interval_cal(&interval_queue[1][0], &queue_index[1], &Interval_under, &Interval_under_cal, &Interval_count, &Axis_num);
+    if(Interval_count != 0) interval_linear_cal(&interval_queue[1][0], &queue_index[1], &Interval_under, &Interval_under_cal, &Interval_count, &Axis_num);
   }
 }
 
@@ -437,7 +437,7 @@ void linear_sync() {
       }
       if(sync_ctr[index].DEST == sync_ctr[index].POS) sync_cal[index].RUN = false;
     }
-    if(Interval_count != 0) interval_cal(&interval_queue[2][0], &queue_index[2], &Interval_upper, &Interval_sync_cal, &Interval_count, &Axis_num);
+    if(Interval_count != 0) interval_linear_cal(&interval_queue[2][0], &queue_index[2], &Interval_upper, &Interval_sync_cal, &Interval_count, &Axis_num);
   }
 }
 
