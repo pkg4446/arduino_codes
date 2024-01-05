@@ -158,12 +158,8 @@ HardwareSerial nxSerial(2);
 #define SPEED_EXCHANGE_TIME 1200000
 #define TIME_UNIT           1000
 
-#define SPEED_RATIO_MODIFY  100
-#define SPEED_MAX_um_min    1200
-/*
-#define SPEED_RATIO_MODIFY  10
-#define SPEED_MAX_um_min    12000
-*/
+#define SPEED_MAX_um_min    60000
+
 //#define DEBUG_MONIT
 
 
@@ -237,21 +233,22 @@ typedef struct STEP_CAL_ts {
   bool    PUL;      //Pulse flage
   bool    RUN;      //Axis run flage
   float   CONST[2]; //funstion constant
+  uint8_t XYZ[2];   //Axis for constant
 } STEP_CAL_ts;
 STEP_CAL_ts upper_cal[STEP_NUM] = {
-  { 0, false, {0,0} },
-  { 0, false, {0,0} },
-  { 0, false, {0,0} },
+  { 0, false, {0,0}, {0,0} },
+  { 0, false, {0,0}, {0,0} },
+  { 0, false, {0,0}, {0,0} },
 };
 STEP_CAL_ts under_cal[STEP_NUM] = {
-  { 0, false, {0,0} },
-  { 0, false, {0,0} },
-  { 0, false, {0,0} },
+  { 0, false, {0,0}, {0,0} },
+  { 0, false, {0,0}, {0,0} },
+  { 0, false, {0,0}, {0,0} },
 };
 STEP_CAL_ts sync_cal[STEP_NUM] = {
-  { 0, false, {0,0} },
-  { 0, false, {0,0} },
-  { 0, false, {0,0} },
+  { 0, false, {0,0}, {0,0} },
+  { 0, false, {0,0}, {0,0} },
+  { 0, false, {0,0}, {0,0} },
 };
 uint8_t nextion_page = 0;
 
@@ -275,11 +272,11 @@ unsigned long Update_manual = 0UL;
 unsigned long run_time      = 0UL;
 
 uint32_t Interval_upper = SPEED_EXCHANGE_TIME;
-uint32_t Interval_upper_cal = SPEED_EXCHANGE_TIME*TIME_UNIT/SPEED_RATIO_MODIFY;
+uint32_t Interval_upper_cal = SPEED_EXCHANGE_TIME*TIME_UNIT;
 uint32_t Interval_under = SPEED_EXCHANGE_TIME;
-uint32_t Interval_under_cal = SPEED_EXCHANGE_TIME*TIME_UNIT/SPEED_RATIO_MODIFY;
+uint32_t Interval_under_cal = SPEED_EXCHANGE_TIME*TIME_UNIT;
 uint32_t Interval_sync = SPEED_EXCHANGE_TIME;
-uint32_t Interval_sync_cal = SPEED_EXCHANGE_TIME*TIME_UNIT/SPEED_RATIO_MODIFY;
+uint32_t Interval_sync_cal = SPEED_EXCHANGE_TIME*TIME_UNIT;
 
 unsigned long Update_upper = 0UL;
 unsigned long Update_under = 0UL;
@@ -293,23 +290,23 @@ void interval_cal(uint8_t *queue_interval, uint8_t *index_queue, uint32_t *Inter
   if(*count_Interval == 1){
     *(queue_interval+(*index_queue)) = *Axis_index;
     if(*queue_interval != *(queue_interval+1) && *(queue_interval+1) != *(queue_interval+2) && *(queue_interval+2) != *queue_interval){
-      Interval_float  = TIME_UNIT/SPEED_RATIO_MODIFY*Interval_float/1.732;
+      Interval_float  = TIME_UNIT*Interval_float/1.732;
       *Interval_cal   = Interval_float;
     }else if(*index_queue > 0 && (*(queue_interval+(*index_queue-1)) == *(queue_interval+(*index_queue)))){
-      *Interval_cal   = TIME_UNIT/SPEED_RATIO_MODIFY*(*Interval_val);
+      *Interval_cal   = TIME_UNIT*(*Interval_val);
     }else if(*index_queue == 0 && *(queue_interval+2) == *queue_interval){
-      *Interval_cal   = TIME_UNIT/SPEED_RATIO_MODIFY*(*Interval_val);
+      *Interval_cal   = TIME_UNIT*(*Interval_val);
     }else{
-      Interval_float  = TIME_UNIT/SPEED_RATIO_MODIFY*Interval_float/1.414;
+      Interval_float  = TIME_UNIT*Interval_float/1.414;
       *Interval_cal   = Interval_float;
     }
     *index_queue += 1;
     if(*index_queue >= 3) *index_queue = 0;
   }else if(*count_Interval == 2){
-    Interval_float  = TIME_UNIT/SPEED_RATIO_MODIFY*Interval_float*1.414;
+    Interval_float  = TIME_UNIT*Interval_float*1.414;
     *Interval_cal   = Interval_float;
   }else if(*count_Interval == 3){
-    Interval_float  = TIME_UNIT/SPEED_RATIO_MODIFY*Interval_float*1.732;
+    Interval_float  = TIME_UNIT*Interval_float*1.732;
     *Interval_cal   = Interval_float;
   }
   #ifdef DEBUG_MONIT
@@ -324,12 +321,22 @@ void postion_cal_upper() {
     uint8_t Interval_count = 0;
     uint8_t Axis_num = 0;
     for (uint8_t index = 0; index < STEP_NUM; index++){
-      if(upper_cal[index].RUN && (upper_ctr[index].DEST != upper_ctr[index].POS) && (++upper_cal[index].COUNT >= upper_cal[index].RATIO)){
-        upper_cal[index].COUNT = 0;
-        upper_cal[index].PUL   = true;
-        Interval_count++;
+      uint8_t Axis_run = 0;
+      if(upper_cal[index].RUN && (upper_ctr[index].DEST != upper_ctr[index].POS)){
+        if(upper_cal[index].CONST[0] != 0) Axis_run++;
+        if(upper_cal[index].CONST[1] != 0) Axis_run++;
+        if(Axis_run == 0 ){
+          upper_cal[index].PUL  = true;
+          Interval_count++;
+        }else{
+          float coordinate = (upper_cal[index].CONST[0]*float(upper_ctr[upper_cal[index].XYZ[0]].POS+1)+upper_cal[index].CONST[1]*float(upper_ctr[upper_cal[index].XYZ[1]].POS+1))/Axis_run;
+          if(uint32_t(coordinate) != upper_ctr[index].POS){
+            upper_cal[index].PUL  = true;
+            Interval_count++;
+          }
+        }
         Axis_num = index;
-        if(index == max_upper_index) Display("nTTR", (time_remain_upper--)*Interval_upper/724);
+        if(index == max_upper_index) Display("nTTR", (time_remain_upper--)*Interval_upper/TIME_UNIT);
       }
       if(upper_ctr[index].DEST == upper_ctr[index].POS) upper_cal[index].RUN = false;
     }
@@ -343,12 +350,22 @@ void postion_cal_under() {
     uint8_t Interval_count = 0;
     uint8_t Axis_num = 0;
     for (uint8_t index = 0; index < STEP_NUM; index++){
-      if(under_cal[index].RUN && (under_ctr[index].DEST != under_ctr[index].POS) && (++under_cal[index].COUNT >= under_cal[index].RATIO)){
-        under_cal[index].COUNT = 0;
-        under_cal[index].PUL   = true;
-        Interval_count++;
+      uint8_t Axis_run = 0;
+      if(under_cal[index].RUN && (under_ctr[index].DEST != under_ctr[index].POS)){
+        if(under_cal[index].CONST[0] != 0) Axis_run++;
+        if(under_cal[index].CONST[1] != 0) Axis_run++;
+        if(Axis_run == 0 ){
+          under_cal[index].PUL  = true;
+          Interval_count++;
+        }else{
+          float coordinate = (under_cal[index].CONST[0]*float(upper_ctr[under_cal[index].XYZ[0]].POS+1)+under_cal[index].CONST[1]*float(upper_ctr[under_cal[index].XYZ[1]].POS+1))/Axis_run;
+          if(uint32_t(coordinate) != upper_ctr[index].POS){
+            under_cal[index].PUL  = true;
+            Interval_count++;
+          }
+        }
         Axis_num = index;
-        if(index == max_under_index) Display("nBTR", (time_remain_under--)*Interval_under/724);
+        if(index == max_under_index) Display("nBTR", (time_remain_under--)*Interval_under/TIME_UNIT);
       }
       if(under_ctr[index].DEST == under_ctr[index].POS) under_cal[index].RUN = false;
     }
@@ -362,14 +379,25 @@ void postion_cal_sync() {
     uint8_t Interval_count = 0;
     uint8_t Axis_num = 0;
     for (uint8_t index = 0; index < STEP_NUM; index++){
-      if(sync_cal[index].RUN && (sync_ctr[index].DEST != sync_ctr[index].POS) && (++sync_cal[index].COUNT >= sync_cal[index].RATIO)){
-        sync_cal[index].COUNT = 0;
-        sync_cal[index].PUL   = true;
-        Interval_count++;
+      uint8_t Axis_run = 0;
+
+      if(sync_cal[index].RUN && (under_ctr[index].DEST != under_ctr[index].POS)){
+        if(sync_cal[index].CONST[0] != 0) Axis_run++;
+        if(sync_cal[index].CONST[1] != 0) Axis_run++;
+        if(Axis_run == 0 ){
+          sync_cal[index].PUL  = true;
+          Interval_count++;
+        }else{
+          float coordinate = (sync_cal[index].CONST[0]*float(upper_ctr[sync_cal[index].XYZ[0]].POS+1)+sync_cal[index].CONST[1]*float(upper_ctr[sync_cal[index].XYZ[1]].POS+1))/Axis_run;
+          if(uint32_t(coordinate) != upper_ctr[index].POS){
+            sync_cal[index].PUL  = true;
+            Interval_count++;
+          }
+        }
         Axis_num = index;
         if(index == max_sync_index){
-          Display("nTTR", time_remain_upper*Interval_upper/724);
-          Display("nBTR", (time_remain_under--)*Interval_under/724);
+          Display("nTTR", time_remain_upper*Interval_upper/TIME_UNIT);
+          Display("nBTR", (time_remain_under--)*Interval_under/TIME_UNIT);
         }
       }
       if(sync_ctr[index].DEST == sync_ctr[index].POS) sync_cal[index].RUN = false;
@@ -698,7 +726,6 @@ void command_pros() {
       Display("nBY_T", under_ctr[1].DEST);
       Display("nBZ_T", under_ctr[2].DEST);
 
-      
       for (uint8_t index = 0; index < STEP_NUM; index++) {
         uint8_t first_const  = 0;
         uint8_t second_const = 1;
@@ -708,21 +735,29 @@ void command_pros() {
         }else if(index == 1){
           second_const = 2;
         }
+        upper_cal[index].XYZ[0] = first_const;
+        upper_cal[index].XYZ[1] = second_const;
 
-        if(distance_upper[first_const] != 0)  upper_cal[index].CONST[0] = float(distance_upper[index])/float(distance_upper[first_const])/2;
-        else  upper_cal[index].CONST[0] = 1;
-        if(distance_upper[second_const] != 0) upper_cal[index].CONST[1] = float(distance_upper[index])/float(distance_upper[second_const])/2;
-        else  upper_cal[index].CONST[1] = 1;
+        under_cal[index].XYZ[0] = first_const;
+        under_cal[index].XYZ[1] = second_const;
 
-        if(distance_under[first_const] != 0)  under_cal[index].CONST[0] = float(distance_under[index])/float(distance_under[first_const])/2;
-        else  under_cal[index].CONST[0] = 1;
-        if(distance_under[second_const] != 0) under_cal[index].CONST[1] = float(distance_under[index])/float(distance_under[second_const])/2;
-        else  under_cal[index].CONST[1] = 1;
+        sync_cal[index].XYZ[0] = first_const;
+        sync_cal[index].XYZ[1] = second_const;
 
-        if(distance_sync[first_const] != 0)  sync_cal[index].CONST[0] = float(distance_sync[index])/float(distance_sync[first_const])/2;
-        else  sync_cal[index].CONST[0] = 1;
-        if(distance_sync[second_const] != 0) sync_cal[index].CONST[1] = float(distance_sync[index])/float(distance_sync[second_const])/2;
-        else  sync_cal[index].CONST[1] = 1;
+        if(distance_upper[first_const] != 0)  upper_cal[index].CONST[0] = float(distance_upper[index])/float(distance_upper[first_const]);
+        else  upper_cal[index].CONST[0] = 0;
+        if(distance_upper[second_const] != 0) upper_cal[index].CONST[1] = float(distance_upper[index])/float(distance_upper[second_const]);
+        else  upper_cal[index].CONST[1] = 0;
+
+        if(distance_under[first_const] != 0)  under_cal[index].CONST[0] = float(distance_under[index])/float(distance_under[first_const]);
+        else  under_cal[index].CONST[0] = 0;
+        if(distance_under[second_const] != 0) under_cal[index].CONST[1] = float(distance_under[index])/float(distance_under[second_const]);
+        else  under_cal[index].CONST[1] = 0;
+
+        if(distance_sync[first_const] != 0)  sync_cal[index].CONST[0] = float(distance_sync[index])/float(distance_sync[first_const]);
+        else  sync_cal[index].CONST[0] = 0;
+        if(distance_sync[second_const] != 0) sync_cal[index].CONST[1] = float(distance_sync[index])/float(distance_sync[second_const]);
+        else  sync_cal[index].CONST[1] = 0;
       }
 
       /*************
@@ -781,8 +816,8 @@ void command_pros() {
 
       time_remain_upper = max_upper;
       time_remain_under = max_under + max_sync;
-      if(max_upper!=1) Display("nTTR", (time_remain_upper--)*Interval_upper/724);
-      if(max_under!=1 || max_sync!=1) Display("nBTR", (time_remain_under--)*Interval_under/724);
+      if(max_upper!=1) Display("nTTR", (time_remain_upper--)*Interval_upper/TIME_UNIT);
+      if(max_under!=1 || max_sync!=1) Display("nBTR", (time_remain_under--)*Interval_under/TIME_UNIT);
 
       run_time = millis();
       
@@ -840,7 +875,7 @@ void command_pros() {
       uint32_t speed_temp    = buffer_num[1] * 256 + buffer_num[0]; //20um per step // step/20*60*1000=1um/min
       if(speed_temp>SPEED_MAX_um_min) speed_temp = SPEED_MAX_um_min;
       Interval_upper     = SPEED_EXCHANGE_TIME/speed_temp;
-      Interval_upper_cal = Interval_upper*TIME_UNIT/SPEED_RATIO_MODIFY;
+      Interval_upper_cal = Interval_upper*TIME_UNIT;
     } else if (Serial_buf[2] == 'X') {
       uint32_t buffer_num[4] = { Serial_buf[3], Serial_buf[4], Serial_buf[5], Serial_buf[6] };
       upper_ctr[0].DEST = buffer_num[3] * 256 * 256 * 256 + buffer_num[2] * 256 * 256 + buffer_num[1] * 256 + buffer_num[0];
@@ -860,7 +895,7 @@ void command_pros() {
       uint32_t speed_temp    = buffer_num[1] * 256 + buffer_num[0]; //20um per step // step/20*60*1000=1um/min
       if(speed_temp>SPEED_MAX_um_min) speed_temp = SPEED_MAX_um_min;
       Interval_under     = SPEED_EXCHANGE_TIME/speed_temp;
-      Interval_under_cal = Interval_under*TIME_UNIT/SPEED_RATIO_MODIFY;
+      Interval_under_cal = Interval_under*TIME_UNIT;
     } else if (Serial_buf[2] == 'X') {
       uint32_t buffer_num[4] = { Serial_buf[3], Serial_buf[4], Serial_buf[5], Serial_buf[6] };
       under_ctr[0].DEST = buffer_num[3] * 256 * 256 * 256 + buffer_num[2] * 256 * 256 + buffer_num[1] * 256 + buffer_num[0];
