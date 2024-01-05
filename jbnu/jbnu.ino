@@ -589,16 +589,12 @@ void moter_run(unsigned long *microsec) {
 
     //HMI Position refresh here.
     if (nextion_page == 0) {
-      if (upper_cal[0].PUL) Display("nTX", upper_ctr[0].POS);
-      if (upper_cal[1].PUL) Display("nTY", upper_ctr[1].POS);
-      if (upper_cal[2].PUL) Display("nTZ", upper_ctr[2].POS);
-      if (under_cal[0].PUL || sync_cal[0].PUL) Display("nBX", under_ctr[0].POS);
-      if (under_cal[1].PUL || sync_cal[1].PUL) Display("nBY", under_ctr[1].POS);
-      if (under_cal[2].PUL || sync_cal[2].PUL) Display("nBZ", under_ctr[2].POS);
-      if(!stepmoter_work){
-        Display("btn_run", stepmoter_work);
-        Serial.print("RunTime: ");Serial.println(millis()-run_time);
-      }
+      if (upper_cal[0].PUL) Display("nTX", upper_ctr[0].POS-1);
+      if (upper_cal[1].PUL) Display("nTY", upper_ctr[1].POS-1);
+      if (upper_cal[2].PUL) Display("nTZ", upper_ctr[2].POS-1);
+      if (under_cal[0].PUL || sync_cal[0].PUL) Display("nBX", under_ctr[0].POS-1);
+      if (under_cal[1].PUL || sync_cal[1].PUL) Display("nBY", under_ctr[1].POS-1);
+      if (under_cal[2].PUL || sync_cal[2].PUL) Display("nBZ", under_ctr[2].POS-1);
     }
     
     if(postions_sync){
@@ -696,7 +692,10 @@ void moter_run(unsigned long *microsec) {
       Interval_under_cal = Interval_sync_cal;
     }
     if(!postions_sync && !upper_cal[0].RUN && !upper_cal[1].RUN && !upper_cal[2].RUN && !under_cal[0].RUN && !under_cal[1].RUN && !under_cal[2].RUN) stepmoter_work = false;
-
+    if (nextion_page == 0 && !stepmoter_work) {
+      Display("btn_run", stepmoter_work);
+      Serial.print("RunTime: ");Serial.println(millis()-run_time);
+    }
   }
 }  //moter_run()
 
