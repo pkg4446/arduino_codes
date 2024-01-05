@@ -323,14 +323,16 @@ void linear_upper() {
         if(Axis_run == 0 ){
           upper_cal[index].PUL  = true;
           Interval_count++;
+          Axis_num = index;
         }else{
           float coordinate = (upper_cal[index].CONST[0]*float(upper_ctr[upper_cal[index].XYZ[0]].POS+1)+upper_cal[index].CONST[1]*float(upper_ctr[upper_cal[index].XYZ[1]].POS+1))/Axis_run;
           if(uint32_t(coordinate) != upper_ctr[index].POS){
             upper_cal[index].PUL  = true;
             Interval_count++;
+            Axis_num = index;
           }
         }
-        Axis_num = index;
+        
         if(index == max_upper_index) Display("nTTR", (time_remain_upper--)*Interval_upper/TIME_UNIT);
       }
       if(upper_ctr[index].DEST == upper_ctr[index].POS) upper_cal[index].RUN = false;
@@ -352,14 +354,15 @@ void linear_under() {
         if(Axis_run == 0 ){
           under_cal[index].PUL  = true;
           Interval_count++;
+          Axis_num = index;
         }else{
           float coordinate = (under_cal[index].CONST[0]*float(upper_ctr[under_cal[index].XYZ[0]].POS+1)+under_cal[index].CONST[1]*float(upper_ctr[under_cal[index].XYZ[1]].POS+1))/Axis_run;
           if(uint32_t(coordinate) != upper_ctr[index].POS){
             under_cal[index].PUL  = true;
             Interval_count++;
+            Axis_num = index;
           }
         }
-        Axis_num = index;
         if(index == max_under_index) Display("nBTR", (time_remain_under--)*Interval_under/TIME_UNIT);
       }
       if(under_ctr[index].DEST == under_ctr[index].POS) under_cal[index].RUN = false;
@@ -382,14 +385,15 @@ void linear_sync() {
         if(Axis_run == 0 ){
           sync_cal[index].PUL  = true;
           Interval_count++;
+          Axis_num = index;
         }else{
           float coordinate = (sync_cal[index].CONST[0]*float(upper_ctr[sync_cal[index].XYZ[0]].POS+1)+sync_cal[index].CONST[1]*float(upper_ctr[sync_cal[index].XYZ[1]].POS+1))/Axis_run;
           if(uint32_t(coordinate) != upper_ctr[index].POS){
             sync_cal[index].PUL  = true;
             Interval_count++;
+            Axis_num = index;
           }
         }
-        Axis_num = index;
         if(index == max_sync_index){
           Display("nTTR", time_remain_upper*Interval_upper/TIME_UNIT);
           Display("nBTR", (time_remain_under--)*Interval_under/TIME_UNIT);
