@@ -1,23 +1,24 @@
 #include  <WiFi.h>
 #include  <HTTPClient.h>
-#include  "Wire.h"
+#include  <Wire.h>
 #define   TCAADDR 0x70
+#define   SERIAL_MAX  128
 
-#include "FS.h"
-#include "SD.h"
-#include "SPI.h"
+#include <FS.h>
+#include <SD.h>
+#include <SPI.h>
 
-#include  "Adafruit_SHT31.h"
+#include <Adafruit_SHT31.h>
+#include <ArduinoJson.h>
 Adafruit_SHT31 sht31  = Adafruit_SHT31();
-
-const char* ssid      = "CNR_L580W_2CD8FC";
-const char* password  = "#234567!";
 
 uint8_t   LED = 17;
 
 char      deviceID[18];
 int16_t   Temperature[8]  = {14040,};
 int16_t   Humidity[8]     = {14040,};
+
+int16_t   control_temp    = 0;
 
 unsigned long timer_SHT31 = 0;
 unsigned long timer_SEND  = 0;
@@ -33,31 +34,118 @@ void tca_select(uint8_t index) {
   Wire.endTransmission();
 }
 
+/******************EEPROM******************/
+#include "EEPROM.h"
+#define   EEPROM_SIZE 16
+
+const uint8_t eep_ssid[EEPROM_SIZE] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+const uint8_t eep_pass[EEPROM_SIZE] = {16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
+
+char ssid[EEPROM_SIZE];
+char password[EEPROM_SIZE]; //#234567!
+/******************EEPROM******************/
+
+char    Serial_buf[SERIAL_MAX];
+int8_t  Serial_num;
+void wifi_config_change() {
+  String at_cmd     = strtok(Serial_buf, "=");
+  String ssid_value = strtok(NULL, "=");
+  String pass_value = strtok(NULL, ";");
+  if(at_cmd=="AT+WIFI"){
+    Serial.print("ssid_value=");
+    for (int index = 0; index < EEPROM_SIZE; index++) {
+      if(index < ssid_value.length()){
+        Serial.print(ssid_value[index]);
+        EEPROM.write(eep_ssid[index], byte(ssid_value[index]));
+      }else{
+        EEPROM.write(eep_ssid[index], byte(0x00));
+      }      
+    }
+    Serial.println("");
+    Serial.print("pass_value=");
+    for (int index = 0; index < EEPROM_SIZE; index++) {
+      if(index < pass_value.length()){
+        Serial.print(pass_value[index]);
+        EEPROM.write(eep_pass[index], byte(pass_value[index]));
+      }else{
+        EEPROM.write(eep_pass[index], byte(0x00));
+      }    
+    }
+    Serial.println("");
+    EEPROM.commit();
+    ESP.restart();
+  }else{
+    Serial.println(Serial_buf);
+  }
+}//Command_service() END
+
+void Serial_process() {
+  char ch;
+  ch = Serial.read();
+  switch ( ch ) {
+    case ';':
+      Serial_buf[Serial_num] = 0x00;
+      wifi_config_change();
+      Serial_num = 0;
+      break;
+    default :
+      Serial_buf[ Serial_num ++ ] = ch;
+      Serial_num %= SERIAL_MAX;
+      break;
+  }
+}
+
 // standard Arduino setup()
 void setup()
 {
+  Serial.begin(115200);
+
+  if (!EEPROM.begin(EEPROM_SIZE*2)){
+    Serial.println("Failed to initialise eeprom");
+    Serial.println("Restarting...");
+    delay(1000);
+    ESP.restart();
+  }
+
+  for (int index = 0; index < EEPROM_SIZE; index++) {
+    ssid[index]     = EEPROM.read(eep_ssid[index]);
+    password[index] = EEPROM.read(eep_pass[index]);
+  }
+
+  Serial.println("------- wifi config -------");
+  Serial.println("AT+WIFI=SSID=PASS;");
+  Serial.print("ssid: "); Serial.println(ssid);
+  Serial.print("pass: "); Serial.println(password);
+  Serial.println("---------------------------");
+
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  Serial.begin(115200);
+  
   Wire.begin();
   pinMode(LED, OUTPUT);
-
-  Serial.begin(115200);
   
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("WiFi not connected");
-  } else {
-    Serial.print("WiFi connected ");
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
+  unsigned long wifi_config_update = 0UL;
+  while (WiFi.status() != WL_CONNECTED) {
+    if (Serial.available()) Serial_process();
+    unsigned long update_time = millis();
+    if(update_time - wifi_config_update > 3000){
+      digitalWrite(LED, false);
+      wifi_config_update = update_time;
+      Serial.println("Connecting to WiFi..");
+    }
   }
+  Serial.println("Connected to the WiFi network");
+  Serial.println("ver 1.0.1");
 }
 
 void loop()
 {
-  get_sensor(millis());
-  send_sensor(millis());
+  unsigned long millisec = millis();
+  get_sensor(millisec);
+  send_sensor(millisec);
+  if (Serial.available()) Serial_process();
+  mesh_restart(millisec);
 }
 
 void wifiCheck(unsigned long millisec) {
@@ -105,6 +193,7 @@ void send_sensor(unsigned long millisec) {
 void get_sensor(unsigned long millisec) {
   if ((millisec - timer_SHT31) > 300) {
     timer_SHT31 = millisec;
+    int16_t highst_temp = 0;
 
     for (uint8_t channel = 0; channel < 8; channel++) {
       tca_select(channel);
@@ -112,11 +201,15 @@ void get_sensor(unsigned long millisec) {
       if (!Wire.endTransmission() && sht31.begin(0x44)) {
         Temperature[channel]  = sht31.readTemperature() * 100;
         Humidity[channel]     = sht31.readHumidity() * 100;
+        if(Temperature[channel] > highst_temp) highst_temp = Temperature[channel];
       } else {
         Temperature[channel]  = 14040;
         Humidity[channel]     = 14040;
       }
     }//for
+
+    if(highst_temp < control_temp)      digitalWrite(LED, true); //heater on
+    else if(highst_temp > control_temp) digitalWrite(LED, false); //heater on
   }//if
 }
 
@@ -148,11 +241,25 @@ void httpPOSTRequest(String serverUrl) {
 
   int httpResponseCode = http.POST(httpRequestData);
   String res = http.getString().c_str();
+  StaticJsonDocument<140> json;
+  deserializeJson(json, res);
+
+  time_stmp    = json["data"];
+  control_temp = json["temp"];
+  /*
   char response[24];
   for(int index = 0; index <24; index++){
     response[index] = res[index+23];
-  }  
+  }
   time_stmp = String(response);
+  */
+  
+  Serial.print("respose raw: ");  
+  Serial.println(res);  
+  Serial.print("Time: ");  
+  Serial.print(time_stmp);  
+  Serial.print(", Temp: ");  
+  Serial.println(control_temp);  
   Serial.print("HTTP Response code: ");  
   Serial.println(httpResponseCode);
   http.end();           // Free resources
@@ -240,4 +347,13 @@ void log2SD(){
                                       "600" + "," + time_stmp  + "\n";
   appendFile(SD, filename, sd_log.c_str());
   SD.end();
+}
+
+unsigned long timer_restart = 0;
+uint8_t restart_count       = 0;
+void mesh_restart(unsigned long millisec){
+  if(millisec - timer_restart > 1000*60){
+    timer_restart = millisec;
+    if(restart_count++ > 240) ESP.restart();
+  }
 }
