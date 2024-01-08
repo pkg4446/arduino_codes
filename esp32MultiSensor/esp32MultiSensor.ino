@@ -1,8 +1,9 @@
 #include  <WiFi.h>
 #include  <HTTPClient.h>
 #include  <Wire.h>
-#define   TCAADDR 0x70
+#define   TCAADDR     0x70
 #define   SERIAL_MAX  128
+#define   JSON_KEY    3
 
 #include <FS.h>
 #include <SD.h>
@@ -240,15 +241,38 @@ void httpPOSTRequest(String serverUrl) {
 
   int httpResponseCode = http.POST(httpRequestData);
   String res = http.getString().c_str();
+  res.replace("\"","");
+  res.replace("{","");
+  res.replace("}","");
+
+  Serial.print("respose raw: ");  
+  Serial.println(res);
+
+  String json[JSON_KEY];
+  String json_key[JSON_KEY];
+  String json_value[JSON_KEY];
+
+  json[0] = strtok(&res[0], ",");
+  Serial.print("respose string: "); Serial.println(json[0]);
+  for (int index = 0; index < JSON_KEY; index++) {
+    json[index] = strtok(0x00, ",");
+    Serial.print("respose string: "); Serial.println(json[index]);
+  }
+  for (int index = 0; index < JSON_KEY; index++) {
+    json_key[index]   = strtok(&json[index][0], ":");
+    json_value[index] = json[index];
+    Serial.print(json_key[index] ); Serial.print(":"); Serial.println(json_value[index]);
+  }
+
+  /*
   char response[24];
   for(int index = 0; index <24; index++){
     response[index] = res[index+23];
   }  
   time_stmp = String(response);
-  Serial.print("respose raw: ");  
-  Serial.println(res);  
   Serial.print("respose pharse: ");  
-  Serial.println(time_stmp);  
+  Serial.println(time_stmp);
+  */
   Serial.print("HTTP Response code: ");  
   Serial.println(httpResponseCode);
   http.end();           // Free resources
