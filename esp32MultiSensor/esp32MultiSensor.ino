@@ -9,7 +9,6 @@
 #include <SPI.h>
 
 #include <Adafruit_SHT31.h>
-#include <ArduinoJson.h>
 Adafruit_SHT31 sht31  = Adafruit_SHT31();
 
 uint8_t   LED = 17;
@@ -241,25 +240,15 @@ void httpPOSTRequest(String serverUrl) {
 
   int httpResponseCode = http.POST(httpRequestData);
   String res = http.getString().c_str();
-  StaticJsonDocument<140> json;
-  deserializeJson(json, res);
-
-  time_stmp    = json["data"];
-  control_temp = json["temp"];
-  /*
   char response[24];
   for(int index = 0; index <24; index++){
     response[index] = res[index+23];
-  }
+  }  
   time_stmp = String(response);
-  */
-  
   Serial.print("respose raw: ");  
   Serial.println(res);  
-  Serial.print("Time: ");  
-  Serial.print(time_stmp);  
-  Serial.print(", Temp: ");  
-  Serial.println(control_temp);  
+  Serial.print("respose pharse: ");  
+  Serial.println(time_stmp);  
   Serial.print("HTTP Response code: ");  
   Serial.println(httpResponseCode);
   http.end();           // Free resources
