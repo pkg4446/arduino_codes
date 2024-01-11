@@ -1,3 +1,4 @@
+/******************************** 2024-01-11 ********************************/
 #include  <WiFi.h>
 #include  <HTTPClient.h>
 #include  <Wire.h>
@@ -136,7 +137,7 @@ void setup()
     }
   }
   Serial.println("Connected to the WiFi network");
-  Serial.println("ver 1.0.1");
+  Serial.println("ver 1.0.2");
 }
 
 void loop()
@@ -260,13 +261,16 @@ void httpPOSTRequest(String serverUrl) {
   }
   bool result = false;
   String time_online = "";
-  uint8_t temp = 1;
+  uint16_t temp = 1;
   for (int index = 0; index < JSON_KEY; index++) {
-    if(json_key[index] == "result"){Serial.print(1);Serial.println(json_value[index]);}
-    else if(json_key[index] == "data"){Serial.print(2);Serial.println(json_value[index]);}
-    else if(json_key[index] == "temp"){Serial.print(3);Serial.println(json_value[index]);}
+    if(json_key[index] == "result" && json_value[index] == "true"){result = true;}
+    else if(json_key[index] == "data"){time_online = json_value[index];}
+    else if(json_key[index] == "temp"){temp = json_value[index].toInt();}
   }
-
+  if(result){
+    time_stmp = time_online;
+    control_temp = temp*100;
+  }
   /*
   char response[24];
   for(int index = 0; index <24; index++){
