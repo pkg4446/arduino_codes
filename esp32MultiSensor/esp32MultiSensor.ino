@@ -241,27 +241,30 @@ void httpPOSTRequest(String serverUrl) {
 
   int httpResponseCode = http.POST(httpRequestData);
   String res = http.getString().c_str();
+  Serial.print("respose : ");Serial.println(res);
   res.replace("\"","");
   res.replace("{","");
   res.replace("}","");
-
-  Serial.print("respose raw: ");  
-  Serial.println(res);
 
   String json[JSON_KEY];
   String json_key[JSON_KEY];
   String json_value[JSON_KEY];
 
   json[0] = strtok(&res[0], ",");
-  Serial.print("respose string: "); Serial.println(json[0]);
-  for (int index = 0; index < JSON_KEY; index++) {
+  for (int index = 1; index < JSON_KEY; index++) {
     json[index] = strtok(0x00, ",");
-    Serial.print("respose string: "); Serial.println(json[index]);
   }
   for (int index = 0; index < JSON_KEY; index++) {
     json_key[index]   = strtok(&json[index][0], ":");
-    json_value[index] = json[index];
-    Serial.print(json_key[index] ); Serial.print(":"); Serial.println(json_value[index]);
+    json_value[index] = strtok(0x00, "");
+  }
+  bool result = false;
+  String time_online = "";
+  uint8_t temp = 1;
+  for (int index = 0; index < JSON_KEY; index++) {
+    if(json_key[index] == "result"){Serial.print(1);Serial.println(json_value[index]);}
+    else if(json_key[index] == "data"){Serial.print(2);Serial.println(json_value[index]);}
+    else if(json_key[index] == "temp"){Serial.print(3);Serial.println(json_value[index]);}
   }
 
   /*
