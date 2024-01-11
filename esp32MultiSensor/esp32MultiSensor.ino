@@ -4,7 +4,7 @@
 #include  <Wire.h>
 #define   TCAADDR     0x70
 #define   SERIAL_MAX  128
-#define   JSON_KEY    3
+#define   JSON_KEY    4
 
 #include <FS.h>
 #include <SD.h>
@@ -19,6 +19,7 @@ char      deviceID[18];
 int16_t   Temperature[8]  = {14040,};
 int16_t   Humidity[8]     = {14040,};
 
+uint8_t       control_index = 1;
 int16_t       control_temp  = 0;
 uint32_t      heater_run    = 0;
 unsigned long heater_on     = 0UL;
@@ -196,7 +197,6 @@ void send_sensor(unsigned long millisec) {
 void get_sensor(unsigned long millisec) {
   if ((millisec - timer_SHT31) > 300) {
     timer_SHT31 = millisec;
-    int16_t highst_temp = 0;
 
     for (uint8_t channel = 0; channel < 8; channel++) {
       tca_select(channel);
@@ -204,21 +204,20 @@ void get_sensor(unsigned long millisec) {
       if (!Wire.endTransmission() && sht31.begin(0x44)) {
         Temperature[channel]  = sht31.readTemperature() * 100;
         Humidity[channel]     = sht31.readHumidity() * 100;
-        if(Temperature[channel] > highst_temp) highst_temp = Temperature[channel];
       } else {
         Temperature[channel]  = 14040;
         Humidity[channel]     = 14040;
       }
     }//for
 
-    if(highst_temp < control_temp-1){
+    if(Temperature[control_index] < control_temp-1){
       heater_on   = millis();
       heater_run  = 0;
       digitalWrite(LED, true); //heater on
-    }else if(highst_temp > control_temp){
-      heater_run = millis() - heater_on;
-      //send_data
-      digitalWrite(LED, false); //heater on
+    }else if(Temperature[control_index] > control_temp){
+      heater_run = (millis() - heater_on)/1000;
+      digitalWrite(LED, false); //heater off
+      httpPOST_Heater("http://smarthive.kro.kr/api/costom/log_h");
     }
   }//if
 }
@@ -270,15 +269,18 @@ void httpPOSTRequest(String serverUrl) {
   }
   bool result = false;
   String time_online = "";
-  uint16_t temp = 1;
+  uint16_t temp   = 1;
+  uint16_t sensor = 1;
   for (int index = 0; index < JSON_KEY; index++) {
     if(json_key[index] == "result" && json_value[index] == "true"){result = true;}
-    else if(json_key[index] == "data"){time_online = json_value[index];}
-    else if(json_key[index] == "temp"){temp = json_value[index].toInt();}
+    else if(json_key[index] == "data"){time_online  = json_value[index];}
+    else if(json_key[index] == "temp"){temp         = json_value[index].toInt();}
+    else if(json_key[index] == "sen"){ sensor       = json_value[index].toInt();}
   }
   if(result){
-    time_stmp = time_online;
-    control_temp = temp*100;
+    time_stmp     = time_online;
+    control_temp  = temp*100;
+    control_index = sensor;
   }
   /*
   char response[24];
@@ -294,6 +296,25 @@ void httpPOSTRequest(String serverUrl) {
   http.end();           // Free resources
 }////httpPOSTRequest_End
 
+
+////Send Data//////////////////////////////////////
+void httpPOST_Heater(String serverUrl) {
+  WiFiClient client;
+  HTTPClient http;
+  http.begin(client, serverUrl);
+
+  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+  String httpRequestData =  (String)"MODULE=" + deviceID +
+                            "&RUNTIME=" + heater_run;
+
+  int httpResponseCode = http.POST(httpRequestData);
+  String res = http.getString().c_str();
+  Serial.print("respose : ");Serial.println(res);
+  
+  Serial.print("HTTP Response code: ");  
+  Serial.println(httpResponseCode);
+  http.end();           // Free resources
+}////httpPOSTRequest_End
 //fileSystem
 
 uint32_t listDir(fs::FS &fs, const char * dirname){  
