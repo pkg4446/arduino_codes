@@ -19,7 +19,9 @@ char      deviceID[18];
 int16_t   Temperature[8]  = {14040,};
 int16_t   Humidity[8]     = {14040,};
 
-int16_t   control_temp    = 0;
+int16_t       control_temp  = 0;
+uint32_t      heater_run    = 0;
+unsigned long heater_on     = 0UL;
 
 unsigned long timer_SHT31 = 0;
 unsigned long timer_SEND  = 0;
@@ -209,8 +211,15 @@ void get_sensor(unsigned long millisec) {
       }
     }//for
 
-    if(highst_temp < control_temp)      digitalWrite(LED, true); //heater on
-    else if(highst_temp > control_temp) digitalWrite(LED, false); //heater on
+    if(highst_temp < control_temp-1){
+      heater_on   = millis();
+      heater_run  = 0;
+      digitalWrite(LED, true); //heater on
+    }else if(highst_temp > control_temp){
+      heater_run = millis() - heater_on;
+      //send_data
+      digitalWrite(LED, false); //heater on
+    }
   }//if
 }
 
