@@ -11,9 +11,10 @@
 #include <SPI.h>
 
 #include <Adafruit_SHT31.h>
-Adafruit_SHT31 sht31  = Adafruit_SHT31();
+Adafruit_SHT31 sht31    = Adafruit_SHT31();
 
-uint8_t   LED = 17;
+const uint8_t   LED[2]  = {17,25};
+const uint8_t   FET[5]  = {4,14,13,16,12};
 
 char      deviceID[18];
 int16_t   Temperature[8]  = {14040,};
@@ -21,6 +22,7 @@ int16_t   Humidity[8]     = {14040,};
 
 uint8_t       control_index = 1;
 int16_t       control_temp  = 0;
+bool          heater_flage  = false;
 uint32_t      heater_run    = 0;
 unsigned long heater_on     = 0UL;
 
@@ -28,8 +30,8 @@ unsigned long timer_SHT31 = 0;
 unsigned long timer_SEND  = 0;
 unsigned long timer_WIFI  = 0;
 
-uint16_t log_index   = 0; 
-String time_stmp  = "Didn't get time from server.";
+uint16_t log_index  = 0;
+String time_stmp    = "Didn't get time from server.";
 
 void tca_select(uint8_t index) {
   if (index > 7) return;
@@ -127,14 +129,22 @@ void setup()
   WiFi.begin(ssid, password);
   
   Wire.begin();
-  pinMode(LED, OUTPUT);
-  
+  pinMode(LED[0], OUTPUT);
+  digitalWrite(LED[0], true);
+  pinMode(LED[1], OUTPUT);
+  digitalWrite(LED[1], true);
+  for (int index = 0; index < 5; index++) {
+    pinMode(FET[index], OUTPUT);
+    digitalWrite(FET[index], true);
+  }
+
   unsigned long wifi_config_update = 0UL;
   while (WiFi.status() != WL_CONNECTED) {
     if (Serial.available()) Serial_process();
     unsigned long update_time = millis();
     if(update_time - wifi_config_update > 3000){
-      digitalWrite(LED, false);
+      digitalWrite(LED[0], false);
+      digitalWrite(LED[1], false);
       wifi_config_update = update_time;
       Serial.println("Connecting to WiFi..");
     }
@@ -157,10 +167,10 @@ void wifiCheck(unsigned long millisec) {
     timer_WIFI = millisec;
         
     if (WiFi.status() != WL_CONNECTED) {
-      digitalWrite(LED, true);
+      digitalWrite(LED[0], true);
     } else {
       WiFi.begin(ssid, password);
-      digitalWrite(LED, false);
+      digitalWrite(LED[0], false);
     }
 
   }
@@ -211,12 +221,18 @@ void get_sensor(unsigned long millisec) {
     }//for
 
     if(Temperature[control_index] < control_temp-1){
-      heater_on   = millis();
-      heater_run  = 0;
-      digitalWrite(LED, true); //heater on
-    }else if(Temperature[control_index] > control_temp){
+      heater_on    = millis();
+      heater_run   = 0;
+      heater_flage = true;
+      digitalWrite(LED[1], false);
+      digitalWrite(FET[4], false); //heater on.
+      Serial.println("heater_run");
+    }else if(heater_flage && (Temperature[control_index] != 14040) && (Temperature[control_index] > control_temp)){
       heater_run = (millis() - heater_on)/1000;
-      digitalWrite(LED, false); //heater off
+      digitalWrite(LED[1], true);
+      digitalWrite(FET[4], true); //heater off
+      heater_flage = false;
+      Serial.println(heater_run);
       httpPOST_Heater("http://smarthive.kro.kr/api/costom/log_h");
     }
   }//if
