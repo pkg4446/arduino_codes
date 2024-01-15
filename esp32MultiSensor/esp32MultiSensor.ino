@@ -233,7 +233,7 @@ void get_sensor(unsigned long millisec) {
       digitalWrite(FET[4], true); //heater off
       heater_flage = false;
       Serial.println(heater_run);
-      httpPOST_Heater("http://smarthive.kro.kr/api/costom/log_h");
+      httpPOST_Heater("http://smarthive.kro.kr/api/costom/run");
     }
   }//if
 }
