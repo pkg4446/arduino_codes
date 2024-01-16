@@ -1,18 +1,70 @@
 #include "Body.h"
 #include "Status.h"
+#include "utility.h"
 bool gender;
 //#define DEBUG
-
-HEAD *play_head;
-BODY *play_body;
+/***** CHARACTER *****/
+HEAD      *play_head;
+BODY      *play_body;
 EROGENOUS *play_parts;
+STAT        *play_stat;
+HOLE        *play_hole;
+SENSE       *play_sense;
+NATURE      *play_nature;
+EROS        *play_eros;
+/***** CHARACTER *****/
+/***** GENE *****/
+HEAD      *mother_head;
+BODY      *mother_body;
+EROGENOUS *mother_parts;
+STAT      *mother_stat;
+HOLE      *mother_hole;
+SENSE     *mother_sense;
+NATURE    *mother_nature;
+EROS      *mother_eros;
 
-STAT   *play_stat;
-HOLE   *play_hole;
-SENSE  *play_sense;
-NATURE *play_nature;
-EROS   *play_eros;
-
+HEAD      *father_head;
+BODY      *father_body;
+EROGENOUS *father_parts;
+STAT      *father_stat;
+HOLE      *father_hole;
+SENSE     *father_sense;
+NATURE    *father_nature;
+EROS      *father_eros;
+/***** GENE *****/
+/***** funtions *****/
+void newface(){
+  bool      new_gender  = random(2);
+  HEAD      *new_head   = new HEAD();
+  BODY      *new_body   = new BODY(new_gender);
+  EROGENOUS *new_parts  = new EROGENOUS(new_gender);
+  STAT      *new_stat   = new STAT();
+  HOLE      *new_hole   = new HOLE();
+  SENSE     *new_sense  = new SENSE();
+  NATURE    *new_nature = new NATURE();
+  EROS      *new_eros   = new EROS();
+  #ifdef DEBUG
+    Serial.print("mine");perforation();
+    new_head->status();
+    new_body->status();
+    new_body->weight();
+    new_parts->status();
+    new_stat->status();
+    new_hole->status(gender);
+    new_sense->status(gender);
+    new_nature->status();
+    new_eros->status();
+  #endif
+  delete new_head;
+  delete new_body;
+  delete new_parts;
+  delete new_stat;
+  delete new_hole;
+  delete new_sense;
+  delete new_nature;
+  delete new_eros;
+}
+/***** funtions *****/
 void setup() {
   randomSeed(analogRead(0));
   gender = random(2);
@@ -28,28 +80,28 @@ void setup() {
   play_eros   = new EROS();
   /***** CHARACTER *****/
   /***** BODY *****/
-  HEAD *mother_head       = new HEAD();
-  BODY *mother_body       = new BODY(false);
-  EROGENOUS *mother_parts = new EROGENOUS(false);
-  HEAD *father_head       = new HEAD();
-  BODY *father_body       = new BODY(true);
-  EROGENOUS *father_parts = new EROGENOUS(true);
+  mother_head   = new HEAD();
+  mother_body   = new BODY(false);
+  mother_parts  = new EROGENOUS(false);
+  father_head   = new HEAD();
+  father_body   = new BODY(true);
+  father_parts  = new EROGENOUS(true);
   /***** BODY *****/
   /***** STATUS ***/
-  STAT   *mother_stat     = new STAT();
-  HOLE   *mother_hole     = new HOLE();
-  SENSE  *mother_sense    = new SENSE();
-  NATURE *mother_nature   = new NATURE();
-  EROS   *mother_eros     = new EROS();
-  STAT   *father_stat     = new STAT();
-  HOLE   *father_hole     = new HOLE();
-  SENSE  *father_sense    = new SENSE();
-  NATURE *father_nature   = new NATURE();
-  EROS   *father_eros     = new EROS();
+  mother_stat   = new STAT();
+  mother_hole   = new HOLE();
+  mother_sense  = new SENSE();
+  mother_nature = new NATURE();
+  mother_eros   = new EROS();
+  father_stat   = new STAT();
+  father_hole   = new HOLE();
+  father_sense  = new SENSE();
+  father_nature = new NATURE();
+  father_eros   = new EROS();
   /***** STATUS ***/
 
   #ifdef DEBUG
-    Serial.println("************** mother **************");
+    Serial.print("mother");perforation();
     mother_head->status();
     mother_body->status();
     mother_body->weight();
@@ -59,7 +111,7 @@ void setup() {
     mother_sense->status(false);
     mother_nature->status();
     mother_eros->status();
-    Serial.println("************** father **************");
+    Serial.print("father");perforation();
     father_head->status();
     father_body->status();
     father_body->weight();
@@ -71,39 +123,21 @@ void setup() {
     father_eros->status();
   #endif
 
-  
   play_head->blend(mother_head, father_head, gender);
   play_body->blend(mother_body,father_body);
   play_parts->blend(mother_parts,father_parts);
-  delete mother_head;
-  delete mother_body;
-  delete mother_parts;
-  delete father_head;
-  delete father_body;
-  delete father_parts;
-  
   play_stat->blend(mother_stat, father_stat);
   play_hole->blend(mother_hole,father_hole);
   play_sense->blend(mother_sense,father_sense);
   play_nature->blend(mother_nature, father_nature);
   play_eros->blend(mother_eros,father_eros);
-  delete mother_stat;
-  delete mother_hole;
-  delete mother_sense;
-  delete mother_nature;
-  delete mother_eros;
-  delete father_stat;
-  delete father_hole;
-  delete father_sense;
-  delete father_nature;
-  delete father_eros;
-
+  
   Serial.print("Gender:");
   if(gender)  Serial.println("male");
   else        Serial.println("female");
 
   #ifdef DEBUG
-    Serial.println("************** mine ****************");
+    Serial.print("mine");perforation();
     play_head->status();
     play_body->status();
     play_body->weight();
@@ -119,5 +153,5 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-
+  // newface();
 }

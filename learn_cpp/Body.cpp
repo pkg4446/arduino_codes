@@ -1,4 +1,5 @@
 #include "heredity.h"
+#include "utility.h"
 #include "Body.h"
 
 #define RAND_NUM   100
@@ -6,7 +7,6 @@
 
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 HEAD::HEAD() { //생성자
-    Serial.println("Constructing Head...");
     hair_color = random(RAND_NUM);
     eye_color  = random(RAND_NUM);
     hair_curl  = random(RAND_NUM);
@@ -15,9 +15,7 @@ HEAD::HEAD() { //생성자
     bald       = random(RAND_FLAGE);
 }
 /*******************************************************************************************/
-HEAD::~HEAD(){
-    Serial.println("Destructing Head...");
-}
+HEAD::~HEAD(){destruct();}
 /*******************************************************************************************/
 void HEAD::meiosis(HEAD *mother, HEAD *father){
     hair_color = mutation_u8(mother->hair_color,father->hair_color);
@@ -53,7 +51,7 @@ void HEAD::status(){
     else if(eye_color<59){color_eye = "Emerald";}
     else if(eye_color<91){color_eye = "Sapphire";}
     else{color_eye = "Ruby";}
-    Serial.println("************************************");
+    perforation();
     Serial.print("hair color: ");Serial.print(hair_color);Serial.print(" : ");Serial.println(color_hair);
     Serial.print("eye color : ");Serial.print(color_eye);Serial.print(" : ");Serial.println(eye_color);
     Serial.print("hair_curl : ");Serial.println(hair_curl);
@@ -64,7 +62,6 @@ void HEAD::status(){
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 /*********************************** BODY CLASS FUNCTION ***********************************/
 BODY::BODY(bool gender) { //생성자
-    Serial.println("Constructing Body...");
     gen_xy     = gender;
     blood_A    = random(3);
     blood_B    = random(3);
@@ -87,9 +84,7 @@ BODY::BODY(bool gender) { //생성자
     if(!gen_xy && breast < chest)   swap(&chest,&breast);
 }
 /*******************************************************************************************/
-BODY::~BODY(){
-    Serial.println("Destructing Body...");
-}
+BODY::~BODY(){destruct();}
 /*******************************************************************************************/
 void BODY::meiosis(BODY *mother, BODY *father){
     
@@ -206,7 +201,7 @@ void BODY::status(){
     else{color_body = "light";}
 
 
-    Serial.println("************************************");
+    perforation();
     Serial.print("blood type: ");Serial.println(blood_type);
     Serial.print("skin color: ");Serial.print(body_color);Serial.print(" : ");Serial.println(color_body);
     Serial.print("height    : ");Serial.println(height);
@@ -293,7 +288,6 @@ void BODY::weight(){
 /*********************************** BODY CLASS FUNCTION ***********************************/
 /*********************************** EROGENOUS CLASS FUNCTION ******************************/
 EROGENOUS::EROGENOUS(bool gender) { //생성자
-    Serial.println("Constructing Parts...");
     gen_xy          = gender;
     
     hood_c          = random(RAND_NUM);
@@ -361,9 +355,7 @@ EROGENOUS::EROGENOUS(bool gender) { //생성자
     if(nipple_h > nipple_h_e) swap(&nipple_h,&nipple_h_e);
 }
 /*******************************************************************************************/
-EROGENOUS::~EROGENOUS(){
-    Serial.println("Destructing Parts...");
-}
+EROGENOUS::~EROGENOUS(){destruct();}
 /*******************************************************************************************/
 void EROGENOUS::meiosis(EROGENOUS *mother, EROGENOUS *father){
     hood_c          = mutation_u8(mother->hood_c,           father->hood_c);
@@ -461,7 +453,7 @@ void EROGENOUS::blend(EROGENOUS *mother, EROGENOUS *father){
     nipple_h_e      = heredity_u16(mother->nipple_h_e,  father->nipple_h_e);
 }
 void EROGENOUS::status(){
-    Serial.println("************************************");
+    perforation();
     if(gen_xy){
         Serial.print("glans_d   : ");Serial.println(glans_d);
         Serial.print("glans_d_e : ");Serial.println(glans_d_e);

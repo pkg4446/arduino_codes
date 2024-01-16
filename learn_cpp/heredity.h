@@ -12,5 +12,3 @@ uint16_t mutation_u16(uint16_t mother, uint16_t father);
 bool     heredity_bool(bool mother, bool father, bool dominant);
 uint8_t  heredity_u8(uint8_t mother, uint8_t father);
 uint16_t heredity_u16(uint16_t mother, uint16_t father);
-
-void     swap(uint16_t *num_a, uint16_t *num_b);

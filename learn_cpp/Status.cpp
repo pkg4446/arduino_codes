@@ -1,4 +1,5 @@
 #include "heredity.h"
+#include "utility.h"
 #include "status.h"
 
 #define RAND_NUM   100
@@ -6,7 +7,6 @@
 
 /*********************************** STAT CLASS FUNCTION ***********************************/
 STAT::STAT() { //생성자
-    Serial.println("Constructing Stat...");
     intelligence = gaussian_range(50,12);
     strength     = gaussian_range(50,12);
     dexterity    = gaussian_range(50,12);
@@ -14,9 +14,7 @@ STAT::STAT() { //생성자
     constitution = gaussian_range(50,12);
 }
 /*******************************************************************************************/
-STAT::~STAT(){
-    Serial.println("Destructing Stat...");
-}
+STAT::~STAT(){destruct();}
 /*******************************************************************************************/
 void STAT::meiosis(STAT *mother, STAT *father){
     intelligence = mutation_u8(mother->intelligence, father->intelligence); 
@@ -35,7 +33,7 @@ void STAT::blend(STAT *mother, STAT *father){
 }
 /*******************************************************************************************/
 void STAT::status(){
-    Serial.println("************************************");
+    perforation();
     Serial.print("intelligence: ");Serial.println(intelligence);
     Serial.print("strength    : ");Serial.println(strength);
     Serial.print("dexterity   : ");Serial.println(dexterity);
@@ -45,7 +43,6 @@ void STAT::status(){
 /*********************************** STAT CLASS FUNCTION ***********************************/
 /*********************************** HOLE CLASS FUNCTION ***********************************/
 HOLE::HOLE() { //생성자
-    Serial.println("Constructing Hole...");
     gape_u = gaussian_range(650,40);
     gape_v = gaussian_range(5550,400);
     gape_a = gaussian_range(6950,800);
@@ -54,9 +51,7 @@ HOLE::HOLE() { //생성자
     pressure_a = gaussian_range(9220,1300);
 }
 /*******************************************************************************************/
-HOLE::~HOLE(){
-    Serial.println("Destructing Hole...");
-}
+HOLE::~HOLE(){destruct();}
 /*******************************************************************************************/
 void HOLE::meiosis(HOLE *mother, HOLE *father){
     gape_u      = mutation_u16(mother->gape_u,      father->gape_u); 
@@ -77,7 +72,7 @@ void HOLE::blend(HOLE *mother, HOLE *father){
 }
 /*******************************************************************************************/
 void HOLE::status(bool gender){
-    Serial.println("************************************");
+    perforation();
     if(!gender){
         Serial.print("gape_v    : ");Serial.println(gape_v);
         Serial.print("pressure_v: ");Serial.println(pressure_v);
@@ -90,7 +85,6 @@ void HOLE::status(bool gender){
 /*********************************** HOLE CLASS FUNCTION ***********************************/
 /*********************************** SENSE CLASS FUNCTION **********************************/
 SENSE::SENSE() { //생성자
-    Serial.println("Constructing Sense...");
     cervix          = gaussian_range(50,12);
     skin            = gaussian_range(50,12);
     vagina_balls    = gaussian_range(50,12);
@@ -99,9 +93,7 @@ SENSE::SENSE() { //생성자
     nipple          = gaussian_range(50,12);
 }
 /*******************************************************************************************/
-SENSE::~SENSE(){
-    Serial.println("Destructing Sense...");
-}
+SENSE::~SENSE(){destruct();}
 /*******************************************************************************************/
 void SENSE::meiosis(SENSE *mother, SENSE *father){
     cervix          = mutation_u8(mother->cervix,       father->cervix); 
@@ -122,7 +114,7 @@ void SENSE::blend(SENSE *mother, SENSE *father){
 }
 /*******************************************************************************************/
 void SENSE::status(bool gender){
-    Serial.println("************************************");
+    perforation();
     if(gender){
         Serial.print("balls       : ");Serial.println(vagina_balls);
     }else{
@@ -136,8 +128,7 @@ void SENSE::status(bool gender){
 }
 /*********************************** SENSE CLASS FUNCTION **********************************/
 /*********************************** NATURE CLASS FUNCTION *********************************/
-NATURE::NATURE() { //생성자
-    Serial.println("Constructing Nature...");    
+NATURE::NATURE() { //생성자 
     at_e_i  = gaussian_range(50,12);
     at_s_n  = gaussian_range(50,12);
     fn_t_f  = gaussian_range(50,12);
@@ -149,9 +140,7 @@ NATURE::NATURE() { //생성자
     if(fn_j_p>50)mbti|=0b00000001;
 }
 /*******************************************************************************************/
-NATURE::~NATURE(){
-    Serial.println("Destructing Nature...");
-}
+NATURE::~NATURE(){destruct();}
 /*******************************************************************************************/
 void NATURE::meiosis(NATURE *mother, NATURE *father){
     at_e_i  = mutation_u8(mother->at_e_i, father->at_e_i);
@@ -173,7 +162,7 @@ void NATURE::blend(NATURE *mother, NATURE *father){
 }
 /*******************************************************************************************/
 void NATURE::status(){
-    Serial.println("************************************");
+    perforation();
     Serial.print("MBTI : ");
     if(at_e_i>50)Serial.print("E");
     else Serial.print("I");
@@ -197,7 +186,6 @@ void NATURE::status(){
 /*********************************** NATURE CLASS FUNCTION *********************************/
 /*********************************** EROS CLASS FUNCTION ***********************************/
 EROS::EROS() { //생성자
-    Serial.println("Constructing Eros...");
     lust       = gaussian_range(50,12);
     sadism     = gaussian_range(50,12);
     masohism   = gaussian_range(50,12);
@@ -205,9 +193,7 @@ EROS::EROS() { //생성자
     service    = gaussian_range(50,12);
 }
 /*******************************************************************************************/
-EROS::~EROS(){
-    Serial.println("Destructing Eros...");
-}
+EROS::~EROS(){destruct();}
 /*******************************************************************************************/
 void EROS::meiosis(EROS *mother, EROS *father){
     lust       = mutation_u8(mother->lust, father->lust); 
@@ -226,7 +212,7 @@ void EROS::blend(EROS *mother, EROS *father){
 }
 /*******************************************************************************************/
 void EROS::status(){
-    Serial.println("************************************");
+    perforation();
     Serial.print("lust      : ");Serial.println(lust);
     Serial.print("sadism    : ");Serial.println(sadism);
     Serial.print("masohism  : ");Serial.println(masohism);
