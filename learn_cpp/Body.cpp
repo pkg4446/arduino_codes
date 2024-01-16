@@ -9,7 +9,7 @@ HEAD::HEAD() { //생성자
     Serial.println("Constructing Head...");
     hair_color = random(RAND_NUM);
     eye_color  = random(RAND_NUM);
-    hair       = random(RAND_NUM);
+    hair_curl  = random(RAND_NUM);
     eyelid     = random(RAND_FLAGE);
     dimple     = random(RAND_FLAGE);
     bald       = random(RAND_FLAGE);
@@ -22,7 +22,7 @@ HEAD::~HEAD(){
 void HEAD::meiosis(HEAD *mother, HEAD *father){
     hair_color = mutation_u8(mother->hair_color,father->hair_color);
     eye_color  = mutation_u8(mother->eye_color, father->eye_color);
-    hair       = mutation_u8(mother->hair,      father->hair);
+    hair_curl  = mutation_u8(mother->hair_curl, father->hair_curl);
     eyelid     = mutation_bool(mother->eyelid,  father->eyelid);
     dimple     = mutation_bool(mother->dimple,  father->dimple);
     bald       = mutation_bool(mother->bald,    father->bald);
@@ -31,7 +31,7 @@ void HEAD::meiosis(HEAD *mother, HEAD *father){
 void HEAD::blend(HEAD *mother, HEAD *father, bool gender){
     hair_color = heredity_u8(mother->hair_color,father->hair_color);
     eye_color  = heredity_u8(mother->eye_color, father->eye_color);
-    hair       = heredity_u8(mother->hair,      father->hair);
+    hair_curl  = heredity_u8(mother->hair_curl, father->hair_curl);
     eyelid     = heredity_bool(mother->eyelid,  father->eyelid, true);
     dimple     = heredity_bool(mother->dimple,  father->dimple, true);
     bald       = heredity_bool(mother->bald,    father->bald,   true);
@@ -56,7 +56,7 @@ void HEAD::status(){
     Serial.println("************************************");
     Serial.print("hair color: ");Serial.print(hair_color);Serial.print(" : ");Serial.println(color_hair);
     Serial.print("eye color : ");Serial.print(color_eye);Serial.print(" : ");Serial.println(eye_color);
-    Serial.print("hair      : ");Serial.println(hair);
+    Serial.print("hair_curl : ");Serial.println(hair_curl);
     Serial.print("eyelid    : ");Serial.println(eyelid);
     Serial.print("dimple    : ");Serial.println(dimple);
     Serial.print("bald      : ");Serial.println(bald);
@@ -83,6 +83,8 @@ BODY::BODY(bool gender) { //생성자
         hip       = gaussian_range(880,70);
         leg_ratio = gaussian_range(458,18);
     }
+    if(chest < waist)               swap(&chest,&waist);
+    if(!gen_xy && breast < chest)   swap(&chest,&breast);
 }
 /*******************************************************************************************/
 BODY::~BODY(){
@@ -274,7 +276,7 @@ void BODY::weight(){
         ans*=1.05;
     }else{
         float cupsize      = breast - chest;
-        float diameter     = chest/13;            
+        float diameter     = chest/13;
         float hight_breast = 0;
         if(cupsize*cupsize/4.9>diameter*diameter){hight_breast = sqrt(cupsize*cupsize/4.9 - diameter*diameter);}
         float hight_cal    = (2*hight_breast + cupsize)/5;
@@ -283,7 +285,10 @@ void BODY::weight(){
         ans += cup_w;
         Serial.print("cup weight: ");Serial.println(uint16_t(cup_w));
     }
+    float BMI = ans/((height_c/100)*(height_c/100));
     Serial.print("weight    : ");Serial.println(uint16_t(ans));
+    Serial.print("BMI       : ");Serial.println(BMI);
+    
 }
 /*********************************** BODY CLASS FUNCTION ***********************************/
 /*********************************** EROGENOUS CLASS FUNCTION ******************************/

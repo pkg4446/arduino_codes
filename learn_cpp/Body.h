@@ -5,7 +5,7 @@ class HEAD
 {
     private:
         uint8_t hair_color;
-        uint8_t hair;
+        uint8_t hair_curl;
         uint8_t eye_color;
         bool    eyelid;
         bool    dimple;
