@@ -3,6 +3,16 @@
 bool gender;
 //#define DEBUG
 
+HEAD *my_head       = new HEAD();
+BODY *my_body       = new BODY(gender);
+EROGENOUS *my_parts = new EROGENOUS(gender);
+
+STAT   *my_stat     = new STAT();
+HOLE   *my_hole     = new HOLE();
+SENSE  *my_sense    = new SENSE();
+NATURE *my_nature   = new NATURE();
+EROS   *my_eros     = new EROS();
+
 void setup() {
   randomSeed(analogRead(0));
   gender = random(2);
@@ -51,9 +61,7 @@ void setup() {
     father_eros->status();
   #endif
 
-  HEAD *my_head       = new HEAD();
-  BODY *my_body       = new BODY(gender);
-  EROGENOUS *my_parts = new EROGENOUS(gender);
+  
   my_head->blend(mother_head, father_head, gender);
   my_body->blend(mother_body,father_body);
   my_parts->blend(mother_parts,father_parts);
@@ -63,11 +71,7 @@ void setup() {
   delete father_head;
   delete father_body;
   delete father_parts;
-  STAT   *my_stat     = new STAT();
-  HOLE   *my_hole     = new HOLE();
-  SENSE  *my_sense    = new SENSE();
-  NATURE *my_nature   = new NATURE();
-  EROS   *my_eros     = new EROS();
+  
   my_stat->blend(mother_stat, father_stat);
   my_hole->blend(mother_hole,father_hole);
   my_sense->blend(mother_sense,father_sense);
