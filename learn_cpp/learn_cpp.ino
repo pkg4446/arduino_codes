@@ -3,20 +3,30 @@
 bool gender;
 //#define DEBUG
 
-HEAD *play_head       = new HEAD();
-BODY *play_body       = new BODY(gender);
-EROGENOUS *play_parts = new EROGENOUS(gender);
+HEAD *play_head;
+BODY *play_body;
+EROGENOUS *play_parts;
 
-STAT   *play_stat     = new STAT();
-HOLE   *play_hole     = new HOLE();
-SENSE  *play_sense    = new SENSE();
-NATURE *play_nature   = new NATURE();
-EROS   *play_eros     = new EROS();
+STAT   *play_stat;
+HOLE   *play_hole;
+SENSE  *play_sense;
+NATURE *play_nature;
+EROS   *play_eros;
 
 void setup() {
   randomSeed(analogRead(0));
   gender = random(2);
   Serial.begin(115200);
+  /***** CHARACTER *****/
+  play_head   = new HEAD();
+  play_body   = new BODY(gender);
+  play_parts  = new EROGENOUS(gender);
+  play_stat   = new STAT();
+  play_hole   = new HOLE();
+  play_sense  = new SENSE();
+  play_nature = new NATURE();
+  play_eros   = new EROS();
+  /***** CHARACTER *****/
   /***** BODY *****/
   HEAD *mother_head       = new HEAD();
   BODY *mother_body       = new BODY(false);
