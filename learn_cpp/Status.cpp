@@ -76,13 +76,15 @@ void HOLE::blend(HOLE *mother, HOLE *father){
     pressure_a  = heredity_u16(mother->pressure_a,  father->pressure_a);
 }
 /*******************************************************************************************/
-void HOLE::status(){
+void HOLE::status(bool gender){
     Serial.println("************************************");
+    if(!gender){
+        Serial.print("gape_v    : ");Serial.println(gape_v);
+        Serial.print("pressure_v: ");Serial.println(pressure_v);
+    }
     Serial.print("gape_u    : ");Serial.println(gape_u);
-    Serial.print("gape_v    : ");Serial.println(gape_v);
-    Serial.print("gape_a    : ");Serial.println(gape_a);
     Serial.print("pressure_u: ");Serial.println(pressure_u);
-    Serial.print("pressure_v: ");Serial.println(pressure_v);
+    Serial.print("gape_a    : ");Serial.println(gape_a);
     Serial.print("pressure_a: ");Serial.println(pressure_a);
 }
 /*********************************** HOLE CLASS FUNCTION ***********************************/
@@ -119,11 +121,15 @@ void SENSE::blend(SENSE *mother, SENSE *father){
     nipple          = heredity_u8(mother->nipple,       father->nipple);  
 }
 /*******************************************************************************************/
-void SENSE::status(){
+void SENSE::status(bool gender){
     Serial.println("************************************");
-    Serial.print("cervix      : ");Serial.println(cervix);
+    if(gender){
+        Serial.print("vagina      : ");Serial.println(vagina_balls);
+    }else{
+        Serial.print("cervix      : ");Serial.println(cervix);
+        Serial.print("balls       : ");Serial.println(vagina_balls);
+    }
     Serial.print("skin        : ");Serial.println(skin);
-    Serial.print("vagina_balls: ");Serial.println(vagina_balls);
     Serial.print("urethra     : ");Serial.println(urethra);
     Serial.print("anal        : ");Serial.println(anal);
     Serial.print("nipple      : ");Serial.println(nipple);

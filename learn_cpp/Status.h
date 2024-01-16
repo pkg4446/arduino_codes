@@ -33,7 +33,7 @@ class HOLE
         ~HOLE();
         void meiosis(HOLE *mother, HOLE *father);
         void blend(HOLE *mother, HOLE *father);
-        void status();
+        void status(bool gender);
 };
 
 class SENSE
@@ -52,7 +52,7 @@ class SENSE
         ~SENSE();
         void meiosis(SENSE *mother, SENSE *father);
         void blend(SENSE *mother, SENSE *father);
-        void status();
+        void status(bool gender);
 };
 
 class NATURE
