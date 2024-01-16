@@ -529,7 +529,7 @@ void EROGENOUS::status(){
         else if(lip_i_texture < 26){lip+="매력적인";}
         else if(lip_i_texture < 75){lip+="음란한";}
         else{lip+="걸래같은";}
-        lip += " 소음순이 질구 아래에서";
+        lip += " 소음순이 질구 아래에서 ";
 
         if(fork < 8){lip+="매끄럽게";}
         else if(fork < 68){lip+="둥글게 주름져";}
