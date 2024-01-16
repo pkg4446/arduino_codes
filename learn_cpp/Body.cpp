@@ -519,9 +519,9 @@ void EROGENOUS::status(){
         if(lip_o_shape < 8){lip+="엷은";}
         else if(lip_o_shape < 68){lip+="도톰한";}
         else{lip+="두툼한";}
-        lip += " 대음순의 안쪽에, 클리토리스로 부터 ";
+        lip += " 대음순의 안쪽에, 클리토리스 아래로 ";
 
-        if(lip_i_shape < 22){lip+="일자로 앙다문";}
+        if(lip_i_shape < 22){lip+="앙다문 일자의";}
         else if(lip_i_shape < 37){lip+="둥글게 펼쳐진";}
         else if(lip_i_shape < 47){lip+="다이아몬드 같은 마르모 모양의";}
         else if(lip_i_shape < 80){lip+="도자기 모양의";}
