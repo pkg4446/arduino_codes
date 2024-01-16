@@ -3,15 +3,15 @@
 bool gender;
 //#define DEBUG
 
-HEAD *my_head       = new HEAD();
-BODY *my_body       = new BODY(gender);
-EROGENOUS *my_parts = new EROGENOUS(gender);
+HEAD *play_head       = new HEAD();
+BODY *play_body       = new BODY(gender);
+EROGENOUS *play_parts = new EROGENOUS(gender);
 
-STAT   *my_stat     = new STAT();
-HOLE   *my_hole     = new HOLE();
-SENSE  *my_sense    = new SENSE();
-NATURE *my_nature   = new NATURE();
-EROS   *my_eros     = new EROS();
+STAT   *play_stat     = new STAT();
+HOLE   *play_hole     = new HOLE();
+SENSE  *play_sense    = new SENSE();
+NATURE *play_nature   = new NATURE();
+EROS   *play_eros     = new EROS();
 
 void setup() {
   randomSeed(analogRead(0));
@@ -62,9 +62,9 @@ void setup() {
   #endif
 
   
-  my_head->blend(mother_head, father_head, gender);
-  my_body->blend(mother_body,father_body);
-  my_parts->blend(mother_parts,father_parts);
+  play_head->blend(mother_head, father_head, gender);
+  play_body->blend(mother_body,father_body);
+  play_parts->blend(mother_parts,father_parts);
   delete mother_head;
   delete mother_body;
   delete mother_parts;
@@ -72,11 +72,11 @@ void setup() {
   delete father_body;
   delete father_parts;
   
-  my_stat->blend(mother_stat, father_stat);
-  my_hole->blend(mother_hole,father_hole);
-  my_sense->blend(mother_sense,father_sense);
-  my_nature->blend(mother_nature, father_nature);
-  my_eros->blend(mother_eros,father_eros);
+  play_stat->blend(mother_stat, father_stat);
+  play_hole->blend(mother_hole,father_hole);
+  play_sense->blend(mother_sense,father_sense);
+  play_nature->blend(mother_nature, father_nature);
+  play_eros->blend(mother_eros,father_eros);
   delete mother_stat;
   delete mother_hole;
   delete mother_sense;
@@ -94,21 +94,17 @@ void setup() {
 
   #ifdef DEBUG
     Serial.println("************** mine ****************");
-    my_head->status();
-    my_body->status();
-    my_body->weight();
-    my_parts->status();
+    play_head->status();
+    play_body->status();
+    play_body->weight();
+    play_parts->status();
 
-    my_stat->status();
-    my_hole->status(gender);
-    my_sense->status(gender);
-    my_nature->status();
-    my_eros->status();
+    play_stat->status();
+    play_hole->status(gender);
+    play_sense->status(gender);
+    play_nature->status();
+    play_eros->status();
   #endif
-
-  delete my_head;
-  delete my_body;
-  delete my_parts;
 }
 
 void loop() {
