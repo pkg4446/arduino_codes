@@ -7,11 +7,11 @@ bool gender;
 HEAD      *play_head;
 BODY      *play_body;
 EROGENOUS *play_parts;
-STAT        *play_stat;
-HOLE        *play_hole;
-SENSE       *play_sense;
-NATURE      *play_nature;
-EROS        *play_eros;
+STAT      *play_stat;
+HOLE      *play_hole;
+SENSE     *play_sense;
+NATURE    *play_nature;
+EROS      *play_eros;
 /***** CHARACTER *****/
 /***** GENE *****/
 HEAD      *mother_head;
