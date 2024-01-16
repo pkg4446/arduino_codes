@@ -1,6 +1,6 @@
 #include "Body.h"
 bool gender;
-#define DEBUG
+//#define DEBUG
 
 void setup() {
   randomSeed(analogRead(0));
