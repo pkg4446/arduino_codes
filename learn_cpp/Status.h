@@ -58,6 +58,7 @@ class SENSE
 class NATURE
 {
     private:
+        uint8_t mbti;
         uint8_t at_e_i;
         uint8_t at_s_n;
         uint8_t fn_t_f;

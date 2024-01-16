@@ -131,11 +131,16 @@ void SENSE::status(){
 /*********************************** SENSE CLASS FUNCTION **********************************/
 /*********************************** NATURE CLASS FUNCTION *********************************/
 NATURE::NATURE() { //생성자
-    Serial.println("Constructing Sense...");
+    Serial.println("Constructing Sense...");    
     at_e_i  = gaussian_range(50,12);
     at_s_n  = gaussian_range(50,12);
     fn_t_f  = gaussian_range(50,12);
     fn_j_p  = gaussian_range(50,12);
+    mbti    = 0b00000000;
+    if(at_e_i>50)mbti|=0b00001000;
+    if(at_s_n>50)mbti|=0b00000100;
+    if(fn_t_f>50)mbti|=0b00000010;
+    if(fn_j_p>50)mbti|=0b00000001;
 }
 /*******************************************************************************************/
 NATURE::~NATURE(){
@@ -143,9 +148,9 @@ NATURE::~NATURE(){
 }
 /*******************************************************************************************/
 void NATURE::meiosis(NATURE *mother, NATURE *father){
-    at_e_i  = mutation_u8(mother->at_e_i, father->at_e_i); 
-    at_s_n  = mutation_u8(mother->at_s_n, father->at_s_n); 
-    fn_t_f  = mutation_u8(mother->fn_t_f, father->fn_t_f); 
+    at_e_i  = mutation_u8(mother->at_e_i, father->at_e_i);
+    at_s_n  = mutation_u8(mother->at_s_n, father->at_s_n);
+    fn_t_f  = mutation_u8(mother->fn_t_f, father->fn_t_f);
     fn_j_p  = mutation_u8(mother->fn_j_p, father->fn_j_p);
 }
 /*******************************************************************************************/
@@ -153,7 +158,12 @@ void NATURE::blend(NATURE *mother, NATURE *father){
     at_e_i  = heredity_u8(mother->at_e_i, father->at_e_i); 
     at_s_n  = heredity_u8(mother->at_s_n, father->at_s_n); 
     fn_t_f  = heredity_u8(mother->fn_t_f, father->fn_t_f); 
-    fn_j_p  = heredity_u8(mother->fn_j_p, father->fn_j_p);
+    fn_j_p  = heredity_u8(mother->fn_j_p, father->fn_j_p);    
+    mbti    = 0b00000000;
+    if(at_e_i>50)mbti|=0b00001000;
+    if(at_s_n>50)mbti|=0b00000100;
+    if(fn_t_f>50)mbti|=0b00000010;
+    if(fn_j_p>50)mbti|=0b00000001;
 }
 /*******************************************************************************************/
 void NATURE::status(){
@@ -165,8 +175,10 @@ void NATURE::status(){
     else Serial.print("N");
     if(fn_t_f>50)Serial.print("T");
     else Serial.print("F");
-    if(fn_j_p>50)Serial.println("J");
-    else Serial.println("P");
+    if(fn_j_p>50)Serial.print("J");
+    else Serial.print("P");
+    Serial.print(" ");
+    Serial.println(mbti);    
 }
 /*********************************** NATURE CLASS FUNCTION *********************************/
 /*********************************** EROS CLASS FUNCTION ***********************************/
