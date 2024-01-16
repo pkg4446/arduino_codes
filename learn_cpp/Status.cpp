@@ -137,7 +137,7 @@ void SENSE::status(bool gender){
 /*********************************** SENSE CLASS FUNCTION **********************************/
 /*********************************** NATURE CLASS FUNCTION *********************************/
 NATURE::NATURE() { //생성자
-    Serial.println("Constructing Sense...");    
+    Serial.println("Constructing Nature...");    
     at_e_i  = gaussian_range(50,12);
     at_s_n  = gaussian_range(50,12);
     fn_t_f  = gaussian_range(50,12);
@@ -150,7 +150,7 @@ NATURE::NATURE() { //생성자
 }
 /*******************************************************************************************/
 NATURE::~NATURE(){
-    Serial.println("Destructing Sense...");
+    Serial.println("Destructing Nature...");
 }
 /*******************************************************************************************/
 void NATURE::meiosis(NATURE *mother, NATURE *father){
@@ -197,7 +197,7 @@ void NATURE::status(){
 /*********************************** NATURE CLASS FUNCTION *********************************/
 /*********************************** EROS CLASS FUNCTION ***********************************/
 EROS::EROS() { //생성자
-    Serial.println("Constructing Sense...");
+    Serial.println("Constructing Eros...");
     lust       = gaussian_range(50,12);
     sadism     = gaussian_range(50,12);
     masohism   = gaussian_range(50,12);
@@ -206,7 +206,7 @@ EROS::EROS() { //생성자
 }
 /*******************************************************************************************/
 EROS::~EROS(){
-    Serial.println("Destructing Sense...");
+    Serial.println("Destructing Eros...");
 }
 /*******************************************************************************************/
 void EROS::meiosis(EROS *mother, EROS *father){
