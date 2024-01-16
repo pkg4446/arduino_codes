@@ -509,12 +509,12 @@ void EROGENOUS::status(){
         else if(lip_o_texture < 26){lip+="매끈하고";}
         else if(lip_o_texture < 75){lip+="보드랍고";}
         else{lip+="부드럽고";}
-        lip = " ";
+        lip += " ";
 
         if(lip_o_shape < 8){lip+="엷은";}
         else if(lip_o_shape < 68){lip+="도톰한";}
         else{lip+="두툼한";}
-        lip = " 대음순이 안쪽에, 클리토리스에서 부터 ";
+        lip += " 대음순이 안쪽에, 클리토리스에서 부터 ";
 
         if(lip_i_shape < 22){lip+="일자로 앙다문";}
         else if(lip_i_shape < 37){lip+="둥글게 펼쳐진";}
@@ -523,18 +523,18 @@ void EROGENOUS::status(){
         else if(lip_i_shape < 88){lip+="하트 모양의";}
         else if(lip_i_shape < 96){lip+="잠자리 모양같은";}
         else{lip+="호리병 모양같은";}
-        lip = " ";
+        lip += " ";
 
         if(lip_i_texture < 7){lip+="아름다운";}
         else if(lip_i_texture < 26){lip+="매력적인";}
         else if(lip_i_texture < 75){lip+="음란한";}
         else{lip+="걸래같은";}
-        lip = " 소음순이 질구 아래에서";
+        lip += " 소음순이 질구 아래에서";
 
         if(fork < 8){lip+="매끄럽게";}
         else if(fork < 68){lip+="둥글게 주름져";}
         else{lip+="잔뜩 주름져";}
-        lip = " 만난다";
+        lip += " 만난다";
 
         Serial.println(lip);
         Serial.print("width     :");Serial.println(lip_i_width);
