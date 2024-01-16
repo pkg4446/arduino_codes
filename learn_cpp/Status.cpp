@@ -177,7 +177,15 @@ void NATURE::status(){
     else Serial.print("F");
     if(fn_j_p>50)Serial.print("J");
     else Serial.print("P");
-    Serial.print(" ");
+    Serial.print("[");
+    Serial.print(at_e_i);
+    Serial.print(",");
+    Serial.print(at_s_n);
+    Serial.print(",");
+    Serial.print(fn_t_f);
+    Serial.print(",");
+    Serial.print(fn_j_p);
+    Serial.print("]");
     Serial.println(mbti);    
 }
 /*********************************** NATURE CLASS FUNCTION *********************************/
