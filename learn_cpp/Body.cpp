@@ -484,7 +484,7 @@ void EROGENOUS::status(){
         else if(hood_texture < 43){hood+="매끄러운 질감의";}
         else if(hood_texture < 88){hood+="보드라운 질감의";}
         else{hood+="주름이 가득한";}
-        hood+=" ";
+        hood+=", ";
 
         if(hood_start < 17){hood+="살짝 접힌 모양의 덮개가";}
         else if(hood_start < 55){hood+="완전히 접힌 모양의 덮개가";}
