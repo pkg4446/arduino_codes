@@ -40,12 +40,17 @@ void setup() {
   delete father_body;
   delete father_parts;
 
-  my_head->status();
-  my_body->status();
-  my_body->weight();
-  my_parts->status();
+  Serial.print("Gender:");
+  if(gender)  Serial.println("male");
+  else        Serial.println("female");
 
-  Serial.print("Gender:");Serial.println(gender);
+  #ifdef DEBUG
+    Serial.println("************** mine ****************");
+    my_head->status();
+    my_body->status();
+    my_body->weight();
+    my_parts->status();
+  #endif
 
   delete my_head;
   delete my_body;
