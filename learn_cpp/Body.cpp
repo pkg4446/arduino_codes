@@ -473,7 +473,7 @@ void EROGENOUS::status(){
 
         Serial.print("perineum  : ");Serial.println(perineum);
     }else{
-        String hood = "위에서부터 ";
+        String hood = "";
         if(hood_start < 15){hood+="둥근 모양의 시작점에서";}
         else if(hood_start < 38){hood+="삼각형으로 뻗어";}
         else if(hood_start < 93){hood+="일자로 뻗어";}
