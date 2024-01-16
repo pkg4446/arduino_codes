@@ -19,15 +19,6 @@ HEAD::~HEAD(){
     Serial.println("Destructing Head...");
 }
 /*******************************************************************************************/
-void HEAD::change(HEAD *gene){
-    hair_color = gene->hair_color;
-    eye_color  = gene->eye_color;
-    hair       = gene->hair;
-    eyelid     = gene->eyelid;
-    dimple     = gene->dimple;
-    bald       = gene->bald;
-}
-/*******************************************************************************************/
 void HEAD::meiosis(HEAD *mother, HEAD *father){
     hair_color = mutation_u8(mother->hair_color,father->hair_color);
     eye_color  = mutation_u8(mother->eye_color, father->eye_color);
@@ -41,9 +32,9 @@ void HEAD::blend(HEAD *mother, HEAD *father, bool gender){
     hair_color = heredity_u8(mother->hair_color,father->hair_color);
     eye_color  = heredity_u8(mother->eye_color, father->eye_color);
     hair       = heredity_u8(mother->hair,      father->hair);
-    eyelid     = mutation_bool(mother->eyelid,  father->eyelid);
-    dimple     = mutation_bool(mother->dimple,  father->dimple);
-    bald       = heredity_bool(mother->bald,    father->bald, true);
+    eyelid     = heredity_bool(mother->eyelid,  father->eyelid, true);
+    dimple     = heredity_bool(mother->dimple,  father->dimple, true);
+    bald       = heredity_bool(mother->bald,    father->bald,   true);
     if(!gender) bald = false;
 }
 /*******************************************************************************************/
@@ -98,18 +89,6 @@ BODY::~BODY(){
     Serial.println("Destructing Body...");
 }
 /*******************************************************************************************/
-void BODY::change(BODY *gene){
-    blood_A    = gene->blood_A;
-    blood_B    = gene->blood_B;
-    body_color = gene->body_color;
-    breast     = gene->breast;
-    height     = gene->height;
-    chest      = gene->chest;
-    waist      = gene->waist;
-    hip        = gene->hip;
-    leg_ratio  = gene->leg_ratio;
-}
-/*******************************************************************************************/
 void BODY::meiosis(BODY *mother, BODY *father){
     
     if(random(RAND_FLAGE) == 0){blood_A = mother->blood_A;}
@@ -124,34 +103,34 @@ void BODY::meiosis(BODY *mother, BODY *father){
 
     if(gen_xy){
         temp_value = change_gender(1612,1750,60,mother->height,get_gaussian(1612,59,mother->height));
-        height = mutation_u16(temp_value, father->height);
+        height     = mutation_u16(temp_value, father->height);
 
         temp_value = change_gender(700,930,53,mother->chest,get_gaussian(700,77,mother->chest));
-        chest = mutation_u16(temp_value, father->chest);
+        chest      = mutation_u16(temp_value, father->chest);
 
         temp_value = change_gender(600,770,50,mother->waist,get_gaussian(600,65,mother->waist));
-        waist = mutation_u16(temp_value, father->waist);
+        waist      = mutation_u16(temp_value, father->waist);
 
         temp_value = change_gender(880,930,43,mother->hip,get_gaussian(880,70,mother->hip));
-        hip = mutation_u16(temp_value, father->hip);
+        hip        = mutation_u16(temp_value, father->hip);
 
         temp_value = change_gender(458,453,20,mother->leg_ratio,get_gaussian(458,18,mother->leg_ratio));
-        leg_ratio = mutation_u16(temp_value, father->leg_ratio);
+        leg_ratio  = mutation_u16(temp_value, father->leg_ratio);
     }else{
         temp_value = change_gender(1750,1612,59,father->height,get_gaussian(1750,60,father->height));
-        height = mutation_u16(mother->height, temp_value);
+        height     = mutation_u16(mother->height, temp_value);
 
         temp_value = change_gender(930,700,77,father->chest,get_gaussian(930,53,father->chest));
-        chest = mutation_u16(mother->chest, temp_value);
+        chest      = mutation_u16(mother->chest, temp_value);
 
         temp_value = change_gender(770,600,65,father->waist,get_gaussian(770,50,father->waist));
-        waist = mutation_u16(mother->waist, temp_value);
+        waist      = mutation_u16(mother->waist, temp_value);
 
         temp_value = change_gender(930,880,70,father->hip,get_gaussian(930,43,father->hip));
-        hip = mutation_u16(mother->hip, temp_value);
+        hip        = mutation_u16(mother->hip, temp_value);
 
         temp_value = change_gender(453,758,18,father->leg_ratio,get_gaussian(453,20,father->leg_ratio));
-        leg_ratio = mutation_u16(mother->leg_ratio, temp_value);
+        leg_ratio  = mutation_u16(mother->leg_ratio, temp_value);
     }
 }
 /*******************************************************************************************/
@@ -168,47 +147,38 @@ void BODY::blend(BODY *mother, BODY *father){
 
     if(gen_xy){
         temp_value = change_gender(1612,1750,60,mother->height,get_gaussian(1612,59,mother->height));
-        height = heredity_u16(temp_value, father->height);
+        height     = heredity_u16(temp_value, father->height);
 
         temp_value = change_gender(700,930,53,mother->chest,get_gaussian(700,77,mother->chest));
-        chest = heredity_u16(temp_value, father->chest);
+        chest      = heredity_u16(temp_value, father->chest);
 
         temp_value = change_gender(600,770,50,mother->waist,get_gaussian(600,65,mother->waist));
-        waist = heredity_u16(temp_value, father->waist);
+        waist      = heredity_u16(temp_value, father->waist);
 
         temp_value = change_gender(880,930,43,mother->hip,get_gaussian(880,70,mother->hip));
-        hip = heredity_u16(temp_value, father->hip);
+        hip        = heredity_u16(temp_value, father->hip);
 
         temp_value = change_gender(458,453,20,mother->leg_ratio,get_gaussian(458,18,mother->leg_ratio));
-        leg_ratio = heredity_u16(temp_value, father->leg_ratio);
+        leg_ratio  = heredity_u16(temp_value, father->leg_ratio);
     }else{
         temp_value = change_gender(1750,1612,59,father->height,get_gaussian(1750,60,father->height));
-        height = heredity_u16(mother->height, temp_value);
+        height     = heredity_u16(mother->height, temp_value);
 
         temp_value = change_gender(930,700,77,father->chest,get_gaussian(930,53,father->chest));
-        chest = heredity_u16(mother->chest, temp_value);
+        chest      = heredity_u16(mother->chest, temp_value);
 
         temp_value = change_gender(770,600,65,father->waist,get_gaussian(770,50,father->waist));
-        waist = heredity_u16(mother->waist, temp_value);
+        waist      = heredity_u16(mother->waist, temp_value);
 
         temp_value = change_gender(930,880,70,father->hip,get_gaussian(930,43,father->hip));
-        hip = heredity_u16(mother->hip, temp_value);
+        hip        = heredity_u16(mother->hip, temp_value);
 
         temp_value = change_gender(453,758,18,father->leg_ratio,get_gaussian(453,20,father->leg_ratio));
-        leg_ratio = heredity_u16(mother->leg_ratio, temp_value);
+        leg_ratio  = heredity_u16(mother->leg_ratio, temp_value);
     }
-    if(chest < waist){
-        uint16_t change = chest;
-        chest = waist;
-        waist = change;
-    }
-    if(!gen_xy){
-        if(breast < chest){
-            uint16_t change = breast;
-            breast = chest;
-            chest  = change;
-        }
-    }
+
+    if(chest < waist)               swap(&chest,&waist);
+    if(!gen_xy && breast < chest)   swap(&chest,&breast);
 }
 /*******************************************************************************************/
 void BODY::status(){
@@ -316,3 +286,276 @@ void BODY::weight(){
     Serial.print("weight    : ");Serial.println(uint16_t(ans));
 }
 /*********************************** BODY CLASS FUNCTION ***********************************/
+/*********************************** EROGENOUS CLASS FUNCTION ******************************/
+EROGENOUS::EROGENOUS(bool gender) { //생성자
+    Serial.println("Constructing Erogenous...");
+    gen_xy          = gender;
+    
+    hood_c          = random(RAND_NUM);
+    hood_start      = random(RAND_NUM);
+    hood_texture    = random(RAND_NUM);
+    hood_width      = gaussian_range(1400,30);
+    hood_length     = gaussian_range(2600,400);
+
+    lip_i_shape     = random(RAND_NUM);
+    lip_i_texture   = random(RAND_NUM);
+    lip_i_width     = gaussian_range(500,100);
+    lip_i_length    = gaussian_range(5200,800);
+    lip_i_length_r  = gaussian_range(1900,450);
+    lip_i_length_l  = gaussian_range(1900,450);
+    lip_o_shape     = random(RAND_NUM);
+    lip_o_texture   = random(RAND_NUM);
+
+    clit_d          = gaussian_range(340,10);
+    clit_d_e        = gaussian_range(390,15);
+    clit_l          = gaussian_range(510,14);
+    clit_l_e        = gaussian_range(667,28);
+    if(clit_d > clit_d_e) swap(&clit_d,&clit_d_e);
+    if(clit_l > clit_l_e) swap(&clit_l,&clit_l_e);
+    if(hood_width/10*5 < clit_d)   clit_d   = hood_width/10*5;
+    if(hood_width/10*7 < clit_d_e) clit_d_e = hood_width/10*7;
+    if(hood_width/10*7 < clit_l)   clit_l   = hood_width/10*7;
+    if(hood_width < clit_l_e)      clit_l_e = hood_width;
+    
+    glans_d         = gaussian_range(2600,200);
+    glans_d_e       = gaussian_range(3400,400);
+    glans_l         = gaussian_range(2700,300);
+    glans_l_e       = gaussian_range(3100,400);
+    
+    if(glans_d > glans_d_e) swap(&glans_d,&glans_d_e);
+    if(glans_l > glans_l_e) swap(&glans_l,&glans_l_e);
+
+    body_d          = gaussian_range(2960,290);
+    body_d_e        = gaussian_range(3710,350);
+    body_l          = gaussian_range(9160,157);
+    body_l_e        = gaussian_range(1312,166);
+    if(body_d > body_d_e) swap(&body_d,&body_d_e);
+    if(body_l > body_l_e) swap(&body_l,&body_l_e);
+    ball_r          = gaussian_range(1350,250);
+    ball_l          = gaussian_range(1350,250);
+    
+    prepuce         = random(RAND_FLAGE);
+    invert          = random(RAND_FLAGE);
+    fork            = random(RAND_NUM);
+
+    perineum        = random(RAND_NUM);
+    wrinkle         = gaussian_range(36,6);
+    areola          = gaussian_range(3090,400);
+    nipple_d        = gaussian_range(1120,130);
+    nipple_d_e      = gaussian_range(1570,130);
+    nipple_h        = gaussian_range(900,200);
+    nipple_h_e      = gaussian_range(1550,200);
+    if(gen_xy){
+        areola      = gaussian_range(2600,250);
+        nipple_d    = gaussian_range(680,130);
+        nipple_d_e  = gaussian_range(755,130);
+        nipple_h    = gaussian_range(200,40);
+        nipple_h_e  = gaussian_range(350,40);
+    }
+    if(nipple_d > nipple_d_e) swap(&nipple_d,&nipple_d_e);
+    if(nipple_h > nipple_h_e) swap(&nipple_h,&nipple_h_e);
+}
+/*******************************************************************************************/
+EROGENOUS::~EROGENOUS(){
+    Serial.println("Destructing Body...");
+}
+/*******************************************************************************************/
+void EROGENOUS::meiosis(EROGENOUS *mother, EROGENOUS *father){
+    hood_c          = mutation_u8(mother->hood_c,           father->hood_c);
+    hood_start      = mutation_u8(mother->hood_start,       father->hood_start);
+    hood_texture    = mutation_u8(mother->hood_texture,     father->hood_texture);
+
+    hood_width      = mutation_u16(mother->hood_width,      father->hood_width);
+    hood_length     = mutation_u16(mother->hood_length,     father->hood_length);
+
+    lip_i_shape     = mutation_u8(mother->lip_i_shape,      father->lip_i_shape);
+    lip_i_texture   = mutation_u8(mother->lip_i_texture,    father->lip_i_texture);
+    lip_i_width     = mutation_u16(mother->lip_i_width,     father->lip_i_width);
+    lip_i_length    = mutation_u16(mother->lip_i_length,    father->lip_i_length);
+    lip_i_length_r  = mutation_u16(mother->lip_i_length_r,  father->lip_i_length_r);
+    lip_i_length_l  = mutation_u16(mother->lip_i_length_l,  father->lip_i_length_l);
+    lip_o_shape     = mutation_u8(mother->lip_o_shape,      father->lip_o_shape);
+    lip_o_texture   = mutation_u8(mother->lip_o_texture,    father->lip_o_texture);
+    
+    clit_d          = mutation_u16(mother->clit_d,      father->clit_d);
+    clit_d_e        = mutation_u16(mother->clit_d_e,    father->clit_d_e);
+    clit_l          = mutation_u16(mother->clit_l,      father->clit_l);
+    clit_l_e        = mutation_u16(mother->clit_l_e,    father->clit_l_e);
+
+    glans_d         = mutation_u16(mother->glans_d,     father->glans_d);
+    glans_d_e       = mutation_u16(mother->glans_d_e,   father->glans_d_e);
+    glans_l         = mutation_u16(mother->glans_l,     father->glans_l);
+    glans_l_e       = mutation_u16(mother->glans_l_e,   father->glans_l_e);
+
+    body_d          = mutation_u16(mother->body_d,      father->body_d);
+    body_d_e        = mutation_u16(mother->body_d_e,    father->body_d_e);
+    body_l          = mutation_u16(mother->body_l,      father->body_l);
+    body_l_e        = mutation_u16(mother->body_l_e,    father->body_l_e);
+    ball_r          = mutation_u8(mother->ball_r,       father->ball_r);
+    ball_l          = mutation_u8(mother->ball_l,       father->ball_l);
+
+    prepuce         = mutation_bool(mother->prepuce,    father->prepuce);
+    invert          = mutation_bool(mother->invert,     father->invert);
+    fork            = mutation_u8(mother->fork,         father->fork);
+
+    perineum        = mutation_u8(mother->perineum,     father->perineum);
+    wrinkle         = mutation_u8(mother->wrinkle,      father->wrinkle);
+
+    areola          = mutation_u16(mother->areola,      father->areola);
+    nipple_d        = mutation_u16(mother->nipple_d,    father->nipple_d);
+    nipple_d_e      = mutation_u16(mother->nipple_d_e,  father->nipple_d_e);
+    nipple_h        = mutation_u16(mother->nipple_h,    father->nipple_h);
+    nipple_h_e      = mutation_u16(mother->nipple_h_e,  father->nipple_h_e);
+}
+/*******************************************************************************************/
+void EROGENOUS::blend(EROGENOUS *mother, EROGENOUS *father){
+    hood_c          = heredity_u8(mother->hood_c,           father->hood_c);
+    hood_start      = heredity_u8(mother->hood_start,       father->hood_start);
+    hood_texture    = heredity_u8(mother->hood_texture,     father->hood_texture);
+
+    hood_width      = heredity_u16(mother->hood_width,      father->hood_width);
+    hood_length     = heredity_u16(mother->hood_length,     father->hood_length);
+
+    lip_i_shape     = heredity_u8(mother->lip_i_shape,      father->lip_i_shape);
+    lip_i_texture   = heredity_u8(mother->lip_i_texture,    father->lip_i_texture);
+    lip_i_width     = heredity_u16(mother->lip_i_width,     father->lip_i_width);
+    lip_i_length    = heredity_u16(mother->lip_i_length,    father->lip_i_length);
+    lip_i_length_r  = heredity_u16(mother->lip_i_length_r,  father->lip_i_length_r);
+    lip_i_length_l  = heredity_u16(mother->lip_i_length_l,  father->lip_i_length_l);
+    lip_o_shape     = heredity_u8(mother->lip_o_shape,      father->lip_o_shape);
+    lip_o_texture   = heredity_u8(mother->lip_o_texture,    father->lip_o_texture);
+    
+    clit_d          = heredity_u16(mother->clit_d,      father->clit_d);
+    clit_d_e        = heredity_u16(mother->clit_d_e,    father->clit_d_e);
+    clit_l          = heredity_u16(mother->clit_l,      father->clit_l);
+    clit_l_e        = heredity_u16(mother->clit_l_e,    father->clit_l_e);
+
+    glans_d         = heredity_u16(mother->glans_d,     father->glans_d);
+    glans_d_e       = heredity_u16(mother->glans_d_e,   father->glans_d_e);
+    glans_l         = heredity_u16(mother->glans_l,     father->glans_l);
+    glans_l_e       = heredity_u16(mother->glans_l_e,   father->glans_l_e);
+
+    body_d          = heredity_u16(mother->body_d,      father->body_d);
+    body_d_e        = heredity_u16(mother->body_d_e,    father->body_d_e);
+    body_l          = heredity_u16(mother->body_l,      father->body_l);
+    body_l_e        = heredity_u16(mother->body_l_e,    father->body_l_e);
+    ball_r          = heredity_u16(mother->ball_r,      father->ball_r);
+    ball_l          = heredity_u16(mother->ball_l,      father->ball_l);
+
+    prepuce         = heredity_bool(mother->prepuce,    father->prepuce,    true);
+    invert          = heredity_bool(mother->invert,     father->invert,     false);
+    fork            = heredity_u8(mother->fork,         father->fork);
+
+    perineum        = heredity_u8(mother->perineum,     father->perineum);
+    wrinkle         = heredity_u8(mother->wrinkle,      father->wrinkle);
+
+    areola          = heredity_u16(mother->areola,      father->areola);
+    nipple_d        = heredity_u16(mother->nipple_d,    father->nipple_d);
+    nipple_d_e      = heredity_u16(mother->nipple_d_e,  father->nipple_d_e);
+    nipple_h        = heredity_u16(mother->nipple_h,    father->nipple_h);
+    nipple_h_e      = heredity_u16(mother->nipple_h_e,  father->nipple_h_e);
+}
+void EROGENOUS::status(){
+    Serial.println("************************************");
+    if(gen_xy){
+        Serial.print("glans_d   : ");Serial.println(glans_d);
+        Serial.print("glans_d_e : ");Serial.println(glans_d_e);
+        Serial.print("glans_l   : ");Serial.println(glans_l);
+        Serial.print("glans_l_e : ");Serial.println(glans_l_e);
+        
+        Serial.print("body_d    : ");Serial.println(body_d);
+        Serial.print("body_d_e  : ");Serial.println(body_d_e);
+        Serial.print("body_l    : ");Serial.println(body_l);
+        Serial.print("body_l_e  : ");Serial.println(body_l_e);
+
+        Serial.print("ball_r    : ");Serial.println(ball_r);
+        Serial.print("ball_l    : ");Serial.println(ball_l);
+
+        Serial.print("perineum  : ");Serial.println(perineum);
+    }else{
+        String hood = "위에서부터 ";
+        if(hood_start < 15){hood+="둥근 모양의 시작정에서";}
+        else if(hood_start < 38){hood+="삼각형으로 뻗어";}
+        else if(hood_start < 93){hood+="일자로 뻗어";}
+        else{hood+="역상각형으로";}
+        hood+=" 클리토리스까지 이어지는 ";
+
+        if(hood_texture < 11){hood+="반들반들한 질감의";}
+        else if(hood_texture < 43){hood+="매끄러운 질감의";}
+        else if(hood_texture < 88){hood+="보드라운 질감의";}
+        else{hood+="주름이 가득한";}
+        hood+=" ";
+
+        if(hood_start < 17){hood+="살짝 접힌 모양의 덮개가 ";}
+        else if(hood_start < 55){hood+="완전히 접힌 모양의 덮개가";}
+        else if(hood_start < 60){hood+="매끄러운 덮개가 부드럽게";}
+        else if(hood_start < 78){hood+="두겹으로 주름진 덮개가 살짝";}
+        else if(hood_start < 98){hood+="두겹으로 주름진 덮개가 완전히";}
+        else{hood+="두겹으로 부드럽게 주름진 덮개가";}
+        hood+=" 클리토리스를 덮고 있다.";
+
+        Serial.println(hood);
+        Serial.print("width     :");Serial.println(hood_width);
+        Serial.print("length    : ");Serial.println(hood_length);
+
+        Serial.print("clit_d    :");Serial.println(clit_d);
+        Serial.print("clit_d_e  :");Serial.println(clit_d_e);
+        Serial.print("clit_l    :");Serial.println(clit_l);
+        Serial.print("clit_l_e  :");Serial.println(clit_l_e);
+
+        String lip = "";
+
+        if(lip_o_texture < 7){lip+="반들거리고";}
+        else if(lip_o_texture < 26){lip+="매끈하고";}
+        else if(lip_o_texture < 75){lip+="보드랍고";}
+        else{lip+="부드럽고";}
+        lip = " ";
+
+        if(lip_o_shape < 8){lip+="엷은";}
+        else if(lip_o_shape < 68){lip+="도톰한";}
+        else{lip+="두툼한";}
+        lip = " 대음순이 안쪽에, 클리토리스에서 부터 ";
+
+        if(lip_i_shape < 22){lip+="일자로 앙다문";}
+        else if(lip_i_shape < 37){lip+="둥글게 펼쳐진";}
+        else if(lip_i_shape < 47){lip+="다이아몬드 같은 마르모 모양의";}
+        else if(lip_i_shape < 80){lip+="도자기 모양의";}
+        else if(lip_i_shape < 88){lip+="하트 모양의";}
+        else if(lip_i_shape < 96){lip+="잠자리 모양같은";}
+        else{lip+="호리병 모양같은";}
+        lip = " ";
+
+        if(lip_i_texture < 7){lip+="아름다운";}
+        else if(lip_i_texture < 26){lip+="매력적인";}
+        else if(lip_i_texture < 75){lip+="음란한";}
+        else{lip+="걸래같은";}
+        lip = " 소음순이 질구 아래에서";
+
+        if(fork < 8){lip+="매끄럽게";}
+        else if(fork < 68){lip+="둥글게 주름져";}
+        else{lip+="잔뜩 주름져";}
+        lip = " 만난다";
+
+        Serial.println(lip);
+        Serial.print("width     :");Serial.println(lip_i_width);
+        Serial.print("length    : ");Serial.println(lip_i_length);
+        Serial.print("wing_r    : ");Serial.println(lip_i_length_r);
+        Serial.print("wing_l    : ");Serial.println(lip_i_length_l);
+    }
+    
+    String perineum = "회음부는 ";
+    if(prepuce < 66){perineum+="매끄럽다.";}
+    else if(prepuce < 83){perineum+="회음봉선의 흔적이 보인다.";}
+    else if(prepuce < 93){perineum+="회음봉선이 항문까지 이어진다.";}
+    else{perineum+="도드라지는 회음봉선이 항문까지 이어진다.";}
+    Serial.print("prepuce   : ");Serial.println(perineum);
+
+    Serial.print("invert    : ");Serial.println(invert);
+    Serial.print("wrinkle   : ");Serial.println(wrinkle);
+    
+    Serial.print("areola    : ");Serial.println(areola);
+    Serial.print("nipple_d  : ");Serial.println(nipple_d);
+    Serial.print("nipple_d_e: ");Serial.println(nipple_d_e);
+    Serial.print("nipple_h  : ");Serial.println(nipple_h);
+    Serial.print("nipple_h_e: ");Serial.println(nipple_h_e);
+}

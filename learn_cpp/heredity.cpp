@@ -110,21 +110,8 @@ uint16_t heredity_u16(uint16_t mother, uint16_t father){
     return response;
 }
 
-uint16_t heredity_ratio(uint16_t mother, uint16_t father, bool gender, uint16_t ratio_moter, uint16_t ratio_fater){
-    uint16_t range_small = mother;
-    uint16_t range_large = father;
-    if(gender){
-        uint32_t temp_moter = uint32_t(mother)*uint32_t(ratio_fater)/100;
-        range_small = temp_moter;
-    }else{
-        uint32_t temp_father = uint32_t(father)*uint32_t(ratio_moter)/100;
-        range_large = temp_father;
-    }
-    if(range_small > range_large){
-        uint16_t temp_change = range_small;
-        range_small = range_large;
-        range_large = temp_change;
-    }
-    uint16_t response = random(range_small,range_large);
-    return response;
+void swap(uint16_t *num_a, uint16_t *num_b){
+    uint16_t temporary = *num_a;
+    *num_a = *num_b;
+    *num_b = temporary;
 }
