@@ -288,7 +288,7 @@ void BODY::weight(){
 /*********************************** BODY CLASS FUNCTION ***********************************/
 /*********************************** EROGENOUS CLASS FUNCTION ******************************/
 EROGENOUS::EROGENOUS(bool gender) { //생성자
-    Serial.println("Constructing Erogenous...");
+    Serial.println("Constructing Parts...");
     gen_xy          = gender;
     
     hood_c          = random(RAND_NUM);
