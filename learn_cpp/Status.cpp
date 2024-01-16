@@ -124,10 +124,10 @@ void SENSE::blend(SENSE *mother, SENSE *father){
 void SENSE::status(bool gender){
     Serial.println("************************************");
     if(gender){
-        Serial.print("vagina      : ");Serial.println(vagina_balls);
+        Serial.print("balls       : ");Serial.println(vagina_balls);
     }else{
         Serial.print("cervix      : ");Serial.println(cervix);
-        Serial.print("balls       : ");Serial.println(vagina_balls);
+        Serial.print("vagina      : ");Serial.println(vagina_balls);
     }
     Serial.print("skin        : ");Serial.println(skin);
     Serial.print("urethra     : ");Serial.println(urethra);

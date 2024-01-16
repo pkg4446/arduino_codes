@@ -1,7 +1,7 @@
 #include "Body.h"
 #include "Status.h"
 bool gender;
-#define DEBUG
+//#define DEBUG
 
 void setup() {
   randomSeed(analogRead(0));
@@ -35,8 +35,8 @@ void setup() {
     mother_body->weight();
     mother_parts->status();
     mother_stat->status();
-    mother_hole->status();
-    mother_sense->status();
+    mother_hole->status(false);
+    mother_sense->status(false);
     mother_nature->status();
     mother_eros->status();
     Serial.println("************** father **************");
@@ -45,8 +45,8 @@ void setup() {
     father_body->weight();
     father_parts->status();
     father_stat->status();
-    father_hole->status();
-    father_sense->status();
+    father_hole->status(true);
+    father_sense->status(true);
     father_nature->status();
     father_eros->status();
   #endif
@@ -96,8 +96,8 @@ void setup() {
     my_parts->status();
 
     my_stat->status();
-    my_hole->status();
-    my_sense->status();
+    my_hole->status(gender);
+    my_sense->status(gender);
     my_nature->status();
     my_eros->status();
   #endif
