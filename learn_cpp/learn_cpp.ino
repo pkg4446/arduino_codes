@@ -19,10 +19,12 @@ void setup() {
     mother_head->status();
     mother_body->status();
     mother_body->weight();
+    mother_parts->status();
     Serial.println("************** father **************");
     father_head->status();
     father_body->status();
     father_body->weight();
+    father_parts->status();
   #endif
 
   HEAD *my_head       = new HEAD();
