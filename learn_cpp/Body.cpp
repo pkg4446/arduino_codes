@@ -357,7 +357,7 @@ EROGENOUS::EROGENOUS(bool gender) { //생성자
 }
 /*******************************************************************************************/
 EROGENOUS::~EROGENOUS(){
-    Serial.println("Destructing Body...");
+    Serial.println("Destructing Parts...");
 }
 /*******************************************************************************************/
 void EROGENOUS::meiosis(EROGENOUS *mother, EROGENOUS *father){
