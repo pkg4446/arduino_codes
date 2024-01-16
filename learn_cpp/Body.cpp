@@ -486,7 +486,7 @@ void EROGENOUS::status(){
         else{hood+="주름이 가득한";}
         hood+=" ";
 
-        if(hood_start < 17){hood+="살짝 접힌 모양의 덮개가 ";}
+        if(hood_start < 17){hood+="살짝 접힌 모양의 덮개가";}
         else if(hood_start < 55){hood+="완전히 접힌 모양의 덮개가";}
         else if(hood_start < 60){hood+="매끄러운 덮개가 부드럽게";}
         else if(hood_start < 78){hood+="두겹으로 주름진 덮개가 살짝";}
