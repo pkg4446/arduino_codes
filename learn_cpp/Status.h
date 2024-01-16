@@ -13,6 +13,7 @@ class STAT
     public:
         STAT();
         ~STAT();
+        void change(STAT *gene);
         void meiosis(STAT *mother, STAT *father);
         void blend(STAT *mother, STAT *father);
         void status();
@@ -31,6 +32,7 @@ class HOLE
     public:
         HOLE();
         ~HOLE();
+        void change(HOLE *gene);
         void meiosis(HOLE *mother, HOLE *father);
         void blend(HOLE *mother, HOLE *father);
         void status(bool gender);
@@ -50,6 +52,7 @@ class SENSE
     public:
         SENSE();
         ~SENSE();
+        void change(SENSE *gene);
         void meiosis(SENSE *mother, SENSE *father);
         void blend(SENSE *mother, SENSE *father);
         void status(bool gender);
@@ -67,6 +70,7 @@ class NATURE
     public:
         NATURE();
         ~NATURE();
+        void change(NATURE *gene);
         void meiosis(NATURE *mother, NATURE *father);
         void blend(NATURE *mother, NATURE *father);
         void status();
@@ -84,6 +88,7 @@ class EROS
     public:
         EROS();
         ~EROS();
+        void change(EROS *gene);
         void meiosis(EROS *mother, EROS *father);
         void blend(EROS *mother, EROS *father);
         void status();

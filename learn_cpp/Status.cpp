@@ -16,6 +16,14 @@ STAT::STAT() { //생성자
 /*******************************************************************************************/
 STAT::~STAT(){destruct();}
 /*******************************************************************************************/
+void STAT::change(STAT *gene){
+    intelligence = gene->intelligence;
+    strength     = gene->strength;
+    dexterity    = gene->dexterity;
+    charisma     = gene->charisma;
+    constitution = gene->constitution;
+}
+/*******************************************************************************************/
 void STAT::meiosis(STAT *mother, STAT *father){
     intelligence = mutation_u8(mother->intelligence, father->intelligence); 
     strength     = mutation_u8(mother->strength,     father->strength); 
@@ -52,6 +60,15 @@ HOLE::HOLE() { //생성자
 }
 /*******************************************************************************************/
 HOLE::~HOLE(){destruct();}
+/*******************************************************************************************/
+void HOLE::change(HOLE *gene){
+    gape_u     = gene->gape_u;
+    gape_v     = gene->gape_v;
+    gape_a     = gene->gape_a;
+    pressure_u = gene->pressure_u;
+    pressure_v = gene->pressure_v;
+    pressure_a = gene->pressure_a;
+}
 /*******************************************************************************************/
 void HOLE::meiosis(HOLE *mother, HOLE *father){
     gape_u      = mutation_u16(mother->gape_u,      father->gape_u); 
@@ -94,6 +111,15 @@ SENSE::SENSE() { //생성자
 }
 /*******************************************************************************************/
 SENSE::~SENSE(){destruct();}
+/*******************************************************************************************/
+void SENSE::change(SENSE *gene){
+    cervix       = gene->cervix;
+    skin         = gene->skin;
+    vagina_balls = gene->vagina_balls;
+    urethra      = gene->urethra;
+    anal         = gene->anal;
+    nipple       = gene->nipple;
+}
 /*******************************************************************************************/
 void SENSE::meiosis(SENSE *mother, SENSE *father){
     cervix          = mutation_u8(mother->cervix,       father->cervix); 
@@ -142,11 +168,24 @@ NATURE::NATURE() { //생성자
 /*******************************************************************************************/
 NATURE::~NATURE(){destruct();}
 /*******************************************************************************************/
+void NATURE::change(NATURE *gene){
+    mbti    = gene->mbti;
+    at_e_i  = gene->at_e_i;
+    at_s_n  = gene->at_s_n;
+    fn_t_f  = gene->fn_t_f;
+    fn_j_p  = gene->fn_j_p;
+}
+/*******************************************************************************************/
 void NATURE::meiosis(NATURE *mother, NATURE *father){
     at_e_i  = mutation_u8(mother->at_e_i, father->at_e_i);
     at_s_n  = mutation_u8(mother->at_s_n, father->at_s_n);
     fn_t_f  = mutation_u8(mother->fn_t_f, father->fn_t_f);
     fn_j_p  = mutation_u8(mother->fn_j_p, father->fn_j_p);
+    mbti    = 0b00000000;
+    if(at_e_i>50)mbti|=0b00001000;
+    if(at_s_n>50)mbti|=0b00000100;
+    if(fn_t_f>50)mbti|=0b00000010;
+    if(fn_j_p>50)mbti|=0b00000001;
 }
 /*******************************************************************************************/
 void NATURE::blend(NATURE *mother, NATURE *father){
@@ -194,6 +233,14 @@ EROS::EROS() { //생성자
 }
 /*******************************************************************************************/
 EROS::~EROS(){destruct();}
+/*******************************************************************************************/
+void EROS::change(EROS *gene){
+    lust       = gene->lust;
+    sadism     = gene->sadism;
+    masohism   = gene->masohism;
+    exhibition = gene->exhibition;
+    service    = gene->service;
+}
 /*******************************************************************************************/
 void EROS::meiosis(EROS *mother, EROS *father){
     lust       = mutation_u8(mother->lust, father->lust); 

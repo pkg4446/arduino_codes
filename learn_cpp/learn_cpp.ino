@@ -2,7 +2,7 @@
 #include "Status.h"
 #include "utility.h"
 bool gender;
-//#define DEBUG
+#define DEBUG
 /***** CHARACTER *****/
 HEAD      *play_head;
 BODY      *play_body;
@@ -31,8 +31,27 @@ HOLE      *father_hole;
 SENSE     *father_sense;
 NATURE    *father_nature;
 EROS      *father_eros;
+
+HEAD      *gene_head;
+BODY      *gene_body;
+EROGENOUS *gene_parts;
+STAT      *gene_stat;
+HOLE      *gene_hole;
+SENSE     *gene_sense;
+NATURE    *gene_nature;
+EROS      *gene_eros;
 /***** GENE *****/
 /***** funtions *****/
+void meiosis(){
+  gene_head->meiosis(mother_head, father_head);
+  gene_body->meiosis(mother_body,father_body);
+  gene_parts->meiosis(mother_parts,father_parts);
+  gene_stat->meiosis(mother_stat, father_stat);
+  gene_hole->meiosis(mother_hole,father_hole);
+  gene_sense->meiosis(mother_sense,father_sense);
+  gene_nature->meiosis(mother_nature, father_nature);
+  gene_eros->meiosis(mother_eros,father_eros);
+}
 void newface(){
   bool      new_gender  = random(2);
   HEAD      *new_head   = new HEAD();
@@ -69,16 +88,6 @@ void setup() {
   randomSeed(analogRead(0));
   gender = random(2);
   Serial.begin(115200);
-  /***** CHARACTER *****/
-  play_head   = new HEAD();
-  play_body   = new BODY(gender);
-  play_parts  = new EROGENOUS(gender);
-  play_stat   = new STAT();
-  play_hole   = new HOLE();
-  play_sense  = new SENSE();
-  play_nature = new NATURE();
-  play_eros   = new EROS();
-  /***** CHARACTER *****/
   /***** BODY *****/
   mother_head   = new HEAD();
   mother_body   = new BODY(false);

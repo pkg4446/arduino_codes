@@ -14,6 +14,7 @@ class HEAD
     public:
         HEAD();
         ~HEAD();
+        void change(HEAD *gene);
         void meiosis(HEAD *mother, HEAD *father);
         void blend(HEAD *mother, HEAD *father, bool gender);
         void status();
@@ -35,10 +36,11 @@ class BODY {
     public:
         BODY(bool gender);
         ~BODY();
+        void change(BODY *gene);
         void meiosis(BODY *mother, BODY *father);
         void blend(BODY *mother, BODY *father);
         void status();
-        void weight();
+        uint16_t weight();
 };
 
 class EROGENOUS {
@@ -92,6 +94,7 @@ class EROGENOUS {
     public:
         EROGENOUS(bool gender);
         ~EROGENOUS();
+        void change(EROGENOUS *gene);
         void meiosis(EROGENOUS *mother, EROGENOUS *father);
         void blend(EROGENOUS *mother, EROGENOUS *father);
         void status();

@@ -17,6 +17,15 @@ HEAD::HEAD() { //생성자
 /*******************************************************************************************/
 HEAD::~HEAD(){destruct();}
 /*******************************************************************************************/
+void HEAD::change(HEAD *gene){
+    hair_color = gene->hair_color;
+    eye_color  = gene->eye_color;
+    hair_curl  = gene->hair_curl;
+    eyelid     = gene->eyelid;
+    dimple     = gene->dimple;
+    bald       = gene->bald;
+}
+/*******************************************************************************************/
 void HEAD::meiosis(HEAD *mother, HEAD *father){
     hair_color = mutation_u8(mother->hair_color,father->hair_color);
     eye_color  = mutation_u8(mother->eye_color, father->eye_color);
@@ -85,6 +94,18 @@ BODY::BODY(bool gender) { //생성자
 }
 /*******************************************************************************************/
 BODY::~BODY(){destruct();}
+/*******************************************************************************************/
+void BODY::change(BODY *gene){
+    blood_A    = gene->blood_A;
+    blood_B    = gene->blood_B;
+    body_color = gene->body_color;
+    breast     = gene->breast;
+    height     = gene->height;
+    chest      = gene->chest;
+    waist      = gene->waist;
+    hip        = gene->hip;
+    leg_ratio  = gene->leg_ratio;
+}
 /*******************************************************************************************/
 void BODY::meiosis(BODY *mother, BODY *father){
     
@@ -245,7 +266,7 @@ void BODY::status(){
     Serial.print("leg_ratio : ");Serial.println(leg_ratio);
 }
 
-void BODY::weight(){
+uint16_t BODY::weight(){
     float math_pi   = 3.14159265359;
     float height_c  = float(height);
     float chest_c   = float(chest);
@@ -283,7 +304,7 @@ void BODY::weight(){
     float BMI = ans/((height_c/100)*(height_c/100));
     Serial.print("weight    : ");Serial.println(uint16_t(ans));
     Serial.print("BMI       : ");Serial.println(BMI);
-    
+    return ans;
 }
 /*********************************** BODY CLASS FUNCTION ***********************************/
 /*********************************** EROGENOUS CLASS FUNCTION ******************************/
@@ -356,6 +377,45 @@ EROGENOUS::EROGENOUS(bool gender) { //생성자
 }
 /*******************************************************************************************/
 EROGENOUS::~EROGENOUS(){destruct();}
+void EROGENOUS::change(EROGENOUS *gene){
+    hood_c          = gene->hood_c;
+    hood_start      = gene->hood_start;
+    hood_texture    = gene->hood_texture;
+    hood_width      = gene->hood_width;
+    hood_length     = gene->hood_length;
+    lip_i_shape     = gene->lip_i_shape;
+    lip_i_texture   = gene->lip_i_texture;
+    lip_i_width     = gene->lip_i_width;
+    lip_i_length    = gene->lip_i_length;
+    lip_i_length_r  = gene->lip_i_length_r;
+    lip_i_length_l  = gene->lip_i_length_l;
+    lip_o_shape     = gene->lip_o_shape;
+    lip_o_texture   = gene->lip_o_texture;
+    clit_d          = gene->clit_d;
+    clit_d_e        = gene->clit_d_e;
+    clit_l          = gene->clit_l;
+    clit_l_e        = gene->clit_l_e;
+    glans_d         = gene->glans_d;
+    glans_d_e       = gene->glans_d_e;
+    glans_l         = gene->glans_l;
+    glans_l_e       = gene->glans_l_e;
+    body_d          = gene->body_d;
+    body_d_e        = gene->body_d_e;
+    body_l          = gene->body_l;
+    body_l_e        = gene->body_l_e;
+    ball_r          = gene->ball_r;
+    ball_l          = gene->ball_l;
+    prepuce         = gene->prepuce;
+    invert          = gene->invert;
+    fork            = gene->fork;
+    perineum        = gene->perineum;
+    wrinkle         = gene->wrinkle;
+    areola          = gene->areola;
+    nipple_d        = gene->nipple_d;
+    nipple_d_e      = gene->nipple_d_e;
+    nipple_h        = gene->nipple_h;
+    nipple_h_e      = gene->nipple_h_e;
+}
 /*******************************************************************************************/
 void EROGENOUS::meiosis(EROGENOUS *mother, EROGENOUS *father){
     hood_c          = mutation_u8(mother->hood_c,           father->hood_c);
