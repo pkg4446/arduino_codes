@@ -61,12 +61,12 @@ void HEAD::status(){
     else if(eye_color<91){color_eye = "Sapphire";}
     else{color_eye = "Ruby";}
     perforation();
-    Serial.print("hair color: ");Serial.print(hair_color);Serial.print(" : ");Serial.println(color_hair);
-    Serial.print("eye color : ");Serial.print(color_eye);Serial.print(" : ");Serial.println(eye_color);
-    Serial.print("hair_curl : ");Serial.println(hair_curl);
-    Serial.print("eyelid    : ");Serial.println(eyelid);
-    Serial.print("dimple    : ");Serial.println(dimple);
-    Serial.print("bald      : ");Serial.println(bald);
+    spacebar("hair color"); Serial.print(hair_color);Serial.print(" : ");Serial.println(color_hair);
+    spacebar("eye color");  Serial.print(color_eye);Serial.print(" : ");Serial.println(eye_color);
+    spacebar("hair curl");  Serial.println(hair_curl);
+    spacebar("eyelid");     Serial.println(eyelid);
+    spacebar("dimple");     Serial.println(dimple);
+    spacebar("bald");       Serial.println(bald);
 }
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 /*********************************** BODY CLASS FUNCTION ***********************************/
@@ -223,11 +223,11 @@ void BODY::status(){
 
 
     perforation();
-    Serial.print("blood type: ");Serial.println(blood_type);
-    Serial.print("skin color: ");Serial.print(body_color);Serial.print(" : ");Serial.println(color_body);
-    Serial.print("height    : ");Serial.println(height);
+    spacebar("blood type"); Serial.println(blood_type);
+    spacebar("skin color"); Serial.print(body_color);Serial.print(" : ");Serial.println(color_body);
+    spacebar("height");     Serial.println(height);
     if(gen_xy){
-        Serial.print("hidden    : ");Serial.println(breast);
+        spacebar("hidden");Serial.println(breast);
     }else{
         uint16_t cupsize = breast - chest;
         String   cup     = "Z";
@@ -257,13 +257,13 @@ void BODY::status(){
         else if (cupsize <650) { cup = "W";}
         else if (cupsize <675) { cup = "X";}
         else if (cupsize <700) { cup = "Y";}
-        Serial.print("breast    : ");Serial.println(breast);
-        Serial.print("cup       : ");Serial.println(cup);
+        spacebar("breast");Serial.println(breast);
+        spacebar("breast");Serial.println(cup);
     }
-    Serial.print("chest     : ");Serial.println(chest);
-    Serial.print("waist     : ");Serial.println(waist);
-    Serial.print("hip       : ");Serial.println(hip);
-    Serial.print("leg_ratio : ");Serial.println(leg_ratio);
+    spacebar("chest");      Serial.println(chest);
+    spacebar("waist");      Serial.println(waist);
+    spacebar("hip");        Serial.println(hip);
+    spacebar("leg ratio");  Serial.println(leg_ratio);
 }
 
 uint16_t BODY::weight(){
@@ -299,11 +299,11 @@ uint16_t BODY::weight(){
         if(hight_breast>cupsize/3){hight_cal = hight_breast;}
         float cup_w     = (hight_cal/3)*(diameter/10)*(diameter/50);
         ans += cup_w;
-        Serial.print("cup weight: ");Serial.println(uint16_t(cup_w));
+        spacebar("cup weight");Serial.println(uint16_t(cup_w));
     }
     float BMI = ans/((height_c/100)*(height_c/100));
-    Serial.print("weight    : ");Serial.println(uint16_t(ans));
-    Serial.print("BMI       : ");Serial.println(BMI);
+    spacebar("weight"); Serial.println(uint16_t(ans));
+    spacebar("BMI");    Serial.println(BMI);
     return ans;
 }
 /*********************************** BODY CLASS FUNCTION ***********************************/
@@ -515,20 +515,56 @@ void EROGENOUS::blend(EROGENOUS *mother, EROGENOUS *father){
 void EROGENOUS::status(){
     perforation();
     if(gen_xy){
-        Serial.print("glans_d   : ");Serial.println(glans_d);
-        Serial.print("glans_d_e : ");Serial.println(glans_d_e);
-        Serial.print("glans_l   : ");Serial.println(glans_l);
-        Serial.print("glans_l_e : ");Serial.println(glans_l_e);
+        spacebar("glans_d");    Serial.println(glans_d);
+        spacebar("glans_d_e");  Serial.println(glans_d_e);
+        spacebar("glans_l");    Serial.println(glans_l);
+        spacebar("glans_l_e");  Serial.println(glans_l_e);
         
-        Serial.print("body_d    : ");Serial.println(body_d);
-        Serial.print("body_d_e  : ");Serial.println(body_d_e);
-        Serial.print("body_l    : ");Serial.println(body_l);
-        Serial.print("body_l_e  : ");Serial.println(body_l_e);
+        spacebar("body_d");     Serial.println(body_d);
+        spacebar("body_d_e");   Serial.println(body_d_e);
+        spacebar("body_l");     Serial.println(body_l);
+        spacebar("body_l_e");   Serial.println(body_l_e);
 
-        Serial.print("ball_r    : ");Serial.println(ball_r);
-        Serial.print("ball_l    : ");Serial.println(ball_l);
+        spacebar("ball_r");     Serial.println(ball_r);
+        spacebar("ball_l");     Serial.println(ball_l);
 
-        Serial.print("perineum  : ");Serial.println(perineum);
+        spacebar("prepuce");    Serial.println(prepuce);
+    }else{
+        spacebar("hood_c");     Serial.println(hood_c);
+        spacebar("hood_start"); Serial.println(hood_start);
+        spacebar("hood_texture");Serial.println(hood_texture);
+        spacebar("hood_width"); Serial.println(hood_width);
+        spacebar("hood_length");Serial.println(hood_length);
+
+        spacebar("clit_d");     Serial.println(clit_d);
+        spacebar("clit_d_e");   Serial.println(clit_d_e);
+        spacebar("clit_l");     Serial.println(clit_l);
+        spacebar("clit_l_e");   Serial.println(clit_l_e);
+
+        spacebar("wing_shape"); Serial.println(lip_i_shape);
+        spacebar("wing_texture");Serial.println(lip_i_texture);
+        spacebar("wing_width"); Serial.println(lip_i_width);
+        spacebar("wing_length");Serial.println(lip_i_length);
+        spacebar("wing_r");     Serial.println(lip_i_length_r);
+        spacebar("wing_l");     Serial.println(lip_i_length_l);
+        spacebar("lip_shape");  Serial.println(lip_o_shape);
+        spacebar("lip_texture");Serial.println(lip_o_texture);
+    }
+    spacebar("invert");     Serial.println(invert);
+    spacebar("perineum");   Serial.println(perineum);
+    spacebar("wrinkle");    Serial.println(wrinkle);
+    
+    spacebar("areola");     Serial.println(areola);
+    spacebar("nipple_d");   Serial.println(nipple_d);
+    spacebar("nipple_d_e"); Serial.println(nipple_d_e);
+    spacebar("nipple_h");   Serial.println(nipple_h);
+    spacebar("nipple_h_e"); Serial.println(nipple_h_e);
+}
+
+void EROGENOUS::inspection(){
+    perforation();
+    if(gen_xy){
+        Serial.print("prepuce   : ");Serial.println(prepuce);
     }else{
         String hood = "";
         if(hood_start < 15){hood+="둥근 모양의 시작점에서";}
@@ -536,13 +572,11 @@ void EROGENOUS::status(){
         else if(hood_start < 93){hood+="일자로 뻗어";}
         else{hood+="역상각형으로";}
         hood+=" 클리토리스까지 이어지는 ";
-
         if(hood_texture < 11){hood+="반들반들한 질감의";}
         else if(hood_texture < 43){hood+="매끄러운 질감의";}
         else if(hood_texture < 88){hood+="보드라운 질감의";}
         else{hood+="주름이 가득한";}
         hood+=", ";
-
         if(hood_start < 17){hood+="살짝 접힌 모양의 덮개가";}
         else if(hood_start < 55){hood+="완전히 접힌 모양의 덮개가";}
         else if(hood_start < 60){hood+="매끄러운 덮개가 부드럽게";}
@@ -550,29 +584,18 @@ void EROGENOUS::status(){
         else if(hood_start < 98){hood+="두겹으로 주름진 덮개가 완전히";}
         else{hood+="두겹으로 부드럽게 주름진 덮개가";}
         hood+=" 클리토리스를 덮고 있다.";
-
         Serial.println(hood);
-        Serial.print("width     :");Serial.println(hood_width);
-        Serial.print("length    : ");Serial.println(hood_length);
-
-        Serial.print("clit_d    :");Serial.println(clit_d);
-        Serial.print("clit_d_e  :");Serial.println(clit_d_e);
-        Serial.print("clit_l    :");Serial.println(clit_l);
-        Serial.print("clit_l_e  :");Serial.println(clit_l_e);
 
         String lip = "";
-
         if(lip_o_texture < 7){lip+="반들거리고";}
         else if(lip_o_texture < 26){lip+="매끈하고";}
         else if(lip_o_texture < 75){lip+="보드랍고";}
         else{lip+="부드럽고";}
         lip += " ";
-
         if(lip_o_shape < 8){lip+="엷은";}
         else if(lip_o_shape < 68){lip+="도톰한";}
         else{lip+="두툼한";}
         lip += " 대음순의 안쪽에, 클리토리스 아래로 ";
-
         if(lip_i_shape < 22){lip+="앙다문 일자의";}
         else if(lip_i_shape < 37){lip+="둥글게 펼쳐진";}
         else if(lip_i_shape < 47){lip+="다이아몬드 같은 마르모 모양의";}
@@ -581,38 +604,21 @@ void EROGENOUS::status(){
         else if(lip_i_shape < 96){lip+="잠자리 모양같은";}
         else{lip+="호리병 모양같은";}
         lip += " ";
-
         if(lip_i_texture < 7){lip+="아름다운";}
         else if(lip_i_texture < 26){lip+="매력적인";}
         else if(lip_i_texture < 75){lip+="음란한";}
         else{lip+="걸래같은";}
         lip += " 소음순이 질구 아래에서 ";
-
         if(fork < 8){lip+="매끄럽게";}
         else if(fork < 68){lip+="둥글게 주름져";}
         else{lip+="잔뜩 주름져";}
         lip += " 만난다";
-
         Serial.println(lip);
-        Serial.print("width     :");Serial.println(lip_i_width);
-        Serial.print("length    : ");Serial.println(lip_i_length);
-        Serial.print("wing_r    : ");Serial.println(lip_i_length_r);
-        Serial.print("wing_l    : ");Serial.println(lip_i_length_l);
     }
-    
-    String perineum = "회음부는 ";
-    if(prepuce < 66){perineum+="매끄럽다.";}
-    else if(prepuce < 83){perineum+="회음봉선의 흔적이 보인다.";}
-    else if(prepuce < 93){perineum+="회음봉선이 항문까지 이어진다.";}
-    else{perineum+="도드라지는 회음봉선이 항문까지 이어진다.";}
-    Serial.print("prepuce   : ");Serial.println(perineum);
-
-    Serial.print("invert    : ");Serial.println(invert);
-    Serial.print("wrinkle   : ");Serial.println(wrinkle);
-    
-    Serial.print("areola    : ");Serial.println(areola);
-    Serial.print("nipple_d  : ");Serial.println(nipple_d);
-    Serial.print("nipple_d_e: ");Serial.println(nipple_d_e);
-    Serial.print("nipple_h  : ");Serial.println(nipple_h);
-    Serial.print("nipple_h_e: ");Serial.println(nipple_h_e);
+    String perineum_txt = "회음부는 ";
+    if(perineum < 66){perineum_txt+="매끄럽다.";}
+    else if(perineum < 83){perineum_txt+="회음봉선의 흔적이 보인다.";}
+    else if(perineum < 93){perineum_txt+="회음봉선이 항문까지 이어진다.";}
+    else{perineum_txt+="도드라지는 회음봉선이 항문까지 이어진다.";}
+    Serial.println(perineum);
 }

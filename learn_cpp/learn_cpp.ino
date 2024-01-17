@@ -85,7 +85,12 @@ void newface(){
 }
 /***** funtions *****/
 void setup() {
-  randomSeed(analogRead(0));
+  #ifdef ESP32
+    randomSeed(analogRead(39));
+    Serial.println("ESP32");
+  #else
+    randomSeed(analogRead(A0));
+  #endif
   gender = random(2);
   Serial.begin(115200);
   /***** BODY *****/
@@ -95,6 +100,12 @@ void setup() {
   father_head   = new HEAD();
   father_body   = new BODY(true);
   father_parts  = new EROGENOUS(true);
+  play_head     = new HEAD();
+  play_body     = new BODY(gender);
+  play_parts    = new EROGENOUS(gender);
+  gene_head     = new HEAD();
+  gene_body     = new BODY(!gender);
+  gene_parts    = new EROGENOUS(!gender);
   /***** BODY *****/
   /***** STATUS ***/
   mother_stat   = new STAT();
@@ -107,8 +118,18 @@ void setup() {
   father_sense  = new SENSE();
   father_nature = new NATURE();
   father_eros   = new EROS();
+  play_stat     = new STAT();
+  play_hole     = new HOLE();
+  play_sense    = new SENSE();
+  play_nature   = new NATURE();
+  play_eros     = new EROS();
+  gene_stat     = new STAT();
+  gene_hole     = new HOLE();
+  gene_sense    = new SENSE();
+  gene_nature   = new NATURE();
+  gene_eros     = new EROS();
   /***** STATUS ***/
-
+  
   #ifdef DEBUG
     Serial.print("mother");perforation();
     mother_head->status();

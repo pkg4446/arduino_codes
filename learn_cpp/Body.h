@@ -98,4 +98,5 @@ class EROGENOUS {
         void meiosis(EROGENOUS *mother, EROGENOUS *father);
         void blend(EROGENOUS *mother, EROGENOUS *father);
         void status();
+        void inspection();
 };

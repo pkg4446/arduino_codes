@@ -42,11 +42,11 @@ void STAT::blend(STAT *mother, STAT *father){
 /*******************************************************************************************/
 void STAT::status(){
     perforation();
-    Serial.print("intelligence: ");Serial.println(intelligence);
-    Serial.print("strength    : ");Serial.println(strength);
-    Serial.print("dexterity   : ");Serial.println(dexterity);
-    Serial.print("charisma    : ");Serial.println(charisma);
-    Serial.print("constitution: ");Serial.println(constitution);
+    spacebar("intelligence");   Serial.println(intelligence);
+    spacebar("strength");       Serial.println(strength);
+    spacebar("dexterity");      Serial.println(dexterity);
+    spacebar("charisma");       Serial.println(charisma);
+    spacebar("constitution");   Serial.println(constitution);
 }
 /*********************************** STAT CLASS FUNCTION ***********************************/
 /*********************************** HOLE CLASS FUNCTION ***********************************/
@@ -91,13 +91,13 @@ void HOLE::blend(HOLE *mother, HOLE *father){
 void HOLE::status(bool gender){
     perforation();
     if(!gender){
-        Serial.print("gape_v    : ");Serial.println(gape_v);
-        Serial.print("pressure_v: ");Serial.println(pressure_v);
+        spacebar("gape_v");     Serial.println(gape_v);
+        spacebar("pressure_v"); Serial.println(pressure_v);
     }
-    Serial.print("gape_u    : ");Serial.println(gape_u);
-    Serial.print("pressure_u: ");Serial.println(pressure_u);
-    Serial.print("gape_a    : ");Serial.println(gape_a);
-    Serial.print("pressure_a: ");Serial.println(pressure_a);
+    spacebar("gape_u");     Serial.println(gape_u);
+    spacebar("pressure_u"); Serial.println(pressure_u);
+    spacebar("gape_a");     Serial.println(gape_a);
+    spacebar("pressure_a"); Serial.println(pressure_a);
 }
 /*********************************** HOLE CLASS FUNCTION ***********************************/
 /*********************************** SENSE CLASS FUNCTION **********************************/
@@ -142,15 +142,15 @@ void SENSE::blend(SENSE *mother, SENSE *father){
 void SENSE::status(bool gender){
     perforation();
     if(gender){
-        Serial.print("balls       : ");Serial.println(vagina_balls);
+        spacebar("balls");  Serial.println(vagina_balls);
     }else{
-        Serial.print("cervix      : ");Serial.println(cervix);
-        Serial.print("vagina      : ");Serial.println(vagina_balls);
+        spacebar("cervix"); Serial.println(cervix);
+        spacebar("vagina"); Serial.println(vagina_balls);
     }
-    Serial.print("skin        : ");Serial.println(skin);
-    Serial.print("urethra     : ");Serial.println(urethra);
-    Serial.print("anal        : ");Serial.println(anal);
-    Serial.print("nipple      : ");Serial.println(nipple);
+    spacebar("skin");   Serial.println(skin);
+    spacebar("urethra");Serial.println(urethra);
+    spacebar("anal");   Serial.println(anal);
+    spacebar("nipple"); Serial.println(nipple);
 }
 /*********************************** SENSE CLASS FUNCTION **********************************/
 /*********************************** NATURE CLASS FUNCTION *********************************/
@@ -202,7 +202,7 @@ void NATURE::blend(NATURE *mother, NATURE *father){
 /*******************************************************************************************/
 void NATURE::status(){
     perforation();
-    Serial.print("MBTI : ");
+    spacebar("MBTI");
     if(at_e_i>50)Serial.print("E");
     else Serial.print("I");
     if(at_s_n>50)Serial.print("S");
@@ -260,10 +260,10 @@ void EROS::blend(EROS *mother, EROS *father){
 /*******************************************************************************************/
 void EROS::status(){
     perforation();
-    Serial.print("lust      : ");Serial.println(lust);
-    Serial.print("sadism    : ");Serial.println(sadism);
-    Serial.print("masohism  : ");Serial.println(masohism);
-    Serial.print("exhibition: ");Serial.println(exhibition);
-    Serial.print("service   : ");Serial.println(service);
+    spacebar("lust");       Serial.println(lust);
+    spacebar("sadism");     Serial.println(sadism);
+    spacebar("masohism");   Serial.println(masohism);
+    spacebar("exhibition"); Serial.println(exhibition);
+    spacebar("service");    Serial.println(service);
 }
 /*********************************** EROS CLASS FUNCTION ***********************************/

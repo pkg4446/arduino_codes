@@ -11,6 +11,13 @@ void perforation(){
     }
     Serial.println("*");
 }
+void spacebar(String text){
+    Serial.print(text);
+    for(uint8_t index=text.length(); index<15; index++){
+        Serial.print(" ");
+    }
+    Serial.print(": ");
+}
 void destruct(){
     Serial.println("Destructed");
 }
