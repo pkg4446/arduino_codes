@@ -6,15 +6,21 @@
 #define RAND_NUM   100
 #define RAND_FLAGE 2
 /*********************************** INFO CLASS FUNCTION ***********************************/
-INFO::INFO(bool gender, bool baby) { //생성자
-    gen_xy  = gender;
-    family  = "";
-    name    = new_name(gen_xy);
-    if(baby) age = 19;
-    else     age = random(20,36);
-}
+INFO::INFO(){}
 /*******************************************************************************************/
 INFO::~INFO(){destruct();}
+/*******************************************************************************************/
+void INFO::generate(bool gender, bool baby){
+    gen_xy  = gender;
+    name    = new_name(gen_xy);
+    if(baby){
+        family = "";
+        age    = 19;
+    }else{
+        family = new_family();
+        age    = random(20,36);
+    }
+}
 /*******************************************************************************************/
 bool INFO::get_gender(){
     return gen_xy;
@@ -44,7 +50,11 @@ void INFO::aging(){
 }
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 /*********************************** HEAD CLASS FUNCTION ***********************************/
-HEAD::HEAD(bool gender) { //생성자
+HEAD::HEAD() {}
+/*******************************************************************************************/
+HEAD::~HEAD(){destruct();}
+/*******************************************************************************************/
+void HEAD::generate(bool gender){
     gen_xy     = gender;
     hair_color = random(RAND_NUM);
     eye_color  = random(RAND_NUM);
@@ -53,8 +63,6 @@ HEAD::HEAD(bool gender) { //생성자
     dimple     = random(RAND_FLAGE);
     bald       = random(RAND_FLAGE);
 }
-/*******************************************************************************************/
-HEAD::~HEAD(){destruct();}
 /*******************************************************************************************/
 void HEAD::change(HEAD *gene){
     gen_xy     = gene->gen_xy;
@@ -110,7 +118,11 @@ void HEAD::status(){
 }
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 /*********************************** BODY CLASS FUNCTION ***********************************/
-BODY::BODY(bool gender) { //생성자
+BODY::BODY() {}
+/*******************************************************************************************/
+BODY::~BODY(){destruct();}
+/*******************************************************************************************/
+void BODY::generate(bool gender){
     gen_xy     = gender;
     blood_A    = random(3);
     blood_B    = random(3);
@@ -132,8 +144,6 @@ BODY::BODY(bool gender) { //생성자
     if(chest < waist)               swap(&chest,&waist);
     if(!gen_xy && breast < chest)   swap(&chest,&breast);
 }
-/*******************************************************************************************/
-BODY::~BODY(){destruct();}
 /*******************************************************************************************/
 void BODY::change(BODY *gene){
     gen_xy     = gene->gen_xy;
@@ -266,9 +276,9 @@ void BODY::status(){
     perforation("body");
     spacebar("blood type"); Serial.println(blood_type);
     spacebar("skin color"); Serial.print(body_color);Serial.print(" : ");Serial.println(color_body);
-    spacebar("height");     Serial.println(height);
+    spacebar("height");     Serial.print(height);unit_mm();
     if(gen_xy){
-        spacebar("hidden");Serial.println(breast);
+        spacebar("hidden");Serial.print(breast);unit_mm();
     }else{
         uint16_t cupsize = breast - chest;
         String   cup     = "Z";
@@ -298,13 +308,13 @@ void BODY::status(){
         else if (cupsize <650) { cup = "W";}
         else if (cupsize <675) { cup = "X";}
         else if (cupsize <700) { cup = "Y";}
-        spacebar("breast");Serial.println(breast);
         spacebar("cup");Serial.println(cup);
+        spacebar("breast");Serial.print(breast);unit_mm();
     }
-    spacebar("chest");      Serial.println(chest);
-    spacebar("waist");      Serial.println(waist);
-    spacebar("hip");        Serial.println(hip);
-    spacebar("leg ratio");  Serial.println(leg_ratio);
+    spacebar("chest");      Serial.print(chest);unit_mm();
+    spacebar("waist");      Serial.print(waist);unit_mm();
+    spacebar("hip");        Serial.print(hip);unit_mm();
+    spacebar("leg ratio");  unit_split(leg_ratio,10);Serial.println(" %");
 }
 
 uint16_t BODY::weight(){
@@ -340,16 +350,20 @@ uint16_t BODY::weight(){
         if(hight_breast>cupsize/3){hight_cal = hight_breast;}
         float cup_w     = (hight_cal/3)*(diameter/10)*(diameter/50);
         ans += cup_w;
-        spacebar("cup weight");Serial.println(uint16_t(cup_w));
+        spacebar("cup weight");unit_split(cup_w,100);Serial.println(" kg");
     }
     float BMI = ans/((height_c/100)*(height_c/100));
-    spacebar("weight"); Serial.println(uint16_t(ans));
+    spacebar("weight"); unit_split(ans,100);Serial.println(" kg");
     spacebar("BMI");    Serial.println(BMI);
     return ans;
 }
 /*********************************** BODY CLASS FUNCTION ***********************************/
 /*********************************** EROGENOUS CLASS FUNCTION ******************************/
-EROGENOUS::EROGENOUS(bool gender) { //생성자
+EROGENOUS::EROGENOUS(){}
+/*******************************************************************************************/
+EROGENOUS::~EROGENOUS(){destruct();}
+/*******************************************************************************************/
+void EROGENOUS::generate(bool gender){
     gen_xy          = gender;
     
     hood_c          = random(RAND_NUM);
@@ -417,7 +431,6 @@ EROGENOUS::EROGENOUS(bool gender) { //생성자
     if(nipple_h > nipple_h_e) swap(&nipple_h,&nipple_h_e);
 }
 /*******************************************************************************************/
-EROGENOUS::~EROGENOUS(){destruct();}
 void EROGENOUS::change(EROGENOUS *gene){
     gen_xy          = gene->gen_xy;
     hood_c          = gene->hood_c;
@@ -557,7 +570,7 @@ void EROGENOUS::blend(EROGENOUS *mother, EROGENOUS *father){
 void EROGENOUS::status(){
     perforation("erogenous");
     if(gen_xy){
-        spacebar("glans_d");    Serial.println(glans_d);
+        spacebar("glans_d");    unit_split(glans_d,100);unit_mm();
         spacebar("glans_d_e");  Serial.println(glans_d_e);
         spacebar("glans_l");    Serial.println(glans_l);
         spacebar("glans_l_e");  Serial.println(glans_l_e);
@@ -575,20 +588,20 @@ void EROGENOUS::status(){
         spacebar("hood_c");     Serial.println(hood_c);
         spacebar("hood_start"); Serial.println(hood_start);
         spacebar("hood_texture");Serial.println(hood_texture);
-        spacebar("hood_width"); Serial.println(hood_width);
-        spacebar("hood_length");Serial.println(hood_length);
+        spacebar("hood_width"); unit_split(hood_width,100);unit_mm();
+        spacebar("hood_length");unit_split(hood_length,100);unit_mm();
 
-        spacebar("clit_d");     Serial.println(clit_d);
-        spacebar("clit_d_e");   Serial.println(clit_d_e);
-        spacebar("clit_l");     Serial.println(clit_l);
-        spacebar("clit_l_e");   Serial.println(clit_l_e);
+        spacebar("clit_d");     unit_split(clit_d,100);unit_mm();
+        spacebar("clit_d_e");   unit_split(clit_d_e,100);unit_mm();
+        spacebar("clit_l");     unit_split(clit_l,100);unit_mm();
+        spacebar("clit_l_e");   unit_split(clit_l_e,100);unit_mm();
 
         spacebar("wing_shape"); Serial.println(lip_i_shape);
         spacebar("wing_texture");Serial.println(lip_i_texture);
-        spacebar("wing_width"); Serial.println(lip_i_width);
-        spacebar("wing_length");Serial.println(lip_i_length);
-        spacebar("wing_r");     Serial.println(lip_i_length_r);
-        spacebar("wing_l");     Serial.println(lip_i_length_l);
+        spacebar("wing_width"); unit_split(lip_i_width,100);unit_mm();
+        spacebar("wing_length");unit_split(lip_i_length,100);unit_mm();
+        spacebar("wing_r");     unit_split(lip_i_length_r,100);unit_mm();
+        spacebar("wing_l");     unit_split(lip_i_length_l,100);unit_mm();
         spacebar("lip_shape");  Serial.println(lip_o_shape);
         spacebar("lip_texture");Serial.println(lip_o_texture);
     }
@@ -596,11 +609,11 @@ void EROGENOUS::status(){
     spacebar("perineum");   Serial.println(perineum);
     spacebar("wrinkle");    Serial.println(wrinkle);
     
-    spacebar("areola");     Serial.println(areola);
-    spacebar("nipple_d");   Serial.println(nipple_d);
-    spacebar("nipple_d_e"); Serial.println(nipple_d_e);
-    spacebar("nipple_h");   Serial.println(nipple_h);
-    spacebar("nipple_h_e"); Serial.println(nipple_h_e);
+    spacebar("areola");     unit_split(areola,100);unit_mm();
+    spacebar("nipple_d");   unit_split(nipple_d,100);unit_mm();
+    spacebar("nipple_d_e"); unit_split(nipple_d_e,100);unit_mm();
+    spacebar("nipple_h");   unit_split(nipple_h,100);unit_mm();
+    spacebar("nipple_h_e"); unit_split(nipple_h_e,100);unit_mm();
 }
 
 void EROGENOUS::inspection(){
@@ -666,15 +679,17 @@ void EROGENOUS::inspection(){
 }
 /*********************************** EROGENOUS CLASS FUNCTION ******************************/
 /*********************************** STAT CLASS FUNCTION ***********************************/
-STAT::STAT() { //생성자
+STAT::STAT(){}
+/*******************************************************************************************/
+STAT::~STAT(){destruct();}
+/*******************************************************************************************/
+void STAT::generate(){
     intelligence = gaussian_range(50,12);
     strength     = gaussian_range(50,12);
     dexterity    = gaussian_range(50,12);
     charisma     = gaussian_range(50,12);
     constitution = gaussian_range(50,12);
 }
-/*******************************************************************************************/
-STAT::~STAT(){destruct();}
 /*******************************************************************************************/
 void STAT::change(STAT *gene){
     intelligence = gene->intelligence;
@@ -710,7 +725,11 @@ void STAT::status(){
 }
 /*********************************** STAT CLASS FUNCTION ***********************************/
 /*********************************** HOLE CLASS FUNCTION ***********************************/
-HOLE::HOLE() { //생성자
+HOLE::HOLE(){}
+/*******************************************************************************************/
+HOLE::~HOLE(){destruct();}
+/*******************************************************************************************/
+void HOLE::generate(){
     gape_u = gaussian_range(650,40);
     gape_v = gaussian_range(5550,400);
     gape_a = gaussian_range(6950,800);
@@ -718,8 +737,6 @@ HOLE::HOLE() { //생성자
     pressure_v = gaussian_range(6950,800);
     pressure_a = gaussian_range(9220,1300);
 }
-/*******************************************************************************************/
-HOLE::~HOLE(){destruct();}
 /*******************************************************************************************/
 void HOLE::change(HOLE *gene){
     gape_u     = gene->gape_u;
@@ -751,17 +768,21 @@ void HOLE::blend(HOLE *mother, HOLE *father){
 void HOLE::status(bool gender){
     perforation("hole");
     if(!gender){
-        spacebar("gape_v");     Serial.println(gape_v);
-        spacebar("pressure_v"); Serial.println(pressure_v);
+        spacebar("gape_v");     unit_split(gape_v,100);unit_mm();
+        spacebar("pressure_v"); unit_split(pressure_v,10);Serial.println(" torr");
     }
-    spacebar("gape_u");     Serial.println(gape_u);
-    spacebar("pressure_u"); Serial.println(pressure_u);
-    spacebar("gape_a");     Serial.println(gape_a);
-    spacebar("pressure_a"); Serial.println(pressure_a);
+    spacebar("gape_u");     unit_split(gape_u,100);unit_mm();
+    spacebar("pressure_u"); unit_split(pressure_u,10);Serial.println(" torr");
+    spacebar("gape_a");     unit_split(gape_a,100);unit_mm();
+    spacebar("pressure_a"); unit_split(gape_v,10);Serial.println(" torr");
 }
 /*********************************** HOLE CLASS FUNCTION ***********************************/
 /*********************************** SENSE CLASS FUNCTION **********************************/
-SENSE::SENSE() { //생성자
+SENSE::SENSE(){}
+/*******************************************************************************************/
+SENSE::~SENSE(){destruct();}
+/*******************************************************************************************/
+void SENSE::generate(){
     cervix          = gaussian_range(50,12);
     skin            = gaussian_range(50,12);
     vagina_balls    = gaussian_range(50,12);
@@ -769,8 +790,6 @@ SENSE::SENSE() { //생성자
     anal            = gaussian_range(50,12);
     nipple          = gaussian_range(50,12);
 }
-/*******************************************************************************************/
-SENSE::~SENSE(){destruct();}
 /*******************************************************************************************/
 void SENSE::change(SENSE *gene){
     cervix       = gene->cervix;
@@ -814,7 +833,11 @@ void SENSE::status(bool gender){
 }
 /*********************************** SENSE CLASS FUNCTION **********************************/
 /*********************************** NATURE CLASS FUNCTION *********************************/
-NATURE::NATURE() { //생성자 
+NATURE::NATURE(){}
+/*******************************************************************************************/
+NATURE::~NATURE(){destruct();}
+/*******************************************************************************************/
+void NATURE::generate(){
     at_e_i  = gaussian_range(50,12);
     at_s_n  = gaussian_range(50,12);
     fn_t_f  = gaussian_range(50,12);
@@ -825,8 +848,6 @@ NATURE::NATURE() { //생성자
     if(fn_t_f>50)mbti|=0b00000010;
     if(fn_j_p>50)mbti|=0b00000001;
 }
-/*******************************************************************************************/
-NATURE::~NATURE(){destruct();}
 /*******************************************************************************************/
 void NATURE::change(NATURE *gene){
     mbti    = gene->mbti;
@@ -871,7 +892,7 @@ void NATURE::status(){
     else Serial.print("F");
     if(fn_j_p>50)Serial.print("J");
     else Serial.print("P");
-    Serial.print("[");
+    Serial.print(" [");
     Serial.print(at_e_i);
     Serial.print(",");
     Serial.print(at_s_n);
@@ -879,20 +900,22 @@ void NATURE::status(){
     Serial.print(fn_t_f);
     Serial.print(",");
     Serial.print(fn_j_p);
-    Serial.print("]");
+    Serial.print("] ");
     Serial.println(mbti);    
 }
 /*********************************** NATURE CLASS FUNCTION *********************************/
 /*********************************** EROS CLASS FUNCTION ***********************************/
-EROS::EROS() { //생성자
+EROS::EROS(){}
+/*******************************************************************************************/
+EROS::~EROS(){destruct();}
+/*******************************************************************************************/
+void EROS::generate(){
     lust       = gaussian_range(50,12);
     sadism     = gaussian_range(50,12);
     masohism   = gaussian_range(50,12);
     exhibition = gaussian_range(50,12);
     service    = gaussian_range(50,12);
 }
-/*******************************************************************************************/
-EROS::~EROS(){destruct();}
 /*******************************************************************************************/
 void EROS::change(EROS *gene){
     lust       = gene->lust;

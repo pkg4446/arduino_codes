@@ -19,6 +19,14 @@ void spacebar(String text){
     }
     Serial.print(": ");
 }
+void unit_split(uint16_t values, uint16_t divides){
+    Serial.print(values/divides);
+    Serial.print(".");
+    Serial.print(values%divides);
+}
+void unit_mm(){
+    Serial.println(" mm");
+}
 void destruct(){
     Serial.println("Destructed");
 }

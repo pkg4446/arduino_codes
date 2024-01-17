@@ -2,122 +2,130 @@
 #include "model_status.h"
 #include "utility.h"
 #include "database.h"
-bool gender;
+
 #define WOMAN_ONLY
 #define DEBUG
 //#define ESP32_CORE
-/***** PLAYER *****/
-INFO      *info_player;
-HEAD      *head_player;
-BODY      *body_player;
-EROGENOUS *parts_player;
-STAT      *stat_player;
-HOLE      *hole_player;
-SENSE     *sense_player;
-NATURE    *nature_player;
-EROS      *eros_player;
-/***** PLAYER *****/
-/***** GENE *****/
-HEAD      *head_mother;
-BODY      *body_mother;
-EROGENOUS *parts_mother;
-STAT      *stat_mother;
-HOLE      *hole_mother;
-SENSE     *sense_mother;
-NATURE    *nature_mother;
-EROS      *eros_mother;
-
-HEAD      *head_father;
-BODY      *body_father;
-EROGENOUS *parts_father;
-STAT      *stat_father;
-HOLE      *hole_father;
-SENSE     *sense_father;
-NATURE    *nature_father;
-EROS      *eros_father;
-/***** GENE *****/
-/***** NPC *****/
-bool      inner_shot = false;
-HEAD      *gene_head;
-BODY      *gene_body;
-EROGENOUS *gene_parts;
-STAT      *gene_stat;
-HOLE      *gene_hole;
-SENSE     *gene_sense;
-NATURE    *gene_nature;
-EROS      *gene_eros;
-/***** NPC *****/
+/***** GENE *********/
+INFO      *info_mother  = new INFO();
+HEAD      *head_mother  = new HEAD();
+BODY      *body_mother  = new BODY();
+EROGENOUS *parts_mother = new EROGENOUS();
+STAT      *stat_mother  = new STAT();
+HOLE      *hole_mother  = new HOLE();
+SENSE     *sense_mother = new SENSE();
+NATURE    *nature_mother = new NATURE();
+EROS      *eros_mother  = new EROS();
+/***** GENE *********/
+INFO      *info_father  = new INFO();
+HEAD      *head_father  = new HEAD();
+BODY      *body_father  = new BODY();
+EROGENOUS *parts_father = new EROGENOUS();
+STAT      *stat_father  = new STAT();
+HOLE      *hole_father  = new HOLE();
+SENSE     *sense_father = new SENSE();
+NATURE    *nature_father = new NATURE();
+EROS      *eros_father  = new EROS();
+/***** GENE *********/
+/***** PLAYER *******/
+INFO      *info_player  = new INFO();
+HEAD      *head_player  = new HEAD();
+BODY      *body_player  = new BODY();
+EROGENOUS *parts_player = new EROGENOUS();
+STAT      *stat_player  = new STAT();
+HOLE      *hole_player  = new HOLE();
+SENSE     *sense_player = new SENSE();
+NATURE    *nature_player = new NATURE();
+EROS      *eros_player  = new EROS();
+/***** PLAYER *******/
+/***** NPC **********/
+INFO      *info_npc  = new INFO();
+HEAD      *head_npc  = new HEAD();
+BODY      *body_npc  = new BODY();
+EROGENOUS *parts_npc = new EROGENOUS();
+STAT      *stat_npc  = new STAT();
+HOLE      *hole_npc  = new HOLE();
+SENSE     *sense_npc = new SENSE();
+NATURE    *nature_npc = new NATURE();
+EROS      *eros_npc  = new EROS();
+/***** NPC **********/
+/***** TEMP *********/
+INFO      *info_temp  = new INFO();
+HEAD      *head_temp  = new HEAD();
+BODY      *body_temp  = new BODY();
+EROGENOUS *parts_temp = new EROGENOUS();
+STAT      *stat_temp  = new STAT();
+HOLE      *hole_temp  = new HOLE();
+SENSE     *sense_temp = new SENSE();
+NATURE    *nature_temp = new NATURE();
+EROS      *eros_temp  = new EROS();
+/***** TEMP *********/
 /***** funtions *****/
+void view_status(String title,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
+    #ifdef DEBUG
+    perforation(title);
+    class_info-> status();
+    class_head-> status();
+    class_body-> status();
+    class_body-> weight();
+    class_parts->status();
+    class_stat-> status();
+    class_hole-> status(class_info->get_gender());
+    class_sense->status(class_info->get_gender());
+    class_nature->status();
+    class_eros-> status();
+    #endif
+}
 void meiosis(){
-  if(inner_shot){
-    bool      new_gender  = random(2);
-    HEAD      *new_head   = new HEAD(new_gender);
-    BODY      *new_body   = new BODY(new_gender);
-    EROGENOUS *new_parts  = new EROGENOUS(new_gender);
-    STAT      *new_stat   = new STAT();
-    HOLE      *new_hole   = new HOLE();
-    SENSE     *new_sense  = new SENSE();
-    NATURE    *new_nature = new NATURE();
-    EROS      *new_eros   = new EROS();
-    new_head-> meiosis(head_mother, head_father);
-    new_body-> meiosis(body_mother,body_father);
-    new_parts->meiosis(parts_mother,parts_father);
-    new_stat-> meiosis(stat_mother, stat_father);
-    new_hole-> meiosis(hole_mother,hole_father);
-    new_sense->meiosis(sense_mother,sense_father);
-    new_nature->meiosis(nature_mother, nature_father);
-    new_eros-> meiosis(eros_mother,eros_father);
-  }
+  INFO      *info_gene  = new INFO();
+  HEAD      *head_gene  = new HEAD();
+  BODY      *body_gene  = new BODY();
+  EROGENOUS *parts_gene = new EROGENOUS();
+  STAT      *stat_gene  = new STAT();
+  HOLE      *hole_gene  = new HOLE();
+  SENSE     *sense_gene = new SENSE();
+  NATURE    *nature_gene = new NATURE();
+  EROS      *eros_gene  = new EROS();
+  head_gene-> meiosis(head_mother, head_father);
+  body_gene-> meiosis(body_mother,body_father);
+  parts_gene->meiosis(parts_mother,parts_father);
+  stat_gene-> meiosis(stat_mother, stat_father);
+  hole_gene-> meiosis(hole_mother,hole_father);
+  sense_gene->meiosis(sense_mother,sense_father);
+  nature_gene->meiosis(nature_mother, nature_father);
+  eros_gene-> meiosis(eros_mother,eros_father);
+  delete head_gene;
+  delete body_gene;
+  delete parts_gene;
+  delete stat_gene;
+  delete hole_gene;
+  delete sense_gene;
+  delete nature_gene;
+  delete eros_gene;
 }
-void newface(){
-  bool      new_gender  = random(2);
-  HEAD      *new_head   = new HEAD(new_gender);
-  BODY      *new_body   = new BODY(new_gender);
-  EROGENOUS *new_parts  = new EROGENOUS(new_gender);
-  STAT      *new_stat   = new STAT();
-  HOLE      *new_hole   = new HOLE();
-  SENSE     *new_sense  = new SENSE();
-  NATURE    *new_nature = new NATURE();
-  EROS      *new_eros   = new EROS();
-  #ifdef DEBUG
-    perforation("new face");
-    new_head->  status();
-    new_body->  status();
-    new_body->  weight();
-    new_parts-> status();
-    new_stat->  status();
-    new_hole->  status(gender);
-    new_sense-> status(gender);
-    new_nature->status();
-    new_eros->  status();
-  #endif
-  
-  gene_head   = new HEAD(!gender);
-  gene_body   = new BODY(!gender);
-  gene_parts  = new EROGENOUS(!gender);
-  gene_stat   = new STAT();
-  gene_hole   = new HOLE();
-  gene_sense  = new SENSE();
-  gene_nature = new NATURE();
-  gene_eros   = new EROS();
-
-  delete new_head;
-  delete new_body;
-  delete new_parts;
-  delete new_stat;
-  delete new_hole;
-  delete new_sense;
-  delete new_nature;
-  delete new_eros;
-}
-/***** funtions *****/
-void setup() {
-  Serial.begin(115200);
+void newface(bool baby, String family_name){
+  bool gender = false;
   #ifdef WOMAN_ONLY
     gender = false;
   #else
     gender = random(2);
   #endif
+  info_temp->generate(gender, baby);
+  if(baby) info_temp->update_family(family_name);
+  head_temp->generate(info_temp->get_gender());
+  body_temp->generate(info_temp->get_gender());
+  parts_temp->generate(info_temp->get_gender());
+  stat_temp->generate();
+  hole_temp->generate();
+  sense_temp->generate();
+  nature_temp->generate();
+  eros_temp->generate();
+  view_status("new face",info_temp,head_temp,body_temp,parts_temp,stat_temp,hole_temp,sense_temp,nature_temp,eros_temp);
+}
+
+/***** funtions *****/
+void setup() {
+  Serial.begin(115200);
   #ifdef ESP32_CORE
     randomSeed(analogRead(39));
     Serial.println("ESP32");
@@ -126,92 +134,52 @@ void setup() {
     Serial.println("ARDUINO");
   #endif
   /***** COMMON *****/
-  head_mother   = new HEAD(false);
-  body_mother   = new BODY(false);
-  parts_mother  = new EROGENOUS(false);
-  stat_mother   = new STAT();
-  hole_mother   = new HOLE();
-  sense_mother  = new SENSE();
-  nature_mother = new NATURE();
-  eros_mother   = new EROS();
+  info_mother->generate(false, false);
+  head_mother->generate(info_mother->get_gender());
+  body_mother->generate(info_mother->get_gender());
+  parts_mother->generate(info_mother->get_gender());
+  stat_mother->generate();
+  hole_mother->generate();
+  sense_mother->generate();
+  nature_mother->generate();
+  eros_mother->generate();
 
-  head_father   = new HEAD(true);
-  body_father   = new BODY(true);
-  parts_father  = new EROGENOUS(true);
-  stat_father   = new STAT();
-  hole_father   = new HOLE();
-  sense_father  = new SENSE();
-  nature_father = new NATURE();
-  eros_father   = new EROS();
+  info_father->generate(true, false);
+  head_father->generate(info_father->get_gender());
+  body_father->generate(info_father->get_gender());
+  parts_father->generate(info_father->get_gender());
+  stat_father->generate();
+  hole_father->generate();
+  sense_father->generate();
+  nature_father->generate();
+  eros_father->generate();
 
-  head_player   = new HEAD(gender);
-  body_player   = new BODY(gender);
-  parts_player  = new EROGENOUS(gender);
-  stat_player   = new STAT();
-  hole_player   = new HOLE();
-  sense_player  = new SENSE();
-  nature_player = new NATURE();
-  eros_player   = new EROS();
+  info_npc  ->generate(false, false);
+  head_npc  ->generate(info_npc->get_gender());
+  body_npc  ->generate(info_npc->get_gender());
+  parts_npc ->generate(info_npc->get_gender());
+  stat_npc  ->generate();
+  hole_npc  ->generate();
+  sense_npc ->generate();
+  nature_npc->generate();
+  eros_npc  ->generate();
 
-  gene_head     = new HEAD(!gender);
-  gene_body     = new BODY(!gender);
-  gene_parts    = new EROGENOUS(!gender);
-  gene_stat     = new STAT();
-  gene_hole     = new HOLE();
-  gene_sense    = new SENSE();
-  gene_nature   = new NATURE();
-  gene_eros     = new EROS();
-  /***** COMMON *****/
-  
-  #ifdef DEBUG
-    perforation("mother");
-    head_mother-> status();
-    body_mother-> status();
-    body_mother-> weight();
-    parts_mother->status();
-    stat_mother-> status();
-    hole_mother-> status(false);
-    sense_mother->status(false);
-    nature_mother->status();
-    eros_mother-> status();
-    perforation("father");
-    head_father-> status();
-    body_father-> status();
-    body_father-> weight();
-    parts_father->status();
-    stat_father-> status();
-    hole_father-> status(true);
-    sense_father->status(true);
-    nature_father->status();
-    eros_father-> status();
-  #endif
-
-  head_player->   blend(head_mother, head_father);
-  body_player->   blend(body_mother,body_father);
-  parts_player->  blend(parts_mother,parts_father);
-  stat_player->   blend(stat_mother, stat_father);
-  hole_player->   blend(hole_mother,hole_father);
-  sense_player->  blend(sense_mother,sense_father);
+  info_player-> generate(random(2), true);
+  head_player-> blend(head_mother, head_father);
+  body_player-> blend(body_mother,body_father);
+  parts_player->blend(parts_mother,parts_father);
+  stat_player-> blend(stat_mother, stat_father);
+  hole_player-> blend(hole_mother,hole_father);
+  sense_player->blend(sense_mother,sense_father);
   nature_player-> blend(nature_mother, nature_father);
-  eros_player->   blend(eros_mother,eros_father);
+  eros_player-> blend(eros_mother,eros_father);
+  /***** COMMON *****/  
   
-  Serial.print("Gender:");
-  if(gender)  Serial.println("male");
-  else        Serial.println("female");
-
-  #ifdef DEBUG
-    perforation("mine");
-    head_player-> status();
-    body_player-> status();
-    body_player-> weight();
-    parts_player->status();
-
-    stat_player-> status();
-    hole_player-> status(gender);
-    sense_player->status(gender);
-    nature_player->status();
-    eros_player-> status();
-  #endif
+  view_status("mother",info_mother,head_mother,body_mother,parts_mother,stat_mother,hole_mother,sense_mother,nature_mother,eros_mother);
+  view_status("father",info_father,head_father,body_father,parts_father,stat_father,hole_father,sense_father,nature_father,eros_father);
+  view_status("NPC",info_npc,head_npc,body_npc,parts_npc,stat_npc,hole_npc,sense_npc,nature_npc,eros_npc);
+  newface(false,"null");
+  view_status("Player",info_player,head_player,body_player,parts_player,stat_player,hole_player,sense_player,nature_player,eros_player);
 }
 
 void loop() {

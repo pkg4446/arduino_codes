@@ -9,8 +9,9 @@ class INFO
         String  name;
         uint8_t age;
     public:
-        INFO(bool gender, bool baby);
+        INFO();
         ~INFO();
+        void   generate(bool gender, bool baby);
         bool   get_gender();
         String get_family();
         String get_name();
@@ -30,8 +31,9 @@ class HEAD
         bool    dimple;
         bool    bald;
     public:
-        HEAD(bool gender);
+        HEAD();
         ~HEAD();
+        void generate(bool gender);
         void change(HEAD *gene);
         void meiosis(HEAD *mother, HEAD *father);
         void blend(HEAD *mother, HEAD *father);
@@ -51,8 +53,9 @@ class BODY {
         uint16_t hip;       //w_ a:880  ,s:70.0 /m_ a:930  ,s:43.0
         uint16_t leg_ratio; //w_ a:458  ,s:18.0 /m_ a:453  ,s:20.0
     public:
-        BODY(bool gender);
+        BODY();
         ~BODY();
+        void generate(bool gender);
         void change(BODY *gene);
         void meiosis(BODY *mother, BODY *father);
         void blend(BODY *mother, BODY *father);
@@ -109,8 +112,9 @@ class EROGENOUS {
         uint16_t nipple_h_e;
 
     public:
-        EROGENOUS(bool gender);
+        EROGENOUS();
         ~EROGENOUS();
+        void generate(bool gender);
         void change(EROGENOUS *gene);
         void meiosis(EROGENOUS *mother, EROGENOUS *father);
         void blend(EROGENOUS *mother, EROGENOUS *father);
@@ -129,6 +133,7 @@ class STAT
     public:
         STAT();
         ~STAT();
+        void generate();
         void change(STAT *gene);
         void meiosis(STAT *mother, STAT *father);
         void blend(STAT *mother, STAT *father);
@@ -147,6 +152,7 @@ class HOLE
     public:
         HOLE();
         ~HOLE();
+        void generate();
         void change(HOLE *gene);
         void meiosis(HOLE *mother, HOLE *father);
         void blend(HOLE *mother, HOLE *father);
@@ -166,6 +172,7 @@ class SENSE
     public:
         SENSE();
         ~SENSE();
+        void generate();
         void change(SENSE *gene);
         void meiosis(SENSE *mother, SENSE *father);
         void blend(SENSE *mother, SENSE *father);
@@ -183,6 +190,7 @@ class NATURE
     public:
         NATURE();
         ~NATURE();
+        void generate();
         void change(NATURE *gene);
         void meiosis(NATURE *mother, NATURE *father);
         void blend(NATURE *mother, NATURE *father);
@@ -200,6 +208,7 @@ class EROS
     public:
         EROS();
         ~EROS();
+        void generate();
         void change(EROS *gene);
         void meiosis(EROS *mother, EROS *father);
         void blend(EROS *mother, EROS *father);
