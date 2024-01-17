@@ -1,10 +1,10 @@
-#include "model_common.h"
-#include "model_status.h"
+#include "model_hard.h"
+#include "model_soft.h"
 #include "utility.h"
 #include "database.h"
+#include "funtions.h"
 
 #define WOMAN_ONLY
-#define DEBUG
 //#define ESP32_CORE
 /***** GENE *********/
 INFO      *info_mother  = new INFO();
@@ -61,21 +61,6 @@ NATURE    *nature_temp = new NATURE();
 EROS      *eros_temp  = new EROS();
 /***** TEMP *********/
 /***** funtions *****/
-void view_status(String title,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
-    #ifdef DEBUG
-    perforation(title);
-    class_info-> status();
-    class_head-> status();
-    class_body-> status();
-    class_body-> weight();
-    class_parts->status();
-    class_stat-> status();
-    class_hole-> status(class_info->get_gender());
-    class_sense->status(class_info->get_gender());
-    class_nature->status();
-    class_eros-> status();
-    #endif
-}
 void meiosis(){
   INFO      *info_gene  = new INFO();
   HEAD      *head_gene  = new HEAD();
@@ -103,23 +88,20 @@ void meiosis(){
   delete nature_gene;
   delete eros_gene;
 }
-void newface(bool baby, String family_name){
+void pregnant(String family_name){
+  info_temp->generate(random(2), true);
+  info_temp->update_family(family_name);
+  view_status("new face",info_temp,head_temp,body_temp,parts_temp,stat_temp,hole_temp,sense_temp,nature_temp,eros_temp);
+}
+
+void random_incounter(){
   bool gender = false;
   #ifdef WOMAN_ONLY
     gender = false;
   #else
     gender = random(2);
   #endif
-  info_temp->generate(gender, baby);
-  if(baby) info_temp->update_family(family_name);
-  head_temp->generate(info_temp->get_gender());
-  body_temp->generate(info_temp->get_gender());
-  parts_temp->generate(info_temp->get_gender());
-  stat_temp->generate();
-  hole_temp->generate();
-  sense_temp->generate();
-  nature_temp->generate();
-  eros_temp->generate();
+  new_model(gender,info_temp,head_temp,body_temp,parts_temp,stat_temp,hole_temp,sense_temp,nature_temp,eros_temp);
   view_status("new face",info_temp,head_temp,body_temp,parts_temp,stat_temp,hole_temp,sense_temp,nature_temp,eros_temp);
 }
 
@@ -134,37 +116,12 @@ void setup() {
     Serial.println("ARDUINO");
   #endif
   /***** COMMON *****/
-  info_mother->generate(false, false);
-  head_mother->generate(info_mother->get_gender());
-  body_mother->generate(info_mother->get_gender());
-  parts_mother->generate(info_mother->get_gender());
-  stat_mother->generate();
-  hole_mother->generate();
-  sense_mother->generate();
-  nature_mother->generate();
-  eros_mother->generate();
-
-  info_father->generate(true, false);
-  head_father->generate(info_father->get_gender());
-  body_father->generate(info_father->get_gender());
-  parts_father->generate(info_father->get_gender());
-  stat_father->generate();
-  hole_father->generate();
-  sense_father->generate();
-  nature_father->generate();
-  eros_father->generate();
-
-  info_npc  ->generate(false, false);
-  head_npc  ->generate(info_npc->get_gender());
-  body_npc  ->generate(info_npc->get_gender());
-  parts_npc ->generate(info_npc->get_gender());
-  stat_npc  ->generate();
-  hole_npc  ->generate();
-  sense_npc ->generate();
-  nature_npc->generate();
-  eros_npc  ->generate();
+  new_model(false,info_mother,head_mother,body_mother,parts_mother,stat_mother,hole_mother,sense_mother,nature_mother,eros_mother);
+  new_model(true,info_father,head_father,body_father,parts_father,stat_father,hole_father,sense_father,nature_father,eros_father);
+  new_model(false,info_npc,head_npc,body_npc,parts_npc,stat_npc,hole_npc,sense_npc,nature_npc,eros_npc);
 
   info_player-> generate(random(2), true);
+  info_player-> update_family(info_mother->get_family());
   head_player-> blend(head_mother, head_father);
   body_player-> blend(body_mother,body_father);
   parts_player->blend(parts_mother,parts_father);
@@ -178,7 +135,7 @@ void setup() {
   view_status("mother",info_mother,head_mother,body_mother,parts_mother,stat_mother,hole_mother,sense_mother,nature_mother,eros_mother);
   view_status("father",info_father,head_father,body_father,parts_father,stat_father,hole_father,sense_father,nature_father,eros_father);
   view_status("NPC",info_npc,head_npc,body_npc,parts_npc,stat_npc,hole_npc,sense_npc,nature_npc,eros_npc);
-  newface(false,"null");
+  random_incounter();
   view_status("Player",info_player,head_player,body_player,parts_player,stat_player,hole_player,sense_player,nature_player,eros_player);
 }
 

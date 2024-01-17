@@ -1,6 +1,6 @@
 #include "heredity.h"
 #include "utility.h"
-#include "model_status.h"
+#include "model_soft.h"
 
 /*********************************** EXP CLASS FUNCTION ***********************************/
 EXP::EXP() { //생성자
