@@ -3,7 +3,8 @@
 #include "utility.h"
 #include "database.h"
 bool gender;
-//#define DEBUG
+#define DEBUG
+//#define ESP32_CORE
 /***** CHARACTER *****/
 HEAD      *play_head;
 BODY      *play_body;
@@ -44,14 +45,14 @@ EROS      *gene_eros;
 /***** GENE *****/
 /***** funtions *****/
 void meiosis(){
-  gene_head->meiosis(mother_head, father_head);
-  gene_body->meiosis(mother_body,father_body);
+  gene_head-> meiosis(mother_head, father_head);
+  gene_body-> meiosis(mother_body,father_body);
   gene_parts->meiosis(mother_parts,father_parts);
-  gene_stat->meiosis(mother_stat, father_stat);
-  gene_hole->meiosis(mother_hole,father_hole);
+  gene_stat-> meiosis(mother_stat, father_stat);
+  gene_hole-> meiosis(mother_hole,father_hole);
   gene_sense->meiosis(mother_sense,father_sense);
   gene_nature->meiosis(mother_nature, father_nature);
-  gene_eros->meiosis(mother_eros,father_eros);
+  gene_eros-> meiosis(mother_eros,father_eros);
 }
 void newface(){
   bool      new_gender  = random(2);
@@ -86,14 +87,15 @@ void newface(){
 }
 /***** funtions *****/
 void setup() {
-  #ifdef ESP32
+  gender = random(2);
+  Serial.begin(115200);
+  #ifdef ESP32_CORE
     randomSeed(analogRead(39));
     Serial.println("ESP32");
   #else
     randomSeed(analogRead(A0));
+    Serial.println("ARDUINO");
   #endif
-  gender = random(2);
-  Serial.begin(115200);
   /***** BODY *****/
   mother_head   = new HEAD(false);
   mother_body   = new BODY(false);
@@ -133,25 +135,25 @@ void setup() {
   
   #ifdef DEBUG
     perforation("mother");
-    mother_head->status();
-    mother_body->status();
-    mother_body->weight();
+    mother_head-> status();
+    mother_body-> status();
+    mother_body-> weight();
     mother_parts->status();
-    mother_stat->status();
-    mother_hole->status(false);
+    mother_stat-> status();
+    mother_hole-> status(false);
     mother_sense->status(false);
     mother_nature->status();
-    mother_eros->status();
+    mother_eros-> status();
     perforation("father");
-    father_head->status();
-    father_body->status();
-    father_body->weight();
+    father_head-> status();
+    father_body-> status();
+    father_body-> weight();
     father_parts->status();
-    father_stat->status();
-    father_hole->status(true);
+    father_stat-> status();
+    father_hole-> status(true);
     father_sense->status(true);
     father_nature->status();
-    father_eros->status();
+    father_eros-> status();
   #endif
 
   play_head->blend(mother_head, father_head);
@@ -169,17 +171,18 @@ void setup() {
 
   #ifdef DEBUG
     perforation("mine");
-    play_head->status();
-    play_body->status();
-    play_body->weight();
+    play_head-> status();
+    play_body-> status();
+    play_body-> weight();
     play_parts->status();
 
-    play_stat->status();
-    play_hole->status(gender);
+    play_stat-> status();
+    play_hole-> status(gender);
     play_sense->status(gender);
     play_nature->status();
-    play_eros->status();
+    play_eros-> status();
   #endif
+  get_family();
   get_name(gender);
 }
 
