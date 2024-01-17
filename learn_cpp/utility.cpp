@@ -7,7 +7,7 @@ void swap(uint16_t *num_a, uint16_t *num_b){
 }
 void perforation(String text){
     Serial.print(text);
-    for(uint8_t index=text.length(); index<35; index++){
+    for(uint8_t index=text.length(); index<36; index++){
         Serial.print("*");
     }
     Serial.println("*");
