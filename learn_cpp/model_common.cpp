@@ -299,7 +299,7 @@ void BODY::status(){
         else if (cupsize <675) { cup = "X";}
         else if (cupsize <700) { cup = "Y";}
         spacebar("breast");Serial.println(breast);
-        spacebar("breast");Serial.println(cup);
+        spacebar("cup");Serial.println(cup);
     }
     spacebar("chest");      Serial.println(chest);
     spacebar("waist");      Serial.println(waist);
