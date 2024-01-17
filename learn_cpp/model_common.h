@@ -1,6 +1,24 @@
 #pragma once
 #include "arduino.h"
 
+class INFO
+{
+    private:
+        bool    gen_xy;
+        String  family;
+        String  name;
+        uint8_t age;
+    public:
+        INFO(bool gender, bool baby);
+        ~INFO();
+        bool   get_gender();
+        String get_family();
+        String get_name();
+        void   status();
+        void   update_family(String familyname);
+        void   aging();
+};
+
 class HEAD
 {
     private:
@@ -11,7 +29,6 @@ class HEAD
         bool    eyelid;
         bool    dimple;
         bool    bald;
-
     public:
         HEAD(bool gender);
         ~HEAD();
@@ -33,7 +50,6 @@ class BODY {
         uint16_t waist;     //w_ a:600  ,s:65.0 /m_ a:770  ,s:49.6 
         uint16_t hip;       //w_ a:880  ,s:70.0 /m_ a:930  ,s:43.0
         uint16_t leg_ratio; //w_ a:458  ,s:18.0 /m_ a:453  ,s:20.0
-
     public:
         BODY(bool gender);
         ~BODY();
@@ -101,3 +117,92 @@ class EROGENOUS {
         void status();
         void inspection();
 };
+
+class STAT
+{
+    private:
+        uint8_t intelligence;
+        uint8_t strength;
+        uint8_t dexterity;
+        uint8_t charisma;
+        uint8_t constitution;
+    public:
+        STAT();
+        ~STAT();
+        void change(STAT *gene);
+        void meiosis(STAT *mother, STAT *father);
+        void blend(STAT *mother, STAT *father);
+        void status();
+};
+
+class HOLE
+{
+    private:
+        uint16_t gape_u;
+        uint16_t gape_v;
+        uint16_t gape_a;
+        uint16_t pressure_u;
+        uint16_t pressure_v;
+        uint16_t pressure_a;
+    public:
+        HOLE();
+        ~HOLE();
+        void change(HOLE *gene);
+        void meiosis(HOLE *mother, HOLE *father);
+        void blend(HOLE *mother, HOLE *father);
+        void status(bool gender);
+};
+
+class SENSE
+{
+    private:
+        uint8_t cervix;
+        uint8_t skin;
+        uint8_t clit_glans;
+        uint8_t vagina_balls;
+        uint8_t urethra;
+        uint8_t anal;
+        uint8_t nipple;
+    public:
+        SENSE();
+        ~SENSE();
+        void change(SENSE *gene);
+        void meiosis(SENSE *mother, SENSE *father);
+        void blend(SENSE *mother, SENSE *father);
+        void status(bool gender);
+};
+
+class NATURE
+{
+    private:
+        uint8_t mbti;
+        uint8_t at_e_i;
+        uint8_t at_s_n;
+        uint8_t fn_t_f;
+        uint8_t fn_j_p;
+    public:
+        NATURE();
+        ~NATURE();
+        void change(NATURE *gene);
+        void meiosis(NATURE *mother, NATURE *father);
+        void blend(NATURE *mother, NATURE *father);
+        void status();
+};
+
+class EROS
+{
+    private:
+        uint8_t lust;
+        uint8_t sadism;
+        uint8_t masohism;
+        uint8_t exhibition;
+        uint8_t service;
+    public:
+        EROS();
+        ~EROS();
+        void change(EROS *gene);
+        void meiosis(EROS *mother, EROS *father);
+        void blend(EROS *mother, EROS *father);
+        void status();
+};
+

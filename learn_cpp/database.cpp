@@ -1,6 +1,6 @@
 #include "database.h"
 
-String get_family(){
+String new_family(){
     String response = "";
     uint8_t index_family  = random(strlen_P(family)/3)*3;
     for(uint16_t index=index_family; index<index_family+3; index++){
@@ -10,7 +10,7 @@ String get_family(){
     return response;
 };
 
-String get_name(bool gender){
+String new_name(bool gender){
     uint16_t index_female = random(strlen_P(names_female)/6)*6;
     uint16_t index_male   = random(strlen_P(names_male)/6)*6;
     String response = "";

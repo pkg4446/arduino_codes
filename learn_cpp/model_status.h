@@ -1,95 +1,71 @@
 #pragma once
 #include "arduino.h"
 
-class STAT
+class EXP
 {
     private:
-        uint8_t intelligence;
-        uint8_t strength;
-        uint8_t dexterity;
-        uint8_t charisma;
-        uint8_t constitution;
-
-    public:
-        STAT();
-        ~STAT();
-        void change(STAT *gene);
-        void meiosis(STAT *mother, STAT *father);
-        void blend(STAT *mother, STAT *father);
-        void status();
-};
-
-class HOLE
-{
-    private:
-        uint16_t gape_u;
-        uint16_t gape_v;
-        uint16_t gape_a;
-        uint16_t pressure_u;
-        uint16_t pressure_v;
-        uint16_t pressure_a;
-
-    public:
-        HOLE();
-        ~HOLE();
-        void change(HOLE *gene);
-        void meiosis(HOLE *mother, HOLE *father);
-        void blend(HOLE *mother, HOLE *father);
-        void status(bool gender);
-};
-
-class SENSE
-{
-    private:
-        uint8_t cervix;
-        uint8_t skin;
-        uint8_t clit_glans;
-        uint8_t vagina_balls;
-        uint8_t urethra;
+        uint8_t orgasm;
+        uint8_t squirt;
+        uint8_t mouth;
+        uint8_t vagina;
         uint8_t anal;
-        uint8_t nipple;
-
+        uint8_t urethra;
+        uint8_t expans_v;
+        uint8_t expans_a;
+        uint8_t sperm_m;
+        uint8_t sperm_v;
+        uint8_t sperm_a;
     public:
-        SENSE();
-        ~SENSE();
-        void change(SENSE *gene);
-        void meiosis(SENSE *mother, SENSE *father);
-        void blend(SENSE *mother, SENSE *father);
+        EXP();
+        ~EXP();
+        void update(uint8_t item);
         void status(bool gender);
 };
 
-class NATURE
+class CURRENT
 {
     private:
-        uint8_t mbti;
-        uint8_t at_e_i;
-        uint8_t at_s_n;
-        uint8_t fn_t_f;
-        uint8_t fn_j_p;
-
+        uint16_t furr;      //모근 깊이 45, 하루 2mm max 5000
+        uint8_t  stamina;
+        uint8_t  mental;
+        uint8_t  stress;
+        uint8_t  horny;
+        uint8_t  fain;
+        uint8_t  ecstasy;
+        uint8_t  lubric;
+        uint8_t  pee;
+        uint8_t  poo;
     public:
-        NATURE();
-        ~NATURE();
-        void change(NATURE *gene);
-        void meiosis(NATURE *mother, NATURE *father);
-        void blend(NATURE *mother, NATURE *father);
+        CURRENT();
+        ~CURRENT();
+        void update(uint8_t item, int8_t count);
         void status();
 };
 
-class EROS
+class MENS
 {
     private:
-        uint8_t lust;
-        uint8_t sadism;
-        uint8_t masohism;
-        uint8_t exhibition;
-        uint8_t service;
-
+        uint8_t blood;
+        uint8_t cycle;
+        uint8_t ovulation;
+        uint8_t pregnant;
+        uint8_t d_day;
     public:
-        EROS();
-        ~EROS();
-        void change(EROS *gene);
-        void meiosis(EROS *mother, EROS *father);
-        void blend(EROS *mother, EROS *father);
+        MENS();
+        ~MENS();
+        void update();
+        void status();
+};
+
+class BREED
+{
+    private:
+        uint8_t pregnancy;
+        uint8_t birth;
+        uint8_t miscarriage;
+    public:
+        BREED();
+        ~BREED();
+        void update();
         void status();
 };

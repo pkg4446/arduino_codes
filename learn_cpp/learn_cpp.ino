@@ -1,11 +1,12 @@
-#include "model_body.h"
+#include "model_common.h"
 #include "model_status.h"
 #include "utility.h"
 #include "database.h"
 bool gender;
+#define WOMAN_ONLY
 #define DEBUG
 //#define ESP32_CORE
-/***** CHARACTER *****/
+/***** PLAYER *****/
 HEAD      *play_head;
 BODY      *play_body;
 EROGENOUS *play_parts;
@@ -14,7 +15,7 @@ HOLE      *play_hole;
 SENSE     *play_sense;
 NATURE    *play_nature;
 EROS      *play_eros;
-/***** CHARACTER *****/
+/***** PLAYER *****/
 /***** GENE *****/
 HEAD      *mother_head;
 BODY      *mother_body;
@@ -33,7 +34,9 @@ HOLE      *father_hole;
 SENSE     *father_sense;
 NATURE    *father_nature;
 EROS      *father_eros;
-
+/***** GENE *****/
+/***** NPC *****/
+bool      inner_shot = false;
 HEAD      *gene_head;
 BODY      *gene_body;
 EROGENOUS *gene_parts;
@@ -42,17 +45,28 @@ HOLE      *gene_hole;
 SENSE     *gene_sense;
 NATURE    *gene_nature;
 EROS      *gene_eros;
-/***** GENE *****/
+/***** NPC *****/
 /***** funtions *****/
 void meiosis(){
-  gene_head-> meiosis(mother_head, father_head);
-  gene_body-> meiosis(mother_body,father_body);
-  gene_parts->meiosis(mother_parts,father_parts);
-  gene_stat-> meiosis(mother_stat, father_stat);
-  gene_hole-> meiosis(mother_hole,father_hole);
-  gene_sense->meiosis(mother_sense,father_sense);
-  gene_nature->meiosis(mother_nature, father_nature);
-  gene_eros-> meiosis(mother_eros,father_eros);
+  if(inner_shot){
+    bool      new_gender  = random(2);
+    HEAD      *new_head   = new HEAD(new_gender);
+    BODY      *new_body   = new BODY(new_gender);
+    EROGENOUS *new_parts  = new EROGENOUS(new_gender);
+    STAT      *new_stat   = new STAT();
+    HOLE      *new_hole   = new HOLE();
+    SENSE     *new_sense  = new SENSE();
+    NATURE    *new_nature = new NATURE();
+    EROS      *new_eros   = new EROS();
+    new_head-> meiosis(mother_head, father_head);
+    new_body-> meiosis(mother_body,father_body);
+    new_parts->meiosis(mother_parts,father_parts);
+    new_stat-> meiosis(mother_stat, father_stat);
+    new_hole-> meiosis(mother_hole,father_hole);
+    new_sense->meiosis(mother_sense,father_sense);
+    new_nature->meiosis(mother_nature, father_nature);
+    new_eros-> meiosis(mother_eros,father_eros);
+  }
 }
 void newface(){
   bool      new_gender  = random(2);
@@ -76,6 +90,16 @@ void newface(){
     new_nature->status();
     new_eros->status();
   #endif
+  
+  gene_head   = new HEAD(!gender);
+  gene_body   = new BODY(!gender);
+  gene_parts  = new EROGENOUS(!gender);
+  gene_stat   = new STAT();
+  gene_hole   = new HOLE();
+  gene_sense  = new SENSE();
+  gene_nature = new NATURE();
+  gene_eros   = new EROS();
+
   delete new_head;
   delete new_body;
   delete new_parts;
@@ -87,8 +111,12 @@ void newface(){
 }
 /***** funtions *****/
 void setup() {
-  gender = random(2);
   Serial.begin(115200);
+  #ifdef WOMAN_ONLY
+    gender = false;
+  #else
+    gender = random(2);
+  #endif
   #ifdef ESP32_CORE
     randomSeed(analogRead(39));
     Serial.println("ESP32");
@@ -182,8 +210,6 @@ void setup() {
     play_nature->status();
     play_eros-> status();
   #endif
-  get_family();
-  get_name(gender);
 }
 
 void loop() {
