@@ -8,7 +8,7 @@
 //#define ESP32_CORE
 #define CLASS_ARRAY 12
 enum models{
-  player, player_mother, player_father, pet, pet_mother, pet_father, baby, baby_mother, baby_father, npc, npc_mother, npc_father
+  e_player, e_pet, e_baby, e_npc, e_player_mother, e_player_father, e_pet_mother, e_pet_father, e_baby_mother, e_baby_father, e_npc_mother, e_npc_father
 };
 /***** GENE *********/
 INFO      *info_class[CLASS_ARRAY];
@@ -45,19 +45,19 @@ void meiosis(){
 */
 /***** funtions *****/
 void meiosis(){
-  head_class[baby_father]->   meiosis(head_class[player_mother], head_class[player_father]);
-  body_class[baby_father]->   meiosis(body_class[player_mother],body_class[player_father]);
-  parts_class[baby_father]->  meiosis(parts_class[player_mother],parts_class[player_father]);
-  stat_class[baby_father]->   meiosis(stat_class[player_mother], stat_class[player_father]);
-  hole_class[baby_father]->   meiosis(hole_class[player_mother],hole_class[player_father]);
-  sense_class[baby_father]->  meiosis(sense_class[player_mother],sense_class[player_father]);
-  nature_class[baby_father]-> meiosis(nature_class[player_mother], nature_class[player_father]);
-  eros_class[baby_father]->   meiosis(eros_class[player_mother],eros_class[player_father]);
+  head_class[e_baby_father]->   meiosis(head_class[e_player_mother], head_class[e_player_father]);
+  body_class[e_baby_father]->   meiosis(body_class[e_player_mother],body_class[e_player_father]);
+  parts_class[e_baby_father]->  meiosis(parts_class[e_player_mother],parts_class[e_player_father]);
+  stat_class[e_baby_father]->   meiosis(stat_class[e_player_mother], stat_class[e_player_father]);
+  hole_class[e_baby_father]->   meiosis(hole_class[e_player_mother],hole_class[e_player_father]);
+  sense_class[e_baby_father]->  meiosis(sense_class[e_player_mother],sense_class[e_player_father]);
+  nature_class[e_baby_father]-> meiosis(nature_class[e_player_mother], nature_class[e_player_father]);
+  eros_class[e_baby_father]->   meiosis(eros_class[e_player_mother],eros_class[e_player_father]);
 }
 void pregnant(String family_name){
-  info_class[baby_father]->generate(random(2), true);
-  info_class[baby_father]->update_family(family_name);
-  view_status("new face",info_class[baby_father],head_class[baby_father],body_class[baby_father],parts_class[baby_father],stat_class[baby_father],hole_class[baby_father],sense_class[baby_father],nature_class[baby_father],eros_class[baby_father]);
+  info_class[e_baby_father]->generate(random(2), true);
+  info_class[e_baby_father]->update_family(family_name);
+  view_status("new face",info_class[e_baby_father],head_class[e_baby_father],body_class[e_baby_father],parts_class[e_baby_father],stat_class[e_baby_father],hole_class[e_baby_father],sense_class[e_baby_father],nature_class[e_baby_father],eros_class[e_baby_father]);
 }
 
 void random_incounter(){
@@ -67,8 +67,8 @@ void random_incounter(){
   #else
     gender = random(2);
   #endif
-  new_model(gender,info_class[baby_father],head_class[baby_father],body_class[baby_father],parts_class[baby_father],stat_class[baby_father],hole_class[baby_father],sense_class[baby_father],nature_class[baby_father],eros_class[baby_father]);
-  view_status("new face",info_class[baby_father],head_class[baby_father],body_class[baby_father],parts_class[baby_father],stat_class[baby_father],hole_class[baby_father],sense_class[baby_father],nature_class[baby_father],eros_class[baby_father]);
+  new_model(gender,info_class[e_baby_father],head_class[e_baby_father],body_class[e_baby_father],parts_class[e_baby_father],stat_class[e_baby_father],hole_class[e_baby_father],sense_class[e_baby_father],nature_class[e_baby_father],eros_class[e_baby_father]);
+  view_status("new face",info_class[e_baby_father],head_class[e_baby_father],body_class[e_baby_father],parts_class[e_baby_father],stat_class[e_baby_father],hole_class[e_baby_father],sense_class[e_baby_father],nature_class[e_baby_father],eros_class[e_baby_father]);
 }
 
 /***** funtions *****/
@@ -93,27 +93,29 @@ void setup() {
     eros_class[index]   = new EROS();
   }
   /***** COMMON *****/
-  new_model(false,info_class[player_mother],head_class[player_mother],body_class[player_mother],parts_class[player_mother],stat_class[player_mother],hole_class[player_mother],sense_class[player_mother],nature_class[player_mother],eros_class[player_mother]);
-  new_model(true,info_class[player_father],head_class[player_father],body_class[player_father],parts_class[player_father],stat_class[player_father],hole_class[player_father],sense_class[player_father],nature_class[player_father],eros_class[player_father]);
-  new_model(false,info_class[npc],head_class[npc],body_class[npc],parts_class[npc],stat_class[npc],hole_class[npc],sense_class[npc],nature_class[npc],eros_class[npc]);
+  new_model(false,info_class[e_player_mother],head_class[e_player_mother],body_class[e_player_mother],parts_class[e_player_mother],stat_class[e_player_mother],hole_class[e_player_mother],sense_class[e_player_mother],nature_class[e_player_mother],eros_class[e_player_mother]);
+  new_model(true,info_class[e_player_father],head_class[e_player_father],body_class[e_player_father],parts_class[e_player_father],stat_class[e_player_father],hole_class[e_player_father],sense_class[e_player_father],nature_class[e_player_father],eros_class[e_player_father]);
 
-  info_class[player]-> generate(random(2), true);
-  info_class[player]-> update_family(info_class[player_mother]->get_family());
-  head_class[player]-> blend(head_class[player_mother], head_class[player_father]);
-  body_class[player]-> blend(body_class[player_mother],body_class[player_father]);
-  parts_class[player]->blend(parts_class[player_mother],parts_class[player_father]);
-  stat_class[player]-> blend(stat_class[player_mother], stat_class[player_father]);
-  hole_class[player]-> blend(hole_class[player_mother],hole_class[player_father]);
-  sense_class[player]->blend(sense_class[player_mother],sense_class[player_father]);
-  nature_class[player]-> blend(nature_class[player_mother], nature_class[player_father]);
-  eros_class[player]-> blend(eros_class[player_mother],eros_class[player_father]);
+  info_class[e_player]-> generate(random(2), true);
+  info_class[e_player]-> update_family(info_class[e_player_mother]->get_family());
+  head_class[e_player]-> blend(head_class[e_player_mother], head_class[e_player_father]);
+  body_class[e_player]-> blend(body_class[e_player_mother],body_class[e_player_father]);
+  parts_class[e_player]->blend(parts_class[e_player_mother],parts_class[e_player_father]);
+  stat_class[e_player]-> blend(stat_class[e_player_mother], stat_class[e_player_father]);
+  hole_class[e_player]-> blend(hole_class[e_player_mother],hole_class[e_player_father]);
+  sense_class[e_player]->blend(sense_class[e_player_mother],sense_class[e_player_father]);
+  nature_class[e_player]-> blend(nature_class[e_player_mother], nature_class[e_player_father]);
+  eros_class[e_player]-> blend(eros_class[e_player_mother],eros_class[e_player_father]);
   /***** COMMON *****/  
   
-  view_status("player_mother",info_class[player_mother],head_class[player_mother],body_class[player_mother],parts_class[player_mother],stat_class[player_mother],hole_class[player_mother],sense_class[player_mother],nature_class[player_mother],eros_class[player_mother]);
-  view_status("player_father",info_class[player_father],head_class[player_father],body_class[player_father],parts_class[player_father],stat_class[player_father],hole_class[player_father],sense_class[player_father],nature_class[player_father],eros_class[player_father]);
-  view_status("NPC",info_class[npc],head_class[npc],body_class[npc],parts_class[npc],stat_class[npc],hole_class[npc],sense_class[npc],nature_class[npc],eros_class[npc]);
+  view_status("player_mother",info_class[e_player_mother],head_class[e_player_mother],body_class[e_player_mother],parts_class[e_player_mother],stat_class[e_player_mother],hole_class[e_player_mother],sense_class[e_player_mother],nature_class[e_player_mother],eros_class[e_player_mother]);
+  view_status("player_father",info_class[e_player_father],head_class[e_player_father],body_class[e_player_father],parts_class[e_player_father],stat_class[e_player_father],hole_class[e_player_father],sense_class[e_player_father],nature_class[e_player_father],eros_class[e_player_father]);
+  view_status("Player",info_class[e_player],head_class[e_player],body_class[e_player],parts_class[e_player],stat_class[e_player],hole_class[e_player],sense_class[e_player],nature_class[e_player],eros_class[e_player]);
+  
+  new_model(false,info_class[e_npc],head_class[e_npc],body_class[e_npc],parts_class[e_npc],stat_class[e_npc],hole_class[e_npc],sense_class[e_npc],nature_class[e_npc],eros_class[e_npc]);
+  view_status("NPC",info_class[e_npc],head_class[e_npc],body_class[e_npc],parts_class[e_npc],stat_class[e_npc],hole_class[e_npc],sense_class[e_npc],nature_class[e_npc],eros_class[e_npc]);
   random_incounter();
-  view_status("Player",info_class[player],head_class[player],body_class[player],parts_class[player],stat_class[player],hole_class[player],sense_class[player],nature_class[player],eros_class[player]);
+  
 }
 
 void loop() {
