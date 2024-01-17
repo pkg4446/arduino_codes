@@ -2,6 +2,6 @@
 #include "arduino.h"
 
 void swap(uint16_t *num_a, uint16_t *num_b);
-void perforation();
+void perforation(String text);
 void spacebar(String text);
 void destruct();

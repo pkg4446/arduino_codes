@@ -41,7 +41,7 @@ void STAT::blend(STAT *mother, STAT *father){
 }
 /*******************************************************************************************/
 void STAT::status(){
-    perforation();
+    perforation("stat");
     spacebar("intelligence");   Serial.println(intelligence);
     spacebar("strength");       Serial.println(strength);
     spacebar("dexterity");      Serial.println(dexterity);
@@ -89,7 +89,7 @@ void HOLE::blend(HOLE *mother, HOLE *father){
 }
 /*******************************************************************************************/
 void HOLE::status(bool gender){
-    perforation();
+    perforation("hole");
     if(!gender){
         spacebar("gape_v");     Serial.println(gape_v);
         spacebar("pressure_v"); Serial.println(pressure_v);
@@ -140,7 +140,7 @@ void SENSE::blend(SENSE *mother, SENSE *father){
 }
 /*******************************************************************************************/
 void SENSE::status(bool gender){
-    perforation();
+    perforation("sense");
     if(gender){
         spacebar("balls");  Serial.println(vagina_balls);
     }else{
@@ -201,7 +201,7 @@ void NATURE::blend(NATURE *mother, NATURE *father){
 }
 /*******************************************************************************************/
 void NATURE::status(){
-    perforation();
+    perforation("nature");
     spacebar("MBTI");
     if(at_e_i>50)Serial.print("E");
     else Serial.print("I");
@@ -259,7 +259,7 @@ void EROS::blend(EROS *mother, EROS *father){
 }
 /*******************************************************************************************/
 void EROS::status(){
-    perforation();
+    perforation("eros");
     spacebar("lust");       Serial.println(lust);
     spacebar("sadism");     Serial.println(sadism);
     spacebar("masohism");   Serial.println(masohism);

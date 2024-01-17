@@ -1,8 +1,9 @@
 #include "Body.h"
 #include "Status.h"
 #include "utility.h"
+#include "name.h"
 bool gender;
-#define DEBUG
+//#define DEBUG
 /***** CHARACTER *****/
 HEAD      *play_head;
 BODY      *play_body;
@@ -54,7 +55,7 @@ void meiosis(){
 }
 void newface(){
   bool      new_gender  = random(2);
-  HEAD      *new_head   = new HEAD();
+  HEAD      *new_head   = new HEAD(new_gender);
   BODY      *new_body   = new BODY(new_gender);
   EROGENOUS *new_parts  = new EROGENOUS(new_gender);
   STAT      *new_stat   = new STAT();
@@ -63,7 +64,7 @@ void newface(){
   NATURE    *new_nature = new NATURE();
   EROS      *new_eros   = new EROS();
   #ifdef DEBUG
-    Serial.print("mine");perforation();
+    perforation("new face");
     new_head->status();
     new_body->status();
     new_body->weight();
@@ -94,16 +95,16 @@ void setup() {
   gender = random(2);
   Serial.begin(115200);
   /***** BODY *****/
-  mother_head   = new HEAD();
+  mother_head   = new HEAD(false);
   mother_body   = new BODY(false);
   mother_parts  = new EROGENOUS(false);
-  father_head   = new HEAD();
+  father_head   = new HEAD(true);
   father_body   = new BODY(true);
   father_parts  = new EROGENOUS(true);
-  play_head     = new HEAD();
+  play_head     = new HEAD(gender);
   play_body     = new BODY(gender);
   play_parts    = new EROGENOUS(gender);
-  gene_head     = new HEAD();
+  gene_head     = new HEAD(!gender);
   gene_body     = new BODY(!gender);
   gene_parts    = new EROGENOUS(!gender);
   /***** BODY *****/
@@ -131,7 +132,7 @@ void setup() {
   /***** STATUS ***/
   
   #ifdef DEBUG
-    Serial.print("mother");perforation();
+    perforation("mother");
     mother_head->status();
     mother_body->status();
     mother_body->weight();
@@ -141,7 +142,7 @@ void setup() {
     mother_sense->status(false);
     mother_nature->status();
     mother_eros->status();
-    Serial.print("father");perforation();
+    perforation("father");
     father_head->status();
     father_body->status();
     father_body->weight();
@@ -153,7 +154,7 @@ void setup() {
     father_eros->status();
   #endif
 
-  play_head->blend(mother_head, father_head, gender);
+  play_head->blend(mother_head, father_head);
   play_body->blend(mother_body,father_body);
   play_parts->blend(mother_parts,father_parts);
   play_stat->blend(mother_stat, father_stat);
@@ -167,7 +168,7 @@ void setup() {
   else        Serial.println("female");
 
   #ifdef DEBUG
-    Serial.print("mine");perforation();
+    perforation("mine");
     play_head->status();
     play_body->status();
     play_body->weight();
@@ -179,6 +180,7 @@ void setup() {
     play_nature->status();
     play_eros->status();
   #endif
+  get_name(gender);
 }
 
 void loop() {

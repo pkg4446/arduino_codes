@@ -4,6 +4,8 @@
 class HEAD
 {
     private:
+        bool    gen_xy;
+        String  name;
         uint8_t hair_color;
         uint8_t hair_curl;
         uint8_t eye_color;
@@ -12,11 +14,11 @@ class HEAD
         bool    bald;
 
     public:
-        HEAD();
+        HEAD(bool gender);
         ~HEAD();
         void change(HEAD *gene);
         void meiosis(HEAD *mother, HEAD *father);
-        void blend(HEAD *mother, HEAD *father, bool gender);
+        void blend(HEAD *mother, HEAD *father);
         void status();
 };
 

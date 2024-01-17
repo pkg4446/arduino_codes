@@ -6,7 +6,9 @@
 #define RAND_FLAGE 2
 
 /*********************************** HEAD CLASS FUNCTION ***********************************/
-HEAD::HEAD() { //생성자
+HEAD::HEAD(bool gender) { //생성자
+    gen_xy     = gender;
+    name       = "";
     hair_color = random(RAND_NUM);
     eye_color  = random(RAND_NUM);
     hair_curl  = random(RAND_NUM);
@@ -18,6 +20,7 @@ HEAD::HEAD() { //생성자
 HEAD::~HEAD(){destruct();}
 /*******************************************************************************************/
 void HEAD::change(HEAD *gene){
+    gen_xy     = gene->gen_xy;
     hair_color = gene->hair_color;
     eye_color  = gene->eye_color;
     hair_curl  = gene->hair_curl;
@@ -35,14 +38,14 @@ void HEAD::meiosis(HEAD *mother, HEAD *father){
     bald       = mutation_bool(mother->bald,    father->bald);
 }
 /*******************************************************************************************/
-void HEAD::blend(HEAD *mother, HEAD *father, bool gender){
+void HEAD::blend(HEAD *mother, HEAD *father){
     hair_color = heredity_u8(mother->hair_color,father->hair_color);
     eye_color  = heredity_u8(mother->eye_color, father->eye_color);
     hair_curl  = heredity_u8(mother->hair_curl, father->hair_curl);
     eyelid     = heredity_bool(mother->eyelid,  father->eyelid, true);
     dimple     = heredity_bool(mother->dimple,  father->dimple, true);
     bald       = heredity_bool(mother->bald,    father->bald,   true);
-    if(!gender) bald = false;
+    if(!gen_xy) bald = false;
 }
 /*******************************************************************************************/
 void HEAD::status(){
@@ -60,7 +63,7 @@ void HEAD::status(){
     else if(eye_color<59){color_eye = "Emerald";}
     else if(eye_color<91){color_eye = "Sapphire";}
     else{color_eye = "Ruby";}
-    perforation();
+    perforation("head");
     spacebar("hair color"); Serial.print(hair_color);Serial.print(" : ");Serial.println(color_hair);
     spacebar("eye color");  Serial.print(color_eye);Serial.print(" : ");Serial.println(eye_color);
     spacebar("hair curl");  Serial.println(hair_curl);
@@ -96,6 +99,7 @@ BODY::BODY(bool gender) { //생성자
 BODY::~BODY(){destruct();}
 /*******************************************************************************************/
 void BODY::change(BODY *gene){
+    gen_xy     = gene->gen_xy;
     blood_A    = gene->blood_A;
     blood_B    = gene->blood_B;
     body_color = gene->body_color;
@@ -222,7 +226,7 @@ void BODY::status(){
     else{color_body = "light";}
 
 
-    perforation();
+    perforation("body");
     spacebar("blood type"); Serial.println(blood_type);
     spacebar("skin color"); Serial.print(body_color);Serial.print(" : ");Serial.println(color_body);
     spacebar("height");     Serial.println(height);
@@ -378,6 +382,7 @@ EROGENOUS::EROGENOUS(bool gender) { //생성자
 /*******************************************************************************************/
 EROGENOUS::~EROGENOUS(){destruct();}
 void EROGENOUS::change(EROGENOUS *gene){
+    gen_xy          = gene->gen_xy;
     hood_c          = gene->hood_c;
     hood_start      = gene->hood_start;
     hood_texture    = gene->hood_texture;
@@ -513,7 +518,7 @@ void EROGENOUS::blend(EROGENOUS *mother, EROGENOUS *father){
     nipple_h_e      = heredity_u16(mother->nipple_h_e,  father->nipple_h_e);
 }
 void EROGENOUS::status(){
-    perforation();
+    perforation("erogenous");
     if(gen_xy){
         spacebar("glans_d");    Serial.println(glans_d);
         spacebar("glans_d_e");  Serial.println(glans_d_e);
@@ -562,7 +567,7 @@ void EROGENOUS::status(){
 }
 
 void EROGENOUS::inspection(){
-    perforation();
+    perforation("parts inspection");
     if(gen_xy){
         Serial.print("prepuce   : ");Serial.println(prepuce);
     }else{

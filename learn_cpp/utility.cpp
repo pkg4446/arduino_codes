@@ -5,8 +5,9 @@ void swap(uint16_t *num_a, uint16_t *num_b){
     *num_a = *num_b;
     *num_b = temporary;
 }
-void perforation(){
-    for(uint8_t index=0; index<35; index++){
+void perforation(String text){
+    Serial.print(text);
+    for(uint8_t index=text.length(); index<35; index++){
         Serial.print("*");
     }
     Serial.println("*");
