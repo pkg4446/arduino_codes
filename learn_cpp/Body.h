@@ -5,7 +5,6 @@ class HEAD
 {
     private:
         bool    gen_xy;
-        String  name;
         uint8_t hair_color;
         uint8_t hair_curl;
         uint8_t eye_color;

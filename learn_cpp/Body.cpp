@@ -8,7 +8,6 @@
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 HEAD::HEAD(bool gender) { //생성자
     gen_xy     = gender;
-    name       = "";
     hair_color = random(RAND_NUM);
     eye_color  = random(RAND_NUM);
     hair_curl  = random(RAND_NUM);

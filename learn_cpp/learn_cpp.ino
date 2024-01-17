@@ -1,7 +1,7 @@
 #include "Body.h"
 #include "Status.h"
 #include "utility.h"
-#include "name.h"
+#include "database.h"
 bool gender;
 //#define DEBUG
 /***** CHARACTER *****/
