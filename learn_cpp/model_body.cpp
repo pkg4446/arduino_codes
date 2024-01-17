@@ -1,6 +1,6 @@
 #include "heredity.h"
 #include "utility.h"
-#include "Body.h"
+#include "model_body.h"
 
 #define RAND_NUM   100
 #define RAND_FLAGE 2

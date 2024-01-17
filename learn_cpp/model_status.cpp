@@ -1,6 +1,6 @@
 #include "heredity.h"
 #include "utility.h"
-#include "status.h"
+#include "model_status.h"
 
 #define RAND_NUM   100
 #define RAND_FLAGE 2

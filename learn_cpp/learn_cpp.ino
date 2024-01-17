@@ -1,5 +1,5 @@
-#include "Body.h"
-#include "Status.h"
+#include "model_body.h"
+#include "model_status.h"
 #include "utility.h"
 #include "database.h"
 bool gender;
