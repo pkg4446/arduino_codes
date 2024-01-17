@@ -571,17 +571,17 @@ void EROGENOUS::status(){
     perforation("erogenous");
     if(gen_xy){
         spacebar("glans_d");    unit_split(glans_d,100);unit_mm();
-        spacebar("glans_d_e");  Serial.println(glans_d_e);
-        spacebar("glans_l");    Serial.println(glans_l);
-        spacebar("glans_l_e");  Serial.println(glans_l_e);
+        spacebar("glans_d_e");  unit_split(glans_d_e,100);unit_mm();
+        spacebar("glans_l");    unit_split(glans_l,100);unit_mm();
+        spacebar("glans_l_e");  unit_split(glans_l_e,100);unit_mm();
         
-        spacebar("body_d");     Serial.println(body_d);
-        spacebar("body_d_e");   Serial.println(body_d_e);
-        spacebar("body_l");     Serial.println(body_l);
-        spacebar("body_l_e");   Serial.println(body_l_e);
+        spacebar("body_d");     unit_split(body_d,100);unit_mm();
+        spacebar("body_d_e");   unit_split(body_d_e,100);unit_mm();
+        spacebar("body_l");     unit_split(body_l,100);unit_mm();
+        spacebar("body_l_e");   unit_split(body_l_e,100);unit_mm();
 
-        spacebar("ball_r");     Serial.println(ball_r);
-        spacebar("ball_l");     Serial.println(ball_l);
+        spacebar("ball_r");     unit_split(ball_r,100);Serial.println(" ml");
+        spacebar("ball_l");     unit_split(ball_l,100);Serial.println(" ml");
 
         spacebar("prepuce");    Serial.println(prepuce);
     }else{
