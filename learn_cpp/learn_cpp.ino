@@ -125,7 +125,6 @@ void setup() {
   new_model(true,info_class_parents[e_player*2+1],head_class_parents[e_player*2+1],body_class_parents[e_player*2+1],parts_class_parents[e_player*2+1],stat_class_parents[e_player*2+1],hole_class_parents[e_player*2+1],sense_class_parents[e_player*2+1],nature_class_parents[e_player*2+1],eros_class_parents[e_player*2+1]);
   gene_blended(e_player);
   /***** HARDWARE *****/
-  
   view_status("\nplayer mother",info_class_parents[e_player*2],head_class_parents[e_player*2],body_class_parents[e_player*2],parts_class_parents[e_player*2],stat_class_parents[e_player*2],hole_class_parents[e_player*2],sense_class_parents[e_player*2],nature_class_parents[e_player*2],eros_class_parents[e_player*2]);
   view_status("\nplayer father",info_class_parents[e_player*2+1],head_class_parents[e_player*2+1],body_class_parents[e_player*2+1],parts_class_parents[e_player*2+1],stat_class_parents[e_player*2+1],hole_class_parents[e_player*2+1],sense_class_parents[e_player*2+1],nature_class_parents[e_player*2+1],eros_class_parents[e_player*2+1]);
   view_status("\nPlayer",info_class[e_player],head_class[e_player],body_class[e_player],parts_class[e_player],stat_class[e_player],hole_class[e_player],sense_class[e_player],nature_class[e_player],eros_class[e_player]);
