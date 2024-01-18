@@ -683,14 +683,6 @@ String   EROGENOUS::get_hood(){
     return hood;
 }
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_lip_i_width(){return lip_i_width;}
-/*******************************************************************************************/
-uint16_t EROGENOUS::get_lip_i_length(){return lip_i_length;}
-/*******************************************************************************************/
-uint16_t EROGENOUS::get_lip_i_length_r(){return lip_i_length_r;}
-/*******************************************************************************************/
-uint16_t EROGENOUS::get_lip_i_length_l(){return lip_i_length_l;}
-/*******************************************************************************************/
 String   EROGENOUS::get_lips(){
     String lip = "";
     if(lip_o_texture < 7){lip+="반들거리고";}
@@ -723,33 +715,38 @@ String   EROGENOUS::get_lips(){
     return lip;
 }
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_clit_d(){return clit_d;}
+uint16_t EROGENOUS::get_wing(uint8_t item){
+    if(item == 1) return lip_i_width;
+    else if(item == 2) return lip_i_length;
+    else if(item == 3) return lip_i_length_r;
+    else if(item == 4) return lip_i_length_l;
+}
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_clit_d_e(){return clit_d_e;}
+uint16_t EROGENOUS::get_clit(uint8_t item){
+    if(item == 1) return clit_d;
+    else if(item == 2) return clit_d_e;
+    else if(item == 3) return clit_l;
+    else if(item == 4) return clit_l_e;
+}
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_clit_l(){return clit_l;}
+uint16_t EROGENOUS::get_glans(uint8_t item){
+    if(item == 1) return glans_d;
+    else if(item == 2) return glans_d_e;
+    else if(item == 3) return glans_l;
+    else if(item == 4) return glans_l_e;
+}
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_clit_l_e(){return clit_l_e;}
+uint16_t EROGENOUS::get_body(uint8_t item){
+    if(item == 1) return body_d;
+    else if(item == 2) return body_d_e;
+    else if(item == 3) return body_l;
+    else if(item == 4) return body_l_e;
+}
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_glans_d(){return glans_d;}
-/*******************************************************************************************/
-uint16_t EROGENOUS::get_glans_d_e(){return glans_d_e;}
-/*******************************************************************************************/
-uint16_t EROGENOUS::get_glans_l(){return glans_l;}
-/*******************************************************************************************/
-uint16_t EROGENOUS::get_glans_l_e(){return glans_l_e;}
-/*******************************************************************************************/
-uint16_t EROGENOUS::get_body_d(){return body_d;}
-/*******************************************************************************************/
-uint16_t EROGENOUS::get_body_d_e(){return body_d_e;}
-/*******************************************************************************************/
-uint16_t EROGENOUS::get_body_l(){return body_l;}
-/*******************************************************************************************/
-uint16_t EROGENOUS::get_body_l_e(){return body_l_e;}
-/*******************************************************************************************/
-uint8_t  EROGENOUS::get_ball_r(){return ball_r;}
-/*******************************************************************************************/
-uint8_t  EROGENOUS::get_ball_l(){return ball_l;}
+uint8_t  EROGENOUS::get_balls(bool item){
+    if(item) return ball_r;
+    return ball_l;
+}
 /*******************************************************************************************/
 bool     EROGENOUS::get_prepuce(){return prepuce;}
 /*******************************************************************************************/
@@ -768,13 +765,12 @@ uint8_t EROGENOUS::get_wrinkle(){return wrinkle;}
 /*******************************************************************************************/
 uint16_t EROGENOUS::get_areola(){return areola;}
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_nipple_d(){return nipple_d;}
-/*******************************************************************************************/
-uint16_t EROGENOUS::get_nipple_d_e(){return nipple_d_e;}
-/*******************************************************************************************/
-uint16_t EROGENOUS::get_nipple_h(){return nipple_h;}
-/*******************************************************************************************/
-uint16_t EROGENOUS::get_nipple_h_e(){return nipple_h_e;}
+uint16_t EROGENOUS::get_nipple(uint8_t item){
+    if(item == 1) return nipple_d;
+    else if(item == 2) return nipple_d_e;
+    else if(item == 3) return nipple_h;
+    else if(item == 4) return nipple_h_e;
+}
 /*********************************** EROGENOUS CLASS FUNCTION ******************************/
 /*********************************** STAT CLASS FUNCTION ***********************************/
 STAT::STAT(){}
@@ -885,17 +881,17 @@ void HOLE::status(bool gender){
     spacebar("pressure_a"); unit_split(gape_v,10);Serial.println(" torr");
 }
 /*******************************************************************************************/
-uint16_t HOLE::get_gape_u(){return gape_u;}
+uint16_t HOLE::get_gape(uint8_t item){
+    if(item == 1) return gape_u;
+    else if(item == 2) return gape_v;
+    else if(item == 3) return gape_a;
+}
 /*******************************************************************************************/
-uint16_t HOLE::get_gape_v(){return gape_v;}
-/*******************************************************************************************/
-uint16_t HOLE::get_gape_a(){return gape_a;}
-/*******************************************************************************************/
-uint16_t HOLE::get_pressure_u(){return pressure_u;}
-/*******************************************************************************************/
-uint16_t HOLE::get_pressure_v(){return pressure_v;}
-/*******************************************************************************************/
-uint16_t HOLE::get_pressure_a(){return pressure_a;}
+uint16_t HOLE::get_pressure(uint8_t item){
+    if(item == 1) return pressure_u;
+    else if(item == 2) return pressure_v;
+    else if(item == 3) return pressure_a;
+}
 /*********************************** HOLE CLASS FUNCTION ***********************************/
 /*********************************** SENSE CLASS FUNCTION **********************************/
 SENSE::SENSE(){}

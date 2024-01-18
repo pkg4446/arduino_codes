@@ -139,34 +139,18 @@ class EROGENOUS {
         uint16_t get_hood_width();
         uint16_t get_hood_length();
         String   get_hood();
-        uint16_t get_lip_i_width();
-        uint16_t get_lip_i_length();
-        uint16_t get_lip_i_length_r();
-        uint16_t get_lip_i_length_l();
         String   get_lips();
-        uint16_t get_clit_d();
-        uint16_t get_clit_d_e();
-        uint16_t get_clit_l();
-        uint16_t get_clit_l_e();
-        uint16_t get_glans_d();
-        uint16_t get_glans_d_e();
-        uint16_t get_glans_l();
-        uint16_t get_glans_l_e();
-        uint16_t get_body_d();
-        uint16_t get_body_d_e();
-        uint16_t get_body_l();
-        uint16_t get_body_l_e();
-        uint8_t  get_ball_r();
-        uint8_t  get_ball_l();
+        uint16_t get_wing(uint8_t item);
+        uint16_t get_clit(uint8_t item);
+        uint16_t get_glans(uint8_t item);
+        uint16_t get_body(uint8_t item);
+        uint8_t  get_balls(bool item);
         bool     get_prepuce();
         bool     get_invert();
         String   get_perineum();
         uint8_t  get_wrinkle();
         uint16_t get_areola();
-        uint16_t get_nipple_d();
-        uint16_t get_nipple_d_e();
-        uint16_t get_nipple_h();
-        uint16_t get_nipple_h_e();
+        uint16_t get_nipple(uint8_t item);
 };
 
 class STAT
@@ -209,12 +193,8 @@ class HOLE
         void meiosis(HOLE *mother, HOLE *father);
         void blend(HOLE *mother, HOLE *father);
         void status(bool gender);
-        uint16_t get_gape_u();
-        uint16_t get_gape_v();
-        uint16_t get_gape_a();
-        uint16_t get_pressure_u();
-        uint16_t get_pressure_v();
-        uint16_t get_pressure_a();
+        uint16_t get_gape(uint8_t item);
+        uint16_t get_pressure(uint8_t item);
 };
 
 class SENSE
