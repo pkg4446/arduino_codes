@@ -698,9 +698,9 @@ String   EROGENOUS::get_lips(){
     else if(lip_o_texture < 75){lip+="보드랍고";}
     else{lip+="부드럽고";}
     lip += " ";
-    if(lip_o_shape < 8){lip+="엷은";}
+    if(lip_o_shape < 8){lip+="말랑한";}
     else if(lip_o_shape < 68){lip+="도톰한";}
-    else{lip+="두툼한";}
+    else{lip+="통통한";}
     lip += " 대음순의 안쪽에, 클리토리스 아래로 ";
     if(lip_i_shape < 22){lip+="앙다문 일자의";}
     else if(lip_i_shape < 37){lip+="둥글게 펼쳐진";}
@@ -713,7 +713,7 @@ String   EROGENOUS::get_lips(){
     if(lip_i_texture < 7){lip+="아름다운";}
     else if(lip_i_texture < 26){lip+="매력적인";}
     else if(lip_i_texture < 75){lip+="음란한";}
-    else{lip+="걸래같은";}
+    else{lip+="불고기같은";}
     lip += " 소음순이 질구 아래에서 ";
     if(fork < 8){lip+="매끄럽게";}
     else if(fork < 68){lip+="둥글게 주름져";}
