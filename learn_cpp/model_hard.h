@@ -12,12 +12,13 @@ class INFO
         INFO();
         ~INFO();
         void   generate(bool gender, bool baby);
-        bool   get_gender();
-        String get_family();
-        String get_name();
-        void   status();
-        void   update_family(String familyname);
+        void   set_family(String familyname);
         void   aging();
+        void   status();
+        bool    get_gender();
+        String  get_family();
+        String  get_name();
+        uint8_t get_age();
 };
 
 class HEAD
@@ -38,6 +39,12 @@ class HEAD
         void meiosis(HEAD *mother, HEAD *father);
         void blend(HEAD *mother, HEAD *father);
         void status();
+        String  get_hair_color();
+        uint8_t get_hair_curl();
+        String  get_eye_color();
+        bool    get_eyelid();
+        bool    get_dimple();
+        bool    get_bald();
 };
 
 class BODY {
@@ -60,13 +67,23 @@ class BODY {
         void meiosis(BODY *mother, BODY *father);
         void blend(BODY *mother, BODY *father);
         void status();
-        uint16_t weight();
+        String   get_blood();
+        uint16_t get_weight();
+        uint16_t get_BMI(uint16_t weight);
+        String   get_body_color();
+        String   get_cup();
+        uint16_t get_breast();
+        uint16_t get_height();
+        uint16_t get_chest();
+        uint16_t get_waist();
+        uint16_t get_hip();
+        uint16_t get_leg_ratio();
 };
 
 class EROGENOUS {
     private:
         bool     gen_xy;
-        uint8_t  hood_c;
+        uint8_t  hood_shape;
         uint8_t  hood_start;
         uint8_t  hood_texture;
         uint16_t hood_width;
@@ -119,7 +136,19 @@ class EROGENOUS {
         void meiosis(EROGENOUS *mother, EROGENOUS *father);
         void blend(EROGENOUS *mother, EROGENOUS *father);
         void status();
-        void inspection();
+        uint16_t get_();
+        uint16_t get_();
+        uint16_t get_();
+        uint16_t get_();
+        uint16_t get_();
+        uint16_t get_();
+        uint16_t get_();
+        uint16_t get_();
+        uint16_t get_();
+        uint16_t get_();
+        uint16_t get_();
+        uint16_t get_();
+        uint16_t get_();
 };
 
 class STAT

@@ -52,7 +52,7 @@ void gene_meiosis(uint8_t child, uint8_t target){
 }
 void gene_blended(uint8_t child){
   info_class[child]->   generate(random(2), true);
-  info_class[child]->   update_family(info_class_parents[child]->get_family());
+  info_class[child]->   set_family(info_class_parents[child]->get_family());
   head_class[child]->   blend(head_class_parents[child*2],   head_class_parents[child*2+1]);
   body_class[child]->   blend(body_class_parents[child*2],   body_class_parents[child*2+1]);
   parts_class[child]->  blend(parts_class_parents[child*2],  parts_class_parents[child*2+1]);
@@ -64,7 +64,7 @@ void gene_blended(uint8_t child){
 }
 void pregnant(String family_name){
   info_class[e_baby]->generate(random(2), true);
-  info_class[e_baby]->update_family(family_name);
+  info_class[e_baby]->set_family(family_name);
   view_status("\nnew baby",info_class[e_baby],head_class[e_baby],body_class[e_baby],parts_class[e_baby],stat_class[e_baby],hole_class[e_baby],sense_class[e_baby],nature_class[e_baby],eros_class[e_baby]);
 }
 

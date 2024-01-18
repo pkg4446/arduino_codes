@@ -22,16 +22,12 @@ void INFO::generate(bool gender, bool baby){
     }
 }
 /*******************************************************************************************/
-bool INFO::get_gender(){
-    return gen_xy;
+void INFO::set_family(String familyname){
+    family = familyname;
 }
 /*******************************************************************************************/
-String INFO::get_family(){
-    return family;
-}
-/*******************************************************************************************/
-String INFO::get_name(){
-    return name;
+void INFO::aging(){
+    age += 1;
 }
 /*******************************************************************************************/
 void INFO::status(){
@@ -41,13 +37,13 @@ void INFO::status(){
     spacebar("age");Serial.println(age);
 }
 /*******************************************************************************************/
-void INFO::update_family(String familyname){
-    family = familyname;
-}
+bool    INFO::get_gender(){return gen_xy;}
 /*******************************************************************************************/
-void INFO::aging(){
-    age += 1;
-}
+String  INFO::get_family(){return family;}
+/*******************************************************************************************/
+String  INFO::get_name(){return name;}
+/*******************************************************************************************/
+uint8_t INFO::get_age(){return age;}
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 HEAD::HEAD() {}
@@ -94,6 +90,16 @@ void HEAD::blend(HEAD *mother, HEAD *father){
 }
 /*******************************************************************************************/
 void HEAD::status(){
+    perforation("head");
+    spacebar("hair color"); Serial.println(hair_color);
+    spacebar("eye color");  Serial.println(eye_color);
+    spacebar("hair curl");  Serial.println(hair_curl);
+    spacebar("eyelid");     Serial.println(eyelid);
+    spacebar("dimple");     Serial.println(dimple);
+    spacebar("bald");       Serial.println(bald);
+}
+/*********************************** HEAD CLASS FUNCTION ***********************************/
+String  HEAD::get_hair_color(){
     String color_hair;
     if(hair_color<22){color_hair = "Black";}
     else if(hair_color<41){color_hair = "Blue";}
@@ -101,6 +107,12 @@ void HEAD::status(){
     else if(hair_color<74){color_hair = "Red";}
     else if(hair_color<88){color_hair = "Gold";}
     else{color_hair = "Silver";}
+    return color_hair;
+}
+/*******************************************************************************************/
+uint8_t HEAD::get_hair_curl(){return hair_curl;}
+/*******************************************************************************************/
+String  HEAD::get_eye_color(){
     String color_eye;
     if(eye_color<8){color_eye = "Gold";}
     else if(eye_color<27){color_eye = "Obsidian";}
@@ -108,14 +120,14 @@ void HEAD::status(){
     else if(eye_color<59){color_eye = "Emerald";}
     else if(eye_color<91){color_eye = "Sapphire";}
     else{color_eye = "Ruby";}
-    perforation("head");
-    spacebar("hair color"); Serial.print(hair_color);Serial.print(" : ");Serial.println(color_hair);
-    spacebar("eye color");  Serial.print(color_eye);Serial.print(" : ");Serial.println(eye_color);
-    spacebar("hair curl");  Serial.println(hair_curl);
-    spacebar("eyelid");     Serial.println(eyelid);
-    spacebar("dimple");     Serial.println(dimple);
-    spacebar("bald");       Serial.println(bald);
+    return color_eye;
 }
+/*******************************************************************************************/
+bool    HEAD::get_eyelid(){return eyelid;}
+/*******************************************************************************************/
+bool    HEAD::get_dimple(){return dimple;}
+/*******************************************************************************************/
+bool    HEAD::get_bald(){return bald;}
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 /*********************************** BODY CLASS FUNCTION ***********************************/
 BODY::BODY() {}
@@ -251,6 +263,23 @@ void BODY::blend(BODY *mother, BODY *father){
 }
 /*******************************************************************************************/
 void BODY::status(){
+    perforation("body");
+    spacebar("bloodA");     Serial.println(blood_A);
+    spacebar("bloodB");     Serial.println(blood_B);
+    spacebar("skin color"); Serial.println(body_color);
+    spacebar("height");     Serial.print(height);unit_mm();
+    if(gen_xy){
+        spacebar("hidden");Serial.print(breast);unit_mm();
+    }else{
+        spacebar("breast");Serial.print(breast);unit_mm();
+    }
+    spacebar("chest");      Serial.print(chest);unit_mm();
+    spacebar("waist");      Serial.print(waist);unit_mm();
+    spacebar("hip");        Serial.print(hip);unit_mm();
+    spacebar("leg ratio");  unit_split(leg_ratio,10);Serial.println(" %");
+}
+/*******************************************************************************************/
+String   BODY::get_blood(){
     String blood_type;
     if(blood_A == 0){
         if(blood_B == 1){blood_type = "A";}
@@ -265,59 +294,10 @@ void BODY::status(){
         else if(blood_B == 2){blood_type = "B";}
         else{blood_type = "B";}
     }
-    String color_body;
-    if(body_color<20){color_body = "Black";}
-    else if(body_color<40){color_body = "brown";}
-    else if(body_color<60){color_body = "medium";}
-    else if(body_color<80){color_body = "fiar";}
-    else{color_body = "light";}
-
-
-    perforation("body");
-    spacebar("blood type"); Serial.println(blood_type);
-    spacebar("skin color"); Serial.print(body_color);Serial.print(" : ");Serial.println(color_body);
-    spacebar("height");     Serial.print(height);unit_mm();
-    if(gen_xy){
-        spacebar("hidden");Serial.print(breast);unit_mm();
-    }else{
-        uint16_t cupsize = breast - chest;
-        String   cup     = "Z";
-        if (cupsize < 75)      { cup = "AA";}
-        else if (cupsize <100) { cup = "A";}
-        else if (cupsize <125) { cup = "B";}
-        else if (cupsize <150) { cup = "C";}
-        else if (cupsize <175) { cup = "D";}
-        else if (cupsize <200) { cup = "E";}
-        else if (cupsize <225) { cup = "F";}
-        else if (cupsize <250) { cup = "G";}
-        else if (cupsize <275) { cup = "H";}
-        else if (cupsize <300) { cup = "I";}
-        else if (cupsize <325) { cup = "J";}
-        else if (cupsize <350) { cup = "K";}
-        else if (cupsize <375) { cup = "L";}
-        else if (cupsize <400) { cup = "M";}
-        else if (cupsize <425) { cup = "N";}
-        else if (cupsize <450) { cup = "O";}
-        else if (cupsize <475) { cup = "P";}
-        else if (cupsize <500) { cup = "Q";}
-        else if (cupsize <525) { cup = "R";}
-        else if (cupsize <550) { cup = "S";}
-        else if (cupsize <575) { cup = "T";}
-        else if (cupsize <600) { cup = "U";}
-        else if (cupsize <625) { cup = "V";}
-        else if (cupsize <650) { cup = "W";}
-        else if (cupsize <675) { cup = "X";}
-        else if (cupsize <700) { cup = "Y";}
-        spacebar("cup");Serial.println(cup);
-        spacebar("breast");Serial.print(breast);unit_mm();
-    }
-    spacebar("chest");      Serial.print(chest);unit_mm();
-    spacebar("waist");      Serial.print(waist);unit_mm();
-    spacebar("hip");        Serial.print(hip);unit_mm();
-    spacebar("leg ratio");  unit_split(leg_ratio,10);Serial.println(" %");
+    return blood_type;
 }
-
-uint16_t BODY::weight(){
+/*******************************************************************************************/
+uint16_t BODY::get_weight(){
     float math_pi   = 3.14159265359;
     float height_c  = float(height);
     float chest_c   = float(chest);
@@ -357,6 +337,66 @@ uint16_t BODY::weight(){
     spacebar("BMI");    Serial.println(BMI);
     return ans;
 }
+uint16_t BODY::get_BMI(uint16_t weight){
+    float BMI = weight/(height/10*height/10);
+    return BMI;
+}
+/*******************************************************************************************/
+String   BODY::get_body_color(){
+    String color_body;
+    if(body_color<20){color_body = "Black";}
+    else if(body_color<40){color_body = "brown";}
+    else if(body_color<60){color_body = "medium";}
+    else if(body_color<80){color_body = "fiar";}
+    else{color_body = "light";}
+    return color_body;
+}
+/*******************************************************************************************/
+String   BODY::get_cup(){
+    String   cup     = "NULL";
+    if(!gen_xy){
+        uint16_t cupsize = breast - chest;
+        if (cupsize < 75)      { cup = "AA";}
+        else if (cupsize <100) { cup = "A";}
+        else if (cupsize <125) { cup = "B";}
+        else if (cupsize <150) { cup = "C";}
+        else if (cupsize <175) { cup = "D";}
+        else if (cupsize <200) { cup = "E";}
+        else if (cupsize <225) { cup = "F";}
+        else if (cupsize <250) { cup = "G";}
+        else if (cupsize <275) { cup = "H";}
+        else if (cupsize <300) { cup = "I";}
+        else if (cupsize <325) { cup = "J";}
+        else if (cupsize <350) { cup = "K";}
+        else if (cupsize <375) { cup = "L";}
+        else if (cupsize <400) { cup = "M";}
+        else if (cupsize <425) { cup = "N";}
+        else if (cupsize <450) { cup = "O";}
+        else if (cupsize <475) { cup = "P";}
+        else if (cupsize <500) { cup = "Q";}
+        else if (cupsize <525) { cup = "R";}
+        else if (cupsize <550) { cup = "S";}
+        else if (cupsize <575) { cup = "T";}
+        else if (cupsize <600) { cup = "U";}
+        else if (cupsize <625) { cup = "V";}
+        else if (cupsize <650) { cup = "W";}
+        else if (cupsize <675) { cup = "X";}
+        else if (cupsize <700) { cup = "Y";}
+    }
+    return cup;
+}
+/*******************************************************************************************/
+uint16_t BODY::get_breast(){return breast;}
+/*******************************************************************************************/
+uint16_t BODY::get_height(){return height;}
+/*******************************************************************************************/
+uint16_t BODY::get_chest(){return chest;}
+/*******************************************************************************************/
+uint16_t BODY::get_waist(){return waist;}
+/*******************************************************************************************/
+uint16_t BODY::get_hip(){return hip;}
+/*******************************************************************************************/
+uint16_t BODY::get_leg_ratio(){return leg_ratio;}
 /*********************************** BODY CLASS FUNCTION ***********************************/
 /*********************************** EROGENOUS CLASS FUNCTION ******************************/
 EROGENOUS::EROGENOUS(){}
@@ -366,7 +406,7 @@ EROGENOUS::~EROGENOUS(){destruct();}
 void EROGENOUS::generate(bool gender){
     gen_xy          = gender;
     
-    hood_c          = random(RAND_NUM);
+    hood_shape          = random(RAND_NUM);
     hood_start      = random(RAND_NUM);
     hood_texture    = random(RAND_NUM);
     hood_width      = gaussian_range(1400,30);
@@ -433,7 +473,7 @@ void EROGENOUS::generate(bool gender){
 /*******************************************************************************************/
 void EROGENOUS::change(EROGENOUS *gene){
     gen_xy          = gene->gen_xy;
-    hood_c          = gene->hood_c;
+    hood_shape          = gene->hood_shape;
     hood_start      = gene->hood_start;
     hood_texture    = gene->hood_texture;
     hood_width      = gene->hood_width;
@@ -473,7 +513,7 @@ void EROGENOUS::change(EROGENOUS *gene){
 }
 /*******************************************************************************************/
 void EROGENOUS::meiosis(EROGENOUS *mother, EROGENOUS *father){
-    hood_c          = mutation_u8(mother->hood_c,           father->hood_c);
+    hood_shape          = mutation_u8(mother->hood_shape,           father->hood_shape);
     hood_start      = mutation_u8(mother->hood_start,       father->hood_start);
     hood_texture    = mutation_u8(mother->hood_texture,     father->hood_texture);
 
@@ -521,7 +561,7 @@ void EROGENOUS::meiosis(EROGENOUS *mother, EROGENOUS *father){
 }
 /*******************************************************************************************/
 void EROGENOUS::blend(EROGENOUS *mother, EROGENOUS *father){
-    hood_c          = heredity_u8(mother->hood_c,           father->hood_c);
+    hood_shape          = heredity_u8(mother->hood_shape,           father->hood_shape);
     hood_start      = heredity_u8(mother->hood_start,       father->hood_start);
     hood_texture    = heredity_u8(mother->hood_texture,     father->hood_texture);
 
@@ -585,7 +625,7 @@ void EROGENOUS::status(){
 
         spacebar("prepuce");    Serial.println(prepuce);
     }else{
-        spacebar("hood_c");     Serial.println(hood_c);
+        spacebar("hood_shape");     Serial.println(hood_shape);
         spacebar("hood_start"); Serial.println(hood_start);
         spacebar("hood_texture");Serial.println(hood_texture);
         spacebar("hood_width"); unit_split(hood_width,100);unit_mm();
@@ -615,60 +655,116 @@ void EROGENOUS::status(){
     spacebar("nipple_h");   unit_split(nipple_h,100);unit_mm();
     spacebar("nipple_h_e"); unit_split(nipple_h_e,100);unit_mm();
 }
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_hood_width(){return hood_width;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_hood_length(){return hood_length;}
+/*******************************************************************************************/
+String   EROGENOUS::get_hood(){
+    String hood = "";
+    if(hood_start < 15){hood+="둥근 모양의 시작점에서";}
+    else if(hood_start < 38){hood+="삼각형으로 뻗어";}
+    else if(hood_start < 93){hood+="일자로 뻗어";}
+    else{hood+="역상각형으로";}
+    hood+=" 클리토리스까지 이어지는 ";
+    if(hood_texture < 11){hood+="반들반들한 질감의";}
+    else if(hood_texture < 43){hood+="매끄러운 질감의";}
+    else if(hood_texture < 88){hood+="보드라운 질감의";}
+    else{hood+="주름이 가득한";}
+    hood+=", ";
+    if(hood_shape < 17){hood+="살짝 접힌 모양의 포피가";}
+    else if(hood_shape < 55){hood+="완전히 접힌 모양의 포피가";}
+    else if(hood_shape < 60){hood+="매끄러운 포피가 부드럽게";}
+    else if(hood_shape < 78){hood+="두겹으로 주름진 포피가 살짝";}
+    else if(hood_shape < 98){hood+="두겹으로 주름진 포피가 완전히";}
+    else{hood+="두겹으로 부드럽게 주름진 포피가";}
+    hood+=" 클리토리스를 덮고 있다.";
+    Serial.println(hood);
+    return hood;
+}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_lip_i_width(){return lip_i_width;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_lip_i_length(){return lip_i_length;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_lip_i_length_r(){return lip_i_length_r;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_lip_i_length_l(){return lip_i_length_l;}
+/*******************************************************************************************/
+String   EROGENOUS::get_lips(){
+    String lip = "";
+    if(lip_o_texture < 7){lip+="반들거리고";}
+    else if(lip_o_texture < 26){lip+="매끈하고";}
+    else if(lip_o_texture < 75){lip+="보드랍고";}
+    else{lip+="부드럽고";}
+    lip += " ";
+    if(lip_o_shape < 8){lip+="엷은";}
+    else if(lip_o_shape < 68){lip+="도톰한";}
+    else{lip+="두툼한";}
+    lip += " 대음순의 안쪽에, 클리토리스 아래로 ";
+    if(lip_i_shape < 22){lip+="앙다문 일자의";}
+    else if(lip_i_shape < 37){lip+="둥글게 펼쳐진";}
+    else if(lip_i_shape < 47){lip+="다이아몬드 같은 마르모 모양의";}
+    else if(lip_i_shape < 80){lip+="도자기 모양의";}
+    else if(lip_i_shape < 88){lip+="하트 모양의";}
+    else if(lip_i_shape < 96){lip+="잠자리 모양같은";}
+    else{lip+="호리병 모양같은";}
+    lip += " ";
+    if(lip_i_texture < 7){lip+="아름다운";}
+    else if(lip_i_texture < 26){lip+="매력적인";}
+    else if(lip_i_texture < 75){lip+="음란한";}
+    else{lip+="걸래같은";}
+    lip += " 소음순이 질구 아래에서 ";
+    if(fork < 8){lip+="매끄럽게";}
+    else if(fork < 68){lip+="둥글게 주름져";}
+    else{lip+="잔뜩 주름져";}
+    lip += " 만난다";
+    Serial.println(lip);
+    return ;
+}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_clit_d(){return clit_d;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_clit_d_e(){return clit_d_e;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_clit_l(){return clit_l;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_clit_l_e(){return clit_l_e;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_glans_d(){return glans_d;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_glans_d_e(){return glans_d_e;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_glans_l(){return glans_l;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_glans_l_e(){return glans_l_e;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_(){return ;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_(){return ;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_(){return ;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_(){return ;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_(){return ;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_(){return ;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_(){return ;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_(){return ;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_(){return ;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_(){return ;}
 
 void EROGENOUS::inspection(){
     perforation("parts inspection");
     if(gen_xy){
         Serial.print("prepuce   : ");Serial.println(prepuce);
     }else{
-        String hood = "";
-        if(hood_start < 15){hood+="둥근 모양의 시작점에서";}
-        else if(hood_start < 38){hood+="삼각형으로 뻗어";}
-        else if(hood_start < 93){hood+="일자로 뻗어";}
-        else{hood+="역상각형으로";}
-        hood+=" 클리토리스까지 이어지는 ";
-        if(hood_texture < 11){hood+="반들반들한 질감의";}
-        else if(hood_texture < 43){hood+="매끄러운 질감의";}
-        else if(hood_texture < 88){hood+="보드라운 질감의";}
-        else{hood+="주름이 가득한";}
-        hood+=", ";
-        if(hood_start < 17){hood+="살짝 접힌 모양의 덮개가";}
-        else if(hood_start < 55){hood+="완전히 접힌 모양의 덮개가";}
-        else if(hood_start < 60){hood+="매끄러운 덮개가 부드럽게";}
-        else if(hood_start < 78){hood+="두겹으로 주름진 덮개가 살짝";}
-        else if(hood_start < 98){hood+="두겹으로 주름진 덮개가 완전히";}
-        else{hood+="두겹으로 부드럽게 주름진 덮개가";}
-        hood+=" 클리토리스를 덮고 있다.";
-        Serial.println(hood);
-
-        String lip = "";
-        if(lip_o_texture < 7){lip+="반들거리고";}
-        else if(lip_o_texture < 26){lip+="매끈하고";}
-        else if(lip_o_texture < 75){lip+="보드랍고";}
-        else{lip+="부드럽고";}
-        lip += " ";
-        if(lip_o_shape < 8){lip+="엷은";}
-        else if(lip_o_shape < 68){lip+="도톰한";}
-        else{lip+="두툼한";}
-        lip += " 대음순의 안쪽에, 클리토리스 아래로 ";
-        if(lip_i_shape < 22){lip+="앙다문 일자의";}
-        else if(lip_i_shape < 37){lip+="둥글게 펼쳐진";}
-        else if(lip_i_shape < 47){lip+="다이아몬드 같은 마르모 모양의";}
-        else if(lip_i_shape < 80){lip+="도자기 모양의";}
-        else if(lip_i_shape < 88){lip+="하트 모양의";}
-        else if(lip_i_shape < 96){lip+="잠자리 모양같은";}
-        else{lip+="호리병 모양같은";}
-        lip += " ";
-        if(lip_i_texture < 7){lip+="아름다운";}
-        else if(lip_i_texture < 26){lip+="매력적인";}
-        else if(lip_i_texture < 75){lip+="음란한";}
-        else{lip+="걸래같은";}
-        lip += " 소음순이 질구 아래에서 ";
-        if(fork < 8){lip+="매끄럽게";}
-        else if(fork < 68){lip+="둥글게 주름져";}
-        else{lip+="잔뜩 주름져";}
-        lip += " 만난다";
-        Serial.println(lip);
+        
     }
     String perineum_txt = "회음부는 ";
     if(perineum < 66){perineum_txt+="매끄럽다.";}

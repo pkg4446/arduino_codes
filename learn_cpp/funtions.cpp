@@ -21,7 +21,7 @@ void view_status(String title,INFO *class_info,HEAD *class_head,BODY *class_body
     class_info-> status();
     class_head-> status();
     class_body-> status();
-    class_body-> weight();
+    class_body-> get_weight();
     class_parts->status();
     class_stat-> status();
     class_hole-> status(class_info->get_gender());
