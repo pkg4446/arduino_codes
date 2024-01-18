@@ -16,9 +16,9 @@ Adafruit_SHT31 sht31    = Adafruit_SHT31();
 const uint8_t   LED[2]  = {17,25};
 const uint8_t   FET[5]  = {4,14,13,16,12};
 
-char      deviceID[18];
-int16_t   Temperature[8]  = {14040,};
-int16_t   Humidity[8]     = {14040,};
+char    deviceID[18];
+int16_t Temperature[8]  = {14040,};
+int16_t Humidity[8]     = {14040,};
 
 uint8_t       control_index = 1;
 int16_t       control_temp  = 0;

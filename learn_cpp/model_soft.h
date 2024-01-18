@@ -19,7 +19,12 @@ class EXP
         EXP();
         ~EXP();
         void update(uint8_t item);
+        void update_expansion(bool item);
+        void update_shot(uint8_t item);
         void status(bool gender);
+        uint8_t get(uint8_t item);
+        uint8_t get_expansion(bool item);
+        uint8_t get_shot(uint8_t item);
 };
 
 class CURRENT
@@ -40,6 +45,8 @@ class CURRENT
         ~CURRENT();
         void update(uint8_t item, int8_t count);
         void status();
+        uint16_t get_furr();
+        uint8_t  get(uint8_t item);
 };
 
 class MENS
@@ -53,8 +60,9 @@ class MENS
     public:
         MENS();
         ~MENS();
-        void update();
+        void daily();
         void status();
+        uint8_t get();
 };
 
 class BREED
@@ -68,4 +76,5 @@ class BREED
         ~BREED();
         void update();
         void status();
+        uint8_t get(uint8_t item);
 };

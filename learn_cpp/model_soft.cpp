@@ -20,17 +20,23 @@ EXP::EXP() { //생성자
 EXP::~EXP(){destruct();}
 /*******************************************************************************************/
 void EXP::update(uint8_t item){
-    if(item == 10)      orgasm++;
-    else if(item == 11) squirt++;
-    else if(item == 12) mouth++;
-    else if(item == 13) vagina++;
-    else if(item == 14) anal++;
-    else if(item == 15) urethra++;
-    else if(item == 16) expans_v++;
-    else if(item == 17) expans_a++;
-    else if(item == 18) sperm_m++;
-    else if(item == 19) sperm_v++;
-    else if(item == 20) sperm_a++;
+    if(item == 1)      orgasm++;
+    else if(item == 2) squirt++;
+    else if(item == 3) mouth++;
+    else if(item == 4) vagina++;
+    else if(item == 5) anal++;
+    else if(item == 6) urethra++;
+}
+/*******************************************************************************************/
+void EXP::update_expansion(bool item){
+    if(item) expans_v++;
+    else     expans_a++;
+}
+/*******************************************************************************************/
+void EXP::update_shot(uint8_t item){
+    if(item == 1)      sperm_m++;
+    else if(item == 2) sperm_v++;
+    else if(item == 3) sperm_a++;
 }
 /*******************************************************************************************/
 void EXP::status(bool gender){
@@ -48,6 +54,26 @@ void EXP::status(bool gender){
     spacebar("expans_a");   Serial.println(expans_a);
     spacebar("sperm_m");    Serial.println(sperm_m);
     spacebar("sperm_a");    Serial.println(sperm_a);
+}
+/*******************************************************************************************/
+uint8_t EXP::get(uint8_t item){
+    if(item == 1)      return orgasm;
+    else if(item == 2) return squirt;
+    else if(item == 3) return mouth;
+    else if(item == 4) return vagina;
+    else if(item == 5) return anal;
+    else if(item == 6) return urethra;
+}
+/*******************************************************************************************/
+uint8_t EXP::get_expansion(bool item){
+    if(item) return expans_v;
+    return expans_a;
+}
+/*******************************************************************************************/
+uint8_t EXP::get_shot(uint8_t item){
+    if(item == 1)      return sperm_m;
+    else if(item == 2) return sperm_v;
+    else if(item == 3) return sperm_a;
 }
 /*********************************** EXP CLASS FUNCTION ***********************************/
 /*********************************** CURRENT CLASS FUNCTION ***********************************/
@@ -92,6 +118,22 @@ void CURRENT::status(){
     spacebar("pee");    Serial.println(pee);
     spacebar("poo");    Serial.println(poo);
 }
+/*******************************************************************************************/
+uint16_t CURRENT::get_furr(){
+    return  furr;
+}
+/*******************************************************************************************/
+uint8_t CURRENT::get(uint8_t item){
+    if(item == 1) stamina;
+    else if(item == 2) return mental;
+    else if(item == 3) return stress;
+    else if(item == 4) return horny;
+    else if(item == 5) return fain;
+    else if(item == 6) return ecstasy;
+    else if(item == 7) return lubric;
+    else if(item == 8) return pee;
+    else if(item == 9) return poo;
+}
 /*********************************** CURRENT CLASS FUNCTION ***********************************/
 /*********************************** MENS CLASS FUNCTION ***********************************/
 MENS::MENS() { //생성자
@@ -104,7 +146,7 @@ MENS::MENS() { //생성자
 /*******************************************************************************************/
 MENS::~MENS(){destruct();}
 /*******************************************************************************************/
-void MENS::update(){
+void MENS::daily(){
 }
 /*******************************************************************************************/
 void MENS::status(){
@@ -114,6 +156,13 @@ void MENS::status(){
     spacebar("ovulation"); Serial.println(ovulation);
     spacebar("pregnant");  Serial.println(pregnant);
     spacebar("d_day");     Serial.println(d_day);
+}
+/*******************************************************************************************/
+uint8_t MENS::get(){
+    //normal_safe == 0
+    //warning     == 1
+    //blooding    == 2
+    return 1;
 }
 /*********************************** MENS CLASS FUNCTION ***********************************/
 /*********************************** BREED CLASS FUNCTION ***********************************/
@@ -133,5 +182,11 @@ void BREED::status(){
     spacebar("pregnancy");   Serial.println(pregnancy);
     spacebar("birth");       Serial.println(birth);
     spacebar("miscarriage"); Serial.println(miscarriage);
+}
+/*******************************************************************************************/
+uint8_t BREED::get(uint8_t item){
+    if(item == 1)      return pregnancy;
+    else if(item == 2) return birth;
+    else if(item == 3) return miscarriage;
 }
 /*********************************** BREED CLASS FUNCTION ***********************************/
