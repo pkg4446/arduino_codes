@@ -720,7 +720,7 @@ String   EROGENOUS::get_lips(){
     else{lip+="잔뜩 주름져";}
     lip += " 만난다";
     Serial.println(lip);
-    return ;
+    return lip;
 }
 /*******************************************************************************************/
 uint16_t EROGENOUS::get_clit_d(){return clit_d;}
@@ -739,40 +739,42 @@ uint16_t EROGENOUS::get_glans_l(){return glans_l;}
 /*******************************************************************************************/
 uint16_t EROGENOUS::get_glans_l_e(){return glans_l_e;}
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_(){return ;}
+uint16_t EROGENOUS::get_body_d(){return body_d;}
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_(){return ;}
+uint16_t EROGENOUS::get_body_d_e(){return body_d_e;}
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_(){return ;}
+uint16_t EROGENOUS::get_body_l(){return body_l;}
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_(){return ;}
+uint16_t EROGENOUS::get_body_l_e(){return body_l_e;}
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_(){return ;}
+uint8_t  EROGENOUS::get_ball_r(){return ball_r;}
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_(){return ;}
+uint8_t  EROGENOUS::get_ball_l(){return ball_l;}
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_(){return ;}
+bool     EROGENOUS::get_prepuce(){return prepuce;}
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_(){return ;}
+bool     EROGENOUS::get_invert(){return invert;}
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_(){return ;}
-/*******************************************************************************************/
-uint16_t EROGENOUS::get_(){return ;}
-
-void EROGENOUS::inspection(){
-    perforation("parts inspection");
-    if(gen_xy){
-        Serial.print("prepuce   : ");Serial.println(prepuce);
-    }else{
-        
-    }
+String   EROGENOUS::get_perineum(){
     String perineum_txt = "회음부는 ";
     if(perineum < 66){perineum_txt+="매끄럽다.";}
     else if(perineum < 83){perineum_txt+="회음봉선의 흔적이 보인다.";}
     else if(perineum < 93){perineum_txt+="회음봉선이 항문까지 이어진다.";}
     else{perineum_txt+="도드라지는 회음봉선이 항문까지 이어진다.";}
-    Serial.println(perineum);
+    return perineum_txt ;
 }
+/*******************************************************************************************/
+uint8_t EROGENOUS::get_wrinkle(){return wrinkle;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_areola(){return areola;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_nipple_d(){return nipple_d;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_nipple_d_e(){return nipple_d_e;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_nipple_h(){return nipple_h;}
+/*******************************************************************************************/
+uint16_t EROGENOUS::get_nipple_h_e(){return nipple_h_e;}
 /*********************************** EROGENOUS CLASS FUNCTION ******************************/
 /*********************************** STAT CLASS FUNCTION ***********************************/
 STAT::STAT(){}
@@ -819,6 +821,16 @@ void STAT::status(){
     spacebar("charisma");       Serial.println(charisma);
     spacebar("constitution");   Serial.println(constitution);
 }
+/*******************************************************************************************/
+uint8_t STAT::get_intelligence(){return intelligence;}
+/*******************************************************************************************/
+uint8_t STAT::get_strength(){return strength;}
+/*******************************************************************************************/
+uint8_t STAT::get_dexterity(){return dexterity;}
+/*******************************************************************************************/
+uint8_t STAT::get_charisma(){return charisma;}
+/*******************************************************************************************/
+uint8_t STAT::get_constitution(){return constitution;}
 /*********************************** STAT CLASS FUNCTION ***********************************/
 /*********************************** HOLE CLASS FUNCTION ***********************************/
 HOLE::HOLE(){}
@@ -872,6 +884,18 @@ void HOLE::status(bool gender){
     spacebar("gape_a");     unit_split(gape_a,100);unit_mm();
     spacebar("pressure_a"); unit_split(gape_v,10);Serial.println(" torr");
 }
+/*******************************************************************************************/
+uint16_t HOLE::get_gape_u(){return gape_u;}
+/*******************************************************************************************/
+uint16_t HOLE::get_gape_v(){return gape_v;}
+/*******************************************************************************************/
+uint16_t HOLE::get_gape_a(){return gape_a;}
+/*******************************************************************************************/
+uint16_t HOLE::get_pressure_u(){return pressure_u;}
+/*******************************************************************************************/
+uint16_t HOLE::get_pressure_v(){return pressure_v;}
+/*******************************************************************************************/
+uint16_t HOLE::get_pressure_a(){return pressure_a;}
 /*********************************** HOLE CLASS FUNCTION ***********************************/
 /*********************************** SENSE CLASS FUNCTION **********************************/
 SENSE::SENSE(){}
@@ -927,6 +951,20 @@ void SENSE::status(bool gender){
     spacebar("anal");   Serial.println(anal);
     spacebar("nipple"); Serial.println(nipple);
 }
+/*******************************************************************************************/
+uint8_t SENSE::get_cervix(){return cervix;}
+/*******************************************************************************************/
+uint8_t SENSE::get_skin(){return skin;}
+/*******************************************************************************************/
+uint8_t SENSE::get_clit_glans(){return clit_glans;}
+/*******************************************************************************************/
+uint8_t SENSE::get_vagina_balls(){return vagina_balls;}
+/*******************************************************************************************/
+uint8_t SENSE::get_urethra(){return urethra;}
+/*******************************************************************************************/
+uint8_t SENSE::get_anal(){return anal;}
+/*******************************************************************************************/
+uint8_t SENSE::get_nipple(){return nipple;}
 /*********************************** SENSE CLASS FUNCTION **********************************/
 /*********************************** NATURE CLASS FUNCTION *********************************/
 NATURE::NATURE(){}
@@ -999,6 +1037,8 @@ void NATURE::status(){
     Serial.print("] ");
     Serial.println(mbti);    
 }
+/*******************************************************************************************/
+uint8_t NATURE::get_MBTI(){return mbti;}
 /*********************************** NATURE CLASS FUNCTION *********************************/
 /*********************************** EROS CLASS FUNCTION ***********************************/
 EROS::EROS(){}
@@ -1045,4 +1085,14 @@ void EROS::status(){
     spacebar("exhibition"); Serial.println(exhibition);
     spacebar("service");    Serial.println(service);
 }
+/*******************************************************************************************/
+uint8_t EROS::get_lust(){return lust;}
+/*******************************************************************************************/
+uint8_t EROS::get_sadism(){return sadism;}
+/*******************************************************************************************/
+uint8_t EROS::get_masohism(){return masohism;}
+/*******************************************************************************************/
+uint8_t EROS::get_exhibition(){return exhibition;}
+/*******************************************************************************************/
+uint8_t EROS::get_service(){return service;}
 /*********************************** EROS CLASS FUNCTION ***********************************/

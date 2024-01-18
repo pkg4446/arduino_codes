@@ -136,19 +136,37 @@ class EROGENOUS {
         void meiosis(EROGENOUS *mother, EROGENOUS *father);
         void blend(EROGENOUS *mother, EROGENOUS *father);
         void status();
-        uint16_t get_();
-        uint16_t get_();
-        uint16_t get_();
-        uint16_t get_();
-        uint16_t get_();
-        uint16_t get_();
-        uint16_t get_();
-        uint16_t get_();
-        uint16_t get_();
-        uint16_t get_();
-        uint16_t get_();
-        uint16_t get_();
-        uint16_t get_();
+        uint16_t get_hood_width();
+        uint16_t get_hood_length();
+        String   get_hood();
+        uint16_t get_lip_i_width();
+        uint16_t get_lip_i_length();
+        uint16_t get_lip_i_length_r();
+        uint16_t get_lip_i_length_l();
+        String   get_lips();
+        uint16_t get_clit_d();
+        uint16_t get_clit_d_e();
+        uint16_t get_clit_l();
+        uint16_t get_clit_l_e();
+        uint16_t get_glans_d();
+        uint16_t get_glans_d_e();
+        uint16_t get_glans_l();
+        uint16_t get_glans_l_e();
+        uint16_t get_body_d();
+        uint16_t get_body_d_e();
+        uint16_t get_body_l();
+        uint16_t get_body_l_e();
+        uint8_t  get_ball_r();
+        uint8_t  get_ball_l();
+        bool     get_prepuce();
+        bool     get_invert();
+        String   get_perineum();
+        uint8_t  get_wrinkle();
+        uint16_t get_areola();
+        uint16_t get_nipple_d();
+        uint16_t get_nipple_d_e();
+        uint16_t get_nipple_h();
+        uint16_t get_nipple_h_e();
 };
 
 class STAT
@@ -167,6 +185,11 @@ class STAT
         void meiosis(STAT *mother, STAT *father);
         void blend(STAT *mother, STAT *father);
         void status();
+        uint8_t get_intelligence();
+        uint8_t get_strength();
+        uint8_t get_dexterity();
+        uint8_t get_charisma();
+        uint8_t get_constitution();
 };
 
 class HOLE
@@ -186,6 +209,12 @@ class HOLE
         void meiosis(HOLE *mother, HOLE *father);
         void blend(HOLE *mother, HOLE *father);
         void status(bool gender);
+        uint16_t get_gape_u();
+        uint16_t get_gape_v();
+        uint16_t get_gape_a();
+        uint16_t get_pressure_u();
+        uint16_t get_pressure_v();
+        uint16_t get_pressure_a();
 };
 
 class SENSE
@@ -206,6 +235,13 @@ class SENSE
         void meiosis(SENSE *mother, SENSE *father);
         void blend(SENSE *mother, SENSE *father);
         void status(bool gender);
+        uint8_t get_cervix();
+        uint8_t get_skin();
+        uint8_t get_clit_glans();
+        uint8_t get_vagina_balls();
+        uint8_t get_urethra();
+        uint8_t get_anal();
+        uint8_t get_nipple();
 };
 
 class NATURE
@@ -224,6 +260,7 @@ class NATURE
         void meiosis(NATURE *mother, NATURE *father);
         void blend(NATURE *mother, NATURE *father);
         void status();
+        uint8_t get_MBTI();
 };
 
 class EROS
@@ -242,5 +279,10 @@ class EROS
         void meiosis(EROS *mother, EROS *father);
         void blend(EROS *mother, EROS *father);
         void status();
+        uint8_t get_lust();
+        uint8_t get_sadism();
+        uint8_t get_masohism();
+        uint8_t get_exhibition();
+        uint8_t get_service();
 };
 
