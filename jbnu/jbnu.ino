@@ -1,3 +1,33 @@
+/*  dubble automatic XYZ stage  */
+//- feed resolution: 10um
+//- max speed: 330um/s
+//- pulse generator frequency: recommended ~300KHz, max 40MHz
+
+/********** hardware **********/
+//housing:  Aluminum profile 40x40
+//frame :   Al6061
+
+//actuator:
+//- LM guide:   MGN12H, 
+//- LeadScrew:  8pi lead2
+//- stepmoter:  nema17
+
+//controler:
+//- moter driver: tb6600
+//- power source: 24VDC
+
+//- motherboard:
+// * mcu:                 ESP32-D0WD-V3
+// * mcu to pin isolator: pc817
+// * pin extender ic:     PCA9555
+// * pin out transistor : uln2803
+// * mosfet :             IRFP4227
+// * mosfet  dirver:      UCC27524
+// * power supply:        IRM-20-5
+
+//- display: Nextion HMI LCD, NX8048P070-011C-Y
+/********** hardware **********/
+
 #include "Arduino.h"
 #include "Wire.h"
 /******************************************* Ver 0.2.0   *******************************************/
