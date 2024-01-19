@@ -219,8 +219,7 @@ void get_sensor(unsigned long millisec) {
         Humidity[channel]     = 14040;
       }
     }//for
-
-    if(Temperature[control_index] < control_temp-1){
+    if(!heater_flage && Temperature[control_index] < control_temp-1){
       heater_on    = millis();
       heater_run   = 0;
       heater_flage = true;
