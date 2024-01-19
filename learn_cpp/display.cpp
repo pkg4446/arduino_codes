@@ -24,9 +24,6 @@ void display_hour(uint8_t *clock_hours){
             response += char(pgm_read_byte_near(scene_sun_fall+index));
         }
     }
-
-    Serial.println(strlen_P(scene_sun_rise));
-    Serial.println(strlen_P(scene_sun_fall));
     Serial.println(response);
     paging();
 }
