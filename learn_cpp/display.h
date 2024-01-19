@@ -16,5 +16,4 @@ const PROGMEM char scene_main_opt3[] = "120훈련";
 const PROGMEM char scene_main_opt4[] = "200상점";
 void display_main();
 /*************** Display ***************/
-
 void display_explore();

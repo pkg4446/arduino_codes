@@ -72,20 +72,6 @@ void command_progress(String recieve){
     if(scene_command == 100 || scene_command == 110 || scene_command == 120 || scene_command == 200) scene_number = scene_command;
   }
 }
-
-/***** funtions routine ****/
-void routine_days(unsigned long millisec){
-  if(millisec - routine_daily > one_day_sec){
-    routine_daily = millisec;
-    calendar++;
-    for(uint8_t index=0; index<CLASS_ARRAY; index++){
-      routines_day(info_class[index]->get_gender(),mens_class[index],current_class[index]);
-    }
-    display_newday(calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
-    if(scene_number == 1)   display_main();
-    if(scene_number == 100) display_explore();
-  }
-}
 /***** funtions gene *******/
 void gene_meiosis(uint8_t child, uint8_t target){
   head_class[target]->   meiosis(head_class_parents[child*2],  head_class_parents[child*2+1]);
@@ -124,9 +110,22 @@ void random_incounter(){
   new_model(false,info_class_parents[e_npc*2],head_class_parents[e_npc*2],body_class_parents[e_npc*2],parts_class_parents[e_npc*2],stat_class_parents[e_npc*2],hole_class_parents[e_npc*2],sense_class_parents[e_npc*2],nature_class_parents[e_npc*2],eros_class_parents[e_npc*2]);
   new_model(true,info_class_parents[e_npc*2+1],head_class_parents[e_npc*2+1],body_class_parents[e_npc*2+1],parts_class_parents[e_npc*2+1],stat_class_parents[e_npc*2+1],hole_class_parents[e_npc*2+1],sense_class_parents[e_npc*2+1],nature_class_parents[e_npc*2+1],eros_class_parents[e_npc*2+1]);
   gene_blended(e_npc);
-  view_status("\nnew NPC mother",info_class_parents[e_npc*2],head_class_parents[e_npc*2],body_class_parents[e_npc*2],parts_class_parents[e_npc*2],stat_class_parents[e_npc*2],hole_class_parents[e_npc*2],sense_class_parents[e_npc*2],nature_class_parents[e_npc*2],eros_class_parents[e_npc*2]);
-  view_status("\nnew NPC father",info_class_parents[e_npc*2+1],head_class_parents[e_npc*2+1],body_class_parents[e_npc*2+1],parts_class_parents[e_npc*2+1],stat_class_parents[e_npc*2+1],hole_class_parents[e_npc*2+1],sense_class_parents[e_npc*2+1],nature_class_parents[e_npc*2+1],eros_class_parents[e_npc*2+1]);
+  //view_status("\nnew NPC mother",info_class_parents[e_npc*2],head_class_parents[e_npc*2],body_class_parents[e_npc*2],parts_class_parents[e_npc*2],stat_class_parents[e_npc*2],hole_class_parents[e_npc*2],sense_class_parents[e_npc*2],nature_class_parents[e_npc*2],eros_class_parents[e_npc*2]);
+  //view_status("\nnew NPC father",info_class_parents[e_npc*2+1],head_class_parents[e_npc*2+1],body_class_parents[e_npc*2+1],parts_class_parents[e_npc*2+1],stat_class_parents[e_npc*2+1],hole_class_parents[e_npc*2+1],sense_class_parents[e_npc*2+1],nature_class_parents[e_npc*2+1],eros_class_parents[e_npc*2+1]);
   view_status("\nnew NPC",info_class[e_npc],head_class[e_npc],body_class[e_npc],parts_class[e_npc],stat_class[e_npc],hole_class[e_npc],sense_class[e_npc],nature_class[e_npc],eros_class[e_npc]);
+}
+/***** funtions routine ****/
+void routine_days(unsigned long millisec){
+  if(millisec - routine_daily > one_day_sec){
+    routine_daily = millisec;
+    calendar++;
+    for(uint8_t index=0; index<CLASS_ARRAY; index++){
+      routines_day(info_class[index]->get_gender(),mens_class[index],current_class[index]);
+    }
+    display_newday(calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
+    if(scene_number == 1)   display_main();
+    if(scene_number == 100){display_explore();random_incounter();}
+  }
 }
 /***** funtions ************/
 /***** CORE ****************/
@@ -185,12 +184,6 @@ void setup() {
   }else{
     scene_number = 1;
   }
-  /*
-  view_status("\nplayer mother",info_class_parents[e_player*2],head_class_parents[e_player*2],body_class_parents[e_player*2],parts_class_parents[e_player*2],stat_class_parents[e_player*2],hole_class_parents[e_player*2],sense_class_parents[e_player*2],nature_class_parents[e_player*2],eros_class_parents[e_player*2]);
-  view_status("\nplayer father",info_class_parents[e_player*2+1],head_class_parents[e_player*2+1],body_class_parents[e_player*2+1],parts_class_parents[e_player*2+1],stat_class_parents[e_player*2+1],hole_class_parents[e_player*2+1],sense_class_parents[e_player*2+1],nature_class_parents[e_player*2+1],eros_class_parents[e_player*2+1]);
-  view_status("\nPlayer",info_class[e_player],head_class[e_player],body_class[e_player],parts_class[e_player],stat_class[e_player],hole_class[e_player],sense_class[e_player],nature_class[e_player],eros_class[e_player]);
-  random_incounter();
-  */
   routine_daily = millis();
   display_newday(calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
   display_main();
