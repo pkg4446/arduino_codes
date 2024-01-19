@@ -4,23 +4,29 @@
 
 void display_hour(uint8_t *clock_hours){
     paging();
-    int8_t index_start=0;
-    int8_t index_end=161;
-    if(*clock_hours<3){index_start=0;index_end=20;}
-    else if(*clock_hours<6){index_start=20;index_end=43;}
-    else if(*clock_hours<9){index_start=43;index_end=63;}
-    else if(*clock_hours<12){index_start=63;index_end=83;}
-    else if(*clock_hours<15){index_start=83;index_end=107;}
-    else if(*clock_hours<18){index_start=107;index_end=124;}
-
-    else if(*clock_hours<21){index_start=124;index_end=141;}
-    else{index_start=141;index_end=161;}
-    String response = "";
-    for(uint16_t index=index_start; index<index_end; index++){
-        response += char(pgm_read_byte_near(scene_sun_rise+index));
+    int8_t index_start = 0;
+    int8_t index_end   = 83;
+    String response    = "";
+    if(*clock_hours<12){
+        if(*clock_hours<3){index_start=0;index_end=20;}
+        else if(*clock_hours<6){index_start=20;index_end=43;}
+        else if(*clock_hours<9){index_start=43;index_end=63;}
+        else {index_start=63;index_end=83;}
+        for(uint16_t index=index_start; index<index_end; index++){
+            response += char(pgm_read_byte_near(scene_sun_rise+index));
+        }
+    }else{
+        if(*clock_hours<15){index_start=0;index_end=24;}
+        else if(*clock_hours<18){index_start=24;index_end=41;}
+        else if(*clock_hours<21){index_start=41;index_end=58;}
+        else{index_start=58;index_end=78;}
+        for(uint16_t index=index_start; index<index_end; index++){
+            response += char(pgm_read_byte_near(scene_sun_fall+index));
+        }
     }
-    
+
     Serial.println(strlen_P(scene_sun_rise));
+    Serial.println(strlen_P(scene_sun_fall));
     Serial.println(response);
     paging();
 }
