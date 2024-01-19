@@ -2,11 +2,14 @@
 #include "model_soft.h"
 #include "utility.h"
 #include "database.h"
+#include "display.h"
 #include "funtions.h"
 
 #define WOMAN_ONLY
 //#define ESP32_CORE
-#define CLASS_ARRAY 4
+#define CLASS_ARRAY    4
+#define COMMAND_LENGTH 4
+#define ONE_DAY 10000
 enum models{e_player, e_pet, e_baby, e_npc};
 /***** HARDWARE *****/
 INFO      *info_class[CLASS_ARRAY];
@@ -34,7 +37,11 @@ MENS      *mens_class[CLASS_ARRAY];
 BREED     *breed_class[CLASS_ARRAY];
 /***** HARDWARE *****/
 /***** Variable *****/
+uint32_t      calendar      = 1;
 unsigned long routine_daily = 0UL;
+uint32_t      one_day_sec   = ONE_DAY;
+uint8_t       scene_number  = 0;
+
 /***** Variable *****/
 /*
 void test(){
@@ -44,33 +51,39 @@ void test(){
 */
 /***** funtions ************/
 /***** funtions command ****/
-char command_buf[8] = {0x00,};
+char command_buf[COMMAND_LENGTH] = {0x00,};
 uint8_t command_num = 0;
 void get_command(char ch) {
-  if(ch=='}'){
-    //command_buf[command_num++] = '}';
-    command_buf[command_num] = 0x00;
+  if(ch=='\n'){
+    command_num = 0;
     command_progress(command_buf);
-    command_num = 0;
-  }else if(ch=='{'){
-    command_num = 0;
-    //command_buf[command_num++]='{';
-  }else{
+  }else if(ch!='\r'){
     command_buf[ command_num++ ] = ch;
-    command_num %= 144;
+    command_num %= COMMAND_LENGTH;
   }
 }
-void command_progress(String command){
-  
+void command_progress(String recieve){
+  Serial.println(recieve);
+  if(scene_number == 0){
+    uint8_t scene_command = recieve.toInt();
+    if(scene_command == 1 || scene_command == 2) scene_number = scene_command;
+  }else if(scene_number == 1){
+    uint8_t scene_command = recieve.toInt();
+    if(scene_command == 100 || scene_command == 110 || scene_command == 120 || scene_command == 200) scene_number = scene_command;
+  }
 }
 
 /***** funtions routine ****/
 void routine_days(unsigned long millisec){
-  if(millisec - routine_daily > 1000*5){
+  if(millisec - routine_daily > one_day_sec){
     routine_daily = millisec;
+    calendar++;
     for(uint8_t index=0; index<CLASS_ARRAY; index++){
       routines_day(info_class[index]->get_gender(),mens_class[index],current_class[index]);
     }
+    display_newday(calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
+    if(scene_number == 1)   display_main();
+    if(scene_number == 100) display_explore();
   }
 }
 /***** funtions gene *******/
@@ -122,55 +135,69 @@ void setup() {
   Serial.begin(115200);
   #ifdef ESP32_CORE
     randomSeed(analogRead(39));
-    Serial.println("ESP32");
+    Serial.println("ESP32 ver");
   #else
     randomSeed(analogRead(A0));
-    Serial.println("ARDUINO");
+    Serial.println("ARDUINO ver");
   #endif
-  for(uint8_t index=0; index<CLASS_ARRAY; index++){
-    info_class[index]   = new INFO();
-    head_class[index]   = new HEAD();
-    body_class[index]   = new BODY();
-    parts_class[index]  = new EROGENOUS();
-    stat_class[index]   = new STAT();
-    hole_class[index]   = new HOLE();
-    sense_class[index]  = new SENSE();
-    nature_class[index] = new NATURE();
-    eros_class[index]   = new EROS();
-    /*************************************/
-    mens_class[index]     = new MENS();
-    current_class[index]  = new CURRENT();
-    exp_class[index]      = new EXP();
-    breed_class[index]    = new BREED();
-    mens_class[index]->generate();
-    current_class[index]->generate();
-    exp_class[index]->generate();
-    breed_class[index]->generate();
+  display_boot();
+  while (scene_number==0)
+  {
+    if (Serial.available()) get_command(Serial.read());
   }
-  for(uint8_t index=0; index<CLASS_ARRAY*2; index++){
-    info_class_parents[index]   = new INFO();
-    head_class_parents[index]   = new HEAD();
-    body_class_parents[index]   = new BODY();
-    parts_class_parents[index]  = new EROGENOUS();
-    stat_class_parents[index]   = new STAT();
-    hole_class_parents[index]   = new HOLE();
-    sense_class_parents[index]  = new SENSE();
-    nature_class_parents[index] = new NATURE();
-    eros_class_parents[index]   = new EROS();
+  if(scene_number == 1){
+    for(uint8_t index=0; index<CLASS_ARRAY; index++){
+      info_class[index]   = new INFO();
+      head_class[index]   = new HEAD();
+      body_class[index]   = new BODY();
+      parts_class[index]  = new EROGENOUS();
+      stat_class[index]   = new STAT();
+      hole_class[index]   = new HOLE();
+      sense_class[index]  = new SENSE();
+      nature_class[index] = new NATURE();
+      eros_class[index]   = new EROS();
+      /*************************************/
+      mens_class[index]   = new MENS();
+      current_class[index]= new CURRENT();
+      exp_class[index]    = new EXP();
+      breed_class[index]  = new BREED();
+      mens_class[index]->   generate();
+      current_class[index]->generate();
+      exp_class[index]->    generate();
+      breed_class[index]->  generate();
+    }
+    for(uint8_t index=0; index<CLASS_ARRAY*2; index++){
+      info_class_parents[index]   = new INFO();
+      head_class_parents[index]   = new HEAD();
+      body_class_parents[index]   = new BODY();
+      parts_class_parents[index]  = new EROGENOUS();
+      stat_class_parents[index]   = new STAT();
+      hole_class_parents[index]   = new HOLE();
+      sense_class_parents[index]  = new SENSE();
+      nature_class_parents[index] = new NATURE();
+      eros_class_parents[index]   = new EROS();
+    }
+    /***** HARDWARE *****/
+    new_model(false,info_class_parents[e_player*2],head_class_parents[e_player*2],body_class_parents[e_player*2],parts_class_parents[e_player*2],stat_class_parents[e_player*2],hole_class_parents[e_player*2],sense_class_parents[e_player*2],nature_class_parents[e_player*2],eros_class_parents[e_player*2]);
+    new_model(true,info_class_parents[e_player*2+1],head_class_parents[e_player*2+1],body_class_parents[e_player*2+1],parts_class_parents[e_player*2+1],stat_class_parents[e_player*2+1],hole_class_parents[e_player*2+1],sense_class_parents[e_player*2+1],nature_class_parents[e_player*2+1],eros_class_parents[e_player*2+1]);
+    gene_blended(e_player);
+    /***** HARDWARE *****/
+  }else{
+    scene_number = 1;
   }
-  /***** HARDWARE *****/
-  new_model(false,info_class_parents[e_player*2],head_class_parents[e_player*2],body_class_parents[e_player*2],parts_class_parents[e_player*2],stat_class_parents[e_player*2],hole_class_parents[e_player*2],sense_class_parents[e_player*2],nature_class_parents[e_player*2],eros_class_parents[e_player*2]);
-  new_model(true,info_class_parents[e_player*2+1],head_class_parents[e_player*2+1],body_class_parents[e_player*2+1],parts_class_parents[e_player*2+1],stat_class_parents[e_player*2+1],hole_class_parents[e_player*2+1],sense_class_parents[e_player*2+1],nature_class_parents[e_player*2+1],eros_class_parents[e_player*2+1]);
-  gene_blended(e_player);
-  /***** HARDWARE *****/
+  /*
   view_status("\nplayer mother",info_class_parents[e_player*2],head_class_parents[e_player*2],body_class_parents[e_player*2],parts_class_parents[e_player*2],stat_class_parents[e_player*2],hole_class_parents[e_player*2],sense_class_parents[e_player*2],nature_class_parents[e_player*2],eros_class_parents[e_player*2]);
   view_status("\nplayer father",info_class_parents[e_player*2+1],head_class_parents[e_player*2+1],body_class_parents[e_player*2+1],parts_class_parents[e_player*2+1],stat_class_parents[e_player*2+1],hole_class_parents[e_player*2+1],sense_class_parents[e_player*2+1],nature_class_parents[e_player*2+1],eros_class_parents[e_player*2+1]);
   view_status("\nPlayer",info_class[e_player],head_class[e_player],body_class[e_player],parts_class[e_player],stat_class[e_player],hole_class[e_player],sense_class[e_player],nature_class[e_player],eros_class[e_player]);
   random_incounter();
+  */
+  routine_daily = millis();
+  display_newday(calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
+  display_main();
 }
 /***** loop ****************/
 void loop() {
-  unsigned long millisec = millis();
-  routine_days(millisec);
+  if (Serial.available()) get_command(Serial.read());
+  routine_days(millis());
 }
 /***** CORE ****************/

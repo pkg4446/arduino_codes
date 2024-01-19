@@ -32,9 +32,9 @@ void INFO::aging(){
 /*******************************************************************************************/
 void INFO::status(){
     perforation("info");
-    spacebar("gender");Serial.println(gen_xy);
-    spacebar("full name");Serial.print(family);Serial.println(name);
-    spacebar("age");Serial.println(age);
+    spacebar(false,"gender");Serial.println(gen_xy);
+    spacebar(false,"full name");Serial.print(family);Serial.println(name);
+    spacebar(false,"age");Serial.println(age);
 }
 /*******************************************************************************************/
 bool    INFO::get_gender(){return gen_xy;}
@@ -91,12 +91,12 @@ void HEAD::blend(HEAD *mother, HEAD *father){
 /*******************************************************************************************/
 void HEAD::status(){
     perforation("head");
-    spacebar("hair color"); Serial.println(hair_color);
-    spacebar("eye color");  Serial.println(eye_color);
-    spacebar("hair curl");  Serial.println(hair_curl);
-    spacebar("eyelid");     Serial.println(eyelid);
-    spacebar("dimple");     Serial.println(dimple);
-    spacebar("bald");       Serial.println(bald);
+    spacebar(false,"hair color"); Serial.println(hair_color);
+    spacebar(false,"eye color");  Serial.println(eye_color);
+    spacebar(false,"hair curl");  Serial.println(hair_curl);
+    spacebar(false,"eyelid");     Serial.println(eyelid);
+    spacebar(false,"dimple");     Serial.println(dimple);
+    spacebar(false,"bald");       Serial.println(bald);
 }
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 String  HEAD::get_hair_color(){
@@ -264,19 +264,19 @@ void BODY::blend(BODY *mother, BODY *father){
 /*******************************************************************************************/
 void BODY::status(){
     perforation("body");
-    spacebar("bloodA");     Serial.println(blood_A);
-    spacebar("bloodB");     Serial.println(blood_B);
-    spacebar("skin color"); Serial.println(body_color);
-    spacebar("height");     Serial.print(height);unit_mm();
+    spacebar(false,"bloodA");     Serial.println(blood_A);
+    spacebar(false,"bloodB");     Serial.println(blood_B);
+    spacebar(false,"skin color"); Serial.println(body_color);
+    spacebar(false,"height");     Serial.print(height);unit_mm();
     if(gen_xy){
-        spacebar("hidden");Serial.print(breast);unit_mm();
+        spacebar(false,"hidden");Serial.print(breast);unit_mm();
     }else{
-        spacebar("breast");Serial.print(breast);unit_mm();
+        spacebar(false,"breast");Serial.print(breast);unit_mm();
     }
-    spacebar("chest");      Serial.print(chest);unit_mm();
-    spacebar("waist");      Serial.print(waist);unit_mm();
-    spacebar("hip");        Serial.print(hip);unit_mm();
-    spacebar("leg ratio");  unit_split(leg_ratio,10);Serial.println(" %");
+    spacebar(false,"chest");      Serial.print(chest);unit_mm();
+    spacebar(false,"waist");      Serial.print(waist);unit_mm();
+    spacebar(false,"hip");        Serial.print(hip);unit_mm();
+    spacebar(false,"leg ratio");  unit_split(leg_ratio,10);Serial.println(" %");
 }
 /*******************************************************************************************/
 String   BODY::get_blood(){
@@ -330,11 +330,11 @@ uint16_t BODY::get_weight(){
         if(hight_breast>cupsize/3){hight_cal = hight_breast;}
         float cup_w     = (hight_cal/3)*(diameter/10)*(diameter/50);
         ans += cup_w;
-        spacebar("cup weight");unit_split(cup_w,100);Serial.println(" kg");
+        spacebar(false,"cup weight");unit_split(cup_w,100);Serial.println(" kg");
     }
     float BMI = ans/((height_c/100)*(height_c/100));
-    spacebar("weight"); unit_split(ans,100);Serial.println(" kg");
-    spacebar("BMI");    Serial.println(BMI);
+    spacebar(false,"weight"); unit_split(ans,100);Serial.println(" kg");
+    spacebar(false,"BMI");    Serial.println(BMI);
     return ans;
 }
 uint16_t BODY::get_BMI(uint16_t weight){
@@ -610,50 +610,50 @@ void EROGENOUS::blend(EROGENOUS *mother, EROGENOUS *father){
 void EROGENOUS::status(){
     perforation("erogenous");
     if(gen_xy){
-        spacebar("glans_d");    unit_split(glans_d,100);unit_mm();
-        spacebar("glans_d_e");  unit_split(glans_d_e,100);unit_mm();
-        spacebar("glans_l");    unit_split(glans_l,100);unit_mm();
-        spacebar("glans_l_e");  unit_split(glans_l_e,100);unit_mm();
+        spacebar(false,"glans_d");    unit_split(glans_d,100);unit_mm();
+        spacebar(false,"glans_d_e");  unit_split(glans_d_e,100);unit_mm();
+        spacebar(false,"glans_l");    unit_split(glans_l,100);unit_mm();
+        spacebar(false,"glans_l_e");  unit_split(glans_l_e,100);unit_mm();
         
-        spacebar("body_d");     unit_split(body_d,100);unit_mm();
-        spacebar("body_d_e");   unit_split(body_d_e,100);unit_mm();
-        spacebar("body_l");     unit_split(body_l,100);unit_mm();
-        spacebar("body_l_e");   unit_split(body_l_e,100);unit_mm();
+        spacebar(false,"body_d");     unit_split(body_d,100);unit_mm();
+        spacebar(false,"body_d_e");   unit_split(body_d_e,100);unit_mm();
+        spacebar(false,"body_l");     unit_split(body_l,100);unit_mm();
+        spacebar(false,"body_l_e");   unit_split(body_l_e,100);unit_mm();
 
-        spacebar("ball_r");     unit_split(ball_r,100);Serial.println(" ml");
-        spacebar("ball_l");     unit_split(ball_l,100);Serial.println(" ml");
+        spacebar(false,"ball_r");     unit_split(ball_r,100);Serial.println(" ml");
+        spacebar(false,"ball_l");     unit_split(ball_l,100);Serial.println(" ml");
 
-        spacebar("prepuce");    Serial.println(prepuce);
+        spacebar(false,"prepuce");    Serial.println(prepuce);
     }else{
-        spacebar("hood_shape");     Serial.println(hood_shape);
-        spacebar("hood_start"); Serial.println(hood_start);
-        spacebar("hood_texture");Serial.println(hood_texture);
-        spacebar("hood_width"); unit_split(hood_width,100);unit_mm();
-        spacebar("hood_length");unit_split(hood_length,100);unit_mm();
+        spacebar(false,"hood_shape");     Serial.println(hood_shape);
+        spacebar(false,"hood_start"); Serial.println(hood_start);
+        spacebar(false,"hood_texture");Serial.println(hood_texture);
+        spacebar(false,"hood_width"); unit_split(hood_width,100);unit_mm();
+        spacebar(false,"hood_length");unit_split(hood_length,100);unit_mm();
 
-        spacebar("clit_d");     unit_split(clit_d,100);unit_mm();
-        spacebar("clit_d_e");   unit_split(clit_d_e,100);unit_mm();
-        spacebar("clit_l");     unit_split(clit_l,100);unit_mm();
-        spacebar("clit_l_e");   unit_split(clit_l_e,100);unit_mm();
+        spacebar(false,"clit_d");     unit_split(clit_d,100);unit_mm();
+        spacebar(false,"clit_d_e");   unit_split(clit_d_e,100);unit_mm();
+        spacebar(false,"clit_l");     unit_split(clit_l,100);unit_mm();
+        spacebar(false,"clit_l_e");   unit_split(clit_l_e,100);unit_mm();
 
-        spacebar("wing_shape"); Serial.println(lip_i_shape);
-        spacebar("wing_texture");Serial.println(lip_i_texture);
-        spacebar("wing_width"); unit_split(lip_i_width,100);unit_mm();
-        spacebar("wing_length");unit_split(lip_i_length,100);unit_mm();
-        spacebar("wing_r");     unit_split(lip_i_length_r,100);unit_mm();
-        spacebar("wing_l");     unit_split(lip_i_length_l,100);unit_mm();
-        spacebar("lip_shape");  Serial.println(lip_o_shape);
-        spacebar("lip_texture");Serial.println(lip_o_texture);
+        spacebar(false,"wing_shape"); Serial.println(lip_i_shape);
+        spacebar(false,"wing_texture");Serial.println(lip_i_texture);
+        spacebar(false,"wing_width"); unit_split(lip_i_width,100);unit_mm();
+        spacebar(false,"wing_length");unit_split(lip_i_length,100);unit_mm();
+        spacebar(false,"wing_r");     unit_split(lip_i_length_r,100);unit_mm();
+        spacebar(false,"wing_l");     unit_split(lip_i_length_l,100);unit_mm();
+        spacebar(false,"lip_shape");  Serial.println(lip_o_shape);
+        spacebar(false,"lip_texture");Serial.println(lip_o_texture);
     }
-    spacebar("invert");     Serial.println(invert);
-    spacebar("perineum");   Serial.println(perineum);
-    spacebar("wrinkle");    Serial.println(wrinkle);
+    spacebar(false,"invert");     Serial.println(invert);
+    spacebar(false,"perineum");   Serial.println(perineum);
+    spacebar(false,"wrinkle");    Serial.println(wrinkle);
     
-    spacebar("areola");     unit_split(areola,100);unit_mm();
-    spacebar("nipple_d");   unit_split(nipple_d,100);unit_mm();
-    spacebar("nipple_d_e"); unit_split(nipple_d_e,100);unit_mm();
-    spacebar("nipple_h");   unit_split(nipple_h,100);unit_mm();
-    spacebar("nipple_h_e"); unit_split(nipple_h_e,100);unit_mm();
+    spacebar(false,"areola");     unit_split(areola,100);unit_mm();
+    spacebar(false,"nipple_d");   unit_split(nipple_d,100);unit_mm();
+    spacebar(false,"nipple_d_e"); unit_split(nipple_d_e,100);unit_mm();
+    spacebar(false,"nipple_h");   unit_split(nipple_h,100);unit_mm();
+    spacebar(false,"nipple_h_e"); unit_split(nipple_h_e,100);unit_mm();
 }
 /*******************************************************************************************/
 uint16_t EROGENOUS::get_hood_width(){return hood_width;}
@@ -811,11 +811,11 @@ void STAT::blend(STAT *mother, STAT *father){
 /*******************************************************************************************/
 void STAT::status(){
     perforation("stat");
-    spacebar("intelligence");   Serial.println(intelligence);
-    spacebar("strength");       Serial.println(strength);
-    spacebar("dexterity");      Serial.println(dexterity);
-    spacebar("charisma");       Serial.println(charisma);
-    spacebar("constitution");   Serial.println(constitution);
+    spacebar(false,"intelligence");   Serial.println(intelligence);
+    spacebar(false,"strength");       Serial.println(strength);
+    spacebar(false,"dexterity");      Serial.println(dexterity);
+    spacebar(false,"charisma");       Serial.println(charisma);
+    spacebar(false,"constitution");   Serial.println(constitution);
 }
 /*******************************************************************************************/
 uint8_t STAT::get_intelligence(){return intelligence;}
@@ -872,13 +872,13 @@ void HOLE::blend(HOLE *mother, HOLE *father){
 void HOLE::status(bool gender){
     perforation("hole");
     if(!gender){
-        spacebar("gape_v");     unit_split(gape_v,100);unit_mm();
-        spacebar("pressure_v"); unit_split(pressure_v,10);Serial.println(" torr");
+        spacebar(false,"gape_v");     unit_split(gape_v,100);unit_mm();
+        spacebar(false,"pressure_v"); unit_split(pressure_v,10);Serial.println(" torr");
     }
-    spacebar("gape_u");     unit_split(gape_u,100);unit_mm();
-    spacebar("pressure_u"); unit_split(pressure_u,10);Serial.println(" torr");
-    spacebar("gape_a");     unit_split(gape_a,100);unit_mm();
-    spacebar("pressure_a"); unit_split(gape_v,10);Serial.println(" torr");
+    spacebar(false,"gape_u");     unit_split(gape_u,100);unit_mm();
+    spacebar(false,"pressure_u"); unit_split(pressure_u,10);Serial.println(" torr");
+    spacebar(false,"gape_a");     unit_split(gape_a,100);unit_mm();
+    spacebar(false,"pressure_a"); unit_split(gape_v,10);Serial.println(" torr");
 }
 /*******************************************************************************************/
 uint16_t HOLE::get_gape(uint8_t item){
@@ -937,15 +937,15 @@ void SENSE::blend(SENSE *mother, SENSE *father){
 void SENSE::status(bool gender){
     perforation("sense");
     if(gender){
-        spacebar("balls");  Serial.println(vagina_balls);
+        spacebar(false,"balls");  Serial.println(vagina_balls);
     }else{
-        spacebar("cervix"); Serial.println(cervix);
-        spacebar("vagina"); Serial.println(vagina_balls);
+        spacebar(false,"cervix"); Serial.println(cervix);
+        spacebar(false,"vagina"); Serial.println(vagina_balls);
     }
-    spacebar("skin");   Serial.println(skin);
-    spacebar("urethra");Serial.println(urethra);
-    spacebar("anal");   Serial.println(anal);
-    spacebar("nipple"); Serial.println(nipple);
+    spacebar(false,"skin");   Serial.println(skin);
+    spacebar(false,"urethra");Serial.println(urethra);
+    spacebar(false,"anal");   Serial.println(anal);
+    spacebar(false,"nipple"); Serial.println(nipple);
 }
 /*******************************************************************************************/
 uint8_t SENSE::get_cervix(){return cervix;}
@@ -1013,7 +1013,7 @@ void NATURE::blend(NATURE *mother, NATURE *father){
 /*******************************************************************************************/
 void NATURE::status(){
     perforation("nature");
-    spacebar("MBTI");
+    spacebar(false,"MBTI");
     if(at_e_i>50)Serial.print("E");
     else Serial.print("I");
     if(at_s_n>50)Serial.print("S");
@@ -1075,11 +1075,11 @@ void EROS::blend(EROS *mother, EROS *father){
 /*******************************************************************************************/
 void EROS::status(){
     perforation("eros");
-    spacebar("lust");       Serial.println(lust);
-    spacebar("sadism");     Serial.println(sadism);
-    spacebar("masohism");   Serial.println(masohism);
-    spacebar("exhibition"); Serial.println(exhibition);
-    spacebar("service");    Serial.println(service);
+    spacebar(false,"lust");       Serial.println(lust);
+    spacebar(false,"sadism");     Serial.println(sadism);
+    spacebar(false,"masohism");   Serial.println(masohism);
+    spacebar(false,"exhibition"); Serial.println(exhibition);
+    spacebar(false,"service");    Serial.println(service);
 }
 /*******************************************************************************************/
 uint8_t EROS::get_lust(){return lust;}

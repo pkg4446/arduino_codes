@@ -43,12 +43,12 @@ void MENS::daily(bool gender){
 /*******************************************************************************************/
 void MENS::status(){
     perforation("mens");
-    spacebar("periode");   Serial.println(periode);
-    spacebar("blood");     Serial.println(blood);
-    spacebar("cycle");     Serial.println(cycle);
-    spacebar("ovulation"); Serial.println(ovulation);
-    spacebar("pregnant");  Serial.println(pregnant);
-    spacebar("d_day");     Serial.println(d_day);
+    spacebar(false,"periode");   Serial.println(periode);
+    spacebar(false,"blood");     Serial.println(blood);
+    spacebar(false,"cycle");     Serial.println(cycle);
+    spacebar(false,"ovulation"); Serial.println(ovulation);
+    spacebar(false,"pregnant");  Serial.println(pregnant);
+    spacebar(false,"d_day");     Serial.println(d_day);
 }
 /*******************************************************************************************/
 uint8_t MENS::get(){
@@ -102,16 +102,16 @@ void CURRENT::update(uint8_t item, int8_t count){
 /*******************************************************************************************/
 void CURRENT::status(){
     perforation("currnet");
-    spacebar("furr");   Serial.println(furr);
-    spacebar("lubric"); Serial.println(lubric);
-    spacebar("pee");    Serial.println(pee);
-    spacebar("poo");    Serial.println(poo);
-    spacebar("stamina");Serial.println(stamina);
-    spacebar("mental"); Serial.println(mental);
-    spacebar("stress"); Serial.println(stress);
-    spacebar("horny");  Serial.println(horny);
-    spacebar("fain");   Serial.println(fain);
-    spacebar("ecstasy");Serial.println(ecstasy);
+    spacebar(false,"furr");   Serial.println(furr);
+    spacebar(false,"lubric"); Serial.println(lubric);
+    spacebar(false,"pee");    Serial.println(pee);
+    spacebar(false,"poo");    Serial.println(poo);
+    spacebar(false,"stamina");Serial.println(stamina);
+    spacebar(false,"mental"); Serial.println(mental);
+    spacebar(false,"stress"); Serial.println(stress);
+    spacebar(false,"horny");  Serial.println(horny);
+    spacebar(false,"fain");   Serial.println(fain);
+    spacebar(false,"ecstasy");Serial.println(ecstasy);
 }
 /*******************************************************************************************/
 uint16_t CURRENT::get_furr(){
@@ -119,10 +119,10 @@ uint16_t CURRENT::get_furr(){
 }
 /*******************************************************************************************/
 uint8_t CURRENT::get(uint8_t item){
-    if(item == 1) stamina;
-    else if(item == 2) return lubric;
-    else if(item == 3) return pee;
-    else if(item == 4) return poo;
+    if(item == 1) lubric;
+    else if(item == 2) return pee;
+    else if(item == 3) return poo;
+    else if(item == 4) return stamina;
     else if(item == 5) return mental;
     else if(item == 6) return stress;
     else if(item == 7) return horny;
@@ -171,19 +171,19 @@ void EXP::update_shot(uint8_t item){
 /*******************************************************************************************/
 void EXP::status(bool gender){
     perforation("EXP");
-    spacebar("orgasm");     Serial.println(orgasm);
-    spacebar("squirt");     Serial.println(squirt);
-    spacebar("mouth");      Serial.println(mouth);
+    spacebar(false,"orgasm");     Serial.println(orgasm);
+    spacebar(false,"squirt");     Serial.println(squirt);
+    spacebar(false,"mouth");      Serial.println(mouth);
     if(!gender){
-        spacebar("vagina");     Serial.println(vagina);
-        spacebar("expans_v");   Serial.println(expans_v);
-        spacebar("sperm_v");    Serial.println(sperm_v);
+        spacebar(false,"vagina");     Serial.println(vagina);
+        spacebar(false,"expans_v");   Serial.println(expans_v);
+        spacebar(false,"sperm_v");    Serial.println(sperm_v);
     }
-    spacebar("anal");       Serial.println(anal);
-    spacebar("urethra");    Serial.println(urethra);
-    spacebar("expans_a");   Serial.println(expans_a);
-    spacebar("sperm_m");    Serial.println(sperm_m);
-    spacebar("sperm_a");    Serial.println(sperm_a);
+    spacebar(false,"anal");       Serial.println(anal);
+    spacebar(false,"urethra");    Serial.println(urethra);
+    spacebar(false,"expans_a");   Serial.println(expans_a);
+    spacebar(false,"sperm_m");    Serial.println(sperm_m);
+    spacebar(false,"sperm_a");    Serial.println(sperm_a);
 }
 /*******************************************************************************************/
 uint8_t EXP::get(uint8_t item){
@@ -222,9 +222,9 @@ void BREED::update(){
 /*******************************************************************************************/
 void BREED::status(){
     perforation("mens");
-    spacebar("pregnancy");   Serial.println(pregnancy);
-    spacebar("birth");       Serial.println(birth);
-    spacebar("miscarriage"); Serial.println(miscarriage);
+    spacebar(false,"pregnancy");   Serial.println(pregnancy);
+    spacebar(false,"birth");       Serial.println(birth);
+    spacebar(false,"miscarriage"); Serial.println(miscarriage);
 }
 /*******************************************************************************************/
 uint8_t BREED::get(uint8_t item){

@@ -1,5 +1,5 @@
 #include "utility.h"
-
+#define LINE_NUM 90
 //distribution table
 //0.13 ,0.26 ,0.39 ,0.52 ,0.67 ,0.84 ,1.04 ,1.28 ,1.65
 uint16_t gaussian_range(uint16_t average, uint16_t standard_deviation){
@@ -37,6 +37,13 @@ uint16_t get_gaussian(uint16_t average, uint16_t standard_deviation, uint16_t va
     return uint16_t(response);
 }
 
+void paging(){
+    for(uint8_t index=0; index<LINE_NUM; index++){
+        Serial.print("-");
+    }
+    Serial.println("-");
+}
+
 void swap(uint16_t *num_a, uint16_t *num_b){
     uint16_t temporary = *num_a;
     *num_a = *num_b;
@@ -44,17 +51,30 @@ void swap(uint16_t *num_a, uint16_t *num_b){
 }
 void perforation(String text){
     Serial.print(text);
-    for(uint8_t index=text.length(); index<36; index++){
+    for(uint8_t index=text.length(); index<LINE_NUM; index++){
         Serial.print("*");
     }
     Serial.println("*");
 }
-void spacebar(String text){
+void spacebar(bool korea, String text){
+    uint8_t text_end = 15;
+    if(korea) text_end += text.length()/3;
     Serial.print(text);
-    for(uint8_t index=text.length(); index<15; index++){
+    for(uint8_t index=text.length(); index<text_end; index++){
         Serial.print(" ");
     }
     Serial.print(": ");
+}
+void spacebar_option(bool korea, String number, String text){
+    Serial.print("[");
+    Serial.print(number);
+    Serial.print("] ");
+    uint8_t text_end = 18;
+    if(korea) text_end += text.length()/3;
+    Serial.print(text);
+    for(uint8_t index=text.length(); index<text_end; index++){
+        Serial.print(" ");
+    }
 }
 void unit_split(uint16_t values, uint16_t divides){
     Serial.print(values/divides);

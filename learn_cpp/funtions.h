@@ -1,3 +1,4 @@
+#pragma once
 #include "model_hard.h"
 #include "model_soft.h"
 
