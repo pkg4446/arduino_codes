@@ -8,6 +8,7 @@ MENS::MENS() {}
 MENS::~MENS(){destruct();}
 /*******************************************************************************************/
 void MENS::generate(){
+    periode   = 28;
     blood     = 0;
     cycle     = 0;
     ovulation = 0;
@@ -15,11 +16,34 @@ void MENS::generate(){
     d_day     = 0;
 }
 /*******************************************************************************************/
-void MENS::daily(){
+void MENS::daily(bool gender){
+    if(!gender){
+        if(pregnant){
+            if(d_day > 0) d_day--;
+            else{
+                pregnant = false;
+                //baby out
+            }
+        }else{
+            if(cycle == 0){
+                if(periode<21)      periode = 20;
+                else if(periode>35) periode = 36;
+                cycle = gaussian_range(periode,2);
+                blood = random(1,cycle/5);
+                ovulation = gaussian_range(cycle/2,1);
+                periode   = (2*periode + cycle)/3;
+            }else{
+                if(cycle > 0) cycle -= 1;
+                if(blood > 0) blood -= 1;
+                if(ovulation > 0) ovulation -= 1;
+            }
+        }
+    }
 }
 /*******************************************************************************************/
 void MENS::status(){
     perforation("mens");
+    spacebar("periode");   Serial.println(periode);
     spacebar("blood");     Serial.println(blood);
     spacebar("cycle");     Serial.println(cycle);
     spacebar("ovulation"); Serial.println(ovulation);
@@ -29,9 +53,15 @@ void MENS::status(){
 /*******************************************************************************************/
 uint8_t MENS::get(){
     //normal_safe == 0
-    //warning     == 1
+    //egg drop    == 1
     //blooding    == 2
-    return 1;
+    if(blood>0) return 2;
+    else if((ovulation != 0) && (ovulation < 3)) return 1;
+    return 0;
+}
+/*******************************************************************************************/
+bool MENS::get_pregnant(){
+    return pregnant;
 }
 /*********************************** MENS CLASS FUNCTION ***********************************/
 /*********************************** CURRENT CLASS FUNCTION ***********************************/
@@ -40,46 +70,48 @@ CURRENT::CURRENT() {}
 CURRENT::~CURRENT(){destruct();}
 /*******************************************************************************************/
 void CURRENT::generate(){
-    furr    = 0;
+    furr    = random(5000);
+    lubric  = 0;
+    pee     = 0;
+    poo     = 0;
     stamina = 0;
     mental  = 0;
     stress  = 0;
     horny   = 0;
     fain    = 0;
     ecstasy = 0;
-    lubric  = 0;
-    pee     = 0;
-    poo     = 0;
 }
 /*******************************************************************************************/
-void CURRENT::grown(){
-    furr += 20;
+void CURRENT::daily(){
+    if(pee < 5000) furr += random(10,30);
+    if(pee < 100)  pee += random(5,50);
+    if(poo < 100)  poo += random(1,10);
 }
 /*******************************************************************************************/
 void CURRENT::update(uint8_t item, int8_t count){
     if(item == 1) stamina += count;
-    else if(item == 2) mental  += count;
-    else if(item == 3) stress  += count;
-    else if(item == 4) horny   += count;
-    else if(item == 5) fain    += count;
-    else if(item == 6) ecstasy += count;
-    else if(item == 7) lubric  += count;
-    else if(item == 8) pee     += count;
-    else if(item == 9) poo     += count;
+    else if(item == 2) lubric  += count;
+    else if(item == 3) pee     += count;
+    else if(item == 4) poo     += count;
+    else if(item == 5) mental  += count;
+    else if(item == 6) stress  += count;
+    else if(item == 7) horny   += count;
+    else if(item == 8) fain    += count;
+    else if(item == 9) ecstasy += count;
 }
 /*******************************************************************************************/
 void CURRENT::status(){
     perforation("currnet");
     spacebar("furr");   Serial.println(furr);
+    spacebar("lubric"); Serial.println(lubric);
+    spacebar("pee");    Serial.println(pee);
+    spacebar("poo");    Serial.println(poo);
     spacebar("stamina");Serial.println(stamina);
     spacebar("mental"); Serial.println(mental);
     spacebar("stress"); Serial.println(stress);
     spacebar("horny");  Serial.println(horny);
     spacebar("fain");   Serial.println(fain);
     spacebar("ecstasy");Serial.println(ecstasy);
-    spacebar("lubric"); Serial.println(lubric);
-    spacebar("pee");    Serial.println(pee);
-    spacebar("poo");    Serial.println(poo);
 }
 /*******************************************************************************************/
 uint16_t CURRENT::get_furr(){
@@ -88,14 +120,14 @@ uint16_t CURRENT::get_furr(){
 /*******************************************************************************************/
 uint8_t CURRENT::get(uint8_t item){
     if(item == 1) stamina;
-    else if(item == 2) return mental;
-    else if(item == 3) return stress;
-    else if(item == 4) return horny;
-    else if(item == 5) return fain;
-    else if(item == 6) return ecstasy;
-    else if(item == 7) return lubric;
-    else if(item == 8) return pee;
-    else if(item == 9) return poo;
+    else if(item == 2) return lubric;
+    else if(item == 3) return pee;
+    else if(item == 4) return poo;
+    else if(item == 5) return mental;
+    else if(item == 6) return stress;
+    else if(item == 7) return horny;
+    else if(item == 8) return fain;
+    else if(item == 9) return ecstasy;
 }
 /*********************************** CURRENT CLASS FUNCTION ***********************************/
 /*********************************** EXP CLASS FUNCTION ***********************************/

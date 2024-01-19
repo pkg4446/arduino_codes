@@ -33,13 +33,47 @@ CURRENT   *current_class[CLASS_ARRAY];
 MENS      *mens_class[CLASS_ARRAY];
 BREED     *breed_class[CLASS_ARRAY];
 /***** HARDWARE *****/
+/***** Variable *****/
+unsigned long routine_daily = 0UL;
+/***** Variable *****/
 /*
 void test(){
   INFO      *info_gene  = new INFO();
   delete info_gene;
 }
 */
-/***** funtions *****/
+/***** funtions ************/
+/***** funtions command ****/
+char command_buf[8] = {0x00,};
+uint8_t command_num = 0;
+void get_command(char ch) {
+  if(ch=='}'){
+    //command_buf[command_num++] = '}';
+    command_buf[command_num] = 0x00;
+    command_progress(command_buf);
+    command_num = 0;
+  }else if(ch=='{'){
+    command_num = 0;
+    //command_buf[command_num++]='{';
+  }else{
+    command_buf[ command_num++ ] = ch;
+    command_num %= 144;
+  }
+}
+void command_progress(String command){
+  
+}
+
+/***** funtions routine ****/
+void routine_days(unsigned long millisec){
+  if(millisec - routine_daily > 1000*5){
+    routine_daily = millisec;
+    for(uint8_t index=0; index<CLASS_ARRAY; index++){
+      routines_day(info_class[index]->get_gender(),mens_class[index],current_class[index]);
+    }
+  }
+}
+/***** funtions gene *******/
 void gene_meiosis(uint8_t child, uint8_t target){
   head_class[target]->   meiosis(head_class_parents[child*2],  head_class_parents[child*2+1]);
   body_class[target]->   meiosis(body_class_parents[child*2],  body_class_parents[child*2+1]);
@@ -81,7 +115,9 @@ void random_incounter(){
   view_status("\nnew NPC father",info_class_parents[e_npc*2+1],head_class_parents[e_npc*2+1],body_class_parents[e_npc*2+1],parts_class_parents[e_npc*2+1],stat_class_parents[e_npc*2+1],hole_class_parents[e_npc*2+1],sense_class_parents[e_npc*2+1],nature_class_parents[e_npc*2+1],eros_class_parents[e_npc*2+1]);
   view_status("\nnew NPC",info_class[e_npc],head_class[e_npc],body_class[e_npc],parts_class[e_npc],stat_class[e_npc],hole_class[e_npc],sense_class[e_npc],nature_class[e_npc],eros_class[e_npc]);
 }
-/***** funtions *****/
+/***** funtions ************/
+/***** CORE ****************/
+/***** setup ***************/
 void setup() {
   Serial.begin(115200);
   #ifdef ESP32_CORE
@@ -102,10 +138,14 @@ void setup() {
     nature_class[index] = new NATURE();
     eros_class[index]   = new EROS();
     /*************************************/
-    exp_class[index]      = new EXP();
-    current_class[index]  = new CURRENT();
     mens_class[index]     = new MENS();
+    current_class[index]  = new CURRENT();
+    exp_class[index]      = new EXP();
     breed_class[index]    = new BREED();
+    mens_class[index]->generate();
+    current_class[index]->generate();
+    exp_class[index]->generate();
+    breed_class[index]->generate();
   }
   for(uint8_t index=0; index<CLASS_ARRAY*2; index++){
     info_class_parents[index]   = new INFO();
@@ -128,8 +168,9 @@ void setup() {
   view_status("\nPlayer",info_class[e_player],head_class[e_player],body_class[e_player],parts_class[e_player],stat_class[e_player],hole_class[e_player],sense_class[e_player],nature_class[e_player],eros_class[e_player]);
   random_incounter();
 }
-
+/***** loop ****************/
 void loop() {
-  // put your main code here, to run repeatedly:
-  // newface();
+  unsigned long millisec = millis();
+  routine_days(millisec);
 }
+/***** CORE ****************/

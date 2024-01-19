@@ -20,6 +20,7 @@ uint16_t gaussian_range(uint16_t average, uint16_t standard_deviation){
     else{range = standard_deviation*4;}
 
     if(flage){response += range;}
+    else if(range > response){response = range-response;}
     else{response -= range;}
 
     return response;
