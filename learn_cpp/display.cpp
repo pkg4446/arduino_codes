@@ -3,7 +3,6 @@
 
 
 void display_hour(uint8_t *clock_hours){
-    paging();
     int8_t index_start = 0;
     int8_t index_end   = 83;
     String response    = "";
@@ -25,7 +24,6 @@ void display_hour(uint8_t *clock_hours){
         }
     }
     Serial.println(response);
-    paging();
 }
 
 void display_newday(uint32_t *calendar, INFO *class_info, STAT *class_stat, MENS *class_mens, CURRENT *class_current){
