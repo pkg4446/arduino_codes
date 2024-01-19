@@ -2,8 +2,108 @@
 #include "utility.h"
 #include "model_soft.h"
 
+/*********************************** MENS CLASS FUNCTION ***********************************/
+MENS::MENS() {}
+/*******************************************************************************************/
+MENS::~MENS(){destruct();}
+/*******************************************************************************************/
+void MENS::generate(){
+    blood     = 0;
+    cycle     = 0;
+    ovulation = 0;
+    pregnant  = 0;
+    d_day     = 0;
+}
+/*******************************************************************************************/
+void MENS::daily(){
+}
+/*******************************************************************************************/
+void MENS::status(){
+    perforation("mens");
+    spacebar("blood");     Serial.println(blood);
+    spacebar("cycle");     Serial.println(cycle);
+    spacebar("ovulation"); Serial.println(ovulation);
+    spacebar("pregnant");  Serial.println(pregnant);
+    spacebar("d_day");     Serial.println(d_day);
+}
+/*******************************************************************************************/
+uint8_t MENS::get(){
+    //normal_safe == 0
+    //warning     == 1
+    //blooding    == 2
+    return 1;
+}
+/*********************************** MENS CLASS FUNCTION ***********************************/
+/*********************************** CURRENT CLASS FUNCTION ***********************************/
+CURRENT::CURRENT() {}
+/*******************************************************************************************/
+CURRENT::~CURRENT(){destruct();}
+/*******************************************************************************************/
+void CURRENT::generate(){
+    furr    = 0;
+    stamina = 0;
+    mental  = 0;
+    stress  = 0;
+    horny   = 0;
+    fain    = 0;
+    ecstasy = 0;
+    lubric  = 0;
+    pee     = 0;
+    poo     = 0;
+}
+/*******************************************************************************************/
+void CURRENT::grown(){
+    furr += 20;
+}
+/*******************************************************************************************/
+void CURRENT::update(uint8_t item, int8_t count){
+    if(item == 1) stamina += count;
+    else if(item == 2) mental  += count;
+    else if(item == 3) stress  += count;
+    else if(item == 4) horny   += count;
+    else if(item == 5) fain    += count;
+    else if(item == 6) ecstasy += count;
+    else if(item == 7) lubric  += count;
+    else if(item == 8) pee     += count;
+    else if(item == 9) poo     += count;
+}
+/*******************************************************************************************/
+void CURRENT::status(){
+    perforation("currnet");
+    spacebar("furr");   Serial.println(furr);
+    spacebar("stamina");Serial.println(stamina);
+    spacebar("mental"); Serial.println(mental);
+    spacebar("stress"); Serial.println(stress);
+    spacebar("horny");  Serial.println(horny);
+    spacebar("fain");   Serial.println(fain);
+    spacebar("ecstasy");Serial.println(ecstasy);
+    spacebar("lubric"); Serial.println(lubric);
+    spacebar("pee");    Serial.println(pee);
+    spacebar("poo");    Serial.println(poo);
+}
+/*******************************************************************************************/
+uint16_t CURRENT::get_furr(){
+    return  furr;
+}
+/*******************************************************************************************/
+uint8_t CURRENT::get(uint8_t item){
+    if(item == 1) stamina;
+    else if(item == 2) return mental;
+    else if(item == 3) return stress;
+    else if(item == 4) return horny;
+    else if(item == 5) return fain;
+    else if(item == 6) return ecstasy;
+    else if(item == 7) return lubric;
+    else if(item == 8) return pee;
+    else if(item == 9) return poo;
+}
+/*********************************** CURRENT CLASS FUNCTION ***********************************/
 /*********************************** EXP CLASS FUNCTION ***********************************/
-EXP::EXP() { //생성자
+EXP::EXP() {}
+/*******************************************************************************************/
+EXP::~EXP(){destruct();}
+/*******************************************************************************************/
+void EXP::generate(){
     orgasm  = 0;
     squirt  = 0;
     mouth   = 0;
@@ -16,8 +116,6 @@ EXP::EXP() { //생성자
     sperm_v = 0;
     sperm_a = 0;
 }
-/*******************************************************************************************/
-EXP::~EXP(){destruct();}
 /*******************************************************************************************/
 void EXP::update(uint8_t item){
     if(item == 1)      orgasm++;
@@ -76,103 +174,16 @@ uint8_t EXP::get_shot(uint8_t item){
     else if(item == 3) return sperm_a;
 }
 /*********************************** EXP CLASS FUNCTION ***********************************/
-/*********************************** CURRENT CLASS FUNCTION ***********************************/
-CURRENT::CURRENT() { //생성자
-    furr;      //모근 깊이 45, 하루 2mm max 5000
-    stamina;
-    mental;
-    stress;
-    horny;
-    fain;
-    ecstasy;
-    lubric;
-    pee;
-    poo;
-}
-/*******************************************************************************************/
-CURRENT::~CURRENT(){destruct();}
-/*******************************************************************************************/
-void CURRENT::update(uint8_t item, int8_t count){
-    if(item == 10)      furr    += count;
-    else if(item == 11) stamina += count;
-    else if(item == 12) mental  += count;
-    else if(item == 13) stress  += count;
-    else if(item == 14) horny   += count;
-    else if(item == 15) fain    += count;
-    else if(item == 16) ecstasy += count;
-    else if(item == 17) lubric  += count;
-    else if(item == 18) pee     += count;
-    else if(item == 19) poo     += count;
-}
-/*******************************************************************************************/
-void CURRENT::status(){
-    perforation("currnet");
-    spacebar("furr");   Serial.println(furr);
-    spacebar("stamina");Serial.println(stamina);
-    spacebar("mental"); Serial.println(mental);
-    spacebar("stress"); Serial.println(stress);
-    spacebar("horny");  Serial.println(horny);
-    spacebar("fain");   Serial.println(fain);
-    spacebar("ecstasy");Serial.println(ecstasy);
-    spacebar("lubric"); Serial.println(lubric);
-    spacebar("pee");    Serial.println(pee);
-    spacebar("poo");    Serial.println(poo);
-}
-/*******************************************************************************************/
-uint16_t CURRENT::get_furr(){
-    return  furr;
-}
-/*******************************************************************************************/
-uint8_t CURRENT::get(uint8_t item){
-    if(item == 1) stamina;
-    else if(item == 2) return mental;
-    else if(item == 3) return stress;
-    else if(item == 4) return horny;
-    else if(item == 5) return fain;
-    else if(item == 6) return ecstasy;
-    else if(item == 7) return lubric;
-    else if(item == 8) return pee;
-    else if(item == 9) return poo;
-}
-/*********************************** CURRENT CLASS FUNCTION ***********************************/
-/*********************************** MENS CLASS FUNCTION ***********************************/
-MENS::MENS() { //생성자
-    blood;
-    cycle;
-    ovulation;
-    pregnant;
-    d_day;
-}
-/*******************************************************************************************/
-MENS::~MENS(){destruct();}
-/*******************************************************************************************/
-void MENS::daily(){
-}
-/*******************************************************************************************/
-void MENS::status(){
-    perforation("mens");
-    spacebar("blood");     Serial.println(blood);
-    spacebar("cycle");     Serial.println(cycle);
-    spacebar("ovulation"); Serial.println(ovulation);
-    spacebar("pregnant");  Serial.println(pregnant);
-    spacebar("d_day");     Serial.println(d_day);
-}
-/*******************************************************************************************/
-uint8_t MENS::get(){
-    //normal_safe == 0
-    //warning     == 1
-    //blooding    == 2
-    return 1;
-}
-/*********************************** MENS CLASS FUNCTION ***********************************/
 /*********************************** BREED CLASS FUNCTION ***********************************/
-BREED::BREED() { //생성자
-    pregnancy;
-    birth;
-    miscarriage;
-}
+BREED::BREED() {}
 /*******************************************************************************************/
 BREED::~BREED(){destruct();}
+/*******************************************************************************************/
+void BREED::generate(){
+    pregnancy   = 0;
+    birth       = 0;
+    miscarriage = 0;
+}
 /*******************************************************************************************/
 void BREED::update(){
 }

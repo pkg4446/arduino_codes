@@ -1,30 +1,21 @@
 #pragma once
 #include "arduino.h"
 
-class EXP
+class MENS
 {
     private:
-        uint8_t orgasm;
-        uint8_t squirt;
-        uint8_t mouth;
-        uint8_t vagina;
-        uint8_t anal;
-        uint8_t urethra;
-        uint8_t expans_v;
-        uint8_t expans_a;
-        uint8_t sperm_m;
-        uint8_t sperm_v;
-        uint8_t sperm_a;
+        uint8_t blood;
+        uint8_t cycle;
+        uint8_t ovulation;
+        uint8_t pregnant;
+        uint8_t d_day;
     public:
-        EXP();
-        ~EXP();
-        void update(uint8_t item);
-        void update_expansion(bool item);
-        void update_shot(uint8_t item);
-        void status(bool gender);
-        uint8_t get(uint8_t item);
-        uint8_t get_expansion(bool item);
-        uint8_t get_shot(uint8_t item);
+        MENS();
+        ~MENS();
+        void generate();
+        void daily();
+        void status();
+        uint8_t get();
 };
 
 class CURRENT
@@ -43,26 +34,39 @@ class CURRENT
     public:
         CURRENT();
         ~CURRENT();
+        void generate();
+        void grown();
         void update(uint8_t item, int8_t count);
         void status();
         uint16_t get_furr();
         uint8_t  get(uint8_t item);
 };
 
-class MENS
+class EXP
 {
     private:
-        uint8_t blood;
-        uint8_t cycle;
-        uint8_t ovulation;
-        uint8_t pregnant;
-        uint8_t d_day;
+        uint8_t orgasm;
+        uint8_t squirt;
+        uint8_t mouth;
+        uint8_t vagina;
+        uint8_t anal;
+        uint8_t urethra;
+        uint8_t expans_v;
+        uint8_t expans_a;
+        uint8_t sperm_m;
+        uint8_t sperm_v;
+        uint8_t sperm_a;
     public:
-        MENS();
-        ~MENS();
-        void daily();
-        void status();
-        uint8_t get();
+        EXP();
+        ~EXP();
+        void generate();
+        void update(uint8_t item);
+        void update_expansion(bool item);
+        void update_shot(uint8_t item);
+        void status(bool gender);
+        uint8_t get(uint8_t item);
+        uint8_t get_expansion(bool item);
+        uint8_t get_shot(uint8_t item);
 };
 
 class BREED
@@ -74,6 +78,7 @@ class BREED
     public:
         BREED();
         ~BREED();
+        void generate();
         void update();
         void status();
         uint8_t get(uint8_t item);
