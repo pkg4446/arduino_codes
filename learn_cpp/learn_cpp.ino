@@ -9,7 +9,7 @@
 //#define ESP32_CORE
 #define CLASS_ARRAY    4
 #define COMMAND_LENGTH 4
-#define ONE_DAY 10000
+#define ONE_HOUR 1000
 enum models{e_player, e_pet, e_baby, e_npc};
 /***** HARDWARE *****/
 INFO      *info_class[CLASS_ARRAY];
@@ -37,10 +37,14 @@ MENS      *mens_class[CLASS_ARRAY];
 BREED     *breed_class[CLASS_ARRAY];
 /***** HARDWARE *****/
 /***** Variable *****/
-uint32_t      calendar      = 1;
-unsigned long routine_daily = 0UL;
-uint32_t      one_day_sec   = ONE_DAY;
-uint8_t       scene_number  = 0;
+uint32_t      calendar     = 1;
+uint8_t       hour_count   = 0;
+
+unsigned long time_clock   = 0UL;
+bool          time_stop    = false;
+uint32_t      one_hour_sec = ONE_HOUR;
+
+uint8_t       scene_number = 0;
 
 /***** Variable *****/
 /*
@@ -50,6 +54,14 @@ void test(){
 }
 */
 /***** funtions ************/
+bool time_stream(unsigned long millisec){
+  bool response = false;
+  if(!time_stop && millisec - time_clock > one_hour_sec){
+    time_clock = millisec;
+    response = true;
+  }
+  return response;
+}
 /***** funtions command ****/
 char command_buf[COMMAND_LENGTH] = {0x00,};
 uint8_t command_num = 0;
@@ -69,7 +81,12 @@ void command_progress(String recieve){
     if(scene_command == 1 || scene_command == 2) scene_number = scene_command;
   }else if(scene_number == 1){
     uint8_t scene_command = recieve.toInt();
+    bool select_check = false;
     if(scene_command == 100 || scene_command == 110 || scene_command == 120 || scene_command == 200) scene_number = scene_command;
+    if(scene_command == 100) display_explore();
+    if(scene_command == 110) display_edu();
+    if(scene_command == 120) display_info();
+    if(scene_command == 200) display_shop();
   }
 }
 /***** funtions gene *******/
@@ -115,14 +132,27 @@ void random_incounter(){
   view_status("\nnew NPC",info_class[e_npc],head_class[e_npc],body_class[e_npc],parts_class[e_npc],stat_class[e_npc],hole_class[e_npc],sense_class[e_npc],nature_class[e_npc],eros_class[e_npc]);
 }
 /***** funtions routine ****/
-void routine_days(unsigned long millisec){
-  if(millisec - routine_daily > one_day_sec){
-    routine_daily = millisec;
-    calendar++;
+bool routine_hours(){
+  bool response = false;
+  if(time_stream(millis())){
+    if(++hour_count > 23){
+      hour_count = 0;
+      response = true;
+    }else{
+      //time spand
+      display_hour(&hour_count);
+    }
+    //here
+  }
+  return response;
+}
+void routine_days(){
+  if(routine_hours()){
+    calendar ++;
     for(uint8_t index=0; index<CLASS_ARRAY; index++){
       routines_day(info_class[index]->get_gender(),mens_class[index],current_class[index]);
     }
-    display_newday(calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
+    display_newday(&calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
     if(scene_number == 1)   display_main();
     if(scene_number == 100){display_explore();random_incounter();}
   }
@@ -184,13 +214,13 @@ void setup() {
   }else{
     scene_number = 1;
   }
-  routine_daily = millis();
-  display_newday(calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
+  time_clock = millis();
+  display_newday(&calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
   display_main();
 }
 /***** loop ****************/
 void loop() {
   if (Serial.available()) get_command(Serial.read());
-  routine_days(millis());
+  routine_days();
 }
 /***** CORE ****************/
