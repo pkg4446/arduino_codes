@@ -6,7 +6,6 @@
 #include "funtions.h"
 
 #define WOMAN_ONLY
-//#define ESP32_CORE
 #define CLASS_ARRAY    4
 #define COMMAND_LENGTH 4
 #define ONE_HOUR 1000
@@ -162,7 +161,7 @@ void routine_days(){
 /***** setup ***************/
 void setup() {
   Serial.begin(115200);
-  #ifdef ESP32_CORE
+  #if defined(ESP32)
     randomSeed(analogRead(39));
     Serial.println("ESP32 ver");
   #else
