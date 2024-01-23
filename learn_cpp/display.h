@@ -15,9 +15,9 @@ const PROGMEM char scene_boot_opt2[] = "1아니오";
 void display_boot();
 /*************** Display ***************/
 const PROGMEM char scene_main_opt1[] = "100탐험";
-const PROGMEM char scene_main_opt2[] = "110교육";
-const PROGMEM char scene_main_opt3[] = "120정보";
-const PROGMEM char scene_main_opt4[] = "200상점";
+const PROGMEM char scene_main_opt2[] = "110관리";
+const PROGMEM char scene_main_opt3[] = "120상점";
+const PROGMEM char scene_main_opt4[] = "200정보";
 void display_main();
 /*************** Display ***************/
 const PROGMEM char scene_explore[]  = "모험을 떠납니다.";

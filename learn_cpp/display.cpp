@@ -23,7 +23,7 @@ void display_hour(uint8_t *clock_hours){
             response += char(pgm_read_byte_near(scene_sun_fall+index));
         }
     }
-    Serial.println(response);
+    if(*clock_hours % 3 == 1) Serial.println(response);
 }
 
 void display_newday(uint32_t *calendar, INFO *class_info, STAT *class_stat, MENS *class_mens, CURRENT *class_current){
