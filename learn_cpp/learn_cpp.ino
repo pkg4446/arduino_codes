@@ -38,6 +38,10 @@ BREED     *breed_class[CLASS_ARRAY];
 /***** Variable *****/
 uint32_t      calendar     = 1;
 uint8_t       hour_count   = 0;
+uint8_t       season       = 0; // month = rand(12);
+// 지형,
+// 탐험 = 사냥, 채집, 화전
+// shelter, farm,
 
 unsigned long time_clock   = 0UL;
 bool          time_stop    = false;
