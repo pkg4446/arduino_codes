@@ -21,7 +21,7 @@ void setup()
 {
   //아래 코드는 라이브러리에서 사용하라는대로 사용한다!
   display.init(115200, true, 2, false); // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
-  display_init();
+  //display_init();
   //글자 화면에 출력하기!
   //helloWorld();
   display.setFullWindow();
@@ -89,7 +89,7 @@ void drawBitmaps3c128x296()
   //아래부분은 E-paper에 이미지를 드로잉하는 과정으로 우리가 손댈부분이 전혀없음!
   if ((display.epd2.WIDTH == 128) && (display.epd2.HEIGHT == 296) && display.epd2.hasColor)
   {
-    display.setRotation(0);//화면방향이 가로방향이다!
+    display.setRotation(2);//화면방향이 가로방향이다!
     display.firstPage();
     do
     {
