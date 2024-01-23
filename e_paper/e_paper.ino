@@ -85,11 +85,11 @@ void helloWorld()
 
 void drawBitmaps3c128x296()
 {
-  bitmap_pair bitmap_pairs = {Bitmap3c128x296_2_black, Bitmap3c128x296_2_red};
-
+  bitmap_pair bitmap_pairs = {Bitmap3c128x296_black, Bitmap3c128x296_red};
   //아래부분은 E-paper에 이미지를 드로잉하는 과정으로 우리가 손댈부분이 전혀없음!
   if ((display.epd2.WIDTH == 128) && (display.epd2.HEIGHT == 296) && display.epd2.hasColor)
   {
+    display.setRotation(0);//화면방향이 가로방향이다!
     display.firstPage();
     do
     {
