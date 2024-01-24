@@ -113,6 +113,11 @@ bool time_stream(unsigned long millisec){
   }
   return response;
 }
+/***** funtion scene ****/
+void display_scene(){
+  if(scene_number == 1)   display_home();
+  if(scene_number == 100) display_explore();
+}
 /***** funtion command ****/
 char command_buf[COMMAND_LENGTH] = {0x00,};
 uint8_t command_num = 0;
@@ -133,12 +138,11 @@ void command_progress(String recieve){
   }else if(scene_number == 1){
     uint8_t scene_command = recieve.toInt();
     bool select_check = false;
-    if(scene_command == COMMAND_EXPLORE || scene_command == COMMAND_EDUCATION || scene_command == COMMAND_INFOMATION || scene_command == COMMAND_SHOP){
+    if(scene_command == COMMAND_EXPLORE || scene_command == COMMAND_EDUCATION || scene_command == COMMAND_INFOMATION){
       scene_number = scene_command;
       if(scene_command == COMMAND_EXPLORE)          display_explore();
       else if(scene_command == COMMAND_EDUCATION)   display_edu();
       else if(scene_command == COMMAND_INFOMATION)  display_info();
-      else if(scene_command == COMMAND_SHOP)        display_shop();
     }else{
 
     }
@@ -226,8 +230,7 @@ void routine_days(){
       routines_day(info_class[index]->get_gender(),mens_class[index],current_class[index]);
     }
     display_newday(&calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
-    if(scene_number == 1)   display_main();
-    if(scene_number == 100){display_explore();}
+    display_scene();
   }
 }
 /***** funtions ************/
@@ -285,13 +288,14 @@ void setup() {
     gene_blended(e_player);
     /***** HARDWARE *****/
     display_prologue();
+    scene_number = 100;
   }else{
-    scene_number = 1;
+    scene_number = 100; //get sd card
   }
   time_clock = millis();
   display_newday(&calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
   map_generate();
-  display_main();
+  display_scene();
 }
 /***** loop ****************/
 void loop() {

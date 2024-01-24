@@ -13,12 +13,10 @@ void display_boot();
 /*************** Display ***************/
 void display_prologue();
 /*************** Display ***************/
-void display_main();
+void display_home();
 /*************** Display ***************/
 void display_explore();
 /*************** Display ***************/
 void display_edu();
 /*************** Display ***************/
 void display_info();
-/*************** Display ***************/
-void display_shop();
