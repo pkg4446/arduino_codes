@@ -190,6 +190,18 @@ void pregnant(String family_name){
 }
 void random_incounter(){
   uint8_t random_counter = random(10);
+  if(maps[gps_player[0]][gps_player[1]] == e_field){
+    ;
+  }else if(maps[gps_player[0]][gps_player[1]] == e_mountain){
+    ;
+  }else if(maps[gps_player[0]][gps_player[1]] == e_lake){
+    ;
+  }else if(maps[gps_player[0]][gps_player[1]] == e_forest){
+    ;
+  }else if(maps[gps_player[0]][gps_player[1]] == e_beach){
+    ;
+  }
+
   if(random_counter == 0){
     bool gender = false;
     #ifdef WOMAN_ONLY
