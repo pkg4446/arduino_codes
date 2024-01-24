@@ -1,5 +1,8 @@
 #pragma once
 #include "arduino.h"
+#include "heredity.h"
+#include "utility.h"
+#include "database.h"
 
 class INFO
 {

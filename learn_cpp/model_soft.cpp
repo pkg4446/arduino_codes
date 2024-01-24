@@ -1,5 +1,3 @@
-#include "heredity.h"
-#include "utility.h"
 #include "model_soft.h"
 
 /*********************************** MENS CLASS FUNCTION ***********************************/

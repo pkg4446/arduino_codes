@@ -1,5 +1,7 @@
 #include "display.h"
 #include "utility.h"
+#include "model_hard.h"
+#include "model_soft.h"
 
 /*******************************************************/
 void display_boot(){

@@ -1,5 +1,7 @@
 #pragma once
 #include "arduino.h"
+#include "heredity.h"
+#include "utility.h"
 
 class MENS
 {

@@ -1,6 +1,3 @@
-#include "heredity.h"
-#include "utility.h"
-#include "database.h"
 #include "model_hard.h"
 
 #define RAND_NUM   100
