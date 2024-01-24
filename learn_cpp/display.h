@@ -1,5 +1,6 @@
 #pragma once
 #include "arduino.h"
+#include "define.h"
 #include "model_hard.h"
 #include "model_soft.h"
 #include "progmem/scene.h"
