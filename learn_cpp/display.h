@@ -15,7 +15,7 @@ void display_prologue();
 /*************** Display ***************/
 void display_home();
 /*************** Display ***************/
-void display_explore();
+void display_explore(bool sweet_home);
 /*************** Display ***************/
 void display_edu();
 /*************** Display ***************/

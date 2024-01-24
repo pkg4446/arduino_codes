@@ -45,6 +45,8 @@ uint8_t   gps_player[2] = {MAP_SIZE_X/2,MAP_SIZE_Y/2};
 uint8_t   gps_home[2]   = {MAP_SIZE_X,MAP_SIZE_Y};
 uint8_t   gps_farm[2]   = {MAP_SIZE_X,MAP_SIZE_Y};
 
+bool      house         = false;
+
 // 탐험 = 사냥, 채집, 화전
 // shelter, farm,
 
@@ -115,8 +117,10 @@ bool time_stream(unsigned long millisec){
 }
 /***** funtion scene ****/
 void display_scene(){
-  if(scene_number == 1)   display_home();
-  if(scene_number == 100) display_explore();
+  if(scene_number == COMMAND_HOME)            display_home();
+  else if(scene_number == COMMAND_EXPLORE)    display_explore(house);
+  else if(scene_number == COMMAND_EDUCATION)  display_edu();
+  else if(scene_number == COMMAND_INFOMATION) display_info();
 }
 /***** funtion command ****/
 char command_buf[COMMAND_LENGTH] = {0x00,};
@@ -140,18 +144,18 @@ void command_progress(String recieve){
     bool select_check = false;
     if(scene_command == COMMAND_EXPLORE || scene_command == COMMAND_EDUCATION || scene_command == COMMAND_INFOMATION){
       scene_number = scene_command;
-      if(scene_command == COMMAND_EXPLORE)          display_explore();
-      else if(scene_command == COMMAND_EDUCATION)   display_edu();
-      else if(scene_command == COMMAND_INFOMATION)  display_info();
+      display_scene();
     }else{
 
     }
   }else if(scene_number == COMMAND_EXPLORE){
     uint8_t scene_command = recieve.toInt();
-    if(scene_command == 101){
+    if(scene_command == EXPLORE_AROUND){
       display_map(maps[gps_player[0]][gps_player[1]]);
       random_incounter();
-    }else if(scene_command == 110){
+    }else if(scene_command == EXPLORE_MOVE){
+
+    }else if(scene_command == EXPLORE_HOMEMAKER){
 
     }
   }

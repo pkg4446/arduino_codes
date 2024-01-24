@@ -13,10 +13,10 @@ const PROGMEM char scene_main_opt1[] = "탐험";
 const PROGMEM char scene_main_opt2[] = "관리";
 const PROGMEM char scene_main_opt3[] = "정보";
 /*************** Display ***************/
-const PROGMEM char scene_explore[]      = "몸을 움직이기로 마음 먹었다.";
-const PROGMEM char scene_explore_opt1[] = "주변탐색";
-const PROGMEM char scene_explore_opt2[] = "지역이동";
-const PROGMEM char scene_explore_opt3[] = "지역이동";
+const PROGMEM char scene_explore[]      = "몸을 움직이기로 마음 먹었다.\n";
+const PROGMEM char scene_explore_opt1[] = "주변 탐색";
+const PROGMEM char scene_explore_opt2[] = "지역 이동";
+const PROGMEM char scene_explore_opt3[] = "집 만들기";
 /*************** Display ***************/
 const PROGMEM char scene_edu[]      = "교육합니다.";
 /*************** Display ***************/

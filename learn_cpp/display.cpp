@@ -98,7 +98,7 @@ void display_home(){
     Serial.println();
 };
 /*******************************************************/
-void display_explore(){
+void display_explore(bool sweet_home){
     paging();
     String response = "";
     for(uint16_t index=0; index<strlen_P(scene_explore); index++){
@@ -115,6 +115,13 @@ void display_explore(){
     for(uint16_t index=0; index<strlen_P(scene_explore_opt2); index++)
     {   response += char(pgm_read_byte_near(scene_explore_opt2+index)); }
     spacebar_option(true,EXPLORE_MOVE,response);
+
+    if(!sweet_home){
+        response       = "";
+        for(uint16_t index=0; index<strlen_P(scene_explore_opt3); index++)
+        {   response += char(pgm_read_byte_near(scene_explore_opt3+index)); }
+        spacebar_option(true,EXPLORE_HOMEMAKER,response);
+    }
     Serial.println();
 };
 /*******************************************************/

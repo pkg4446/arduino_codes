@@ -8,9 +8,11 @@
 #define MAP_SIZE_X 10
 #define MAP_SIZE_Y 10
 
+#define COMMAND_HOME        10
 #define COMMAND_EXPLORE     100
 #define COMMAND_EDUCATION   120
 #define COMMAND_INFOMATION  140
 
 #define EXPLORE_AROUND      101
-#define EXPLORE_MOVE        110
+#define EXPLORE_MOVE        102
+#define EXPLORE_HOMEMAKER   103
