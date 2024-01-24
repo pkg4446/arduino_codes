@@ -3,7 +3,7 @@
 #include "define.h"
 #include "model_hard.h"
 #include "model_soft.h"
-#include "progmem/scene.h"
+#include "./progmem/scene.h"
 
 void display_hour(uint8_t *clock_hours);
 /*************** Display ***************/

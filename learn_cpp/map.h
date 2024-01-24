@@ -2,7 +2,7 @@
 #include "arduino.h"
 #include "enum.h"
 #include "define.h"
-#include "progmem/maps.h"
+#include "./progmem/maps.h"
 
 uint8_t map_xy_axis(uint8_t axis_origine);
 uint8_t map_duplication(uint8_t axis_xy, uint8_t duplication_type);
