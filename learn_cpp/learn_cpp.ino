@@ -227,7 +227,7 @@ void routine_days(){
     }
     display_newday(&calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
     if(scene_number == 1)   display_main();
-    if(scene_number == 100){display_explore();random_incounter();}
+    if(scene_number == 100){display_explore();}
   }
 }
 /***** funtions ************/
