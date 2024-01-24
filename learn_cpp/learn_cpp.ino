@@ -4,12 +4,12 @@
 #include "database.h"
 #include "display.h"
 #include "funtions.h"
+#include "enum.h"
 
 #define WOMAN_ONLY
 #define CLASS_ARRAY    4
 #define COMMAND_LENGTH 4
 #define ONE_HOUR 1000
-enum models{e_player, e_pet, e_baby, e_npc};
 /***** HARDWARE *****/
 INFO      *info_class[CLASS_ARRAY];
 HEAD      *head_class[CLASS_ARRAY];
@@ -36,18 +36,21 @@ MENS      *mens_class[CLASS_ARRAY];
 BREED     *breed_class[CLASS_ARRAY];
 /***** HARDWARE *****/
 /***** Variable *****/
-uint32_t      calendar     = 1;
-uint8_t       hour_count   = 0;
-uint8_t       season       = 0; // month = rand(12);
-// 지형,
+uint32_t  calendar     = 1;
+uint8_t   hour_count   = 0;
+uint8_t   season       = 0; // month = rand(12);
+
+uint8_t   maps[10][10]    = {0,};
+uint8_t   gps_xy[2]       = {0,};
+bool      mapping[10][10] = {false};
 // 탐험 = 사냥, 채집, 화전
 // shelter, farm,
 
-unsigned long time_clock   = 0UL;
-bool          time_stop    = false;
-uint32_t      one_hour_sec = ONE_HOUR;
+unsigned long time_clock  = 0UL;
+bool          time_stop   = false;
+uint32_t      one_hour_sec= ONE_HOUR;
 
-uint8_t       scene_number = 0;
+uint8_t       scene_number= 0;
 
 /***** Variable *****/
 /*
@@ -57,6 +60,93 @@ void test(){
 }
 */
 /***** funtions ************/
+uint8_t map_xy_axis(uint8_t axis_origine){
+  uint8_t response = axis_origine;
+  bool axis_xy_add = random(2);
+  if(axis_xy_add && axis_origine<9) axis_origine = axis_origine + 1;
+  else if(!axis_xy_add && axis_origine>0) axis_origine = axis_origine - 1;
+  else if(axis_origine==9) axis_origine = axis_origine - 1;
+  else if(axis_origine==0) axis_origine = axis_origine + 1;
+  return response;
+}
+uint8_t map_duplication(uint8_t axis_xy, uint8_t duplication_type){
+  if(duplication_type == 1){
+    if(axis_xy == e_mountain) return true;
+  }if(duplication_type == 2){
+    if(axis_xy == e_mountain) return true;
+    else if(axis_xy == e_forest) return true;
+  }if(duplication_type == 3){
+    if(axis_xy == e_mountain) return true;
+    else if(axis_xy == e_forest) return true;
+    else if(axis_xy == e_lake) return true;
+  }
+  return false;
+}
+void map_generate(){
+  uint8_t axis_x    = random(10);
+  uint8_t axis_y    = random(10);
+  uint8_t terrain   = random(20);
+  for(uint8_t index=0; index<=terrain; index++){
+    maps[axis_x][axis_y] = e_mountain;
+    uint8_t axis_x_ans = axis_x;
+    uint8_t axis_y_ans = axis_y;
+    uint8_t escape = 0;
+    while (map_duplication(maps[axis_x_ans][axis_y_ans],e_mountain)){
+      axis_x_ans = map_xy_axis(axis_x);
+      axis_y_ans = map_xy_axis(axis_y);
+      if(++escape>8) break;
+    }
+  }
+  terrain = random(20);
+  for(uint8_t index=0; index<=terrain; index++){
+    while (map_duplication(maps[axis_x][axis_y],e_forest)){
+      axis_x  = random(10);
+      axis_y  = random(10);
+    }
+    maps[axis_x][axis_y] = e_forest;
+    uint8_t axis_x_ans = axis_x;
+    uint8_t axis_y_ans = axis_y;
+    uint8_t escape = 0;
+    while (map_duplication(maps[axis_x_ans][axis_y_ans],e_forest)){
+      axis_x_ans = map_xy_axis(axis_x);
+      axis_y_ans = map_xy_axis(axis_y);
+      if(++escape>8) break;
+    }
+  }
+  terrain   = random(20);
+  for(uint8_t index=0; index<=terrain; index++){
+    while (map_duplication(maps[axis_x][axis_y],e_lake)){
+      axis_x  = random(10);
+      axis_y  = random(10);
+    }
+    maps[axis_x][axis_y] = e_lake;
+    uint8_t axis_x_ans = axis_x;
+    uint8_t axis_y_ans = axis_y;
+    uint8_t escape = 0;
+    while (map_duplication(maps[axis_x_ans][axis_y_ans],e_lake)){
+      axis_x_ans = map_xy_axis(axis_x);
+      axis_y_ans = map_xy_axis(axis_y);
+      if(++escape>8) break;
+    }
+  }
+  for(uint8_t index=0; index<10; index++){
+    if(!map_duplication(maps[index][0],e_mountain)) maps[index][0] = e_beach;
+    if(!map_duplication(maps[index][9],e_mountain)) maps[index][9] = e_beach;
+    if(!map_duplication(maps[0][index],e_mountain)) maps[0][index] = e_beach;
+    if(!map_duplication(maps[9][index],e_mountain)) maps[9][index] = e_beach;
+  }
+  
+  gps_xy[0] = random(10);
+  gps_xy[1] = random(10);
+  /*
+  for(uint8_t index_y=0; index_y<10; index_y++){
+    for(uint8_t index_x=0; index_x<9; index_x++){
+      Serial.print(maps[index_x][index_y]);
+    }
+    Serial.println(maps[9][index_y]);
+  }
+  */
+}
 bool time_stream(unsigned long millisec){
   bool response = false;
   if(!time_stop && millisec - time_clock > one_hour_sec){
@@ -219,6 +309,7 @@ void setup() {
   }
   time_clock = millis();
   display_newday(&calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
+  map_generate();
   display_main();
 }
 /***** loop ****************/
