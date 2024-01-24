@@ -119,7 +119,7 @@ uint16_t CURRENT::get_furr(){
 }
 /*******************************************************************************************/
 uint8_t CURRENT::get(uint8_t item){
-    if(item == 1) lubric;
+    if(item == 1)      return lubric;
     else if(item == 2) return pee;
     else if(item == 3) return poo;
     else if(item == 4) return stamina;
@@ -128,6 +128,7 @@ uint8_t CURRENT::get(uint8_t item){
     else if(item == 7) return horny;
     else if(item == 8) return fain;
     else if(item == 9) return ecstasy;
+    return 0;
 }
 /*********************************** CURRENT CLASS FUNCTION ***********************************/
 /*********************************** EXP CLASS FUNCTION ***********************************/
@@ -193,6 +194,7 @@ uint8_t EXP::get(uint8_t item){
     else if(item == 4) return vagina;
     else if(item == 5) return anal;
     else if(item == 6) return urethra;
+    return 0;
 }
 /*******************************************************************************************/
 uint8_t EXP::get_expansion(bool item){
@@ -204,6 +206,7 @@ uint8_t EXP::get_shot(uint8_t item){
     if(item == 1)      return sperm_m;
     else if(item == 2) return sperm_v;
     else if(item == 3) return sperm_a;
+    return 0;
 }
 /*********************************** EXP CLASS FUNCTION ***********************************/
 /*********************************** BREED CLASS FUNCTION ***********************************/
@@ -231,5 +234,6 @@ uint8_t BREED::get(uint8_t item){
     if(item == 1)      return pregnancy;
     else if(item == 2) return birth;
     else if(item == 3) return miscarriage;
+    return 0;
 }
 /*********************************** BREED CLASS FUNCTION ***********************************/

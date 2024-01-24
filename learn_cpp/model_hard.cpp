@@ -720,6 +720,7 @@ uint16_t EROGENOUS::get_wing(uint8_t item){
     else if(item == 2) return lip_i_length;
     else if(item == 3) return lip_i_length_r;
     else if(item == 4) return lip_i_length_l;
+    return 0;
 }
 /*******************************************************************************************/
 uint16_t EROGENOUS::get_clit(uint8_t item){
@@ -727,6 +728,7 @@ uint16_t EROGENOUS::get_clit(uint8_t item){
     else if(item == 2) return clit_d_e;
     else if(item == 3) return clit_l;
     else if(item == 4) return clit_l_e;
+    return 0;
 }
 /*******************************************************************************************/
 uint16_t EROGENOUS::get_glans(uint8_t item){
@@ -734,6 +736,7 @@ uint16_t EROGENOUS::get_glans(uint8_t item){
     else if(item == 2) return glans_d_e;
     else if(item == 3) return glans_l;
     else if(item == 4) return glans_l_e;
+    return 0;
 }
 /*******************************************************************************************/
 uint16_t EROGENOUS::get_body(uint8_t item){
@@ -741,6 +744,7 @@ uint16_t EROGENOUS::get_body(uint8_t item){
     else if(item == 2) return body_d_e;
     else if(item == 3) return body_l;
     else if(item == 4) return body_l_e;
+    return 0;
 }
 /*******************************************************************************************/
 uint8_t  EROGENOUS::get_balls(bool item){
@@ -770,6 +774,7 @@ uint16_t EROGENOUS::get_nipple(uint8_t item){
     else if(item == 2) return nipple_d_e;
     else if(item == 3) return nipple_h;
     else if(item == 4) return nipple_h_e;
+    return 0;
 }
 /*********************************** EROGENOUS CLASS FUNCTION ******************************/
 /*********************************** STAT CLASS FUNCTION ***********************************/
@@ -885,12 +890,14 @@ uint16_t HOLE::get_gape(uint8_t item){
     if(item == 1) return gape_u;
     else if(item == 2) return gape_v;
     else if(item == 3) return gape_a;
+    return 0;
 }
 /*******************************************************************************************/
 uint16_t HOLE::get_pressure(uint8_t item){
     if(item == 1) return pressure_u;
     else if(item == 2) return pressure_v;
     else if(item == 3) return pressure_a;
+    return 0;
 }
 /*********************************** HOLE CLASS FUNCTION ***********************************/
 /*********************************** SENSE CLASS FUNCTION **********************************/

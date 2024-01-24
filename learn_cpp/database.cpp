@@ -1,5 +1,5 @@
 #include "database.h"
-
+/*************** NAME ***************/
 String new_family(){
     String response = "";
     uint8_t index_family  = random(strlen_P(family)/3)*3;
@@ -8,7 +8,6 @@ String new_family(){
     }
     return response;
 };
-
 String new_name(bool gender){
     uint16_t index_female = random(strlen_P(names_female)/6)*6;
     uint16_t index_male   = random(strlen_P(names_male)/6)*6;
@@ -24,3 +23,4 @@ String new_name(bool gender){
     }
     return response;
 };
+/*************** NAME ***************/
