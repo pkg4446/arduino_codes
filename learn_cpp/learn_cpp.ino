@@ -45,7 +45,6 @@ uint8_t   gps_player[2] = {MAP_SIZE_X/2,MAP_SIZE_Y/2};
 uint8_t   gps_home[2]   = {MAP_SIZE_X,MAP_SIZE_Y};
 uint8_t   gps_farm[2]   = {MAP_SIZE_X,MAP_SIZE_Y};
 
-uint8_t   map_move_speed  = 1;
 // 탐험 = 사냥, 채집, 화전
 // shelter, farm,
 
@@ -104,7 +103,6 @@ void map_generate(){
   }
   gps_player[0] = random(MAP_SIZE_X);
   gps_player[1] = random(MAP_SIZE_Y);
-  map_move_speed = map_moving(maps[gps_player[0]][gps_player[1]]);
 }
 /***** funtion time ************/
 bool time_stream(unsigned long millisec){

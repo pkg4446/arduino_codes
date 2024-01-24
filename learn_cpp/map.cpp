@@ -1,12 +1,5 @@
 #include "map.h"
 
-uint8_t map_moving(uint8_t mpa_gps_xy){
-    uint8_t response = 1;
-    if(mpa_gps_xy == e_mountain)  response = 3;
-    else if(mpa_gps_xy == e_lake || mpa_gps_xy == e_forest) response = 2;
-    return response;
-}
-
 uint8_t map_xy_axis(uint8_t axis_origine){
     uint8_t response = axis_origine;
     bool axis_xy_add = random(2);
