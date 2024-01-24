@@ -120,6 +120,22 @@ void display_explore(){
         response += char(pgm_read_byte_near(scene_explore+index));
     }
     Serial.println(response);
+
+    response = "";
+    String progmem_number="";
+    for(uint16_t index=0; index<3; index++)
+    {   progmem_number += char(pgm_read_byte_near(scene_explore_opt1+index)); }
+    for(uint16_t index=3; index<strlen_P(scene_explore_opt1); index++)
+    {   response += char(pgm_read_byte_near(scene_explore_opt1+index)); }
+    spacebar_option(true,progmem_number,response);
+    response       = "";
+    progmem_number = "";
+    for(uint16_t index=0; index<3; index++)
+    {   progmem_number += char(pgm_read_byte_near(scene_explore_opt2+index)); }
+    for(uint16_t index=3; index<strlen_P(scene_explore_opt2); index++)
+    {   response += char(pgm_read_byte_near(scene_explore_opt2+index)); }
+    spacebar_option(true,progmem_number,response);
+    Serial.println();
 };
 /*******************************************************/
 void display_edu(){

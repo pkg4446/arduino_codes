@@ -7,3 +7,8 @@
 
 #define MAP_SIZE_X 10
 #define MAP_SIZE_Y 10
+
+#define COMMAND_EXPLORE     100
+#define COMMAND_EDUCATION   120
+#define COMMAND_INFOMATION  140
+#define COMMAND_SHOP        200

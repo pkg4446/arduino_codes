@@ -10,11 +10,13 @@ const PROGMEM char scene_sun_rise[] = "캄캄한 밤이다.새벽이 밝아온�
 const PROGMEM char scene_sun_fall[] = "해가 중천에 떳다.해가 저문다.노을이 진다.어둠이 내렸다.";
 /*************** Display ***************/
 const PROGMEM char scene_main_opt1[] = "100탐험";
-const PROGMEM char scene_main_opt2[] = "110관리";
-const PROGMEM char scene_main_opt3[] = "120상점";
+const PROGMEM char scene_main_opt2[] = "120관리";
+const PROGMEM char scene_main_opt3[] = "140상점";
 const PROGMEM char scene_main_opt4[] = "200정보";
 /*************** Display ***************/
-const PROGMEM char scene_explore[]  = "모험을 떠납니다.";
+const PROGMEM char scene_explore[]      = "몸을 움직이기로 마음 먹었다.";
+const PROGMEM char scene_explore_opt1[] = "101주변탐색";
+const PROGMEM char scene_explore_opt2[] = "110지역이동";
 /*************** Display ***************/
 const PROGMEM char scene_edu[]      = "교육합니다.";
 /*************** Display ***************/

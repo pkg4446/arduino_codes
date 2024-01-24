@@ -135,11 +135,15 @@ void command_progress(String recieve){
   }else if(scene_number == 1){
     uint8_t scene_command = recieve.toInt();
     bool select_check = false;
-    if(scene_command == 100 || scene_command == 110 || scene_command == 120 || scene_command == 200) scene_number = scene_command;
-    if(scene_command == 100) display_explore();
-    if(scene_command == 110) display_edu();
-    if(scene_command == 120) display_info();
-    if(scene_command == 200) display_shop();
+    if(scene_command == COMMAND_EXPLORE || scene_command == COMMAND_EDUCATION || scene_command == COMMAND_INFOMATION || scene_command == COMMAND_SHOP){
+      scene_number = scene_command;
+      if(scene_command == COMMAND_EXPLORE)          display_explore();
+      else if(scene_command == COMMAND_EDUCATION)   display_edu();
+      else if(scene_command == COMMAND_INFOMATION)  display_info();
+      else if(scene_command == COMMAND_SHOP)        display_shop();
+    }else{
+
+    }
   }
 }
 /***** funtion gene *******/
