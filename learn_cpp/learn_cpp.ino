@@ -37,12 +37,14 @@ BREED     *breed_class[CLASS_ARRAY];
 /***** HARDWARE *****/
 /***** Variable *****/
 uint32_t  calendar     = 1;
-uint8_t   hour_count   = 0;
+uint8_t   hour_count   = 6;
 uint8_t   season       = 0; // month = rand(12);
 
-uint8_t   maps[MAP_SIZE_X][MAP_SIZE_Y]    = {0,};
-bool      mapping[MAP_SIZE_X][MAP_SIZE_Y] = {false};
-uint8_t   gps_xy[2]       = {0,};
+uint8_t   maps[MAP_SIZE_X][MAP_SIZE_Y]  = {0,};
+uint8_t   gps_player[2] = {MAP_SIZE_X/2,MAP_SIZE_Y/2};
+uint8_t   gps_home[2]   = {MAP_SIZE_X,MAP_SIZE_Y};
+uint8_t   gps_farm[2]   = {MAP_SIZE_X,MAP_SIZE_Y};
+
 uint8_t   map_move_speed  = 1;
 // 탐험 = 사냥, 채집, 화전
 // shelter, farm,
@@ -68,27 +70,6 @@ void display_map(){
       Serial.print(maps[index_x][index_y]);
       if(index_x == 9) Serial.println();
     }
-  }
-
-  for(uint8_t index_y=0; index_y<MAP_SIZE_Y; index_y++){
-    for(uint8_t index_x=0; index_x<MAP_SIZE_X; index_x++){
-      if(mapping[index_x][index_y]) Serial.print(maps[index_x][index_y]);
-      else Serial.print("X");
-      if(index_x == 9) Serial.println();
-    }
-  }
-}
-void moving_xy(uint8_t moving_direction){
-  if(moving_direction == 1 || moving_direction == 2 || moving_direction == 3){
-    if(gps_xy[1]>0) gps_xy[1]-=1;
-  }else if(moving_direction == 9 || moving_direction == 8 || moving_direction == 7){
-    if(gps_xy[1]<MAP_SIZE_Y-1) gps_xy[1]+=1;
-  }
-
-  if(moving_direction == 1 || moving_direction == 4 || moving_direction == 7){
-    if(gps_xy[0]>0) gps_xy[0]-=1;
-  }else if(moving_direction == 3 || moving_direction == 6 || moving_direction == 9){
-    if(gps_xy[0]<MAP_SIZE_X-1) gps_xy[0]+=1;
   }
 }
 void map_generate(){
@@ -121,9 +102,9 @@ void map_generate(){
     if(!map_duplication(maps[0][index],e_forest)) maps[0][index] = e_beach;
     if(!map_duplication(maps[9][index],e_forest)) maps[9][index] = e_beach;
   }
-  gps_xy[0] = random(MAP_SIZE_X);
-  gps_xy[1] = random(MAP_SIZE_Y);
-  map_move_speed = map_moving(maps[gps_xy[0]][gps_xy[1]]);
+  gps_player[0] = random(MAP_SIZE_X);
+  gps_player[1] = random(MAP_SIZE_Y);
+  map_move_speed = map_moving(maps[gps_player[0]][gps_player[1]]);
 }
 /***** funtion time ************/
 bool time_stream(unsigned long millisec){
@@ -283,13 +264,13 @@ void setup() {
     new_model(true,info_class_parents[e_player*2+1],head_class_parents[e_player*2+1],body_class_parents[e_player*2+1],parts_class_parents[e_player*2+1],stat_class_parents[e_player*2+1],hole_class_parents[e_player*2+1],sense_class_parents[e_player*2+1],nature_class_parents[e_player*2+1],eros_class_parents[e_player*2+1]);
     gene_blended(e_player);
     /***** HARDWARE *****/
+    display_prologue();
   }else{
     scene_number = 1;
   }
   time_clock = millis();
   display_newday(&calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
   map_generate();
-  display_map();
   display_main();
 }
 /***** loop ****************/

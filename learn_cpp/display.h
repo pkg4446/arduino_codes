@@ -10,6 +10,8 @@ void display_newday(uint32_t *calendar, INFO *class_info, STAT *class_stat, MENS
 /*************** Display ***************/
 void display_boot();
 /*************** Display ***************/
+void display_prologue();
+/*************** Display ***************/
 void display_main();
 /*************** Display ***************/
 void display_explore();

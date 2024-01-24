@@ -4,7 +4,7 @@ const PROGMEM char scene_boot[] = "SD 카드로 부터 정보를 불러옵니다
 const PROGMEM char scene_boot_opt1[] = "2예";
 const PROGMEM char scene_boot_opt2[] = "1아니오";
 /*************** Display ***************/
-const PROGMEM char scene_prologue[] = "눈을 뜨다";
+const PROGMEM char scene_prologue[] = "아침 햇살에 눈을 뜨니 하늘이 보인다.\n몸을 일으켜 주변을 둘러보니 당신은 낯선 장소에 있다.\n낯선 장소 이외에도 무언가 위화감이 든다.\n.\n.\n.\n내 몸이, 바뀌었다.";
 /*************** Display ***************/
 const PROGMEM char scene_sun_rise[] = "캄캄한 밤이다.새벽이 밝아온다.해가 떠오른다.아침이 밝았다.";
 const PROGMEM char scene_sun_fall[] = "해가 중천에 떳다.해가 저문다.노을이 진다.어둠이 내렸다.";

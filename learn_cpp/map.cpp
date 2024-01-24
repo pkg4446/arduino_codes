@@ -59,3 +59,29 @@ void moving_xy(uint8_t moving_direction, uint8_t *gps_x,  uint8_t *gps_y){
     if(*gps_x<MAP_SIZE_X-1) *gps_x+=1;
   }
 }
+
+void display_map(uint8_t map_area){
+  String response = "";
+  if(map_area == e_field){
+    for(uint16_t index=0; index<strlen_P(area_field); index++){
+        response += char(pgm_read_byte_near(area_field+index));
+    }
+  }else if(map_area == e_mountain){
+    for(uint16_t index=0; index<strlen_P(area_mountain); index++){
+        response += char(pgm_read_byte_near(area_mountain+index));
+    }
+  }else if(map_area == e_lake){
+    for(uint16_t index=0; index<strlen_P(area_lake); index++){
+        response += char(pgm_read_byte_near(area_lake+index));
+    }
+  }else if(map_area == e_forest){
+    for(uint16_t index=0; index<strlen_P(area_forest); index++){
+        response += char(pgm_read_byte_near(area_forest+index));
+    }
+  }else if(map_area == e_beach){
+    for(uint16_t index=0; index<strlen_P(area_beach); index++){
+        response += char(pgm_read_byte_near(area_beach+index));
+    }
+  }
+  Serial.println(response);
+}

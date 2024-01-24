@@ -27,6 +27,16 @@ void display_boot(){
     Serial.println();
 };
 /*******************************************************/
+void display_prologue(){
+    paging();
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(scene_prologue); index++){
+        response += char(pgm_read_byte_near(scene_prologue+index));
+    }
+    Serial.println(response);
+    Serial.println();
+};
+/*******************************************************/
 void display_hour(uint8_t *clock_hours){
     int8_t index_start = 0;
     int8_t index_end   = 83;
@@ -55,7 +65,9 @@ void display_newday(uint32_t *calendar, INFO *class_info, STAT *class_stat, MENS
     paging();
     spacebar(false,"Day");Serial.println(String(*calendar));
     paging();
-    spacebar(true,class_info->get_family() + class_info->get_name());
+    String genders = "♀";
+    if(class_info->get_gender()) genders = "♂";
+    spacebar(true,class_info->get_family() + class_info->get_name() + genders);
     if(!class_info->get_gender() && class_mens->get() == 2){
         Serial.println("mens");
     }else{
