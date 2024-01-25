@@ -15,8 +15,12 @@ const PROGMEM char scene_main_opt3[] = "정보";
 /*************** Display ***************/
 const PROGMEM char scene_explore[]      = "몸을 움직이기로 마음 먹었다.\n";
 const PROGMEM char scene_explore_opt1[] = "주변 탐색";
-const PROGMEM char scene_explore_opt2[] = "지역 이동";
-const PROGMEM char scene_explore_opt3[] = "집 만들기";
+const PROGMEM char scene_explore_opt2[] = "지형 확인";
+const PROGMEM char scene_explore_opt3[] = "지역 이동";
+const PROGMEM char scene_explore_opt4[] = "은신처 만들기";
+const PROGMEM char scene_explore_opt5[] = "은신처로 이동";
+/*************** Display ***************/
+const PROGMEM char scene_explore_look[]         = "어느 방향을 살펴볼까?.\n";
 /*************** Display ***************/
 const PROGMEM char scene_edu[]      = "교육합니다.";
 /*************** Display ***************/

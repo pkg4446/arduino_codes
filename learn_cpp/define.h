@@ -8,11 +8,19 @@
 #define MAP_SIZE_X 10
 #define MAP_SIZE_Y 10
 
+#define COMMAND_CANCLE      99
 #define COMMAND_HOME        10
 #define COMMAND_EXPLORE     100
+#define COMMAND_EXPLORE_SEE 110
 #define COMMAND_EDUCATION   120
 #define COMMAND_INFOMATION  140
 
 #define EXPLORE_AROUND      101
-#define EXPLORE_MOVE        102
-#define EXPLORE_HOMEMAKER   103
+#define EXPLORE_LOOK        102
+#define EXPLORE_MOVE        103
+#define EXPLORE_SHELTER     104
+
+#define DIRECTION_EAST  56
+#define DIRECTION_WAST  54
+#define DIRECTION_SOUTH 52
+#define DIRECTION_NORTH 58

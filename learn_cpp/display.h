@@ -13,9 +13,11 @@ void display_boot();
 /*************** Display ***************/
 void display_prologue();
 /*************** Display ***************/
-void display_home();
+void display_shelter();
 /*************** Display ***************/
 void display_explore(bool sweet_home);
+/*************** Display ***************/
+void display_explore_look();
 /*************** Display ***************/
 void display_edu();
 /*************** Display ***************/

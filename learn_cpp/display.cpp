@@ -39,7 +39,7 @@ void display_prologue(){
 void display_hour(uint8_t *clock_hours){
     int8_t index_start = 0;
     int8_t index_end   = 83;
-    String response    = "";
+    String response    = "\n";
     if(*clock_hours<12){
         if(*clock_hours<3){index_start=0;index_end=20;}
         else if(*clock_hours<6){index_start=20;index_end=43;}
@@ -78,7 +78,7 @@ void display_newday(uint32_t *calendar, INFO *class_info, STAT *class_stat, MENS
     spacebar(true,"정신력"); Serial.println(get_mental);
 }
 /*******************************************************/
-void display_home(){
+void display_shelter(){
     paging();
     String response = "";
 
@@ -114,14 +114,40 @@ void display_explore(bool sweet_home){
     response       = "";
     for(uint16_t index=0; index<strlen_P(scene_explore_opt2); index++)
     {   response += char(pgm_read_byte_near(scene_explore_opt2+index)); }
+    spacebar_option(true,EXPLORE_LOOK,response);
+
+    response       = "";
+    for(uint16_t index=0; index<strlen_P(scene_explore_opt3); index++)
+    {   response += char(pgm_read_byte_near(scene_explore_opt3+index)); }
     spacebar_option(true,EXPLORE_MOVE,response);
 
     if(!sweet_home){
         response       = "";
-        for(uint16_t index=0; index<strlen_P(scene_explore_opt3); index++)
-        {   response += char(pgm_read_byte_near(scene_explore_opt3+index)); }
-        spacebar_option(true,EXPLORE_HOMEMAKER,response);
+        for(uint16_t index=0; index<strlen_P(scene_explore_opt4); index++)
+        {   response += char(pgm_read_byte_near(scene_explore_opt4+index)); }
+        spacebar_option(true,EXPLORE_SHELTER,response);
+    }else{
+        response       = "";
+        for(uint16_t index=0; index<strlen_P(scene_explore_opt5); index++)
+        {   response += char(pgm_read_byte_near(scene_explore_opt5+index)); }
+        spacebar_option(true,EXPLORE_SHELTER,response);
     }
+    Serial.println();
+};
+/*******************************************************/
+void display_explore_look(){
+    paging();
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(scene_explore_look); index++){
+        response += char(pgm_read_byte_near(scene_explore_look+index));
+    }
+    Serial.println(response);
+
+    spacebar_option(true,DIRECTION_EAST,"동");
+    spacebar_option(true,DIRECTION_WAST,"서");
+    spacebar_option(true,DIRECTION_SOUTH,"남");
+    spacebar_option(true,DIRECTION_NORTH,"북");
+
     Serial.println();
 };
 /*******************************************************/

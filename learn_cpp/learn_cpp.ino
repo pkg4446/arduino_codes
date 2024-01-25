@@ -45,7 +45,7 @@ uint8_t   gps_player[2] = {MAP_SIZE_X/2,MAP_SIZE_Y/2};
 uint8_t   gps_home[2]   = {MAP_SIZE_X,MAP_SIZE_Y};
 uint8_t   gps_farm[2]   = {MAP_SIZE_X,MAP_SIZE_Y};
 
-bool      house         = false;
+bool      shelter         = false;
 
 // 탐험 = 사냥, 채집, 화전
 // shelter, farm,
@@ -117,10 +117,11 @@ bool time_stream(unsigned long millisec){
 }
 /***** funtion scene ****/
 void display_scene(){
-  if(scene_number == COMMAND_HOME)            display_home();
-  else if(scene_number == COMMAND_EXPLORE)    display_explore(house);
-  else if(scene_number == COMMAND_EDUCATION)  display_edu();
-  else if(scene_number == COMMAND_INFOMATION) display_info();
+  if(scene_number == COMMAND_HOME)              display_shelter();
+  else if(scene_number == COMMAND_EXPLORE)      display_explore(shelter);
+  else if(scene_number == COMMAND_EXPLORE_SEE)  display_explore_look();
+  else if(scene_number == COMMAND_EDUCATION)    display_edu();
+  else if(scene_number == COMMAND_INFOMATION)   display_info();
 }
 /***** funtion command ****/
 char command_buf[COMMAND_LENGTH] = {0x00,};
@@ -129,6 +130,7 @@ void get_command(char ch) {
   if(ch=='\n'){
     command_num = 0;
     command_progress(command_buf);
+    for(uint8_t index=0; index<COMMAND_LENGTH; index++) command_buf[index] = 0x00;
   }else if(ch!='\r'){
     command_buf[ command_num++ ] = ch;
     command_num %= COMMAND_LENGTH;
@@ -144,7 +146,6 @@ void command_progress(String recieve){
     bool select_check = false;
     if(scene_command == COMMAND_EXPLORE || scene_command == COMMAND_EDUCATION || scene_command == COMMAND_INFOMATION){
       scene_number = scene_command;
-      display_scene();
     }else{
 
     }
@@ -153,12 +154,26 @@ void command_progress(String recieve){
     if(scene_command == EXPLORE_AROUND){
       display_map(maps[gps_player[0]][gps_player[1]]);
       random_incounter();
+    }else if(scene_command == EXPLORE_LOOK){
+      scene_number = COMMAND_EXPLORE_SEE;
     }else if(scene_command == EXPLORE_MOVE){
 
-    }else if(scene_command == EXPLORE_HOMEMAKER){
+    }else if(scene_command == EXPLORE_SHELTER){
+      if(shelter){
 
+      }else{
+
+      }
+    }
+  }else if(scene_number == COMMAND_EXPLORE_SEE){
+    uint8_t scene_command = recieve.toInt();
+    if(scene_command == COMMAND_CANCLE){
+      scene_number = COMMAND_EXPLORE;
+    }else{
+      display_map_look(maps,&gps_player[0],&gps_player[1],scene_command);
     }
   }
+  display_scene();
 }
 /***** funtion gene *******/
 void gene_meiosis(uint8_t child, uint8_t target){
@@ -191,18 +206,40 @@ void pregnant(String family_name){
 void random_incounter(){
   uint8_t random_counter = random(10);
   if(maps[gps_player[0]][gps_player[1]] == e_field){
-    ;
+    if(random_counter == 0){
+      Serial.println("닭!");
+    }else if(random_counter < 2){
+      Serial.println("과일!");
+    }
   }else if(maps[gps_player[0]][gps_player[1]] == e_mountain){
-    ;
+    if(random_counter == 0){
+      Serial.println("광석");
+    }else if(random_counter < 7){
+      Serial.println("돌!");
+    }
   }else if(maps[gps_player[0]][gps_player[1]] == e_lake){
-    ;
+    if(random_counter < 2){
+      Serial.println("물고기!");
+    }else if(random_counter < 6){
+      Serial.println("갈매기!");
+    }
   }else if(maps[gps_player[0]][gps_player[1]] == e_forest){
-    ;
+    if(random_counter == 0 ){
+      Serial.println("고라니!");
+    }else if(random_counter < 2){
+      Serial.println("과일!");
+    }else if(random_counter < 7){
+      Serial.println("나무!");
+    }
   }else if(maps[gps_player[0]][gps_player[1]] == e_beach){
-    ;
+    if(random_counter < 3){
+      Serial.println("코코넛 크랩!");
+    }else if(random_counter < 6){
+      Serial.println("코코넛!");
+    }
   }
 
-  if(random_counter == 0){
+  if(random_counter == 9){
     bool gender = false;
     #ifdef WOMAN_ONLY
       gender = false;
@@ -216,10 +253,6 @@ void random_incounter(){
     //view_status("\nnew NPC father",info_class_parents[e_npc*2+1],head_class_parents[e_npc*2+1],body_class_parents[e_npc*2+1],parts_class_parents[e_npc*2+1],stat_class_parents[e_npc*2+1],hole_class_parents[e_npc*2+1],sense_class_parents[e_npc*2+1],nature_class_parents[e_npc*2+1],eros_class_parents[e_npc*2+1]);
     //view_status("\nnew NPC",info_class[e_npc],head_class[e_npc],body_class[e_npc],parts_class[e_npc],stat_class[e_npc],hole_class[e_npc],sense_class[e_npc],nature_class[e_npc],eros_class[e_npc]);
     Serial.println("사람!");
-  }else if(random_counter < 3){
-    Serial.println("동물!");
-  }else if(random_counter < 6){
-    Serial.println("식물!");
   }else{
     Serial.println("없네?");
   }
