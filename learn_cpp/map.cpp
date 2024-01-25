@@ -105,7 +105,7 @@ void display_map(uint8_t map_area){
   Serial.println(response);
 }
 
-void map_move(uint8_t *axis_x, uint8_t *axis_y, uint8_t direction_type){
+void map_move(uint8_t *axis_x, uint8_t *axis_y, uint8_t direction_type, bool player_play){
   bool direction_sea = false;
   if(direction_type == DIRECTION_EAST){
     if(*axis_x == MAP_SIZE_X-1) direction_sea = true;
@@ -120,7 +120,7 @@ void map_move(uint8_t *axis_x, uint8_t *axis_y, uint8_t direction_type){
     if(*axis_y == MAP_SIZE_Y-1) direction_sea = true;
     else *axis_y+=1;
   }
-  if(direction_sea){
+  if(player_play && direction_sea){
     String response = "";
     for(uint16_t index=0; index<strlen_P(area_sea); index++){
       response += char(pgm_read_byte_near(area_sea+index));

@@ -45,6 +45,9 @@ uint8_t   maps[MAP_SIZE_X][MAP_SIZE_Y]  = {0,};
 uint8_t   gps_player[2]   = {MAP_SIZE_X/2,MAP_SIZE_Y/2};
 uint8_t   gps_shelter[2]  = {MAP_SIZE_X,MAP_SIZE_Y};
 bool      shelter         = false;
+uint8_t   gps_npc[2]      = {MAP_SIZE_X/2,MAP_SIZE_Y/2};
+bool      npc_alive       = false;
+bool      npc_incounter   = false;
 
 // 탐험 = 사냥, 채집, 화전
 // shelter, farm,
@@ -168,7 +171,7 @@ void command_progress(String recieve){
     if(scene_command == COMMAND_CANCLE){
       scene_number = COMMAND_EXPLORE;
     }else{
-      map_move(&gps_player[0],&gps_player[1],scene_command);
+      map_move(&gps_player[0],&gps_player[1],scene_command, true);
       mini_map(maps,&gps_player[0],&gps_player[1],&shelter,&gps_shelter[0],&gps_shelter[1]);
       display_map(maps[gps_player[0]][gps_player[1]]);
     }
@@ -206,24 +209,22 @@ void pregnant(String family_name){
 void random_incounter(){
   uint8_t random_counter = random(10);
   uint8_t incounter_cate = incounter_area(maps[gps_player[0]][gps_player[1]], random_counter);
-  
-  if(random_counter == 9){
-    bool gender;
-    #ifdef WOMAN_ONLY
-      gender = false;
-    #else
-      gender = random(2);
-    #endif
-    new_model(false,info_class_parents[e_npc*2],head_class_parents[e_npc*2],body_class_parents[e_npc*2],parts_class_parents[e_npc*2],stat_class_parents[e_npc*2],hole_class_parents[e_npc*2],sense_class_parents[e_npc*2],nature_class_parents[e_npc*2],eros_class_parents[e_npc*2]);
-    new_model(true,info_class_parents[e_npc*2+1],head_class_parents[e_npc*2+1],body_class_parents[e_npc*2+1],parts_class_parents[e_npc*2+1],stat_class_parents[e_npc*2+1],hole_class_parents[e_npc*2+1],sense_class_parents[e_npc*2+1],nature_class_parents[e_npc*2+1],eros_class_parents[e_npc*2+1]);
-    gene_blended(e_npc);
-    //view_status("\nnew NPC mother",info_class_parents[e_npc*2],head_class_parents[e_npc*2],body_class_parents[e_npc*2],parts_class_parents[e_npc*2],stat_class_parents[e_npc*2],hole_class_parents[e_npc*2],sense_class_parents[e_npc*2],nature_class_parents[e_npc*2],eros_class_parents[e_npc*2]);
-    //view_status("\nnew NPC father",info_class_parents[e_npc*2+1],head_class_parents[e_npc*2+1],body_class_parents[e_npc*2+1],parts_class_parents[e_npc*2+1],stat_class_parents[e_npc*2+1],hole_class_parents[e_npc*2+1],sense_class_parents[e_npc*2+1],nature_class_parents[e_npc*2+1],eros_class_parents[e_npc*2+1]);
-    //view_status("\nnew NPC",info_class[e_npc],head_class[e_npc],body_class[e_npc],parts_class[e_npc],stat_class[e_npc],hole_class[e_npc],sense_class[e_npc],nature_class[e_npc],eros_class[e_npc]);
-    Serial.println("사람!");
-  }else{
-    Serial.println("없네?");
-  }
+  Serial.println("없네?");
+}
+void new_npc(){
+  npc_alive = true;
+  bool gender;
+  #ifdef WOMAN_ONLY
+    gender = false;
+  #else
+    gender = random(2);
+  #endif
+  new_model(false,info_class_parents[e_npc*2],head_class_parents[e_npc*2],body_class_parents[e_npc*2],parts_class_parents[e_npc*2],stat_class_parents[e_npc*2],hole_class_parents[e_npc*2],sense_class_parents[e_npc*2],nature_class_parents[e_npc*2],eros_class_parents[e_npc*2]);
+  new_model(true,info_class_parents[e_npc*2+1],head_class_parents[e_npc*2+1],body_class_parents[e_npc*2+1],parts_class_parents[e_npc*2+1],stat_class_parents[e_npc*2+1],hole_class_parents[e_npc*2+1],sense_class_parents[e_npc*2+1],nature_class_parents[e_npc*2+1],eros_class_parents[e_npc*2+1]);
+  gene_blended(e_npc);
+  //view_status("\nnew NPC mother",info_class_parents[e_npc*2],head_class_parents[e_npc*2],body_class_parents[e_npc*2],parts_class_parents[e_npc*2],stat_class_parents[e_npc*2],hole_class_parents[e_npc*2],sense_class_parents[e_npc*2],nature_class_parents[e_npc*2],eros_class_parents[e_npc*2]);
+  //view_status("\nnew NPC father",info_class_parents[e_npc*2+1],head_class_parents[e_npc*2+1],body_class_parents[e_npc*2+1],parts_class_parents[e_npc*2+1],stat_class_parents[e_npc*2+1],hole_class_parents[e_npc*2+1],sense_class_parents[e_npc*2+1],nature_class_parents[e_npc*2+1],eros_class_parents[e_npc*2+1]);
+  //view_status("\nnew NPC",info_class[e_npc],head_class[e_npc],body_class[e_npc],parts_class[e_npc],stat_class[e_npc],hole_class[e_npc],sense_class[e_npc],nature_class[e_npc],eros_class[e_npc]);
 }
 /***** funtion routine ****/
 bool routine_hours(){
@@ -237,6 +238,18 @@ bool routine_hours(){
       display_hour(&hour_count);
     }
     //here
+    if(random(6)==0){
+      uint8_t npc_move_direction = DIRECTION_EAST;
+      uint8_t npc_direction_roll = random(4);
+      if(npc_direction_roll==1)      npc_move_direction = DIRECTION_WAST;
+      else if(npc_direction_roll==2) npc_move_direction = DIRECTION_SOUTH;
+      else if(npc_direction_roll==3) npc_move_direction = DIRECTION_NORTH;
+      map_move(&gps_npc[0],&gps_npc[1],npc_move_direction, false);
+      Serial.print("npc gps ");
+      Serial.print(gps_npc[0]);
+      Serial.print(",");
+      Serial.println(gps_npc[1]);
+    }
   }
   return response;
 }
@@ -303,6 +316,7 @@ void setup() {
     new_model(false,info_class_parents[e_player*2],head_class_parents[e_player*2],body_class_parents[e_player*2],parts_class_parents[e_player*2],stat_class_parents[e_player*2],hole_class_parents[e_player*2],sense_class_parents[e_player*2],nature_class_parents[e_player*2],eros_class_parents[e_player*2]);
     new_model(true,info_class_parents[e_player*2+1],head_class_parents[e_player*2+1],body_class_parents[e_player*2+1],parts_class_parents[e_player*2+1],stat_class_parents[e_player*2+1],hole_class_parents[e_player*2+1],sense_class_parents[e_player*2+1],nature_class_parents[e_player*2+1],eros_class_parents[e_player*2+1]);
     gene_blended(e_player);
+    new_npc();
     /***** HARDWARE *****/
     display_prologue();
     scene_number = 100;
