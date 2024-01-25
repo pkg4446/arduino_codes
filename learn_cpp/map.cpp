@@ -57,6 +57,25 @@ void moving_xy(uint8_t *gps_x,  uint8_t *gps_y, uint8_t moving_direction){
   }
 }
 
+void mini_map(uint8_t map_arr[MAP_SIZE_X][MAP_SIZE_Y],bool *shelter_f,uint8_t *shelter_x,uint8_t *shelter_y){
+  String response = "";
+  for(uint16_t index=0; index<strlen_P(look_maps); index++){
+    response += char(pgm_read_byte_near(look_maps+index));
+  }
+  Serial.println(response);
+  for(uint16_t index_y=0; index_y<MAP_SIZE_Y; index_y++){
+    for(uint16_t index_x=0; index_x<MAP_SIZE_X; index_x++){
+      if(*shelter_f && index_x==*shelter_x && index_x==*shelter_y){
+        Serial.print("집");
+      }else{
+        Serial.print(map_arr[index_x][index_y]);
+      }
+      
+      if(index_x == MAP_SIZE_X-1) Serial.println();
+    }
+  }
+}
+
 void display_map(uint8_t map_area){
   String response = "";
   if(map_area == e_field){

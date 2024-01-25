@@ -9,6 +9,7 @@
 #include "display.h"
 #include "map.h"
 
+#include "interface.h"
 
 /***** HARDWARE *****/
 INFO      *info_class[CLASS_ARRAY];
@@ -41,10 +42,8 @@ uint8_t   hour_count   = 6;
 uint8_t   season       = 0; // month = rand(12);
 
 uint8_t   maps[MAP_SIZE_X][MAP_SIZE_Y]  = {0,};
-uint8_t   gps_player[2] = {MAP_SIZE_X/2,MAP_SIZE_Y/2};
-uint8_t   gps_home[2]   = {MAP_SIZE_X,MAP_SIZE_Y};
-uint8_t   gps_farm[2]   = {MAP_SIZE_X,MAP_SIZE_Y};
-
+uint8_t   gps_player[2]   = {MAP_SIZE_X/2,MAP_SIZE_Y/2};
+uint8_t   gps_shelter[2]  = {MAP_SIZE_X,MAP_SIZE_Y};
 bool      shelter         = false;
 
 // 탐험 = 사냥, 채집, 화전
@@ -155,7 +154,8 @@ void command_progress(String recieve){
       display_map(maps[gps_player[0]][gps_player[1]]);
       random_incounter();
     }else if(scene_command == EXPLORE_LOOK){
-      scene_number = COMMAND_EXPLORE_SEE;
+      if(maps[gps_player[0]][gps_player[1]] == e_forest) mini_map(maps,&shelter,&gps_shelter[0],&gps_shelter[1]);
+      else scene_number = COMMAND_EXPLORE_SEE;
     }else if(scene_command == EXPLORE_MOVE){
 
     }else if(scene_command == EXPLORE_SHELTER){
@@ -205,42 +205,10 @@ void pregnant(String family_name){
 }
 void random_incounter(){
   uint8_t random_counter = random(10);
-  if(maps[gps_player[0]][gps_player[1]] == e_field){
-    if(random_counter == 0){
-      Serial.println("닭!");
-    }else if(random_counter < 2){
-      Serial.println("과일!");
-    }
-  }else if(maps[gps_player[0]][gps_player[1]] == e_mountain){
-    if(random_counter == 0){
-      Serial.println("광석");
-    }else if(random_counter < 7){
-      Serial.println("돌!");
-    }
-  }else if(maps[gps_player[0]][gps_player[1]] == e_lake){
-    if(random_counter < 2){
-      Serial.println("물고기!");
-    }else if(random_counter < 6){
-      Serial.println("갈매기!");
-    }
-  }else if(maps[gps_player[0]][gps_player[1]] == e_forest){
-    if(random_counter == 0 ){
-      Serial.println("고라니!");
-    }else if(random_counter < 2){
-      Serial.println("과일!");
-    }else if(random_counter < 7){
-      Serial.println("나무!");
-    }
-  }else if(maps[gps_player[0]][gps_player[1]] == e_beach){
-    if(random_counter < 3){
-      Serial.println("코코넛 크랩!");
-    }else if(random_counter < 6){
-      Serial.println("코코넛!");
-    }
-  }
-
+  uint8_t incounter_cate = incounter_area(maps[gps_player[0]][gps_player[1]], random_counter);
+  
   if(random_counter == 9){
-    bool gender = false;
+    bool gender;
     #ifdef WOMAN_ONLY
       gender = false;
     #else
