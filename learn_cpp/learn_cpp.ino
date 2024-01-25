@@ -81,12 +81,12 @@ void map_generate(){
     map_xy_type(maps,&axis_x,&axis_y,e_mountain);
     maps[axis_x][axis_y] = e_mountain;
   }
-  terrain   = random(1,MAP_SIZE_X*MAP_SIZE_Y/20);
+  terrain   = random(1,MAP_SIZE_X*MAP_SIZE_Y/10);
   for(uint8_t index=0; index<=terrain; index++){
     map_xy_type(maps,&axis_x,&axis_y,e_lake);
     maps[axis_x][axis_y] = e_lake;
   }
-  terrain = random(1,MAP_SIZE_X*MAP_SIZE_Y/2);
+  terrain = random(1,MAP_SIZE_X*MAP_SIZE_Y/3);
   while (map_duplication(maps[axis_x][axis_y],e_forest)){
     axis_x  = random(10);
     axis_y  = random(10);

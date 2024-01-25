@@ -2,11 +2,12 @@
 
 uint8_t map_xy_axis(uint8_t axis_origine){
     uint8_t response = axis_origine;
+    bool axis_xy_direction = random(2);
     bool axis_xy_add = random(2);
-    if(axis_xy_add && axis_origine<9) response = axis_origine + 1;
-    else if(!axis_xy_add && axis_origine>0) response = axis_origine - 1;
-    else if(axis_origine==9) response = axis_origine - 1;
-    else if(axis_origine==0) response = axis_origine + 1;
+    if(axis_xy_direction && axis_origine<9) response = axis_origine + axis_xy_add;
+    else if(!axis_xy_direction && axis_origine>0) response = axis_origine - axis_xy_add;
+    else if(axis_origine==9) response = axis_origine - axis_xy_add;
+    else if(axis_origine==0) response = axis_origine + axis_xy_add;
     return response;
 }
 
