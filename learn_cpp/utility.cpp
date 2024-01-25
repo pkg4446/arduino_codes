@@ -1,5 +1,4 @@
 #include "utility.h"
-#define LINE_NUM 90
 //distribution table
 //0.13 ,0.26 ,0.39 ,0.52 ,0.67 ,0.84 ,1.04 ,1.28 ,1.65
 uint16_t gaussian_range(uint16_t average, uint16_t standard_deviation){

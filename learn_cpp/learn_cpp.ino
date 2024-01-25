@@ -119,6 +119,7 @@ void display_scene(){
   if(scene_number == COMMAND_HOME)              display_shelter();
   else if(scene_number == COMMAND_EXPLORE)      display_explore(shelter);
   else if(scene_number == COMMAND_EXPLORE_SEE)  display_explore_look();
+  else if(scene_number == COMMAND_EXPLORE_MOVE) display_explore_move();
   else if(scene_number == COMMAND_EDUCATION)    display_edu();
   else if(scene_number == COMMAND_INFOMATION)   display_info();
 }
@@ -154,10 +155,10 @@ void command_progress(String recieve){
       display_map(maps[gps_player[0]][gps_player[1]]);
       random_incounter();
     }else if(scene_command == EXPLORE_LOOK){
-      if(maps[gps_player[0]][gps_player[1]] == e_forest) mini_map(maps,&shelter,&gps_shelter[0],&gps_shelter[1]);
-      else scene_number = COMMAND_EXPLORE_SEE;
+      mini_map(maps,&gps_player[0],&gps_player[1],&shelter,&gps_shelter[0],&gps_shelter[1]);
+      scene_number = COMMAND_EXPLORE_SEE;
     }else if(scene_command == EXPLORE_MOVE){
-
+      scene_number = COMMAND_EXPLORE_MOVE;
     }else if(scene_command == EXPLORE_SHELTER){
       if(shelter){
 
@@ -171,6 +172,15 @@ void command_progress(String recieve){
       scene_number = COMMAND_EXPLORE;
     }else{
       display_map_look(maps,&gps_player[0],&gps_player[1],scene_command);
+    }
+  }else if(scene_number == COMMAND_EXPLORE_MOVE){
+    uint8_t scene_command = recieve.toInt();
+    if(scene_command == COMMAND_CANCLE){
+      scene_number = COMMAND_EXPLORE;
+    }else{
+      map_move(&gps_player[0],&gps_player[1],scene_command);
+      mini_map(maps,&gps_player[0],&gps_player[1],&shelter,&gps_shelter[0],&gps_shelter[1]);
+      display_map(maps[gps_player[0]][gps_player[1]]);
     }
   }
   display_scene();

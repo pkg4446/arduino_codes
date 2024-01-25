@@ -22,6 +22,8 @@ const PROGMEM char scene_explore_opt5[] = "은신처로 이동";
 /*************** Display ***************/
 const PROGMEM char scene_explore_look[] = "어느 방향을 살펴볼까?.\n";
 /*************** Display ***************/
+const PROGMEM char scene_explore_move[] = "어느 방향으로 이동할까?.\n";
+/*************** Display ***************/
 const PROGMEM char scene_edu[]      = "교육합니다.";
 /*************** Display ***************/
 const PROGMEM char scene_info[]     = "정보를 확인합니다.";

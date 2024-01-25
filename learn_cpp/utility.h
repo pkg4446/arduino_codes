@@ -1,5 +1,6 @@
 #pragma once
 #include "arduino.h"
+#include "define.h"
 
 uint16_t gaussian_range(uint16_t average, uint16_t standard_deviation);
 uint16_t get_gaussian(uint16_t average, uint16_t standard_deviation, uint16_t value);

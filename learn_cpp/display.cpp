@@ -157,6 +157,22 @@ void display_explore_look(){
     cancle_cmd(true);
 };
 /*******************************************************/
+void display_explore_move(){
+    paging();
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(scene_explore_move); index++){
+        response += char(pgm_read_byte_near(scene_explore_move+index));
+    }
+    Serial.println(response);
+
+    spacebar_option(true,DIRECTION_EAST,"동");
+    spacebar_option(true,DIRECTION_WAST,"서");
+    spacebar_option(true,DIRECTION_SOUTH,"남");
+    spacebar_option(true,DIRECTION_NORTH,"북");
+    Serial.println();
+    cancle_cmd(true);
+};
+/*******************************************************/
 void display_edu(){
     paging();
     String response = "";
