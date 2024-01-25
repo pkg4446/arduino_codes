@@ -75,13 +75,13 @@ void display_map(){
 void map_generate(){
   uint8_t axis_x    = random(MAP_SIZE_X);
   uint8_t axis_y    = random(MAP_SIZE_Y);
-  uint8_t terrain   = random(MAP_SIZE_X*MAP_SIZE_Y/10);
+  uint8_t terrain   = random1,(MAP_SIZE_X*MAP_SIZE_Y/10);
   maps[axis_x][axis_y] = e_mountain;
   for(uint8_t index=0; index<=terrain; index++){
     map_xy_type(maps,&axis_x,&axis_y,e_mountain);
     maps[axis_x][axis_y] = e_mountain;
   }
-  terrain   = random(1,MAP_SIZE_X*MAP_SIZE_Y/10);
+  terrain   = random(1,MAP_SIZE_X*MAP_SIZE_Y/20);
   for(uint8_t index=0; index<=terrain; index++){
     map_xy_type(maps,&axis_x,&axis_y,e_lake);
     maps[axis_x][axis_y] = e_lake;
