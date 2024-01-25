@@ -120,41 +120,20 @@ void display_explore(bool sweet_home){
     response       = "";
     for(uint16_t index=0; index<strlen_P(scene_explore_opt2); index++)
     {   response += char(pgm_read_byte_near(scene_explore_opt2+index)); }
-    spacebar_option(true,EXPLORE_LOOK,response);
-
-    response       = "";
-    for(uint16_t index=0; index<strlen_P(scene_explore_opt3); index++)
-    {   response += char(pgm_read_byte_near(scene_explore_opt3+index)); }
     spacebar_option(true,EXPLORE_MOVE,response);
 
     if(!sweet_home){
         response       = "";
-        for(uint16_t index=0; index<strlen_P(scene_explore_opt4); index++)
-        {   response += char(pgm_read_byte_near(scene_explore_opt4+index)); }
+        for(uint16_t index=0; index<strlen_P(scene_explore_opt3); index++)
+        {   response += char(pgm_read_byte_near(scene_explore_opt3+index)); }
         spacebar_option(true,EXPLORE_SHELTER,response);
     }else{
         response       = "";
-        for(uint16_t index=0; index<strlen_P(scene_explore_opt5); index++)
-        {   response += char(pgm_read_byte_near(scene_explore_opt5+index)); }
+        for(uint16_t index=0; index<strlen_P(scene_explore_opt4); index++)
+        {   response += char(pgm_read_byte_near(scene_explore_opt4+index)); }
         spacebar_option(true,EXPLORE_SHELTER,response);
     }
     Serial.println();
-};
-/*******************************************************/
-void display_explore_look(){
-    paging();
-    String response = "";
-    for(uint16_t index=0; index<strlen_P(scene_explore_look); index++){
-        response += char(pgm_read_byte_near(scene_explore_look+index));
-    }
-    Serial.println(response);
-
-    spacebar_option(true,DIRECTION_EAST,"동");
-    spacebar_option(true,DIRECTION_WAST,"서");
-    spacebar_option(true,DIRECTION_SOUTH,"남");
-    spacebar_option(true,DIRECTION_NORTH,"북");
-    Serial.println();
-    cancle_cmd(true);
 };
 /*******************************************************/
 void display_explore_move(){

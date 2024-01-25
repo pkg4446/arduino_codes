@@ -13,9 +13,8 @@
 #define COMMAND_CANCLE          99
 #define COMMAND_HOME            10
 #define COMMAND_EXPLORE         100
-#define COMMAND_EXPLORE_SEE     110
-#define COMMAND_EXPLORE_MOVE    120
-#define COMMAND_EDUCATION       130
+#define COMMAND_EXPLORE_MOVE    110
+#define COMMAND_EDUCATION       140
 #define COMMAND_INFOMATION      150
 
 #define EXPLORE_AROUND          101

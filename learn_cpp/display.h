@@ -18,7 +18,6 @@ void cancle_cmd(bool line_break);
 void display_shelter();
 /*************** Display ***************/
 void display_explore(bool sweet_home);
-void display_explore_look();
 void display_explore_move();
 /*************** Display ***************/
 void display_edu();

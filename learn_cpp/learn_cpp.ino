@@ -118,7 +118,6 @@ bool time_stream(unsigned long millisec){
 void display_scene(){
   if(scene_number == COMMAND_HOME)              display_shelter();
   else if(scene_number == COMMAND_EXPLORE)      display_explore(shelter);
-  else if(scene_number == COMMAND_EXPLORE_SEE)  display_explore_look();
   else if(scene_number == COMMAND_EXPLORE_MOVE) display_explore_move();
   else if(scene_number == COMMAND_EDUCATION)    display_edu();
   else if(scene_number == COMMAND_INFOMATION)   display_info();
@@ -154,10 +153,8 @@ void command_progress(String recieve){
     if(scene_command == EXPLORE_AROUND){
       display_map(maps[gps_player[0]][gps_player[1]]);
       random_incounter();
-    }else if(scene_command == EXPLORE_LOOK){
-      mini_map(maps,&gps_player[0],&gps_player[1],&shelter,&gps_shelter[0],&gps_shelter[1]);
-      scene_number = COMMAND_EXPLORE_SEE;
     }else if(scene_command == EXPLORE_MOVE){
+      mini_map(maps,&gps_player[0],&gps_player[1],&shelter,&gps_shelter[0],&gps_shelter[1]);
       scene_number = COMMAND_EXPLORE_MOVE;
     }else if(scene_command == EXPLORE_SHELTER){
       if(shelter){
@@ -165,13 +162,6 @@ void command_progress(String recieve){
       }else{
 
       }
-    }
-  }else if(scene_number == COMMAND_EXPLORE_SEE){
-    uint8_t scene_command = recieve.toInt();
-    if(scene_command == COMMAND_CANCLE){
-      scene_number = COMMAND_EXPLORE;
-    }else{
-      display_map_look(maps,&gps_player[0],&gps_player[1],scene_command);
     }
   }else if(scene_number == COMMAND_EXPLORE_MOVE){
     uint8_t scene_command = recieve.toInt();
