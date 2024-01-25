@@ -7,6 +7,8 @@
 
 #define LINE_NUM                90
 
+#define TRACKING_RATIO          3
+
 #define MAP_SIZE_X              10
 #define MAP_SIZE_Y              10
 

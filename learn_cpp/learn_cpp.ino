@@ -47,7 +47,8 @@ uint8_t   gps_shelter[2]  = {MAP_SIZE_X,MAP_SIZE_Y};
 bool      shelter         = false;
 uint8_t   gps_npc[2]      = {MAP_SIZE_X/2,MAP_SIZE_Y/2};
 bool      npc_alive       = false;
-bool      npc_incounter   = false;
+bool      incounter_npc   = false;
+bool      incounter_player= false;
 
 // 탐험 = 사냥, 채집, 화전
 // shelter, farm,
@@ -125,6 +126,51 @@ void display_scene(){
   else if(scene_number == COMMAND_EDUCATION)    display_edu();
   else if(scene_number == COMMAND_INFOMATION)   display_info();
 }
+/***** funtion incounter ****/
+void npc_moving(){
+  uint8_t npc_move_direction = DIRECTION_EAST;
+  uint8_t npc_direction_dice = random(4);
+  if(npc_direction_dice==1)      npc_move_direction = DIRECTION_WAST;
+  else if(npc_direction_dice==2) npc_move_direction = DIRECTION_SOUTH;
+  else if(npc_direction_dice==3) npc_move_direction = DIRECTION_NORTH;
+  map_move(&gps_npc[0],&gps_npc[1],npc_move_direction, false);
+}
+
+bool player_npc_gps_check(){
+  return (gps_player[0] == gps_npc[0] && gps_player[1] == gps_npc[1]);
+}
+
+void models_runout(){
+  if(incounter_npc){
+    incounter_player = false;
+    incounter_npc    = false;
+    Serial.println("npc 도망!");
+  }else if(incounter_player){
+    incounter_player = false;
+    incounter_npc    = false;
+    Serial.println("player 도망!, 섬뜩한 느낌이 들었다.");
+  }
+}
+
+void models_incounter(bool model_type){
+  if(model_type){
+    if(gps_player[0] != gps_npc[0] || gps_player[1] != gps_npc[1]){
+      models_runout();
+    }else if(player_npc_gps_check() && (random(TRACKING_RATIO) != 0)){
+      incounter_npc = true;
+      //npc to player incount!
+      //dice
+      Serial.println("npc 출현!");
+    }
+  }else{
+    if(gps_player[0] != gps_npc[0] || gps_player[1] != gps_npc[1]){
+      models_runout();
+    }else if(player_npc_gps_check() && (random(TRACKING_RATIO) != 0)){
+      Serial.println("player 발견!");
+      incounter_player = true;
+    }
+  }
+}
 /***** funtion command ****/
 char command_buf[COMMAND_LENGTH] = {0x00,};
 uint8_t command_num = 0;
@@ -137,10 +183,6 @@ void get_command(char ch) {
     command_buf[ command_num++ ] = ch;
     command_num %= COMMAND_LENGTH;
   }
-}
-
-bool player_npc_gps_check(){
-  return (gps_player[0] == gps_npc[0] && gps_player[1] == gps_npc[1]);
 }
 
 void command_progress(String recieve){
@@ -177,12 +219,7 @@ void command_progress(String recieve){
       scene_number = COMMAND_EXPLORE;
     }else{
       map_move(&gps_player[0],&gps_player[1],scene_command, true);
-      if(player_npc_gps_check()){
-        Serial.println("player 발견!");
-      }else if(npc_incounter){
-        npc_incounter = false;
-        Serial.println("player 도망!, 섬뜩한 느낌이 들었다.");
-      }
+      models_incounter(true);
       mini_map(maps,&gps_player[0],&gps_player[1],&shelter,&gps_shelter[0],&gps_shelter[1]);
       temp_fn_npc_gps();
       display_map(maps[gps_player[0]][gps_player[1]]);
@@ -219,21 +256,10 @@ void pregnant(String family_name){
   view_status("\nnew baby",info_class[e_baby],head_class[e_baby],body_class[e_baby],parts_class[e_baby],stat_class[e_baby],hole_class[e_baby],sense_class[e_baby],nature_class[e_baby],eros_class[e_baby]);
 }
 void random_incounter(){
-  if(player_npc_gps_check()){
-    if(npc_incounter){
-      Serial.println("npc 숨어?");
-      //npc hiding!
-    }else{
-      //player to npc incount!
-      npc_incounter = true;
-      Serial.println("npc 발견!");
-      //while(false){;}
-    }
-  }else{
-    uint8_t random_counter = random(10);
-    uint8_t incounter_cate = incounter_area(maps[gps_player[0]][gps_player[1]], random_counter);
-    Serial.println("없네?");
-  }
+  models_incounter(true);
+  uint8_t random_counter = random(10);
+  uint8_t incounter_cate = incounter_area(maps[gps_player[0]][gps_player[1]], random_counter);
+  Serial.println("없네?");
 }
 void new_npc(){
   npc_alive = true;
@@ -263,22 +289,8 @@ bool routine_hours(){
     }
     //here
     if(random(6)==0){ //npc move around
-      uint8_t npc_move_direction = DIRECTION_EAST;
-      uint8_t npc_direction_dice = random(4);
-      if(npc_direction_dice==1)      npc_move_direction = DIRECTION_WAST;
-      else if(npc_direction_dice==2) npc_move_direction = DIRECTION_SOUTH;
-      else if(npc_direction_dice==3) npc_move_direction = DIRECTION_NORTH;
-      map_move(&gps_npc[0],&gps_npc[1],npc_move_direction, false);
-      if(npc_incounter && (gps_player[0] != gps_npc[0] || gps_player[1] != gps_npc[1])){
-        npc_incounter = false;
-        Serial.println("npc 도망!");
-        //npc run out!
-      }else if(player_npc_gps_check()){
-        npc_incounter = true;
-        //npc to player incount!
-        //dice
-        Serial.println("npc 출현!");
-      }
+      npc_moving();
+      models_incounter(false);
       temp_fn_npc_gps();
     }
   }
