@@ -13,6 +13,8 @@ void display_boot();
 /*************** Display ***************/
 void display_prologue();
 /*************** Display ***************/
+void cancle_cmd(bool line_break);
+/*************** Display ***************/
 void display_shelter();
 /*************** Display ***************/
 void display_explore(bool sweet_home);

@@ -78,6 +78,12 @@ void display_newday(uint32_t *calendar, INFO *class_info, STAT *class_stat, MENS
     spacebar(true,"정신력"); Serial.println(get_mental);
 }
 /*******************************************************/
+void cancle_cmd(bool line_break){
+    if(line_break)  Serial.println();
+    spacebar_option(true,COMMAND_CANCLE,"취소");
+    Serial.println();
+};
+/*******************************************************/
 void display_shelter(){
     paging();
     String response = "";
@@ -147,8 +153,8 @@ void display_explore_look(){
     spacebar_option(true,DIRECTION_WAST,"서");
     spacebar_option(true,DIRECTION_SOUTH,"남");
     spacebar_option(true,DIRECTION_NORTH,"북");
-
     Serial.println();
+    cancle_cmd(true);
 };
 /*******************************************************/
 void display_edu(){

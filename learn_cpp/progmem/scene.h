@@ -20,7 +20,7 @@ const PROGMEM char scene_explore_opt3[] = "지역 이동";
 const PROGMEM char scene_explore_opt4[] = "은신처 만들기";
 const PROGMEM char scene_explore_opt5[] = "은신처로 이동";
 /*************** Display ***************/
-const PROGMEM char scene_explore_look[]         = "어느 방향을 살펴볼까?.\n";
+const PROGMEM char scene_explore_look[] = "어느 방향을 살펴볼까?.\n";
 /*************** Display ***************/
 const PROGMEM char scene_edu[]      = "교육합니다.";
 /*************** Display ***************/
