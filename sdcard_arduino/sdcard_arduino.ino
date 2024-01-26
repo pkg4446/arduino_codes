@@ -29,16 +29,52 @@ String path_current = "/";
 
 #define COMMAND_LENGTH 128
 /***** funtion command ****/
+void command_helf() {
+  Serial.println("***** help *****");
+  Serial.println("cmd   help");
+  Serial.println("dir   show items");
+  Serial.println("cd    move path");
+  Serial.println("cd/   move root");
+  Serial.println("mk    make ");
+  Serial.println("rm    remove");
+  Serial.println("***** help *****");
+}
 char command_buf[COMMAND_LENGTH] = {0x00,};
 uint8_t command_num = 0;
 void get_command(char ch) {
   if(ch=='\n'){
     command_buf[ command_num ] = 0x00;
     command_num = 0;
-    command_progress(command_buf);
+    command_progress();
   }else if(ch!='\r'){
     command_buf[ command_num++ ] = ch;
     command_num %= COMMAND_LENGTH;
+  }
+}
+void command_progress(){
+  if(command_buf[0]=='c' && command_buf[1]=='m' && command_buf[2]=='d'){
+    command_helf();
+  }else if(command_buf[0]=='d' && command_buf[1]=='i' && command_buf[2]=='r'){
+    dir_list(path_current,true);
+  }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]==0x20){
+    uint8_t command_index_check = 3;
+    String temp_text = "";
+    for(uint8_t index_check=3; index_check<COMMAND_LENGTH; index_check++){
+      temp_text += command_buf[index_check];
+      if(command_buf[index_check] == 0x00) break;
+    }
+    if(exisits_check(path_current+temp_text+"/")){
+      path_current += temp_text+"/";
+      Serial.println("폴더 이동!");
+    }else{
+      Serial.println("폴더가 없자녀!");
+    }
+  }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]=='/'){
+    path_current = "/";
+  }else if(command_buf[0]=='m' && command_buf[1]=='k'){
+
+  }else if(command_buf[0]=='r' && command_buf[1]=='m'){
+
   }
 }
 
@@ -50,14 +86,9 @@ void setup() {
   }
   sd_init();
 
-  dir_list("/",false);
-  dir_list("/",true);
-
-  dir_index("/",false,1);
-  dir_index("/",false,2);
-  dir_index("/",false,3);
+  dir_list("/",false); //true = dir, false = file
   dir_index("/",false,4);
-  dir_index("/",false,5);
+  dir_index("/",true,4);
 
   File root = SD.open(path_current);
   Serial.print("root: ");
@@ -66,8 +97,8 @@ void setup() {
   dir_make("/ardu1/");
   dir_make("/ardu2/");
   dir_remove("/ARDUINO/");
-  all_list(root,0);
 
+  command_helf();
 }
 
 void loop() {

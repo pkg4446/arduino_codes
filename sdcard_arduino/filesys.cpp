@@ -8,10 +8,6 @@
     fs.rmdir(path);
   }
 #endif
-bool exisits_check(String path){
-  Serial.print("중복체크");
-  return SD.exists(path);
-}
 
 void sd_init() {
   // Open serial communications and wait for port to open:
@@ -40,6 +36,10 @@ void sd_init() {
   Serial.println(check_sd);
 }
 
+bool exisits_check(String path){
+  return SD.exists(path);
+}
+
 void dir_make(String path){
   exisits_check(path);
   #if defined(ESP32)
@@ -65,19 +65,21 @@ uint16_t dir_list(String path, bool type) {
   if(!root.isDirectory()){return 0;}
 
   File file = root.openNextFile();
+  if(path != "/") Serial.println("/");
   while(file){
-      if(!file.isDirectory()){
-        if(type)type_index++;
-        Serial.print(file.name());
-        Serial.println("/");
-      }else{
-        if(!type)type_index++;
-        Serial.print("\t");
-        Serial.print(file.name());
-        Serial.print("\t");
-        Serial.println(file.size());
-      }
-      file = root.openNextFile();
+    Serial.print("\t");
+    if(file.isDirectory()){
+      if(type)type_index++;
+      Serial.print(file.name());
+      Serial.println("/");
+    }else{
+      if(!type)type_index++;
+      Serial.print("\t");
+      Serial.print(file.name());
+      Serial.print("\t");
+      Serial.println(file.size());
+    }
+    file = root.openNextFile();
   }
   Serial.print("Listing type:");
   Serial.println(type_index);
@@ -85,40 +87,25 @@ uint16_t dir_list(String path, bool type) {
 }
 
 String dir_index(String path, bool type, uint16_t dir_index) {
-  uint16_t type_index = 0;
   File root = SD.open(path);
-  File path_index = root.openNextFile();
-  String response = path_index.name();
-  for(uint16_t index=2; index<=dir_index; index++){
-    path_index = root.openNextFile();
-    if(index == dir_index) response = path_index.name();
-  }
-  Serial.println(response);
-  return response;
-}
+  File file = root.openNextFile();
+  String response = "null";
 
-void all_list(File dir, int numTabs) {
-  while (true) {
-
-    File entry =  dir.openNextFile();
-    if (! entry) {
-      // no more files
+  while(file){
+    if(dir_index <=1 ){
+      response = file.name();
       break;
     }
-    for (uint8_t i = 0; i < numTabs; i++) {
-      Serial.print('\t');
+    if(file.isDirectory()){
+      if(type)dir_index--;
+    }else{
+      if(!type)dir_index--;
     }
-    Serial.print(entry.name());
-    if (entry.isDirectory()) {
-      Serial.println("/");
-      all_list(entry, numTabs + 1);
-    } else {
-      // files have sizes, directories do not
-      Serial.print("\t\t");
-      Serial.println(entry.size(), DEC);
-    }
-    entry.close();
+    file = root.openNextFile();
   }
+
+  Serial.println(response);
+  return response;
 }
 
 /*
