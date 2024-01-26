@@ -1,3 +1,6 @@
+#include <SPI.h>
+#include <SD.h>
+
 #include "model_hard.h"
 #include "model_soft.h"
 #include "enum.h"
@@ -176,9 +179,9 @@ char command_buf[COMMAND_LENGTH] = {0x00,};
 uint8_t command_num = 0;
 void get_command(char ch) {
   if(ch=='\n'){
+    command_buf[ command_num ] = 0x00;
     command_num = 0;
     command_progress(command_buf);
-    for(uint8_t index=0; index<COMMAND_LENGTH; index++) command_buf[index] = 0x00;
   }else if(ch!='\r'){
     command_buf[ command_num++ ] = ch;
     command_num %= COMMAND_LENGTH;

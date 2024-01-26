@@ -2,7 +2,7 @@
 
 #define WOMAN_ONLY
 #define CLASS_ARRAY             4
-#define COMMAND_LENGTH          4
+#define COMMAND_LENGTH          8
 #define ONE_HOUR                10000
 
 #define LINE_NUM                90

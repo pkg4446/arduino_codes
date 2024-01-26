@@ -23,9 +23,24 @@
 */
 #include <SPI.h>
 #include <SD.h>
+#include "filesys.h"
 
-File root;
-const int chipSelect = 53;
+String path_current = "/";
+
+#define COMMAND_LENGTH 128
+/***** funtion command ****/
+char command_buf[COMMAND_LENGTH] = {0x00,};
+uint8_t command_num = 0;
+void get_command(char ch) {
+  if(ch=='\n'){
+    command_buf[ command_num ] = 0x00;
+    command_num = 0;
+    command_progress(command_buf);
+  }else if(ch!='\r'){
+    command_buf[ command_num++ ] = ch;
+    command_num %= COMMAND_LENGTH;
+  }
+}
 
 void setup() {
   // Open serial communications and wait for port to open:
@@ -33,49 +48,28 @@ void setup() {
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
+  sd_init();
 
-  Serial.print("Initializing SD card...");
+  dir_list("/",false);
+  dir_list("/",true);
 
-  if (!SD.begin(chipSelect)) {
-    Serial.println("initialization failed!");
-    while (1);
-  }
-  Serial.println("initialization done.");
+  dir_index("/",false,1);
+  dir_index("/",false,2);
+  dir_index("/",false,3);
+  dir_index("/",false,4);
+  dir_index("/",false,5);
 
-  root = SD.open("/");
+  File root = SD.open(path_current);
+  Serial.print("root: ");
+  Serial.println(root);
 
-  printDirectory(root, 0);
+  dir_make("/ardu1/");
+  dir_make("/ardu2/");
+  dir_remove("/ARDUINO/");
+  all_list(root,0);
 
-  Serial.println("done!");
 }
 
 void loop() {
-  // nothing happens after setup finishes.
+  if (Serial.available()) get_command(Serial.read());
 }
-
-void printDirectory(File dir, int numTabs) {
-  while (true) {
-
-    File entry =  dir.openNextFile();
-    if (! entry) {
-      // no more files
-      break;
-    }
-    for (uint8_t i = 0; i < numTabs; i++) {
-      Serial.print('\t');
-    }
-    Serial.print(entry.name());
-    if (entry.isDirectory()) {
-      Serial.println("/");
-      printDirectory(entry, numTabs + 1);
-    } else {
-      // files have sizes, directories do not
-      Serial.print("\t\t");
-      Serial.println(entry.size(), DEC);
-    }
-    entry.close();
-  }
-}
-
-
-
