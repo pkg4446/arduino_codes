@@ -36,7 +36,7 @@ void command_helf() {
   Serial.println("cd    move path");
   Serial.println("cd/   move root");
   Serial.println("md    make dir");
-  Serial.println("rm    remove");
+  Serial.println("rd    remove dir");
   Serial.println("***** help *****");
 }
 char command_buf[COMMAND_LENGTH] = {0x00,};
@@ -89,6 +89,17 @@ void setup() {
   dir_list("/",false); //true = dir, false = file
   dir_index("/",false,4);
   dir_index("/",true,4);
+
+  /*
+  file_write("/test.csv","test1 file2 write!!!");
+  Serial.print("read : ");
+  Serial.println(file_read("/test.csv"));
+  */
+ 
+  file_append("/test.csv","test1 file2 write!!!");
+  Serial.print("read : ");
+  Serial.println(file_read("/test.csv"));
+  
 
   command_helf();
 }

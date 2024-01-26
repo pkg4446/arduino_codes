@@ -4,9 +4,11 @@
   void createDir(fs::FS &fs, String path){
     fs.mkdir(path);
   }
-  void removeItems(fs::FS &fs, String path){
-    fs.remove(path);
+  void removeDir(fs::FS &fs, String path){
     fs.rmdir(path);
+  }
+  void removeFile(fs::FS &fs, String path){
+    fs.remove(path);
   }
 #endif
 
@@ -58,9 +60,8 @@ void dir_remove(String path){
   Serial.println(path);
   if(exisits_check(path)){
     #if defined(ESP32)
-      removeItems(SD,path);
+      removeDir(SD,path);
     #else
-      SD.remove(path);
       SD.rmdir(path);
     #endif
     if(exisits_check(path)) Serial.println("inner contents");
@@ -118,50 +119,61 @@ String dir_index(String path, bool type, uint16_t dir_index) {
   return response;
 }
 
-/*
-
-uint32_t listDir(fs::FS &fs, const char * dirname){  
-  uint32_t file_index = 0;
-  File root = fs.open(dirname);
-  if(!root){return 0;}
-  if(!root.isDirectory()){return 0;}
-  File file = root.openNextFile();
-  while(file){
-      if(!file.isDirectory()){
-        file_index++;
-        Serial.print("  FILE: ");
-        Serial.print(file.name());
-        Serial.print("  SIZE: ");
-        Serial.println(file.size());
-        } 
-      file = root.openNextFile();
+String file_read(String path){
+  File file;
+  String response = "";
+  #if defined(ESP32)
+    fs::FS &fs = SD;
+    file = fs.open(path);
+  #else
+    file = SD.open(path);
+  #endif
+  while (file.available()) {
+    response += char(file.read());
   }
-  Serial.print("Listing files:");
-  Serial.println(file_index);
-  return file_index;
+  file.close();
+  return response;
 }
 
-uint8_t list(const char * dirname) {
-  File root = fs.open(dirname);
-  while (true) {
-    File entry =  root.openNextFile();
-    if (! entry) {
-      // no more files
-      break;
-    }
-    for (uint8_t i = 0; i < numTabs; i++) {
-      Serial.print('\t');
-    }
-    Serial.print(entry.name());
-    if (entry.isDirectory()) {
-      Serial.println("/");
-      printDirectory(entry, numTabs + 1);
-    } else {
-      // files have sizes, directories do not
-      Serial.print("\t\t");
-      Serial.println(entry.size(), DEC);
-    }
-    entry.close();
+void file_write(String path, String contents){
+  File file;
+  #if defined(ESP32)
+    fs::FS &fs = SD;
+    file = fs.open(path, FILE_WRITE);
+  #else
+    //file = SD.open(path, FILE_WRITE);
+    file = SD.open(path, O_RDWR);
+    file.seek (0);
+  #endif
+  Serial.print("write ");
+  if(file.print(contents)) Serial.println("ok");
+  else Serial.println("fail");
+  file.close();
+}
+
+void file_append(String path, String contents){
+  File file;
+  #if defined(ESP32)
+    fs::FS &fs = SD;
+    file = fs.open(path, FILE_APPEND);
+  #else
+    file = SD.open(path, FILE_WRITE);
+  #endif
+  Serial.print("write ");
+  if(file.print(contents)) Serial.println("ok");
+  else Serial.println("fail");
+  file.close();
+}
+
+void file_remove(String path){
+  Serial.println(path);
+  if(exisits_check(path)){
+    #if defined(ESP32)
+      removeFile(SD,path);
+    #else
+      SD.remove(path);
+    #endif
+    if(exisits_check(path)) Serial.println("inner contents");
+    else Serial.println("delete success");
   }
 }
-*/
