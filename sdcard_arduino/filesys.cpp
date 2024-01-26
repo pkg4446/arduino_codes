@@ -67,7 +67,7 @@ uint16_t dir_list(String path, bool type) {
   File file = root.openNextFile();
   if(path != "/") Serial.println("/");
   while(file){
-    Serial.print("\t");
+    if(path != "/") Serial.print("\t");
     if(file.isDirectory()){
       if(type)type_index++;
       Serial.print(file.name());
