@@ -54,13 +54,16 @@ void dir_make(String path){
 }
 
 void dir_remove(String path){
+  Serial.println(path);
   if(exisits_check(path)){
     #if defined(ESP32)
       removeDir(SD,path);
     #else
       SD.remove(path);
+      SD.rmdir(path);
     #endif
     if(exisits_check(path)) Serial.println("inner contents");
+    else Serial.println("delete success");
   }
 }
 

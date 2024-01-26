@@ -72,9 +72,9 @@ void command_progress(){
     path_current = "/";
     Serial.println(path_current);
   }else if(command_buf[0]=='m' && command_buf[1]=='k'){
-    dir_make(path_current+path_current);
+    dir_make(path_current+temp_text);
   }else if(command_buf[0]=='r' && command_buf[1]=='m'){
-    dir_remove(path_current+path_current);
+    dir_remove(path_current+temp_text);
   }
 }
 
