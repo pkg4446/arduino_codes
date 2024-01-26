@@ -17,5 +17,5 @@ void     dir_remove(String path);
 
 String   file_read(String path);
 void     file_write(String path, String contents);
-void     file_append(String path, String contents)
-void     file_remove(String path)
+void     file_append(String path, String contents);
+void     file_remove(String path);

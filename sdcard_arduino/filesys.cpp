@@ -85,7 +85,6 @@ uint16_t dir_list(String path, bool type) {
       Serial.println("/");
     }else{
       if(!type)type_index++;
-      Serial.print("\t");
       Serial.print(file.name());
       Serial.print("\t");
       Serial.println(file.size());

@@ -1,26 +1,3 @@
-/*
-  Listfiles
-
-  This example shows how print out the files in a
-  directory on a SD card
-
-  The circuit:
-   SD card attached to SPI bus as follows:
- ** MOSI - pin 11
- ** MISO - pin 12
- ** CLK - pin 13
- ** CS - pin 4 (for MKRZero SD: SDCARD_SS_PIN)
-
-  created   Nov 2010
-  by David A. Mellis
-  modified 9 Apr 2012
-  by Tom Igoe
-  modified 2 Feb 2014
-  by Scott Fitzgerald
-
-  This example code is in the public domain.
-
-*/
 #include <SPI.h>
 #include <SD.h>
 #include "filesys.h"
@@ -32,11 +9,13 @@ String path_current = "/";
 void command_helf() {
   Serial.println("***** help *****");
   Serial.println("help  this text");
-  Serial.println("dir   show items");
+  Serial.println("ls    show list");
   Serial.println("cd    move path");
   Serial.println("cd/   move root");
   Serial.println("md    make dir");
   Serial.println("rd    remove dir");
+  Serial.println("op    open file");
+  Serial.println("rf    remove file");
   Serial.println("***** help *****");
 }
 char command_buf[COMMAND_LENGTH] = {0x00,};
@@ -59,8 +38,6 @@ void command_progress(){
   }
   if(command_buf[0]=='h' && command_buf[1]=='e' && command_buf[2]=='l' && command_buf[3]=='p'){
     command_helf();
-  }else if(command_buf[0]=='d' && command_buf[1]=='i' && command_buf[2]=='r'){
-    dir_list(path_current,true);
   }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]==0x20){
     uint8_t command_index_check = 3;
     if(exisits_check(path_current+temp_text+"/")){
@@ -71,36 +48,41 @@ void command_progress(){
   }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]=='/'){
     path_current = "/";
     Serial.println(path_current);
+  }else if(command_buf[0]=='l' && command_buf[1]=='s'){
+    dir_list(path_current,true);
   }else if(command_buf[0]=='m' && command_buf[1]=='d'){
     dir_make(path_current+temp_text);
-  }else if(command_buf[0]=='r' && command_buf[1]=='m'){
+  }else if(command_buf[0]=='r' && command_buf[1]=='d'){
     dir_remove(path_current+temp_text);
+  }else if(command_buf[0]=='r' && command_buf[1]=='f'){
+    file_remove(path_current+temp_text);
+  }else if(command_buf[0]=='o' && command_buf[1]=='p'){
+    Serial.println(file_read(path_current+temp_text));
+  }else if(command_buf[0]=='r' && command_buf[1]=='f'){
+    file_remove(path_current+temp_text);
+  }else{
+    Serial.println("wrong command!");
   }
 }
 
 void setup() {
-  // Open serial communications and wait for port to open:
   Serial.begin(115200);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
+
   sd_init();
 
   dir_list("/",false); //true = dir, false = file
   dir_index("/",false,4);
   dir_index("/",true,4);
 
-  /*
+  
   file_write("/test.csv","test1 file2 write!!!");
   Serial.print("read : ");
   Serial.println(file_read("/test.csv"));
-  */
- 
+  /*
   file_append("/test.csv","test1 file2 write!!!");
   Serial.print("read : ");
   Serial.println(file_read("/test.csv"));
-  
-
+  */
   command_helf();
 }
 
