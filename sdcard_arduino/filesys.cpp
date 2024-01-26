@@ -4,7 +4,8 @@
   void createDir(fs::FS &fs, String path){
     fs.mkdir(path);
   }
-  void removeDir(fs::FS &fs, String path){
+  void removeItems(fs::FS &fs, String path){
+    fs.remove(path);
     fs.rmdir(path);
   }
 #endif
@@ -57,7 +58,7 @@ void dir_remove(String path){
   Serial.println(path);
   if(exisits_check(path)){
     #if defined(ESP32)
-      removeDir(SD,path);
+      removeItems(SD,path);
     #else
       SD.remove(path);
       SD.rmdir(path);

@@ -35,7 +35,7 @@ void command_helf() {
   Serial.println("dir   show items");
   Serial.println("cd    move path");
   Serial.println("cd/   move root");
-  Serial.println("mk    make ");
+  Serial.println("md    make dir");
   Serial.println("rm    remove");
   Serial.println("***** help *****");
 }
@@ -71,7 +71,7 @@ void command_progress(){
   }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]=='/'){
     path_current = "/";
     Serial.println(path_current);
-  }else if(command_buf[0]=='m' && command_buf[1]=='k'){
+  }else if(command_buf[0]=='m' && command_buf[1]=='d'){
     dir_make(path_current+temp_text);
   }else if(command_buf[0]=='r' && command_buf[1]=='m'){
     dir_remove(path_current+temp_text);
@@ -89,14 +89,6 @@ void setup() {
   dir_list("/",false); //true = dir, false = file
   dir_index("/",false,4);
   dir_index("/",true,4);
-
-  File root = SD.open(path_current);
-  Serial.print("root: ");
-  Serial.println(root);
-
-  dir_make("/ardu1/");
-  dir_make("/ardu2/");
-  dir_remove("/ARDUINO/");
 
   command_helf();
 }
