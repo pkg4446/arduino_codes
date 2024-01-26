@@ -41,21 +41,27 @@ bool exisits_check(String path){
 }
 
 void dir_make(String path){
-  exisits_check(path);
-  #if defined(ESP32)
-    createDir(SD,path);
-  #else
-    SD.mkdir(path);
-  #endif
+  if(!exisits_check(path)){
+    #if defined(ESP32)
+      createDir(SD,path);
+    #else
+      SD.mkdir(path);
+    #endif
+    Serial.println("already exisited");
+  }else{
+    Serial.println("make success");
+  }
 }
 
 void dir_remove(String path){
-  exisits_check(path);
-  #if defined(ESP32)
-    removeDir(SD,path);
-  #else
-    SD.remove(path);
-  #endif
+  if(exisits_check(path)){
+    #if defined(ESP32)
+      removeDir(SD,path);
+    #else
+      SD.remove(path);
+    #endif
+    if(exisits_check(path)) Serial.println("inner contents");
+  }
 }
 
 uint16_t dir_list(String path, bool type) {
@@ -65,9 +71,9 @@ uint16_t dir_list(String path, bool type) {
   if(!root.isDirectory()){return 0;}
 
   File file = root.openNextFile();
-  if(path != "/") Serial.println("/");
+  Serial.println(path);
   while(file){
-    if(path != "/") Serial.print("\t");
+    Serial.print("\t");
     if(file.isDirectory()){
       if(type)type_index++;
       Serial.print(file.name());

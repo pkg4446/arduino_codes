@@ -31,7 +31,7 @@ String path_current = "/";
 /***** funtion command ****/
 void command_helf() {
   Serial.println("***** help *****");
-  Serial.println("cmd   help");
+  Serial.println("help  this text");
   Serial.println("dir   show items");
   Serial.println("cd    move path");
   Serial.println("cd/   move root");
@@ -52,29 +52,29 @@ void get_command(char ch) {
   }
 }
 void command_progress(){
-  if(command_buf[0]=='c' && command_buf[1]=='m' && command_buf[2]=='d'){
+  String temp_text = "";
+  for(uint8_t index_check=3; index_check<COMMAND_LENGTH; index_check++){
+    if(command_buf[index_check] == 0x00) break;
+    temp_text += command_buf[index_check];
+  }
+  if(command_buf[0]=='h' && command_buf[1]=='e' && command_buf[2]=='l' && command_buf[3]=='p'){
     command_helf();
   }else if(command_buf[0]=='d' && command_buf[1]=='i' && command_buf[2]=='r'){
     dir_list(path_current,true);
   }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]==0x20){
     uint8_t command_index_check = 3;
-    String temp_text = "";
-    for(uint8_t index_check=3; index_check<COMMAND_LENGTH; index_check++){
-      temp_text += command_buf[index_check];
-      if(command_buf[index_check] == 0x00) break;
-    }
     if(exisits_check(path_current+temp_text+"/")){
-      path_current += temp_text+"/";
-      Serial.println("폴더 이동!");
-    }else{
-      Serial.println("폴더가 없자녀!");
+      path_current += temp_text;
+      path_current += "/";
     }
+    Serial.println(path_current);
   }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]=='/'){
     path_current = "/";
+    Serial.println(path_current);
   }else if(command_buf[0]=='m' && command_buf[1]=='k'){
-
+    dir_make(path_current+path_current);
   }else if(command_buf[0]=='r' && command_buf[1]=='m'){
-
+    dir_remove(path_current+path_current);
   }
 }
 
