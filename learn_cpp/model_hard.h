@@ -22,7 +22,9 @@ class INFO
         String  get_family();
         String  get_name();
         uint8_t get_age();
+
         String  get_csv();
+        void    set_csv(char *save_file);
 };
 
 class HEAD
@@ -38,7 +40,8 @@ class HEAD
     public:
         HEAD();
         ~HEAD();
-        void generate(bool gender);
+        void set_gender(bool gender);
+        void generate();
         void change(HEAD *gene);
         void meiosis(HEAD *mother, HEAD *father);
         void blend(HEAD *mother, HEAD *father);
@@ -49,7 +52,9 @@ class HEAD
         bool    get_eyelid();
         bool    get_dimple();
         bool    get_bald();
+
         String  get_csv();
+        void    set_csv(char *save_file);
 };
 
 class BODY {
@@ -67,7 +72,8 @@ class BODY {
     public:
         BODY();
         ~BODY();
-        void generate(bool gender);
+        void set_gender(bool gender);
+        void generate();
         void change(BODY *gene);
         void meiosis(BODY *mother, BODY *father);
         void blend(BODY *mother, BODY *father);
@@ -83,7 +89,9 @@ class BODY {
         uint16_t get_waist();
         uint16_t get_hip();
         uint16_t get_leg_ratio();
+
         String  get_csv();
+        void    set_csv(char *save_file);
 };
 
 class EROGENOUS {
@@ -137,7 +145,8 @@ class EROGENOUS {
     public:
         EROGENOUS();
         ~EROGENOUS();
-        void generate(bool gender);
+        void set_gender(bool gender);
+        void generate();
         void change(EROGENOUS *gene);
         void meiosis(EROGENOUS *mother, EROGENOUS *father);
         void blend(EROGENOUS *mother, EROGENOUS *father);
@@ -157,7 +166,9 @@ class EROGENOUS {
         uint8_t  get_wrinkle();
         uint16_t get_areola();
         uint16_t get_nipple(uint8_t item);
+        
         String  get_csv();
+        void    set_csv(char *save_file);
 };
 
 class STAT
@@ -181,7 +192,9 @@ class STAT
         uint8_t get_dexterity();
         uint8_t get_charisma();
         uint8_t get_constitution();
+
         String  get_csv();
+        void    set_csv(char *save_file);
 };
 
 class HOLE
@@ -203,7 +216,9 @@ class HOLE
         void status(bool gender);
         uint16_t get_gape(uint8_t item);
         uint16_t get_pressure(uint8_t item);
+
         String  get_csv();
+        void    set_csv(char *save_file);
 };
 
 class SENSE
@@ -231,7 +246,9 @@ class SENSE
         uint8_t get_urethra();
         uint8_t get_anal();
         uint8_t get_nipple();
+
         String  get_csv();
+        void    set_csv(char *save_file);
 };
 
 class NATURE
@@ -251,7 +268,9 @@ class NATURE
         void blend(NATURE *mother, NATURE *father);
         void status();
         uint8_t get_MBTI();
+
         String  get_csv();
+        void    set_csv(char *save_file);
 };
 
 class EROS
@@ -275,6 +294,8 @@ class EROS
         uint8_t get_masohism();
         uint8_t get_exhibition();
         uint8_t get_service();
+
         String  get_csv();
+        void    set_csv(char *save_file);
 };
 

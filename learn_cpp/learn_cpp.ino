@@ -15,22 +15,17 @@
 
 #include "interface.h"
 
-/***** HARDWARE *****/
-INFO      *info_class[CLASS_ARRAY];
-HEAD      *head_class[CLASS_ARRAY];
-BODY      *body_class[CLASS_ARRAY];
-EROGENOUS *parts_class[CLASS_ARRAY];
-STAT      *stat_class[CLASS_ARRAY];
-HOLE      *hole_class[CLASS_ARRAY];
-SENSE     *sense_class[CLASS_ARRAY];
-NATURE    *nature_class[CLASS_ARRAY];
-EROS      *eros_class[CLASS_ARRAY];
-/***** SOFTWARE *****/
-EXP       *exp_class[CLASS_ARRAY];
-CURRENT   *current_class[CLASS_ARRAY];
-MENS      *mens_class[CLASS_ARRAY];
-BREED     *breed_class[CLASS_ARRAY];
-/***** HARDWARE *****/
+/***** Player *****/
+INFO *info_class        = new INFO();
+HEAD *head_class        = new HEAD();
+BODY *body_class        = new BODY();
+EROGENOUS *parts_class  = new EROGENOUS();
+STAT *stat_class        = new STAT();
+HOLE *hole_class        = new HOLE();
+SENSE *sense_class      = new SENSE();
+NATURE *nature_class    = new NATURE();
+EROS *eros_class        = new EROS();
+/***** Player *****/
 /***** Variable *****/
 uint32_t  calendar     = 1;
 uint8_t   hour_count   = 6;
@@ -133,9 +128,9 @@ void routine_days(){
   if(routine_hours()){
     calendar ++;
     for(uint8_t index=0; index<CLASS_ARRAY; index++){
-      routines_day(info_class[index]->get_gender(),mens_class[index],current_class[index]);
+      //routines_day(info_class[index]->get_gender(),mens_class[index],current_class[index]);
     }
-    display_newday(&calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
+    //display_newday(&calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
     display_scene();
   }
 }
@@ -153,11 +148,17 @@ void setup() {
   #endif
   sd_init();
   
-  if(exisits_check(path_avatar())){
-    
-  }else{
-
+  if(!exisits_check(path_avatar())){
+    dir_make(path_avatar());
+    new_model(random(2),path_avatar());
+    Serial.println("new!");
   }
+  //////////
+  dir_make(path_avatar());
+  new_model(random(2),path_avatar());
+  Serial.println("new!");
+  //////////
+  read_model(path_avatar(),info_class,head_class,body_class,parts_class,stat_class,hole_class,sense_class,nature_class,eros_class);
 
   if(scene_number == 1){
     /***** HARDWARE *****/
@@ -166,11 +167,9 @@ void setup() {
   }else{
     scene_number = 100; //get sd card
   }
-
-  new_model(false,"/");
-
+  
   time_clock = millis();
-  display_newday(&calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
+  //display_newday(&calendar,info_class,stat_class,mens_class,current_class);
   display_scene();
 }
 /***** loop ****************/

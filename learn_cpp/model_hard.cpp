@@ -49,14 +49,24 @@ String  INFO::get_csv(){
     make_csv(&response, String(age));
     return response;
 }
+/*******************************************************************************************/
+void  INFO::set_csv(char* save_file){
+    gen_xy = String(strtok(save_file, ",")) == "0" ? false:true;
+    family = strtok(0x00, ",");
+    name   = strtok(0x00, ",");
+    age    = atoi(strtok(0x00, ","));
+}
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 HEAD::HEAD() {}
 /*******************************************************************************************/
 HEAD::~HEAD(){destruct();}
 /*******************************************************************************************/
-void HEAD::generate(bool gender){
-    gen_xy     = gender;
+void HEAD::set_gender(bool gender){
+    gen_xy  = gender;
+}
+/*******************************************************************************************/
+void HEAD::generate(){
     hair_color = random(RAND_NUM);
     eye_color  = random(RAND_NUM);
     hair_curl  = random(RAND_NUM);
@@ -144,14 +154,27 @@ String  HEAD::get_csv(){
     make_csv(&response, String(bald));
     return response;
 }
+/*******************************************************************************************/
+void  HEAD::set_csv(char* save_file){
+    gen_xy      = String(strtok(save_file, ",")) == "0" ? false:true;;
+    hair_color  = atoi(strtok(0x00, ","));
+    hair_curl   = atoi(strtok(0x00, ","));
+    eye_color   = atoi(strtok(0x00, ","));
+    eyelid      = String(strtok(0x00, ",")) == "0" ? false:true;;
+    dimple      = String(strtok(0x00, ",")) == "0" ? false:true;;
+    bald        = String(strtok(0x00, ",")) == "0" ? false:true;;;
+}
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 /*********************************** BODY CLASS FUNCTION ***********************************/
 BODY::BODY() {}
 /*******************************************************************************************/
 BODY::~BODY(){destruct();}
 /*******************************************************************************************/
-void BODY::generate(bool gender){
-    gen_xy     = gender;
+void BODY::set_gender(bool gender){
+    gen_xy  = gender;
+}
+/*******************************************************************************************/
+void BODY::generate(){
     blood_A    = random(3);
     blood_B    = random(3);
     body_color = random(RAND_NUM);;
@@ -427,16 +450,31 @@ String  BODY::get_csv(){
     make_csv(&response, String(leg_ratio));
     return response;
 }
+/*******************************************************************************************/
+void  BODY::set_csv(char* save_file){
+    gen_xy      = String(strtok(save_file, ",")) == "0" ? false:true;;
+    blood_A     = atoi(strtok(0x00, ","));
+    blood_B     = atoi(strtok(0x00, ","));
+    body_color  = atoi(strtok(0x00, ","));
+    breast      = atoi(strtok(0x00, ","));
+    height      = atoi(strtok(0x00, ","));
+    chest       = atoi(strtok(0x00, ","));
+    waist       = atoi(strtok(0x00, ","));
+    hip         = atoi(strtok(0x00, ","));
+    leg_ratio   = atoi(strtok(0x00, ","));
+}
 /*********************************** BODY CLASS FUNCTION ***********************************/
 /*********************************** EROGENOUS CLASS FUNCTION ******************************/
 EROGENOUS::EROGENOUS(){}
 /*******************************************************************************************/
 EROGENOUS::~EROGENOUS(){destruct();}
 /*******************************************************************************************/
-void EROGENOUS::generate(bool gender){
-    gen_xy          = gender;
-    
-    hood_shape          = random(RAND_NUM);
+void EROGENOUS::set_gender(bool gender){
+    gen_xy  = gender;
+}
+/*******************************************************************************************/
+void EROGENOUS::generate(){    
+    hood_shape      = random(RAND_NUM);
     hood_start      = random(RAND_NUM);
     hood_texture    = random(RAND_NUM);
     hood_width      = gaussian_range(1400,30);
@@ -855,6 +893,55 @@ String  EROGENOUS::get_csv(){
     make_csv(&response, String(nipple_h_e));
     return response;
 }
+/*******************************************************************************************/
+void  EROGENOUS::set_csv(char* save_file){
+    gen_xy          = String(strtok(save_file, ",")) == "0" ? false:true;;
+
+    hood_shape      = atoi(strtok(0x00, ","));
+    hood_start      = atoi(strtok(0x00, ","));
+    hood_texture    = atoi(strtok(0x00, ","));
+    hood_width      = atoi(strtok(0x00, ","));
+    hood_length     = atoi(strtok(0x00, ","));
+
+    lip_i_shape     = atoi(strtok(0x00, ","));
+    lip_i_texture   = atoi(strtok(0x00, ","));
+    lip_i_width     = atoi(strtok(0x00, ","));
+    lip_i_length    = atoi(strtok(0x00, ","));
+    lip_i_length_r  = atoi(strtok(0x00, ","));
+    lip_i_length_l  = atoi(strtok(0x00, ","));
+    lip_o_shape     = atoi(strtok(0x00, ","));
+    lip_o_texture   = atoi(strtok(0x00, ","));
+
+    clit_d      = atoi(strtok(0x00, ","));
+    clit_d_e    = atoi(strtok(0x00, ","));
+    clit_l      = atoi(strtok(0x00, ","));
+    clit_l_e    = atoi(strtok(0x00, ","));
+
+    glans_d     = atoi(strtok(0x00, ","));
+    glans_d_e   = atoi(strtok(0x00, ","));
+    glans_l     = atoi(strtok(0x00, ","));
+    glans_l_e   = atoi(strtok(0x00, ","));
+
+    body_d      = atoi(strtok(0x00, ","));
+    body_d_e    = atoi(strtok(0x00, ","));
+    body_l      = atoi(strtok(0x00, ","));
+    body_l_e    = atoi(strtok(0x00, ","));
+    ball_r      = atoi(strtok(0x00, ","));
+    ball_l      = atoi(strtok(0x00, ","));
+
+    prepuce     = bool(strtok(0x00, ","));
+    invert      = bool(strtok(0x00, ","));
+        
+    fork        = atoi(strtok(0x00, ","));
+    perineum    = atoi(strtok(0x00, ","));
+    wrinkle     = atoi(strtok(0x00, ","));
+
+    areola      = atoi(strtok(0x00, ","));
+    nipple_d    = atoi(strtok(0x00, ","));
+    nipple_d_e  = atoi(strtok(0x00, ","));
+    nipple_h    = atoi(strtok(0x00, ","));
+    nipple_h_e  = atoi(strtok(0x00, ","));
+}
 /*********************************** EROGENOUS CLASS FUNCTION ******************************/
 /*********************************** STAT CLASS FUNCTION ***********************************/
 STAT::STAT(){}
@@ -920,6 +1007,14 @@ String  STAT::get_csv(){
     make_csv(&response, String(charisma));
     make_csv(&response, String(constitution));
     return response;
+}
+/*******************************************************************************************/
+void  STAT::set_csv(char* save_file){
+    intelligence    = atoi(strtok(save_file, ","));
+    strength        = atoi(strtok(0x00, ","));
+    dexterity       = atoi(strtok(0x00, ","));
+    charisma        = atoi(strtok(0x00, ","));
+    constitution    = atoi(strtok(0x00, ","));
 }
 /*********************************** HOLE CLASS FUNCTION ***********************************/
 HOLE::HOLE(){}
@@ -996,6 +1091,15 @@ String  HOLE::get_csv(){
     make_csv(&response, String(pressure_v));
     make_csv(&response, String(pressure_a));
     return response;
+}
+/*******************************************************************************************/
+void  HOLE::set_csv(char* save_file){
+    gape_u  = atoi(strtok(save_file, ","));
+    gape_v  = atoi(strtok(0x00, ","));
+    gape_a  = atoi(strtok(0x00, ","));
+    pressure_u  = atoi(strtok(0x00, ","));
+    pressure_v  = atoi(strtok(0x00, ","));
+    pressure_a  = atoi(strtok(0x00, ","));
 }
 /*********************************** HOLE CLASS FUNCTION ***********************************/
 /*********************************** SENSE CLASS FUNCTION **********************************/
@@ -1076,6 +1180,16 @@ String  SENSE::get_csv(){
     make_csv(&response, String(anal));
     make_csv(&response, String(nipple));
     return response;
+}
+/*******************************************************************************************/
+void  SENSE::set_csv(char* save_file){
+    cervix  = atoi(strtok(save_file, ","));
+    skin    = atoi(strtok(0x00, ","));
+    clit_glans      = atoi(strtok(0x00, ","));
+    vagina_balls    = atoi(strtok(0x00, ","));
+    urethra = atoi(strtok(0x00, ","));
+    anal    = atoi(strtok(0x00, ","));
+    nipple  = atoi(strtok(0x00, ","));
 }
 /*********************************** SENSE CLASS FUNCTION **********************************/
 /*********************************** NATURE CLASS FUNCTION *********************************/
@@ -1160,6 +1274,14 @@ String  NATURE::get_csv(){
     make_csv(&response, String(fn_j_p));
     return response;
 }
+/*******************************************************************************************/
+void  NATURE::set_csv(char* save_file){
+    mbti    = atoi(strtok(save_file, ","));
+    at_e_i  = atoi(strtok(0x00, ","));
+    at_s_n  = atoi(strtok(0x00, ","));
+    fn_t_f  = atoi(strtok(0x00, ","));
+    fn_j_p  = atoi(strtok(0x00, ","));
+}
 /*********************************** NATURE CLASS FUNCTION *********************************/
 /*********************************** EROS CLASS FUNCTION ***********************************/
 EROS::EROS(){}
@@ -1224,5 +1346,13 @@ String  EROS::get_csv(){
     make_csv(&response, String(exhibition));
     make_csv(&response, String(service));
     return response;
+}
+/*******************************************************************************************/
+void  EROS::set_csv(char* save_file){
+    lust        = atoi(strtok(save_file, ","));
+    sadism      = atoi(strtok(0x00, ","));
+    masohism    = atoi(strtok(0x00, ","));
+    exhibition  = atoi(strtok(0x00, ","));
+    service     = atoi(strtok(0x00, ","));
 }
 /*********************************** EROS CLASS FUNCTION ***********************************/
