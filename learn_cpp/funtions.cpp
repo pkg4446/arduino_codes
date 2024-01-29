@@ -1,7 +1,7 @@
 #include "funtions.h"
 #include "utility.h"
 
-//#define DEBUG
+#define DEBUG
 void new_model(bool gender,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
     class_info-> generate(gender, false);
     class_head-> generate(class_info->get_gender());

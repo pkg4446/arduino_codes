@@ -74,15 +74,16 @@ void setup() {
   dir_index("/",false,4);
   dir_index("/",true,4);
 
-  
+/*
   file_write("/test.csv","test1 file2 write!!!");
   Serial.print("read : ");
   Serial.println(file_read("/test.csv"));
-  /*
+
   file_append("/test.csv","test1 file2 write!!!");
   Serial.print("read : ");
   Serial.println(file_read("/test.csv"));
-  */
+*/
+  
   command_helf();
 }
 

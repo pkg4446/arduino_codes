@@ -41,6 +41,14 @@ String  INFO::get_family(){return family;}
 String  INFO::get_name(){return name;}
 /*******************************************************************************************/
 uint8_t INFO::get_age(){return age;}
+/*******************************************************************************************/
+String  INFO::get_csv(){
+    String response = String(gen_xy);
+    make_csv(&response, family);
+    make_csv(&response, name);
+    make_csv(&response, String(age));
+    return response;
+}
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 HEAD::HEAD() {}
@@ -125,6 +133,17 @@ bool    HEAD::get_eyelid(){return eyelid;}
 bool    HEAD::get_dimple(){return dimple;}
 /*******************************************************************************************/
 bool    HEAD::get_bald(){return bald;}
+/*******************************************************************************************/
+String  HEAD::get_csv(){
+    String response = String(gen_xy);
+    make_csv(&response, String(hair_color));
+    make_csv(&response, String(hair_curl));
+    make_csv(&response, String(eye_color));
+    make_csv(&response, String(eyelid));
+    make_csv(&response, String(dimple));
+    make_csv(&response, String(bald));
+    return response;
+}
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 /*********************************** BODY CLASS FUNCTION ***********************************/
 BODY::BODY() {}
@@ -394,6 +413,20 @@ uint16_t BODY::get_waist(){return waist;}
 uint16_t BODY::get_hip(){return hip;}
 /*******************************************************************************************/
 uint16_t BODY::get_leg_ratio(){return leg_ratio;}
+/*******************************************************************************************/
+String  BODY::get_csv(){
+    String response = String(gen_xy);
+    make_csv(&response, String(blood_A));
+    make_csv(&response, String(blood_B));
+    make_csv(&response, String(body_color));
+    make_csv(&response, String(breast));
+    make_csv(&response, String(height));
+    make_csv(&response, String(chest));
+    make_csv(&response, String(waist));
+    make_csv(&response, String(hip));
+    make_csv(&response, String(leg_ratio));
+    return response;
+}
 /*********************************** BODY CLASS FUNCTION ***********************************/
 /*********************************** EROGENOUS CLASS FUNCTION ******************************/
 EROGENOUS::EROGENOUS(){}
@@ -773,6 +806,55 @@ uint16_t EROGENOUS::get_nipple(uint8_t item){
     else if(item == 4) return nipple_h_e;
     return 0;
 }
+/*******************************************************************************************/
+String  EROGENOUS::get_csv(){
+    String response = String(gen_xy);
+    make_csv(&response, String(hood_shape));
+    make_csv(&response, String(hood_start));
+    make_csv(&response, String(hood_texture));
+    make_csv(&response, String(hood_width));
+    make_csv(&response, String(hood_length));
+
+    make_csv(&response, String(lip_i_shape));
+    make_csv(&response, String(lip_i_texture));
+    make_csv(&response, String(lip_i_width));
+    make_csv(&response, String(lip_i_length));
+    make_csv(&response, String(lip_i_length_r));
+    make_csv(&response, String(lip_i_length_l));
+    make_csv(&response, String(lip_o_shape));
+    make_csv(&response, String(lip_o_texture));
+
+    make_csv(&response, String(clit_d));
+    make_csv(&response, String(clit_d_e));
+    make_csv(&response, String(clit_l));
+    make_csv(&response, String(clit_l_e));
+    
+    make_csv(&response, String(glans_d));
+    make_csv(&response, String(glans_d_e));
+    make_csv(&response, String(glans_l));
+    make_csv(&response, String(glans_l_e));
+    
+    make_csv(&response, String(body_d));
+    make_csv(&response, String(body_d_e));
+    make_csv(&response, String(body_l));
+    make_csv(&response, String(body_l_e));
+    make_csv(&response, String(ball_r));
+    make_csv(&response, String(ball_l));
+
+    make_csv(&response, String(prepuce));
+    make_csv(&response, String(invert));
+
+    make_csv(&response, String(fork));
+    make_csv(&response, String(perineum));
+    make_csv(&response, String(wrinkle));
+
+    make_csv(&response, String(areola));
+    make_csv(&response, String(nipple_d));
+    make_csv(&response, String(nipple_d_e));
+    make_csv(&response, String(nipple_h));
+    make_csv(&response, String(nipple_h_e));
+    return response;
+}
 /*********************************** EROGENOUS CLASS FUNCTION ******************************/
 /*********************************** STAT CLASS FUNCTION ***********************************/
 STAT::STAT(){}
@@ -830,6 +912,15 @@ uint8_t STAT::get_charisma(){return charisma;}
 /*******************************************************************************************/
 uint8_t STAT::get_constitution(){return constitution;}
 /*********************************** STAT CLASS FUNCTION ***********************************/
+/*******************************************************************************************/
+String  STAT::get_csv(){
+    String response = String(intelligence);
+    make_csv(&response, String(strength));
+    make_csv(&response, String(dexterity));
+    make_csv(&response, String(charisma));
+    make_csv(&response, String(constitution));
+    return response;
+}
 /*********************************** HOLE CLASS FUNCTION ***********************************/
 HOLE::HOLE(){}
 /*******************************************************************************************/
@@ -895,6 +986,16 @@ uint16_t HOLE::get_pressure(uint8_t item){
     else if(item == 2) return pressure_v;
     else if(item == 3) return pressure_a;
     return 0;
+}
+/*******************************************************************************************/
+String  HOLE::get_csv(){
+    String response = String(gape_u);
+    make_csv(&response, String(gape_v));
+    make_csv(&response, String(gape_a));
+    make_csv(&response, String(pressure_u));
+    make_csv(&response, String(pressure_v));
+    make_csv(&response, String(pressure_a));
+    return response;
 }
 /*********************************** HOLE CLASS FUNCTION ***********************************/
 /*********************************** SENSE CLASS FUNCTION **********************************/
@@ -965,6 +1066,17 @@ uint8_t SENSE::get_urethra(){return urethra;}
 uint8_t SENSE::get_anal(){return anal;}
 /*******************************************************************************************/
 uint8_t SENSE::get_nipple(){return nipple;}
+/*******************************************************************************************/
+String  SENSE::get_csv(){
+    String response = String(cervix);
+    make_csv(&response, String(skin));
+    make_csv(&response, String(clit_glans));
+    make_csv(&response, String(vagina_balls));
+    make_csv(&response, String(urethra));
+    make_csv(&response, String(anal));
+    make_csv(&response, String(nipple));
+    return response;
+}
 /*********************************** SENSE CLASS FUNCTION **********************************/
 /*********************************** NATURE CLASS FUNCTION *********************************/
 NATURE::NATURE(){}
@@ -1039,6 +1151,15 @@ void NATURE::status(){
 }
 /*******************************************************************************************/
 uint8_t NATURE::get_MBTI(){return mbti;}
+/*******************************************************************************************/
+String  NATURE::get_csv(){
+    String response = String(mbti);
+    make_csv(&response, String(at_e_i));
+    make_csv(&response, String(at_s_n));
+    make_csv(&response, String(fn_t_f));
+    make_csv(&response, String(fn_j_p));
+    return response;
+}
 /*********************************** NATURE CLASS FUNCTION *********************************/
 /*********************************** EROS CLASS FUNCTION ***********************************/
 EROS::EROS(){}
@@ -1095,4 +1216,13 @@ uint8_t EROS::get_masohism(){return masohism;}
 uint8_t EROS::get_exhibition(){return exhibition;}
 /*******************************************************************************************/
 uint8_t EROS::get_service(){return service;}
+/*******************************************************************************************/
+String  EROS::get_csv(){
+    String response = String(lust);
+    make_csv(&response, String(sadism));
+    make_csv(&response, String(masohism));
+    make_csv(&response, String(exhibition));
+    make_csv(&response, String(service));
+    return response;
+}
 /*********************************** EROS CLASS FUNCTION ***********************************/

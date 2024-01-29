@@ -1,30 +1,6 @@
 #include "display.h"
 #include "utility.h"
-#include "model_hard.h"
-#include "model_soft.h"
 
-/*******************************************************/
-void display_boot(){
-    paging();
-    String response = "";
-    for(uint16_t index=0; index<strlen_P(scene_boot); index++){
-        response += char(pgm_read_byte_near(scene_boot+index));
-    }
-    Serial.println(response);
-
-    response = "";
-    for(uint16_t index=0; index<strlen_P(scene_boot_opt1); index++){
-        response += char(pgm_read_byte_near(scene_boot_opt1+index));
-    }
-    spacebar_option(true,2,response);
-
-    response = "";
-    for(uint16_t index=0; index<strlen_P(scene_boot_opt2); index++){
-        response += char(pgm_read_byte_near(scene_boot_opt2+index));
-    }
-    spacebar_option(true,1,response);
-    Serial.println();
-};
 /*******************************************************/
 void display_prologue(){
     paging();
@@ -82,74 +58,6 @@ void cancle_cmd(bool line_break){
     if(line_break)  Serial.println();
     spacebar_option(true,COMMAND_CANCLE,"취소");
     Serial.println();
-};
-/*******************************************************/
-void display_shelter(){
-    paging();
-    String response = "";
-
-    for(uint16_t index=0; index<strlen_P(scene_main_opt1); index++)
-    {   response += char(pgm_read_byte_near(scene_main_opt1+index)); }
-    spacebar_option(true,COMMAND_EXPLORE,response);
-    response       = "";
-
-    for(uint16_t index=0; index<strlen_P(scene_main_opt2); index++)
-    {   response += char(pgm_read_byte_near(scene_main_opt2+index)); }
-    spacebar_option(true,COMMAND_EDUCATION,response);
-    response       = "";
-    
-    for(uint16_t index=0; index<strlen_P(scene_main_opt3); index++)
-    {   response += char(pgm_read_byte_near(scene_main_opt3+index)); }
-    spacebar_option(true,COMMAND_INFOMATION,response);
-    Serial.println();
-};
-/*******************************************************/
-void display_explore(bool sweet_home){
-    paging();
-    String response = "";
-    for(uint16_t index=0; index<strlen_P(scene_explore); index++){
-        response += char(pgm_read_byte_near(scene_explore+index));
-    }
-    Serial.println(response);
-
-    response = "";
-    for(uint16_t index=0; index<strlen_P(scene_explore_opt1); index++)
-    {   response += char(pgm_read_byte_near(scene_explore_opt1+index)); }
-    spacebar_option(true,EXPLORE_AROUND,response);
-
-    response       = "";
-    for(uint16_t index=0; index<strlen_P(scene_explore_opt2); index++)
-    {   response += char(pgm_read_byte_near(scene_explore_opt2+index)); }
-    spacebar_option(true,EXPLORE_MOVE,response);
-
-    if(!sweet_home){
-        response       = "";
-        for(uint16_t index=0; index<strlen_P(scene_explore_opt3); index++)
-        {   response += char(pgm_read_byte_near(scene_explore_opt3+index)); }
-        spacebar_option(true,EXPLORE_SHELTER,response);
-    }else{
-        response       = "";
-        for(uint16_t index=0; index<strlen_P(scene_explore_opt4); index++)
-        {   response += char(pgm_read_byte_near(scene_explore_opt4+index)); }
-        spacebar_option(true,EXPLORE_SHELTER,response);
-    }
-    Serial.println();
-};
-/*******************************************************/
-void display_explore_move(){
-    paging();
-    String response = "";
-    for(uint16_t index=0; index<strlen_P(scene_explore_move); index++){
-        response += char(pgm_read_byte_near(scene_explore_move+index));
-    }
-    Serial.println(response);
-
-    spacebar_option(true,DIRECTION_EAST,"동");
-    spacebar_option(true,DIRECTION_WAST,"서");
-    spacebar_option(true,DIRECTION_SOUTH,"남");
-    spacebar_option(true,DIRECTION_NORTH,"북");
-    Serial.println();
-    cancle_cmd(true);
 };
 /*******************************************************/
 void display_edu(){

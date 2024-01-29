@@ -2,6 +2,9 @@
 #include "arduino.h"
 #include "define.h"
 
+void make_csv(String *csv_text, String add_data);
+void make_csv_text(String *csv_text, String add_data);
+
 uint16_t gaussian_range(uint16_t average, uint16_t standard_deviation);
 uint16_t get_gaussian(uint16_t average, uint16_t standard_deviation, uint16_t value);
 
