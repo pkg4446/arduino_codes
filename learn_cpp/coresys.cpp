@@ -42,17 +42,16 @@ void new_model(bool gender, String model_path){
     nature_class[0]->generate();
     eros_class[0]-> generate();
 
-    String models = info_class[2]->get_csv();
-    make_csv_text(&models, head_class[2]->get_csv());
-    make_csv_text(&models, body_class[2]->get_csv());
-    make_csv_text(&models, parts_class[2]->get_csv());
-    make_csv_text(&models, stat_class[2]->get_csv());
-    make_csv_text(&models, hole_class[2]->get_csv());
-    make_csv_text(&models, sense_class[2]->get_csv());
-    make_csv_text(&models, nature_class[2]->get_csv());
-    make_csv_text(&models, eros_class[2]->get_csv());
+    String models = info_class[0]->get_csv();
+    make_csv_text(&models, head_class[0]->get_csv());
+    make_csv_text(&models, body_class[0]->get_csv());
+    make_csv_text(&models, parts_class[0]->get_csv());
+    make_csv_text(&models, stat_class[0]->get_csv());
+    make_csv_text(&models, hole_class[0]->get_csv());
+    make_csv_text(&models, sense_class[0]->get_csv());
+    make_csv_text(&models, nature_class[0]->get_csv());
+    make_csv_text(&models, eros_class[0]->get_csv());
     file_name = model_path+"mother.csv";
-    Serial.println(file_name);
     file_write(file_name, models);
     /***** FATHER *****/
     info_class[1]-> generate(true, false);
@@ -65,17 +64,16 @@ void new_model(bool gender, String model_path){
     nature_class[1]->generate();
     eros_class[1]-> generate();
 
-    models = info_class[2]->get_csv();
-    make_csv_text(&models, head_class[2]->get_csv());
-    make_csv_text(&models, body_class[2]->get_csv());
-    make_csv_text(&models, parts_class[2]->get_csv());
-    make_csv_text(&models, stat_class[2]->get_csv());
-    make_csv_text(&models, hole_class[2]->get_csv());
-    make_csv_text(&models, sense_class[2]->get_csv());
-    make_csv_text(&models, nature_class[2]->get_csv());
-    make_csv_text(&models, eros_class[2]->get_csv());
+    models = info_class[1]->get_csv();
+    make_csv_text(&models, head_class[1]->get_csv());
+    make_csv_text(&models, body_class[1]->get_csv());
+    make_csv_text(&models, parts_class[1]->get_csv());
+    make_csv_text(&models, stat_class[1]->get_csv());
+    make_csv_text(&models, hole_class[1]->get_csv());
+    make_csv_text(&models, sense_class[1]->get_csv());
+    make_csv_text(&models, nature_class[1]->get_csv());
+    make_csv_text(&models, eros_class[1]->get_csv());
     file_name = model_path+"father.csv";
-    Serial.println(file_name);
     file_write(file_name, models);
     /***** BABY *****/
     info_class[2]-> generate(gender, false);
@@ -99,6 +97,5 @@ void new_model(bool gender, String model_path){
     make_csv_text(&models, nature_class[2]->get_csv());
     make_csv_text(&models, eros_class[2]->get_csv());
     file_name = model_path+"avatar.csv";
-    Serial.println(file_name);
     file_write(file_name, models);
 }
