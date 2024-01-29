@@ -20,6 +20,9 @@ class MENS
         void status();
         uint8_t get();
         bool    get_pregnant();
+
+        String  get_csv();
+        void    set_csv(char *save_file);
 };
 
 class CURRENT
@@ -44,6 +47,9 @@ class CURRENT
         void status();
         uint16_t get_furr();
         uint8_t  get(uint8_t item);
+
+        String  get_csv();
+        void    set_csv(char *save_file);
 };
 
 class EXP
@@ -71,6 +77,9 @@ class EXP
         uint8_t get(uint8_t item);
         uint8_t get_expansion(bool item);
         uint8_t get_shot(uint8_t item);
+
+        String  get_csv();
+        void    set_csv(char *save_file);
 };
 
 class BREED
@@ -86,4 +95,7 @@ class BREED
         void update();
         void status();
         uint8_t get(uint8_t item);
+
+        String  get_csv();
+        void    set_csv(char *save_file);
 };

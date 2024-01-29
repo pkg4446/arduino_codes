@@ -87,9 +87,10 @@ void new_model(bool gender, String model_path){
     
     Serial.print("gender:");
     Serial.println(info_class[2]->get_gender());
-    head_class[1]-> set_gender(info_class[2]->get_gender());
-    body_class[1]-> set_gender(info_class[2]->get_gender());
-    parts_class[1]->set_gender(info_class[2]->get_gender());
+
+    head_class[2]-> set_gender(info_class[2]->get_gender());
+    body_class[2]-> set_gender(info_class[2]->get_gender());
+    parts_class[2]->set_gender(info_class[2]->get_gender());
 
     head_class[2]-> blend(head_class[0],head_class[1]);
     body_class[2]-> blend(body_class[0],body_class[1]);

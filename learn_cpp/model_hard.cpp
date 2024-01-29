@@ -156,13 +156,13 @@ String  HEAD::get_csv(){
 }
 /*******************************************************************************************/
 void  HEAD::set_csv(char* save_file){
-    gen_xy      = String(strtok(save_file, ",")) == "0" ? false:true;;
+    gen_xy      = String(strtok(save_file, ",")) == "0" ? false:true;
     hair_color  = atoi(strtok(0x00, ","));
     hair_curl   = atoi(strtok(0x00, ","));
     eye_color   = atoi(strtok(0x00, ","));
-    eyelid      = String(strtok(0x00, ",")) == "0" ? false:true;;
-    dimple      = String(strtok(0x00, ",")) == "0" ? false:true;;
-    bald        = String(strtok(0x00, ",")) == "0" ? false:true;;;
+    eyelid      = String(strtok(0x00, ",")) == "0" ? false:true;
+    dimple      = String(strtok(0x00, ",")) == "0" ? false:true;
+    bald        = String(strtok(0x00, ",")) == "0" ? false:true;
 }
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 /*********************************** BODY CLASS FUNCTION ***********************************/
@@ -452,7 +452,7 @@ String  BODY::get_csv(){
 }
 /*******************************************************************************************/
 void  BODY::set_csv(char* save_file){
-    gen_xy      = String(strtok(save_file, ",")) == "0" ? false:true;;
+    gen_xy      = String(strtok(save_file, ",")) == "0" ? false:true;
     blood_A     = atoi(strtok(0x00, ","));
     blood_B     = atoi(strtok(0x00, ","));
     body_color  = atoi(strtok(0x00, ","));
@@ -895,7 +895,7 @@ String  EROGENOUS::get_csv(){
 }
 /*******************************************************************************************/
 void  EROGENOUS::set_csv(char* save_file){
-    gen_xy          = String(strtok(save_file, ",")) == "0" ? false:true;;
+    gen_xy          = String(strtok(save_file, ",")) == "0" ? false:true;
 
     hood_shape      = atoi(strtok(0x00, ","));
     hood_start      = atoi(strtok(0x00, ","));
