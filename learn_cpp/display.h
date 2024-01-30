@@ -5,6 +5,10 @@
 #include "model_soft.h"
 #include "./progmem/scene.h"
 
+void display_boot();
+/*************** Display ***************/
+void display_help();
+/*************** Display ***************/
 void display_hour(uint8_t *clock_hours);
 /*************** Display ***************/
 void display_newday(uint32_t *calendar, INFO *class_info, STAT *class_stat, MENS *class_mens, CURRENT *class_current);

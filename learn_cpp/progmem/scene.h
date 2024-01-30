@@ -1,5 +1,11 @@
 #pragma once
 /*************** Display ***************/
+const PROGMEM char scene_help[] = "***** help *****\nhelp  this text\nls    show list\ncd    move path\ncd/   move root\nmd    make dir\nrd    remove dir\nop    open file\nrf    remove file\nexit  return\n***** help *****";
+/*************** Display ***************/
+const PROGMEM char scene_boot[] = "새롭게 시작 하시겠습니까?";
+const PROGMEM char scene_boot_opt1[] = "예";
+const PROGMEM char scene_boot_opt2[] = "아니오";
+/*************** Display ***************/
 const PROGMEM char scene_prologue[] = "?!\n낯선 천장이다.\n";
 /*************** Display ***************/
 const PROGMEM char scene_sun_rise[] = "캄캄한 밤이다.새벽이 밝아온다.해가 떠오른다.아침이 밝았다.";

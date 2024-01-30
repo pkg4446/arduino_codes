@@ -15,6 +15,8 @@
 
 #include "interface.h"
 
+String path_current = "/";
+bool   dos_mode     = false;
 /***** Player *****/
 INFO *info_class        = new INFO();
 HEAD *head_class        = new HEAD();
@@ -75,9 +77,50 @@ void get_command(char ch) {
 
 void command_progress(String recieve){
   Serial.println(recieve);
-  if(scene_number == 0){
+
+  if(dos_mode){
+    String temp_text = "";
+    for(uint8_t index_check=3; index_check<COMMAND_LENGTH; index_check++){
+      if(command_buf[index_check] == 0x00) break;
+      temp_text += command_buf[index_check];
+    }
+    if(command_buf[0]=='h' && command_buf[1]=='e' && command_buf[2]=='l' && command_buf[3]=='p'){
+      display_help();
+    }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]==0x20){
+      uint8_t command_index_check = 3;
+      if(exisits_check(path_current+temp_text+"/")){
+        path_current += temp_text;
+        path_current += "/";
+      }
+      Serial.println(path_current);
+    }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]=='/'){
+      path_current = "/";
+      Serial.println(path_current);
+    }else if(command_buf[0]=='l' && command_buf[1]=='s'){
+      dir_list(path_current,true);
+    }else if(command_buf[0]=='m' && command_buf[1]=='d'){
+      dir_make(path_current+temp_text);
+    }else if(command_buf[0]=='r' && command_buf[1]=='d'){
+      dir_remove(path_current+temp_text);
+    }else if(command_buf[0]=='r' && command_buf[1]=='f'){
+      file_remove(path_current+temp_text);
+    }else if(command_buf[0]=='o' && command_buf[1]=='p'){
+      Serial.println(file_read(path_current+temp_text));
+    }else if(command_buf[0]=='r' && command_buf[1]=='f'){
+      file_remove(path_current+temp_text);
+    }else if(command_buf[0]=='e' && command_buf[1]=='x' && command_buf[2]=='i' && command_buf[3]=='t'){
+      dos_mode = false;
+      display_boot();
+    }else{
+      Serial.println("wrong command!");
+    }
+  }else if(scene_number == 0){
     uint8_t scene_command = recieve.toInt();
     if(scene_command == 1 || scene_command == 2) scene_number = scene_command;
+    else if(scene_command == 99){
+      dos_mode = true;
+      display_help();
+    }
   }else if(scene_number == 1){
     uint8_t scene_command = recieve.toInt();
     bool select_check = false;
@@ -147,20 +190,21 @@ void setup() {
     Serial.println("ARDUINO ver");
   #endif
   sd_init();
-  
-  if(!exisits_check(path_avatar())){
+  display_boot();
+  while (scene_number==0)
+  {
+    if (Serial.available()) get_command(Serial.read());
+  }
+
+  if(scene_number==2 || !exisits_check(path_avatar())){
     dir_make(path_avatar());
     new_model(random(2),path_avatar());
     Serial.println("new!");
   }
   //////////
-  dir_make(path_avatar());
-  new_model(random(2),path_avatar());
-  Serial.println("new!");
-  //////////
   read_model(path_avatar(),info_class,head_class,body_class,parts_class,stat_class,hole_class,sense_class,nature_class,eros_class);
 
-  if(scene_number == 1){
+  if(scene_number == 2){
     /***** HARDWARE *****/
     display_prologue();
     scene_number = 100;
