@@ -2,6 +2,37 @@
 #include "utility.h"
 
 /*******************************************************/
+void display_boot(){
+    paging();
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(scene_boot); index++){
+        response += char(pgm_read_byte_near(scene_boot+index));
+    }
+    Serial.println(response);
+
+    response = "";
+    for(uint16_t index=0; index<strlen_P(scene_boot_opt1); index++){
+        response += char(pgm_read_byte_near(scene_boot_opt1+index));
+    }
+    spacebar_option(true,2,response);
+
+    response = "";
+    for(uint16_t index=0; index<strlen_P(scene_boot_opt2); index++){
+        response += char(pgm_read_byte_near(scene_boot_opt2+index));
+    }
+    spacebar_option(true,1,response);
+    Serial.println();
+};
+/*******************************************************/
+void display_help(){
+    paging();
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(scene_help); index++){
+        response += char(pgm_read_byte_near(scene_help+index));
+    }
+    Serial.println(response);
+};
+/*******************************************************/
 void display_prologue(){
     paging();
     String response = "";
@@ -9,7 +40,6 @@ void display_prologue(){
         response += char(pgm_read_byte_near(scene_prologue+index));
     }
     Serial.println(response);
-    Serial.println();
 };
 /*******************************************************/
 void display_hour(uint8_t *clock_hours){
