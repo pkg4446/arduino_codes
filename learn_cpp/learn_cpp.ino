@@ -13,8 +13,6 @@
 
 #include "coresys.h"
 
-#include "interface.h"
-
 String path_current = "/";
 bool   dos_mode     = false;
 /***** Player *****/
