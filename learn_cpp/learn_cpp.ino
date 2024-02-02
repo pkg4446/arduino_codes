@@ -16,26 +16,26 @@
 String path_current = "/";
 bool   dos_mode     = false;
 /***** Player *****/
-INFO *info_class        = new INFO();
-HEAD *head_class        = new HEAD();
-BODY *body_class        = new BODY();
+INFO      *info_class   = new INFO();
+HEAD      *head_class   = new HEAD();
+BODY      *body_class   = new BODY();
 EROGENOUS *parts_class  = new EROGENOUS();
-STAT *stat_class        = new STAT();
-HOLE *hole_class        = new HOLE();
-SENSE *sense_class      = new SENSE();
-NATURE *nature_class    = new NATURE();
-EROS *eros_class        = new EROS();
+STAT      *stat_class   = new STAT();
+HOLE      *hole_class   = new HOLE();
+SENSE     *sense_class  = new SENSE();
+NATURE    *nature_class = new NATURE();
+EROS      *eros_class   = new EROS();
 /***** Player *****/
 /***** Variable *****/
-uint32_t  calendar     = 1;
-uint8_t   hour_count   = 6;
-uint8_t   season       = 0; // month = rand(12);
+uint32_t  calendar    = 1;
+uint8_t   hour_count  = 6;
+uint8_t   season      = 0; // month = rand(12);
 
 unsigned long time_clock  = 0UL;
 bool          time_stop   = false;
-uint32_t      one_hour_sec= ONE_HOUR;
+uint32_t    one_hour_sec  = ONE_HOUR;
 
-uint8_t       scene_number= 0;
+uint8_t   scene_number    = 0;
 
 /***** Variable *****/
 /*
