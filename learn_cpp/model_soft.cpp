@@ -61,6 +61,25 @@ uint8_t MENS::get(){
 bool MENS::get_pregnant(){
     return pregnant;
 }
+/*******************************************************************************************/
+String  MENS::get_csv(){
+    String response = String(periode);
+    make_csv(&response, String(blood));
+    make_csv(&response, String(cycle));
+    make_csv(&response, String(ovulation));
+    make_csv(&response, String(pregnant));
+    make_csv(&response, String(d_day));
+    return response;
+}
+/*******************************************************************************************/
+void    MENS::set_csv(char* save_file){
+    periode     = atoi(strtok(save_file, ","));
+    blood       = atoi(strtok(0x00, ","));
+    cycle       = atoi(strtok(0x00, ","));
+    ovulation   = atoi(strtok(0x00, ","));
+    pregnant    = String(strtok(0x00, ",")) == "0" ? false:true;
+    d_day       = atoi(strtok(0x00, ","));
+}
 /*********************************** MENS CLASS FUNCTION ***********************************/
 /*********************************** CURRENT CLASS FUNCTION ***********************************/
 CURRENT::CURRENT() {}
@@ -127,6 +146,33 @@ uint8_t CURRENT::get(uint8_t item){
     else if(item == 8) return fain;
     else if(item == 9) return ecstasy;
     return 0;
+}
+/*******************************************************************************************/
+String  CURRENT::get_csv(){
+    String response = String(furr);
+    make_csv(&response, String(lubric));
+    make_csv(&response, String(pee));
+    make_csv(&response, String(poo));
+    make_csv(&response, String(stamina));
+    make_csv(&response, String(mental));
+    make_csv(&response, String(stress));
+    make_csv(&response, String(horny));
+    make_csv(&response, String(fain));
+    make_csv(&response, String(ecstasy));
+    return response;
+}
+/*******************************************************************************************/
+void    CURRENT::set_csv(char* save_file){
+    furr    = atoi(strtok(save_file, ","));
+    lubric  = atoi(strtok(0x00, ","));
+    pee     = atoi(strtok(0x00, ","));
+    poo     = atoi(strtok(0x00, ","));
+    stamina = atoi(strtok(0x00, ","));
+    mental  = atoi(strtok(0x00, ","));
+    stress  = atoi(strtok(0x00, ","));
+    horny   = atoi(strtok(0x00, ","));
+    fain    = atoi(strtok(0x00, ","));
+    ecstasy = atoi(strtok(0x00, ","));
 }
 /*********************************** CURRENT CLASS FUNCTION ***********************************/
 /*********************************** EXP CLASS FUNCTION ***********************************/
@@ -206,6 +252,35 @@ uint8_t EXP::get_shot(uint8_t item){
     else if(item == 3) return sperm_a;
     return 0;
 }
+/*******************************************************************************************/
+String  EXP::get_csv(){
+    String response = String(orgasm);
+    make_csv(&response, String(squirt));
+    make_csv(&response, String(mouth));
+    make_csv(&response, String(vagina));
+    make_csv(&response, String(anal));
+    make_csv(&response, String(urethra));
+    make_csv(&response, String(expans_v));
+    make_csv(&response, String(expans_a));
+    make_csv(&response, String(sperm_m));
+    make_csv(&response, String(sperm_v));
+    make_csv(&response, String(sperm_a));
+    return response;
+}
+/*******************************************************************************************/
+void    EXP::set_csv(char* save_file){
+    orgasm   = atoi(strtok(save_file, ","));
+    squirt   = atoi(strtok(0x00, ","));
+    mouth    = atoi(strtok(0x00, ","));
+    vagina   = atoi(strtok(0x00, ","));
+    anal     = atoi(strtok(0x00, ","));
+    urethra  = atoi(strtok(0x00, ","));
+    expans_v = atoi(strtok(0x00, ","));
+    expans_a = atoi(strtok(0x00, ","));
+    sperm_m  = atoi(strtok(0x00, ","));
+    sperm_v  = atoi(strtok(0x00, ","));
+    sperm_a  = atoi(strtok(0x00, ","));
+}
 /*********************************** EXP CLASS FUNCTION ***********************************/
 /*********************************** BREED CLASS FUNCTION ***********************************/
 BREED::BREED() {}
@@ -233,5 +308,18 @@ uint8_t BREED::get(uint8_t item){
     else if(item == 2) return birth;
     else if(item == 3) return miscarriage;
     return 0;
+}
+/*******************************************************************************************/
+String  BREED::get_csv(){
+    String response = String(pregnancy);
+    make_csv(&response, String(birth));
+    make_csv(&response, String(miscarriage));
+    return response;
+}
+/*******************************************************************************************/
+void    BREED::set_csv(char* save_file){
+    pregnancy   = atoi(strtok(save_file, ","));
+    birth       = atoi(strtok(0x00, ","));
+    miscarriage = atoi(strtok(0x00, ","));
 }
 /*********************************** BREED CLASS FUNCTION ***********************************/

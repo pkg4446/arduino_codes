@@ -36,14 +36,8 @@ bool          time_stop   = false;
 uint32_t    one_hour_sec  = ONE_HOUR;
 
 uint8_t   scene_number    = 0;
-
 /***** Variable *****/
-/*
-void test(){
-  INFO      *info_gene  = new INFO();
-  delete info_gene;
-}
-*/
+
 /***** funtions ************/
 /***** funtion time ************/
 bool time_stream(unsigned long millisec){
@@ -198,7 +192,7 @@ void setup() {
     new_model(random(2),path_avatar());
   }
   //////////
-  read_model(path_avatar(),info_class,head_class,body_class,parts_class,stat_class,hole_class,sense_class,nature_class,eros_class);
+  read_model_hardware(path_avatar(),info_class,head_class,body_class,parts_class,stat_class,hole_class,sense_class,nature_class,eros_class);
 
   if(scene_number == 2){
     display_prologue();

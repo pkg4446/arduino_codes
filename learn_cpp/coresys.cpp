@@ -12,11 +12,6 @@ void new_model(bool gender, String model_path){
     SENSE       *sense_class[model_gen];
     NATURE      *nature_class[model_gen];
     EROS        *eros_class[model_gen];
-    /***** SOFTWARE *****/
-    EXP         *exp_class      = new EXP();
-    CURRENT     *current_class  = new CURRENT();
-    MENS        *mens_class     = new MENS();
-    BREED       *breed_class    = new BREED();
     /***** MODELS *****/
     for(uint8_t index=0; index<model_gen; index++){
         info_class[index]   = new INFO();
@@ -111,9 +106,42 @@ void new_model(bool gender, String model_path){
     make_csv_text(&models, nature_class[2]->get_csv());
     make_csv_text(&models, eros_class[2]->get_csv());
     file_write(model_path+"model.csv", models);
+
+    for(uint8_t index=0; index<model_gen; index++){
+        delete info_class[index];
+        delete head_class[index];
+        delete body_class[index];
+        delete parts_class[index];
+        delete stat_class[index];
+        delete hole_class[index];
+        delete sense_class[index];
+        delete nature_class[index];
+        delete eros_class[index];
+    }
+
+    /***** SOFTWARE *****/
+    MENS    *mens_class     = new MENS();
+    CURRENT *current_class  = new CURRENT();
+    EXP     *exp_class      = new EXP();
+    BREED   *breed_class    = new BREED();
+    mens_class  ->generate();
+    current_class->generate();
+    exp_class   ->generate();
+    breed_class ->generate();
+
+    models = mens_class->get_csv();
+    make_csv_text(&models, current_class->get_csv());
+    make_csv_text(&models, exp_class->get_csv());
+    make_csv_text(&models, breed_class->get_csv());
+    file_write(model_path+"model.csv", models);
+
+    delete exp_class;
+    delete current_class;
+    delete mens_class;
+    delete breed_class;
 }
 
-void read_model(String model_path,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
+void read_model_hardware(String model_path,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
     uint8_t file_number = dir_list(model_path,false,false);
     if(file_number == 3){
         String csv_file_str = file_read(model_path+"model.csv").c_str();
