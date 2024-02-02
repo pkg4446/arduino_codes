@@ -120,10 +120,12 @@ void read_model(String model_path,INFO *class_info,HEAD *class_head,BODY *class_
         char *csv_file  = const_cast<char*>(csv_file_str.c_str());
         char *class_text[9];
         class_text[0] = strtok(csv_file, "\n");
+        /*
         for(uint8_t index=1; index<9; index++){
             class_text[index] = strtok(0x00, "\n");
             Serial.println(class_text[index]);
         }
+        */
         class_info  ->set_csv(class_text[0]);
         class_head  ->set_csv(class_text[1]);
         class_body  ->set_csv(class_text[2]);
