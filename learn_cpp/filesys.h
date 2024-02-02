@@ -11,7 +11,7 @@ void    sd_init();
 bool    exisits_check(String path);
 
 String   dir_index(String path, bool type, uint16_t dir_index);
-uint16_t dir_list(String path, bool type);
+uint16_t dir_list(String path, bool type, bool show);
 void     dir_make(String path);
 void     dir_remove(String path);
 

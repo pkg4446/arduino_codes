@@ -1,4 +1,4 @@
 #pragma once
 /*************** Interface ***************/
-const PROGMEM char interface_test[] = "";
+const PROGMEM char interface_cmd[] = "reciev msg: ";
 /*************** Display ***************/

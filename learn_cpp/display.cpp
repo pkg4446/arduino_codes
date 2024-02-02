@@ -2,6 +2,14 @@
 #include "utility.h"
 
 /*******************************************************/
+void display_cmd(){
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(interface_cmd); index++){
+        response += char(pgm_read_byte_near(interface_cmd+index));
+    }
+    Serial.print(response);
+};
+/*******************************************************/
 void display_boot(){
     paging();
     String response = "";

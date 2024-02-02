@@ -76,6 +76,7 @@ void get_command(char ch) {
 }
 
 void command_progress(String recieve){
+  display_cmd();
   Serial.println(recieve);
 
   if(dos_mode){
@@ -97,7 +98,7 @@ void command_progress(String recieve){
       path_current = "/";
       Serial.println(path_current);
     }else if(command_buf[0]=='l' && command_buf[1]=='s'){
-      dir_list(path_current,true);
+      dir_list(path_current,true,true);
     }else if(command_buf[0]=='m' && command_buf[1]=='d'){
       dir_make(path_current+temp_text);
     }else if(command_buf[0]=='r' && command_buf[1]=='d'){
@@ -195,7 +196,6 @@ void setup() {
   {
     if (Serial.available()) get_command(Serial.read());
   }
-
   if(scene_number==2 || !exisits_check(path_avatar())){
     dir_make(path_avatar());
     new_model(random(2),path_avatar());
@@ -211,7 +211,7 @@ void setup() {
   }else{
     scene_number = 100; //get sd card
   }
-  
+
   time_clock = millis();
   //display_newday(&calendar,info_class,stat_class,mens_class,current_class);
   display_scene();

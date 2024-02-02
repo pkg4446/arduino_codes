@@ -69,30 +69,32 @@ void dir_remove(String path){
   }
 }
 
-uint16_t dir_list(String path, bool type) {
+uint16_t dir_list(String path, bool type, bool show) {
   uint16_t type_index = 0;
   File root = SD.open(path);
   if(!root){return 0;}
   if(!root.isDirectory()){return 0;}
 
   File file = root.openNextFile();
-  Serial.println(path);
+  if(show) Serial.println(path);
   while(file){
-    Serial.print("\t");
+    if(show) Serial.print("\t");
     if(file.isDirectory()){
       if(type)type_index++;
-      Serial.print(file.name());
-      Serial.println("/");
+      if(show){
+        Serial.print(file.name());
+        Serial.println("/");
+      }
     }else{
       if(!type)type_index++;
-      Serial.print(file.name());
-      Serial.print("\t");
-      Serial.println(file.size());
+      if(show){
+        Serial.print(file.name());
+        Serial.print("\t");
+        Serial.println(file.size());
+      }
     }
     file = root.openNextFile();
   }
-  Serial.print("Listing type:");
-  Serial.println(type_index);
   return type_index;
 }
 

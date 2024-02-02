@@ -114,25 +114,27 @@ void new_model(bool gender, String model_path){
 }
 
 void read_model(String model_path,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
-    dir_list(model_path,false);
-    String csv_file_str = file_read(model_path+"model.csv").c_str();
-    char *csv_file  = const_cast<char*>(csv_file_str.c_str());
-    char *class_text[9];
-    class_text[0] = strtok(csv_file, "\n");
-    for(uint8_t index=1; index<9; index++){
-        class_text[index] = strtok(0x00, "\n");
-        Serial.println(class_text[index]);
+    uint8_t file_number = dir_list(model_path,false,false);
+    if(file_number == 3){
+        String csv_file_str = file_read(model_path+"model.csv").c_str();
+        char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+        char *class_text[9];
+        class_text[0] = strtok(csv_file, "\n");
+        for(uint8_t index=1; index<9; index++){
+            class_text[index] = strtok(0x00, "\n");
+            Serial.println(class_text[index]);
+        }
+        class_info  ->set_csv(class_text[0]);
+        class_head  ->set_csv(class_text[1]);
+        class_body  ->set_csv(class_text[2]);
+        class_parts ->set_csv(class_text[3]);
+        class_stat  ->set_csv(class_text[4]);
+        class_hole  ->set_csv(class_text[5]);
+        class_sense ->set_csv(class_text[6]);
+        class_nature->set_csv(class_text[7]);
+        class_eros  ->set_csv(class_text[8]);
     }
-    class_info  ->set_csv(class_text[0]);
-    class_head  ->set_csv(class_text[1]);
-    class_body  ->set_csv(class_text[2]);
-    class_parts ->set_csv(class_text[3]);
-    class_stat  ->set_csv(class_text[4]);
-    class_hole  ->set_csv(class_text[5]);
-    class_sense ->set_csv(class_text[6]);
-    class_nature->set_csv(class_text[7]);
-    class_eros  ->set_csv(class_text[8]);
-
+    /*
     Serial.println(class_info->get_csv());
     Serial.println(class_head->get_csv());
     Serial.println(class_body->get_csv());
@@ -142,4 +144,5 @@ void read_model(String model_path,INFO *class_info,HEAD *class_head,BODY *class_
     Serial.println(class_sense->get_csv());
     Serial.println(class_nature->get_csv());
     Serial.println(class_eros->get_csv());
+    */
 }

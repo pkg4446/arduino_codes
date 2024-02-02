@@ -3,8 +3,12 @@
 #include "define.h"
 #include "model_hard.h"
 #include "model_soft.h"
+#include "./progmem/interfaces.h"
 #include "./progmem/scene.h"
 
+/*************** Display ***************/
+void display_cmd();
+/*************** Display ***************/
 void display_boot();
 /*************** Display ***************/
 void display_help();
@@ -16,11 +20,6 @@ void display_newday(uint32_t *calendar, INFO *class_info, STAT *class_stat, MENS
 void display_prologue();
 /*************** Display ***************/
 void cancle_cmd(bool line_break);
-/*************** Display ***************/
-void display_shelter();
-/*************** Display ***************/
-void display_explore(bool sweet_home);
-void display_explore_move();
 /*************** Display ***************/
 void display_edu();
 /*************** Display ***************/
