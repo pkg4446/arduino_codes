@@ -187,7 +187,7 @@ void setup() {
   {
     if (Serial.available()) get_command(Serial.read());
   }
-  if(scene_number==2 || !exisits_check(path_avatar()) || dir_list(path_avatar(),false,false) < 6){
+  if(scene_number==2 || !exisits_check(path_avatar()) || dir_list(path_avatar(),false,false) < 7){
     scene_number = 2;
     dir_make(path_avatar());
     bool gender = random(2);

@@ -1,5 +1,6 @@
 #pragma once
 #include "filesys.h"
+#include "hash.h"
 
 #include "model_hard.h"
 #include "model_soft.h"

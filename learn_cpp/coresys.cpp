@@ -50,6 +50,9 @@ void new_model_hardware(String model_path, bool gender){
     make_csv_text(&models, nature_class[0]->get_csv());
     make_csv_text(&models, eros_class[0]->get_csv());
     file_write(model_path+"mother.csv", models);
+    Sha1.init();
+    Sha1.print(models);
+    String hashs = Sha1.result();
     /***** FATHER *****/
     info_class[1]-> generate(true, false);
     
@@ -76,6 +79,9 @@ void new_model_hardware(String model_path, bool gender){
     make_csv_text(&models, nature_class[1]->get_csv());
     make_csv_text(&models, eros_class[1]->get_csv());
     file_write(model_path+"father.csv", models);
+    Sha1.init();
+    Sha1.print(models);
+    make_csv(&hashs, Sha1.result());
     /***** BABY *****/
     info_class[2]-> generate(gender, false);
     info_class[2]-> set_family(info_class[0]->get_family());
@@ -106,6 +112,9 @@ void new_model_hardware(String model_path, bool gender){
     make_csv_text(&models, nature_class[2]->get_csv());
     make_csv_text(&models, eros_class[2]->get_csv());
     file_write(model_path+"model.csv", models);
+    Sha1.init();
+    Sha1.print(models);
+    make_csv(&hashs, Sha1.result());
 
     for(uint8_t index=0; index<model_gen; index++){
         delete info_class[index];
@@ -118,6 +127,7 @@ void new_model_hardware(String model_path, bool gender){
         delete nature_class[index];
         delete eros_class[index];
     }
+    file_write(model_path+"hash.csv", hashs);
 }
 
 void new_model_software(String model_path, bool gender){
