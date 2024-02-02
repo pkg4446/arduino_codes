@@ -197,7 +197,6 @@ void setup() {
   if(scene_number==2 || !exisits_check(path_avatar())){
     dir_make(path_avatar());
     new_model(random(2),path_avatar());
-    Serial.println("new!");
   }
   //////////
   read_model(path_avatar(),info_class,head_class,body_class,parts_class,stat_class,hole_class,sense_class,nature_class,eros_class);

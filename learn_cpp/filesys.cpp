@@ -50,9 +50,6 @@ void dir_make(String path){
     #else
       SD.mkdir(path);
     #endif
-    Serial.println("make success");
-  }else{
-    Serial.println("already exisited");
   }
 }
 
@@ -64,8 +61,13 @@ void dir_remove(String path){
     #else
       SD.rmdir(path);
     #endif
-    if(exisits_check(path)) Serial.println("inner contents");
-    else Serial.println("delete success");
+    if(exisits_check(path)){
+      String response = "";
+      for(uint16_t index=0; index<strlen_P(sdcard_option1); index++){
+          response += char(pgm_read_byte_near(sdcard_option1+index));
+      }
+      Serial.println(response);
+    }
   }
 }
 
@@ -146,9 +148,7 @@ void file_write(String path, String contents){
     file = SD.open(path, O_CREAT|O_RDWR);
     file.seek (0);
   #endif
-  Serial.print("write ");
-  if(file.print(contents)) Serial.println("ok");
-  else Serial.println("fail");
+  file.print(contents);
   file.close();
 }
 
@@ -160,9 +160,7 @@ void file_append(String path, String contents){
   #else
     file = SD.open(path, FILE_WRITE);
   #endif
-  Serial.print("write ");
-  if(file.print(contents)) Serial.println("ok");
-  else Serial.println("fail");
+  file.print(contents);
   file.close();
 }
 
@@ -174,7 +172,5 @@ void file_remove(String path){
     #else
       SD.remove(path);
     #endif
-    if(exisits_check(path)) Serial.println("inner contents");
-    else Serial.println("delete success");
   }
 }
