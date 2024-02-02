@@ -147,7 +147,6 @@ void gene_meiosis(uint8_t child, uint8_t target){
 void pregnant(String family_name){
   info_class[e_baby]->generate(random(2), true);
   info_class[e_baby]->set_family(family_name);
-  view_status("\nnew baby",info_class[e_baby],head_class[e_baby],body_class[e_baby],parts_class[e_baby],stat_class[e_baby],hole_class[e_baby],sense_class[e_baby],nature_class[e_baby],eros_class[e_baby]);
 }
 */
 /***** funtion routine ****/
