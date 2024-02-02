@@ -29,6 +29,12 @@ void display_boot(){
         response += char(pgm_read_byte_near(scene_boot_opt2+index));
     }
     spacebar_option(true,1,response);
+
+    response = "";
+    for(uint16_t index=0; index<strlen_P(scene_boot_opt3); index++){
+        response += char(pgm_read_byte_near(scene_boot_opt3+index));
+    }
+    spacebar_option(false,99,response);
     Serial.println();
 };
 /*******************************************************/
