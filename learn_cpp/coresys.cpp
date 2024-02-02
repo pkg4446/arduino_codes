@@ -1,7 +1,7 @@
 #include "coresys.h"
 #include "funtions.h"
 
-void new_model(bool gender, String model_path){
+void new_model_hardware(String model_path, bool gender){
     /***** HARDWARE *****/
     INFO        *info_class[model_gen];
     HEAD        *head_class[model_gen];
@@ -118,7 +118,9 @@ void new_model(bool gender, String model_path){
         delete nature_class[index];
         delete eros_class[index];
     }
+}
 
+void new_model_software(String model_path){
     /***** SOFTWARE *****/
     MENS    *mens_class     = new MENS();
     CURRENT *current_class  = new CURRENT();
@@ -129,11 +131,13 @@ void new_model(bool gender, String model_path){
     exp_class   ->generate();
     breed_class ->generate();
 
-    models = mens_class->get_csv();
-    make_csv_text(&models, current_class->get_csv());
-    make_csv_text(&models, exp_class->get_csv());
+    String models = mens_class->get_csv();
+    file_write(model_path+"mens.csv", models);
+    models = current_class->get_csv();
+    file_write(model_path+"current.csv", models);
+    models = exp_class->get_csv();
     make_csv_text(&models, breed_class->get_csv());
-    file_write(model_path+"model.csv", models);
+    file_write(model_path+"exps.csv", models);
 
     delete exp_class;
     delete current_class;
@@ -143,7 +147,7 @@ void new_model(bool gender, String model_path){
 
 void read_model_hardware(String model_path,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
     uint8_t file_number = dir_list(model_path,false,false);
-    if(file_number == 3){
+    if(exisits_check(model_path+"model.csv") && exisits_check(model_path+"mother.csv") && exisits_check(model_path+"father.csv")){
         String csv_file_str = file_read(model_path+"model.csv").c_str();
         char *csv_file  = const_cast<char*>(csv_file_str.c_str());
         char *class_text[9];
@@ -163,19 +167,20 @@ void read_model_hardware(String model_path,INFO *class_info,HEAD *class_head,BOD
         class_sense ->set_csv(class_text[6]);
         class_nature->set_csv(class_text[7]);
         class_eros  ->set_csv(class_text[8]);
+        /*
+        class_info-> status();
+        class_head-> status();
+        class_body-> status();
+        class_body-> get_weight();
+        class_parts->status();
+        class_stat-> status();
+        class_hole-> status(class_info->get_gender());
+        class_sense->status(class_info->get_gender());
+        class_nature->status();
+        class_eros-> status();
+        */
+    }else{
+        Serial.println("nofile");
     }
-
-    /*
-    class_info-> status();
-    class_head-> status();
-    class_body-> status();
-    class_body-> get_weight();
-    class_parts->status();
-    class_stat-> status();
-    class_hole-> status(class_info->get_gender());
-    class_sense->status(class_info->get_gender());
-    class_nature->status();
-    class_eros-> status();
-    */
 }
 

@@ -187,9 +187,11 @@ void setup() {
   {
     if (Serial.available()) get_command(Serial.read());
   }
-  if(scene_number==2 || !exisits_check(path_avatar())){
+  if(scene_number==2 || !exisits_check(path_avatar()) || dir_list(path_avatar(),false,false) < 6){
+    scene_number = 2;
     dir_make(path_avatar());
-    new_model(random(2),path_avatar());
+    new_model_hardware(path_avatar(),random(2));
+    new_model_software(path_avatar());
   }
   //////////
   read_model_hardware(path_avatar(),info_class,head_class,body_class,parts_class,stat_class,hole_class,sense_class,nature_class,eros_class);
