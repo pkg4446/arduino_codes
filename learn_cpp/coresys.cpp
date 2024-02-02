@@ -136,15 +136,18 @@ void read_model(String model_path,INFO *class_info,HEAD *class_head,BODY *class_
         class_nature->set_csv(class_text[7]);
         class_eros  ->set_csv(class_text[8]);
     }
+
     /*
-    Serial.println(class_info->get_csv());
-    Serial.println(class_head->get_csv());
-    Serial.println(class_body->get_csv());
-    Serial.println(class_parts->get_csv());
-    Serial.println(class_stat->get_csv());
-    Serial.println(class_hole->get_csv());
-    Serial.println(class_sense->get_csv());
-    Serial.println(class_nature->get_csv());
-    Serial.println(class_eros->get_csv());
+    class_info-> status();
+    class_head-> status();
+    class_body-> status();
+    class_body-> get_weight();
+    class_parts->status();
+    class_stat-> status();
+    class_hole-> status(class_info->get_gender());
+    class_sense->status(class_info->get_gender());
+    class_nature->status();
+    class_eros-> status();
     */
 }
+
