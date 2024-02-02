@@ -6,17 +6,18 @@
 class MENS
 {
     private:
+        bool    gen_xy;
+        bool    pregnant;
         uint8_t periode;
         uint8_t blood;
         uint8_t cycle;
         uint8_t ovulation;
-        bool    pregnant;
         uint8_t d_day;
     public:
         MENS();
         ~MENS();
-        void generate();
-        void daily(bool gender);
+        void generate(bool gender);
+        void daily();
         void status();
         uint8_t get();
         bool    get_pregnant();

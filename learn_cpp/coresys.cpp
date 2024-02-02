@@ -120,13 +120,13 @@ void new_model_hardware(String model_path, bool gender){
     }
 }
 
-void new_model_software(String model_path){
+void new_model_software(String model_path, bool gender){
     /***** SOFTWARE *****/
     MENS    *mens_class     = new MENS();
     CURRENT *current_class  = new CURRENT();
     EXP     *exp_class      = new EXP();
     BREED   *breed_class    = new BREED();
-    mens_class  ->generate();
+    mens_class  ->generate(gender);
     current_class->generate();
     exp_class   ->generate();
     breed_class ->generate();

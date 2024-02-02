@@ -5,17 +5,18 @@ MENS::MENS() {}
 /*******************************************************************************************/
 MENS::~MENS(){destruct();}
 /*******************************************************************************************/
-void MENS::generate(){
+void MENS::generate(bool gender){
+    gen_xy    = gender;
+    pregnant  = false;
     periode   = 28;
     blood     = 0;
     cycle     = 0;
     ovulation = 0;
-    pregnant  = 0;
     d_day     = 0;
 }
 /*******************************************************************************************/
-void MENS::daily(bool gender){
-    if(!gender){
+void MENS::daily(){
+    if(!gen_xy){
         if(pregnant){
             if(d_day > 0) d_day--;
             else{
@@ -41,11 +42,11 @@ void MENS::daily(bool gender){
 /*******************************************************************************************/
 void MENS::status(){
     perforation("mens");
+    spacebar(false,"pregnant");  Serial.println(pregnant);
     spacebar(false,"periode");   Serial.println(periode);
     spacebar(false,"blood");     Serial.println(blood);
     spacebar(false,"cycle");     Serial.println(cycle);
     spacebar(false,"ovulation"); Serial.println(ovulation);
-    spacebar(false,"pregnant");  Serial.println(pregnant);
     spacebar(false,"d_day");     Serial.println(d_day);
 }
 /*******************************************************************************************/
@@ -63,21 +64,23 @@ bool MENS::get_pregnant(){
 }
 /*******************************************************************************************/
 String  MENS::get_csv(){
-    String response = String(periode);
+    String response = String(gen_xy);
+    make_csv(&response, String(pregnant));
+    make_csv(&response, String(periode));
     make_csv(&response, String(blood));
     make_csv(&response, String(cycle));
     make_csv(&response, String(ovulation));
-    make_csv(&response, String(pregnant));
     make_csv(&response, String(d_day));
     return response;
 }
 /*******************************************************************************************/
 void    MENS::set_csv(char* save_file){
-    periode     = atoi(strtok(save_file, ","));
+    gen_xy      = String(strtok(save_file, ",")) == "0" ? false:true;
+    pregnant    = String(strtok(0x00, ",")) == "0" ? false:true;
+    periode     = atoi(strtok(0x00, ","));
     blood       = atoi(strtok(0x00, ","));
     cycle       = atoi(strtok(0x00, ","));
     ovulation   = atoi(strtok(0x00, ","));
-    pregnant    = String(strtok(0x00, ",")) == "0" ? false:true;
     d_day       = atoi(strtok(0x00, ","));
 }
 /*********************************** MENS CLASS FUNCTION ***********************************/

@@ -163,7 +163,7 @@ void routine_days(){
   if(routine_hours()){
     calendar ++;
     for(uint8_t index=0; index<CLASS_ARRAY; index++){
-      //routines_day(info_class[index]->get_gender(),mens_class[index],current_class[index]);
+      //routines_day(mens_class[index],current_class[index]);
     }
     //display_newday(&calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
     display_scene();
@@ -190,8 +190,9 @@ void setup() {
   if(scene_number==2 || !exisits_check(path_avatar()) || dir_list(path_avatar(),false,false) < 6){
     scene_number = 2;
     dir_make(path_avatar());
-    new_model_hardware(path_avatar(),random(2));
-    new_model_software(path_avatar());
+    bool gender = random(2);
+    new_model_hardware(path_avatar(),gender);
+    new_model_software(path_avatar(),gender);
   }
   //////////
   read_model_hardware(path_avatar(),info_class,head_class,body_class,parts_class,stat_class,hole_class,sense_class,nature_class,eros_class);

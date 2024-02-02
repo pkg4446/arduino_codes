@@ -2,4 +2,4 @@
 #include "model_hard.h"
 #include "model_soft.h"
 
-void routines_day(bool gender, MENS *class_mens, CURRENT *class_current);
+void routines_day(MENS *class_mens, CURRENT *class_current);
