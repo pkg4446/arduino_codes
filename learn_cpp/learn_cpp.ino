@@ -202,11 +202,11 @@ void setup() {
   read_model(path_avatar(),info_class,head_class,body_class,parts_class,stat_class,hole_class,sense_class,nature_class,eros_class);
 
   if(scene_number == 2){
-    /***** HARDWARE *****/
     display_prologue();
     scene_number = 100;
   }else{
-    scene_number = 100; //get sd card
+    display_continue();
+    scene_number = 100;
   }
 
   time_clock = millis();

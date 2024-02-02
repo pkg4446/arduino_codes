@@ -56,6 +56,15 @@ void display_prologue(){
     Serial.println(response);
 };
 /*******************************************************/
+void display_continue(){
+    paging();
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(scene_continue); index++){
+        response += char(pgm_read_byte_near(scene_continue+index));
+    }
+    Serial.println(response);
+};
+/*******************************************************/
 void display_hour(uint8_t *clock_hours){
     int8_t index_start = 0;
     int8_t index_end   = 83;

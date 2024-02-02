@@ -9,6 +9,8 @@ const PROGMEM char scene_boot_opt3[] = "Command Prompt";
 /*************** Display ***************/
 const PROGMEM char scene_prologue[]  = "?!\n낯선 천장이다.\n";
 /*************** Display ***************/
+const PROGMEM char scene_continue[]  = "강림.\n";
+/*************** Display ***************/
 const PROGMEM char scene_sun_rise[]  = "캄캄한 밤이다.새벽이 밝아온다.해가 떠오른다.아침이 밝았다.";
 const PROGMEM char scene_sun_fall[]  = "해가 중천에 떳다.해가 저문다.노을이 진다.어둠이 내렸다.";
 /*************** Display ***************/

@@ -19,6 +19,8 @@ void display_newday(uint32_t *calendar, INFO *class_info, STAT *class_stat, MENS
 /*************** Display ***************/
 void display_prologue();
 /*************** Display ***************/
+void display_continue();
+/*************** Display ***************/
 void cancle_cmd(bool line_break);
 /*************** Display ***************/
 void display_edu();
