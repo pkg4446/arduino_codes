@@ -135,17 +135,6 @@ void command_progress(String recieve){
 }
 /***** funtion gene *******/
 /*
-void gene_meiosis(uint8_t child, uint8_t target){
-  head_class[target]->   meiosis(head_class_parents[child*2],  head_class_parents[child*2+1]);
-  body_class[target]->   meiosis(body_class_parents[child*2],  body_class_parents[child*2+1]);
-  parts_class[target]->  meiosis(parts_class_parents[child*2], parts_class_parents[child*2+1]);
-  stat_class[target]->   meiosis(stat_class_parents[child*2],  stat_class_parents[child*2+1]);
-  hole_class[target]->   meiosis(hole_class_parents[child*2],  hole_class_parents[child*2+1]);
-  sense_class[target]->  meiosis(sense_class_parents[child*2], sense_class_parents[child*2+1]);
-  nature_class[target]-> meiosis(nature_class_parents[child*2],nature_class_parents[child*2+1]);
-  eros_class[target]->   meiosis(eros_class_parents[child*2],  eros_class_parents[child*2+1]);
-}
-
 void pregnant(String family_name){
   info_class[e_baby]->generate(random(2), true);
   info_class[e_baby]->set_family(family_name);

@@ -21,3 +21,5 @@ void read_model_soft(String model_path,STAT *class_stat,HOLE *class_hole,SENSE *
 void read_model_mens(String model_path,MENS *mens_class);
 void read_model_feel(String model_path,CURRENT *feel_class);
 void read_model_breed(String model_path,BREED *breed_class);
+
+void pregnant_baby(String father_path, String mother_path);

@@ -247,6 +247,66 @@ void read_model_breed(String model_path, BREED *breed_class){
     breed_class ->set_csv(csv_file);
 }
 
+void read_model_gene(String model_path,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
+    if(check_model_hash(model_path,0)){
+        String csv_file_str = file_read(model_path);
+        char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+        char *class_text[9];
+        class_text[0] = strtok(csv_file, "\n");
+        for(uint8_t index=1; index<9; index++){
+            class_text[index] = strtok(0x00, "\n");
+        }
+        class_info  ->set_csv(class_text[0]);
+        class_head  ->set_csv(class_text[1]);
+        class_body  ->set_csv(class_text[2]);
+        class_parts ->set_csv(class_text[3]);
+        class_stat  ->set_csv(class_text[4]);
+        class_hole  ->set_csv(class_text[5]);
+        class_sense ->set_csv(class_text[6]);
+        class_nature->set_csv(class_text[7]);
+        class_eros  ->set_csv(class_text[8]);
+    }else{
+        Serial.println("nofile");
+    }
+}
+//////////여기 바꾸기///shot 하고 mother에 gene으로.
+void pregnant_baby(String mother_path, String father_path){
+    /***** HARDWARE *****/
+    INFO        *info_class[model_gen+1];
+    HEAD        *head_class[model_gen+1];
+    BODY        *body_class[model_gen+1];
+    EROGENOUS   *parts_class[model_gen+1];
+    /***** SOFTWARE *****/
+    STAT        *stat_class[model_gen+1];
+    HOLE        *hole_class[model_gen+1];
+    SENSE       *sense_class[model_gen+1];
+    NATURE      *nature_class[model_gen+1];
+    EROS        *eros_class[model_gen+1];
+    read_model_gene(mother_path+file_mother(),info_class[0],head_class[0],body_class[0],parts_class[0],stat_class[0],hole_class[0],sense_class[0],nature_class[0],eros_class[0]);
+    read_model_gene(mother_path+file_father(),info_class[1],head_class[1],body_class[1],parts_class[1],stat_class[1],hole_class[1],sense_class[1],nature_class[1],eros_class[1]);
+    
+    head_class[3]->   meiosis(head_class[0],  head_class[1]);
+    body_class[3]->   meiosis(body_class[0],  body_class[1]);
+    parts_class[3]->  meiosis(parts_class[0], parts_class[1]);
+    stat_class[3]->   meiosis(stat_class[0],  stat_class[1]);
+    hole_class[3]->   meiosis(hole_class[0],  hole_class[1]);
+    sense_class[3]->  meiosis(sense_class[0], sense_class[1]);
+    nature_class[3]-> meiosis(nature_class[0],nature_class[1]);
+    eros_class[3]->   meiosis(eros_class[0],  eros_class[1]);
+    
+    read_model_gene(father_path+file_mother(),info_class[0],head_class[0],body_class[0],parts_class[0],stat_class[0],hole_class[0],sense_class[0],nature_class[0],eros_class[0]);
+    read_model_gene(father_path+file_father(),info_class[1],head_class[1],body_class[1],parts_class[1],stat_class[1],hole_class[1],sense_class[1],nature_class[1],eros_class[1]);
+
+    head_class[model_gen]->   meiosis(head_class[0],  head_class[1]);
+    body_class[model_gen]->   meiosis(body_class[0],  body_class[1]);
+    parts_class[model_gen]->  meiosis(parts_class[0], parts_class[1]);
+    stat_class[model_gen]->   meiosis(stat_class[0],  stat_class[1]);
+    hole_class[model_gen]->   meiosis(hole_class[0],  hole_class[1]);
+    sense_class[model_gen]->  meiosis(sense_class[0], sense_class[1]);
+    nature_class[model_gen]-> meiosis(nature_class[0],nature_class[1]);
+    eros_class[model_gen]->   meiosis(eros_class[0],  eros_class[1]);
+}
+
 /*
 void display_newday(uint32_t *calendar, INFO *class_info, STAT *class_stat, MENS *class_mens, CURRENT *class_current){
     paging();
