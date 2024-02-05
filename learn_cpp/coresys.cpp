@@ -108,14 +108,14 @@ void new_model_body(String model_path, bool gender){
     make_csv_text(&models, parts_class[2]->get_csv());
     Sha1.init();
     Sha1.print(models);
+    make_csv(&hashs, Sha1.result());
+    file_write(model_path+"hash.csv", hashs);
     make_csv_text(&models, stat_class[2]->get_csv());
     make_csv_text(&models, hole_class[2]->get_csv());
     make_csv_text(&models, sense_class[2]->get_csv());
     make_csv_text(&models, nature_class[2]->get_csv());
     make_csv_text(&models, eros_class[2]->get_csv());
     file_write(model_path+"model.csv", models);
-    Sha1.print(models);
-    make_csv(&hashs, Sha1.result());
 
     for(uint8_t index=0; index<model_gen; index++){
         delete info_class[index];
@@ -128,7 +128,6 @@ void new_model_body(String model_path, bool gender){
         delete nature_class[index];
         delete eros_class[index];
     }
-    file_write(model_path+"hash.csv", hashs);
 }
 
 void new_model_status(String model_path, bool gender){
@@ -165,14 +164,14 @@ bool check_model_hash(String model_path, bool type){
         hash_value[0] = strtok(csv_file, ",");
         hash_value[1] = strtok(0x00, ",");
         Sha1.init();
-        if(type){
+        if(!type){
             csv_file_str = file_read(model_path+"mother.csv") + file_read(model_path+"father.csv");
             
         }else{
             csv_file_str = file_read(model_path+"model.csv").c_str();
-            *csv_file  = const_cast<char*>(csv_file_str.c_str());
+            char *model_csv = const_cast<char*>(csv_file_str.c_str());
             String class_text[4];
-            class_text[0] = strtok(csv_file, "\n");
+            class_text[0] = strtok(model_csv, "\n");
             for(uint8_t index=1; index<4; index++){
                 class_text[index] = strtok(0x00, "\n");
             }
@@ -184,7 +183,7 @@ bool check_model_hash(String model_path, bool type){
         Sha1.print(csv_file_str);
         String hashs = Sha1.result();
         Serial.println(hashs);
-        //Serial.println(hash_value[type]);
+        Serial.println(hash_value[type]);
     }
     return response;
 }
