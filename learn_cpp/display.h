@@ -1,9 +1,7 @@
 #pragma once
 #include "arduino.h"
-#include "define.h"
-#include "model_hard.h"
-#include "model_soft.h"
-#include "model_status.h"
+
+#include "word.h"
 #include "./progmem/interfaces.h"
 #include "./progmem/scene.h"
 
@@ -14,13 +12,11 @@ void display_model_err();
 /*************** Display ***************/
 void display_boot();
 /*************** Display ***************/
-void display_help();
+void display_help_cmd();
 /*************** Display ***************/
 void display_hour(uint8_t *clock_hours);
 /*************** Display ***************/
-void display_newday(uint32_t *calendar, INFO *class_info, STAT *class_stat, MENS *class_mens, CURRENT *class_current);
-/*************** Display ***************/
-void display_prologue();
+void display_prologue(String name);
 /*************** Display ***************/
 void display_continue();
 /*************** Display ***************/

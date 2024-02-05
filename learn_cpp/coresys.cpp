@@ -246,3 +246,23 @@ void read_model_breed(String model_path, BREED *breed_class){
     char *csv_file  = const_cast<char*>(csv_file_str.c_str());
     breed_class ->set_csv(csv_file);
 }
+
+/*
+void display_newday(uint32_t *calendar, INFO *class_info, STAT *class_stat, MENS *class_mens, CURRENT *class_current){
+    paging();
+    spacebar(false,"Day");Serial.println(String(*calendar));
+    paging();
+    String genders = "♀";
+    if(class_info->get_gender()) genders = "♂";
+    spacebar(true,class_info->get_family() + class_info->get_name() + genders);
+    if(!class_info->get_gender() && class_mens->get() == 2){
+        Serial.println("mens");
+    }else{
+        Serial.println("");
+    }
+    uint8_t get_stamina = class_current->get(4);
+    uint8_t get_mental  = class_current->get(5);
+    spacebar(true,"체력");   Serial.println(get_stamina);
+    spacebar(true,"정신력"); Serial.println(get_mental);
+}
+*/

@@ -86,7 +86,7 @@ void command_progress(String recieve){
       temp_text += command_buf[index_check];
     }
     if(command_buf[0]=='h' && command_buf[1]=='e' && command_buf[2]=='l' && command_buf[3]=='p'){
-      display_help();
+      display_help_cmd();
     }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]==0x20){
       uint8_t command_index_check = 3;
       if(exisits_check(path_current+temp_text+"/")){
@@ -120,7 +120,7 @@ void command_progress(String recieve){
     if(scene_command == 1 || scene_command == 2) scene_number = scene_command;
     else if(scene_command == 99){
       dos_mode = true;
-      display_help();
+      display_help_cmd();
     }
   }else if(scene_number == 1){
     uint8_t scene_command = recieve.toInt();
@@ -196,7 +196,7 @@ void setup() {
     if (Serial.available()) get_command(Serial.read());
   }
   if(!exisits_check(path_assist())) dir_make(path_assist());
-  if(dir_list(path_assist(),false,false) < 8){
+  if(scene_number==2 || dir_list(path_assist(),false,false) < 8){
     new_model_body(path_assist(),false);
     new_model_status(path_assist(),false);
   }
@@ -209,13 +209,15 @@ void setup() {
   }
   //////////
   read_model_hard(path_assist(),info_class,head_class,body_class,parts_class);
+  /*
   read_model_soft(path_assist(),stat_class,hole_class,sense_class,nature_class,eros_class);
   read_model_mens(path_assist(),mens_class);
   read_model_feel(path_assist(),feel_class);
   read_model_breed(path_assist(),breed_class);
+  */
 
   if(scene_number == 2){
-    display_prologue();
+    display_prologue(info_class->get_family() + info_class->get_name());
     scene_number = 100;
   }else{
     display_continue();

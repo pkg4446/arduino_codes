@@ -26,42 +26,39 @@ void display_boot(){
     }
     Serial.println(response);
 
-    response = "";
-    for(uint16_t index=0; index<strlen_P(scene_boot_opt1); index++){
-        response += char(pgm_read_byte_near(scene_boot_opt1+index));
-    }
-    spacebar_option(true,2,response);
+    spacebar_option(true,2,word_yes());
+    spacebar_option(true,1,word_no());
 
     response = "";
-    for(uint16_t index=0; index<strlen_P(scene_boot_opt2); index++){
-        response += char(pgm_read_byte_near(scene_boot_opt2+index));
-    }
-    spacebar_option(true,1,response);
-
-    response = "";
-    for(uint16_t index=0; index<strlen_P(scene_boot_opt3); index++){
-        response += char(pgm_read_byte_near(scene_boot_opt3+index));
+    for(uint16_t index=0; index<strlen_P(scene_boot_cmd); index++){
+        response += char(pgm_read_byte_near(scene_boot_cmd+index));
     }
     spacebar_option(false,99,response);
     Serial.println();
 };
 /*******************************************************/
-void display_help(){
+void display_help_cmd(){
     paging();
     String response = "";
-    for(uint16_t index=0; index<strlen_P(scene_help); index++){
-        response += char(pgm_read_byte_near(scene_help+index));
+    for(uint16_t index=0; index<strlen_P(scene_help_cmd); index++){
+        response += char(pgm_read_byte_near(scene_help_cmd+index));
     }
     Serial.println(response);
 };
 /*******************************************************/
-void display_prologue(){
+void display_prologue(String name){
     paging();
     String response = "";
-    for(uint16_t index=0; index<strlen_P(scene_prologue); index++){
-        response += char(pgm_read_byte_near(scene_prologue+index));
+    for(uint16_t index=0; index<strlen_P(scene_prologue1); index++){
+        response += char(pgm_read_byte_near(scene_prologue1+index));
     }
-    Serial.println(response);
+    Serial.print(response);
+    Serial.print(name);
+    response = "";
+    for(uint16_t index=0; index<strlen_P(scene_prologue2); index++){
+        response += char(pgm_read_byte_near(scene_prologue2+index));
+    }
+    Serial.print(response);
 };
 /*******************************************************/
 void display_continue(){
@@ -95,24 +92,6 @@ void display_hour(uint8_t *clock_hours){
         }
     }
     if(*clock_hours % 3 == 1) Serial.println(response);
-}
-
-void display_newday(uint32_t *calendar, INFO *class_info, STAT *class_stat, MENS *class_mens, CURRENT *class_current){
-    paging();
-    spacebar(false,"Day");Serial.println(String(*calendar));
-    paging();
-    String genders = "♀";
-    if(class_info->get_gender()) genders = "♂";
-    spacebar(true,class_info->get_family() + class_info->get_name() + genders);
-    if(!class_info->get_gender() && class_mens->get() == 2){
-        Serial.println("mens");
-    }else{
-        Serial.println("");
-    }
-    uint8_t get_stamina = class_current->get(4);
-    uint8_t get_mental  = class_current->get(5);
-    spacebar(true,"체력");   Serial.println(get_stamina);
-    spacebar(true,"정신력"); Serial.println(get_mental);
 }
 /*******************************************************/
 void cancle_cmd(bool line_break){
