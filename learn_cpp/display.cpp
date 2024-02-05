@@ -10,6 +10,14 @@ void display_cmd(){
     Serial.print(response);
 };
 /*******************************************************/
+void display_model_err(){
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(interface_model_err); index++){
+        response += char(pgm_read_byte_near(interface_model_err+index));
+    }
+    Serial.print(response);
+};
+/*******************************************************/
 void display_boot(){
     paging();
     String response = "";

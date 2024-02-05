@@ -10,6 +10,8 @@
 /*************** Display ***************/
 void display_cmd();
 /*************** Display ***************/
+void display_model_err();
+/*************** Display ***************/
 void display_boot();
 /*************** Display ***************/
 void display_help();
