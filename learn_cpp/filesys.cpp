@@ -62,7 +62,7 @@ void dir_remove(String path){
       if(exisits_check(path)){
         uint16_t file_last = dir_list(path,false,false);
         for(uint16_t index=file_last; index>0; index--){
-          file_remove(path + dir_index(path,false,index-1));
+          file_remove(path +"/"+ dir_index(path,false,index-1));
         }
         SD.rmdir(path);
       }
