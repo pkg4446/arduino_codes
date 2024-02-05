@@ -188,7 +188,7 @@ void setup() {
   {
     if (Serial.available()) get_command(Serial.read());
   }
-  if(scene_number==2 || !exisits_check(path_avatar()) || dir_list(path_avatar(),false,false) < 7){
+  if(scene_number==2 || !exisits_check(path_avatar()) || dir_list(path_avatar(),false,false) < 8){
     scene_number = 2;
     dir_make(path_avatar());
     bool gender = random(2);
@@ -196,7 +196,8 @@ void setup() {
     new_model_status(path_avatar(),gender);
   }
   //////////
-  read_model_body(path_avatar(),info_class,head_class,body_class,parts_class,stat_class,hole_class,sense_class,nature_class,eros_class);
+  read_model_hard(path_avatar(),info_class,head_class,body_class,parts_class);
+  read_model_soft(path_avatar(),stat_class,hole_class,sense_class,nature_class,eros_class);
 
   if(scene_number == 2){
     display_prologue();

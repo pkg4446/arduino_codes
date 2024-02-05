@@ -51,7 +51,7 @@ void new_model_body(String model_path, bool gender){
     make_csv_text(&models, sense_class[0]->get_csv());
     make_csv_text(&models, nature_class[0]->get_csv());
     make_csv_text(&models, eros_class[0]->get_csv());
-    file_write(model_path+"mother.csv", models);
+    file_write(model_path+file_mother(), models);
     Sha1.init();
     Sha1.print(models);
     /***** FATHER *****/
@@ -79,7 +79,7 @@ void new_model_body(String model_path, bool gender){
     make_csv_text(&models, sense_class[1]->get_csv());
     make_csv_text(&models, nature_class[1]->get_csv());
     make_csv_text(&models, eros_class[1]->get_csv());
-    file_write(model_path+"father.csv", models);
+    file_write(model_path+file_father(), models);
     Sha1.print(models);
     String hashs = Sha1.result();
     /***** BABY *****/
@@ -109,14 +109,17 @@ void new_model_body(String model_path, bool gender){
     Sha1.init();
     Sha1.print(models);
     make_csv(&hashs, Sha1.result());
-    file_write(model_path+"hash.csv", hashs);
-    make_csv_text(&models, stat_class[2]->get_csv());
+    file_write(model_path+file_hard(), models);
+    models = stat_class[2]->get_csv();
     make_csv_text(&models, hole_class[2]->get_csv());
     make_csv_text(&models, sense_class[2]->get_csv());
     make_csv_text(&models, nature_class[2]->get_csv());
     make_csv_text(&models, eros_class[2]->get_csv());
-    file_write(model_path+"model.csv", models);
-
+    Sha1.init();
+    Sha1.print(models);
+    make_csv(&hashs, Sha1.result());
+    file_write(model_path+file_hash(), hashs);
+    file_write(model_path+file_soft(), models);
     for(uint8_t index=0; index<model_gen; index++){
         delete info_class[index];
         delete head_class[index];
@@ -142,12 +145,12 @@ void new_model_status(String model_path, bool gender){
     breed_class ->generate();
 
     String models = mens_class->get_csv();
-    file_write(model_path+"mens.csv", models);
+    file_write(model_path+file_mens(), models);
     models = current_class->get_csv();
-    file_write(model_path+"current.csv", models);
+    file_write(model_path+file_current(), models);
     models = exp_class->get_csv();
     make_csv_text(&models, breed_class->get_csv());
-    file_write(model_path+"exps.csv", models);
+    file_write(model_path+file_exp(), models);
 
     delete exp_class;
     delete current_class;
@@ -156,43 +159,37 @@ void new_model_status(String model_path, bool gender){
 }
 
 void model_kill(String model_path){
-    file_remove(model_path+"MOTHER.CSV");
-    file_remove(model_path+"FATHER.CSV");
-    file_remove(model_path+"MODEL.CSV");
-    file_remove(model_path+"MENS.CSV");
-    file_remove(model_path+"CURRENT.CSV");
-    file_remove(model_path+"EXPS.CSV");
-    file_remove(model_path+"HASH.CSV");
+    file_remove(model_path+file_mother());
+    file_remove(model_path+file_father());
+    file_remove(model_path+file_hard());
+    file_remove(model_path+file_soft());
+    file_remove(model_path+file_mens());
+    file_remove(model_path+file_current());
+    file_remove(model_path+file_exp());
+    file_remove(model_path+file_hash());
     dir_remove(model_path);
 }
 
-bool check_model_hash(String model_path, bool type){
+bool check_model_hash(String model_path, uint8_t hash_num){
     bool response = false;
-    if(exisits_check(model_path+"hash.csv") && exisits_check(model_path+"model.csv") && exisits_check(model_path+"mother.csv") && exisits_check(model_path+"father.csv")){
-        String csv_file_str = file_read(model_path+"hash.csv").c_str();
-        String hash_value[2];
+    if(exisits_check(model_path+file_hash()) && exisits_check(model_path+file_hard()) && exisits_check(model_path+file_soft()) && exisits_check(model_path+file_mother()) && exisits_check(model_path+file_father())){
+        String csv_file_str = file_read(model_path+file_hash());
+        String hash_value[3];
         char *csv_file  = const_cast<char*>(csv_file_str.c_str());
         hash_value[0] = strtok(csv_file, ",");
         hash_value[1] = strtok(0x00, ",");
+        hash_value[2] = strtok(0x00, ",");
         Sha1.init();
-        if(type){
-            csv_file_str = file_read(model_path+"model.csv").c_str();
-            char *model_csv = const_cast<char*>(csv_file_str.c_str());
-            String class_text[4];
-            class_text[0] = strtok(model_csv, "\n");
-            for(uint8_t index=1; index<4; index++){
-                class_text[index] = strtok(0x00, "\n");
-            }
-            csv_file_str = class_text[0];
-            make_csv_text(&csv_file_str, class_text[1]);
-            make_csv_text(&csv_file_str, class_text[2]);
-            make_csv_text(&csv_file_str, class_text[3]);
+        if(hash_num == 1){
+            csv_file_str = file_read(model_path+file_hard());
+        }else if(hash_num == 2){
+            csv_file_str = file_read(model_path+file_soft());
         }else{
-            csv_file_str = file_read(model_path+"mother.csv") + file_read(model_path+"father.csv");
+            csv_file_str = file_read(model_path+file_mother()) + file_read(model_path+file_father());
         }
         Sha1.print(csv_file_str);
         String hashs = Sha1.result();
-        response = (hashs == hash_value[type]);
+        response = (hashs == hash_value[hash_num]);
     }else{
         model_kill(model_path);
         display_model_err();
@@ -200,26 +197,47 @@ bool check_model_hash(String model_path, bool type){
     return response;
 }
 
-void read_model_body(String model_path,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
+void read_model_hard(String model_path,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts){
     uint8_t file_number = dir_list(model_path,false,false);
-    if(check_model_hash(model_path,true)){
-        String csv_file_str = file_read(model_path+"model.csv").c_str();
+    if(check_model_hash(model_path,1)){
+        String csv_file_str = file_read(model_path+file_hard());
         char *csv_file  = const_cast<char*>(csv_file_str.c_str());
         char *class_text[9];
         class_text[0] = strtok(csv_file, "\n");
-        for(uint8_t index=1; index<9; index++){
+        for(uint8_t index=1; index<4; index++){
             class_text[index] = strtok(0x00, "\n");
         }
         class_info  ->set_csv(class_text[0]);
         class_head  ->set_csv(class_text[1]);
         class_body  ->set_csv(class_text[2]);
         class_parts ->set_csv(class_text[3]);
+        /*
+        class_info-> status();
+        class_head-> status();
+        class_body-> status();
+        class_body-> get_weight();
+        class_parts->status();
+        */
+    }else{
+        Serial.println("nofile");
+    }
+}
 
-        class_stat  ->set_csv(class_text[4]);
-        class_hole  ->set_csv(class_text[5]);
-        class_sense ->set_csv(class_text[6]);
-        class_nature->set_csv(class_text[7]);
-        class_eros  ->set_csv(class_text[8]);
+void read_model_soft(String model_path,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
+    uint8_t file_number = dir_list(model_path,false,false);
+    if(check_model_hash(model_path,2)){
+        String csv_file_str = file_read(model_path+file_soft());
+        char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+        char *class_text[9];
+        class_text[0] = strtok(csv_file, "\n");
+        for(uint8_t index=1; index<9; index++){
+            class_text[index] = strtok(0x00, "\n");
+        }
+        class_stat  ->set_csv(class_text[0]);
+        class_hole  ->set_csv(class_text[1]);
+        class_sense ->set_csv(class_text[2]);
+        class_nature->set_csv(class_text[3]);
+        class_eros  ->set_csv(class_text[4]);
         /*
         class_info-> status();
         class_head-> status();
@@ -236,4 +254,3 @@ void read_model_body(String model_path,INFO *class_info,HEAD *class_head,BODY *c
         Serial.println("nofile");
     }
 }
-
