@@ -3,6 +3,7 @@
 #include "./progmem/path.h"
 
 String path_avatar();
+String path_assist();
 
 String file_mother();
 String file_father();

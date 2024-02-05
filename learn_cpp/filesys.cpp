@@ -54,12 +54,18 @@ void dir_make(String path){
 }
 
 void dir_remove(String path){
-  Serial.println(path);
   if(exisits_check(path)){
     #if defined(ESP32)
       removeDir(SD,path);
     #else
       SD.rmdir(path);
+      if(exisits_check(path)){
+        uint16_t file_last = dir_list(path,false,false);
+        for(uint16_t index=file_last; index>0; index--){
+          file_remove(path + dir_index(path,false,index-1));
+        }
+        SD.rmdir(path);
+      }
     #endif
     if(exisits_check(path)){
       String response = "";
@@ -165,7 +171,6 @@ void file_append(String path, String contents){
 }
 
 void file_remove(String path){
-  Serial.println(path);
   if(exisits_check(path)){
     #if defined(ESP32)
       removeFile(SD,path);

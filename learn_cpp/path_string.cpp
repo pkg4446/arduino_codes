@@ -9,6 +9,14 @@ String path_avatar(){
     return response;
 };
 /*******************************************************/
+String path_assist(){
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(path_assist_str); index++){
+        response += char(pgm_read_byte_near(path_assist_str+index));
+    }
+    return response;
+};
+/*******************************************************/
 String file_mother(){
     String response = "";
     for(uint16_t index=0; index<strlen_P(file_mother_str); index++){

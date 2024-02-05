@@ -188,12 +188,17 @@ void setup() {
   {
     if (Serial.available()) get_command(Serial.read());
   }
-  if(scene_number==2 || !exisits_check(path_avatar()) || dir_list(path_avatar(),false,false) < 8){
-    scene_number = 2;
-    dir_make(path_avatar());
+  if(!exisits_check(path_assist())) dir_make(path_assist());
+  if(dir_list(path_assist(),false,false) < 8){
+    new_model_body(path_assist(),false);
+    new_model_status(path_assist(),false);
+  }
+  if(!exisits_check(path_avatar())) dir_make(path_avatar());
+  if(scene_number==2 || dir_list(path_avatar(),false,false) < 8){
     bool gender = random(2);
     new_model_body(path_avatar(),gender);
     new_model_status(path_avatar(),gender);
+    scene_number = 2;
   }
   //////////
   read_model_hard(path_avatar(),info_class,head_class,body_class,parts_class);
