@@ -18,7 +18,6 @@ class STAT
         void change(STAT *gene);
         void meiosis(STAT *mother, STAT *father);
         void blend(STAT *mother, STAT *father);
-        void status();
         uint8_t get_intelligence();
         uint8_t get_strength();
         uint8_t get_dexterity();
@@ -45,7 +44,6 @@ class HOLE
         void change(HOLE *gene);
         void meiosis(HOLE *mother, HOLE *father);
         void blend(HOLE *mother, HOLE *father);
-        void status(bool gender);
         uint16_t get_gape(uint8_t item);
         uint16_t get_pressure(uint8_t item);
 
@@ -70,7 +68,6 @@ class SENSE
         void change(SENSE *gene);
         void meiosis(SENSE *mother, SENSE *father);
         void blend(SENSE *mother, SENSE *father);
-        void status(bool gender);
         uint8_t get_cervix();
         uint8_t get_skin();
         uint8_t get_clit_glans();
@@ -120,7 +117,6 @@ class EROS
         void change(EROS *gene);
         void meiosis(EROS *mother, EROS *father);
         void blend(EROS *mother, EROS *father);
-        void status();
         uint8_t get_lust();
         uint8_t get_sadism();
         uint8_t get_masohism();
@@ -152,7 +148,6 @@ class EXP
         void update(uint8_t item);
         void update_expansion(bool item);
         void update_shot(uint8_t item);
-        void status(bool gender);
         uint8_t get(uint8_t item);
         uint8_t get_expansion(bool item);
         uint8_t get_shot(uint8_t item);

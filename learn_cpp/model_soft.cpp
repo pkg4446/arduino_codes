@@ -37,15 +37,6 @@ void STAT::blend(STAT *mother, STAT *father){
     constitution = heredity_u8(mother->constitution, father->constitution); 
 }
 /*******************************************************************************************/
-void STAT::status(){
-    perforation("stat");
-    spacebar(false,"intelligence");   Serial.println(intelligence);
-    spacebar(false,"strength");       Serial.println(strength);
-    spacebar(false,"dexterity");      Serial.println(dexterity);
-    spacebar(false,"charisma");       Serial.println(charisma);
-    spacebar(false,"constitution");   Serial.println(constitution);
-}
-/*******************************************************************************************/
 uint8_t STAT::get_intelligence(){return intelligence;}
 /*******************************************************************************************/
 uint8_t STAT::get_strength(){return strength;}
@@ -114,6 +105,7 @@ void HOLE::blend(HOLE *mother, HOLE *father){
     pressure_a  = heredity_u16(mother->pressure_a,  father->pressure_a);
 }
 /*******************************************************************************************/
+/*
 void HOLE::status(bool gender){
     perforation("hole");
     if(!gender){
@@ -125,6 +117,7 @@ void HOLE::status(bool gender){
     spacebar(false,"gape_a");     unit_split(gape_a,100);unit_mm();
     spacebar(false,"pressure_a"); unit_split(gape_v,10);Serial.println(" torr");
 }
+*/
 /*******************************************************************************************/
 uint16_t HOLE::get_gape(uint8_t item){
     if(item == 1) return gape_u;
@@ -198,20 +191,6 @@ void SENSE::blend(SENSE *mother, SENSE *father){
     urethra         = heredity_u8(mother->urethra,      father->urethra); 
     anal            = heredity_u8(mother->anal,         father->anal); 
     nipple          = heredity_u8(mother->nipple,       father->nipple);  
-}
-/*******************************************************************************************/
-void SENSE::status(bool gender){
-    perforation("sense");
-    if(gender){
-        spacebar(false,"balls");  Serial.println(vagina_balls);
-    }else{
-        spacebar(false,"cervix"); Serial.println(cervix);
-        spacebar(false,"vagina"); Serial.println(vagina_balls);
-    }
-    spacebar(false,"skin");   Serial.println(skin);
-    spacebar(false,"urethra");Serial.println(urethra);
-    spacebar(false,"anal");   Serial.println(anal);
-    spacebar(false,"nipple"); Serial.println(nipple);
 }
 /*******************************************************************************************/
 uint8_t SENSE::get_cervix(){return cervix;}
@@ -377,15 +356,6 @@ void EROS::blend(EROS *mother, EROS *father){
     service    = heredity_u8(mother->service, father->service);
 }
 /*******************************************************************************************/
-void EROS::status(){
-    perforation("eros");
-    spacebar(false,"lust");       Serial.println(lust);
-    spacebar(false,"sadism");     Serial.println(sadism);
-    spacebar(false,"masohism");   Serial.println(masohism);
-    spacebar(false,"exhibition"); Serial.println(exhibition);
-    spacebar(false,"service");    Serial.println(service);
-}
-/*******************************************************************************************/
 uint8_t EROS::get_lust(){return lust;}
 /*******************************************************************************************/
 uint8_t EROS::get_sadism(){return sadism;}
@@ -450,23 +420,6 @@ void EXP::update_shot(uint8_t item){
     if(item == 1)      sperm_m++;
     else if(item == 2) sperm_v++;
     else if(item == 3) sperm_a++;
-}
-/*******************************************************************************************/
-void EXP::status(bool gender){
-    perforation("EXP");
-    spacebar(false,"orgasm");     Serial.println(orgasm);
-    spacebar(false,"squirt");     Serial.println(squirt);
-    spacebar(false,"mouth");      Serial.println(mouth);
-    if(!gender){
-        spacebar(false,"vagina");     Serial.println(vagina);
-        spacebar(false,"expans_v");   Serial.println(expans_v);
-        spacebar(false,"sperm_v");    Serial.println(sperm_v);
-    }
-    spacebar(false,"anal");       Serial.println(anal);
-    spacebar(false,"urethra");    Serial.println(urethra);
-    spacebar(false,"expans_a");   Serial.println(expans_a);
-    spacebar(false,"sperm_m");    Serial.println(sperm_m);
-    spacebar(false,"sperm_a");    Serial.println(sperm_a);
 }
 /*******************************************************************************************/
 uint8_t EXP::get(uint8_t item){

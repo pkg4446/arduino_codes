@@ -17,7 +17,6 @@ class INFO
         void   generate(bool gender, bool baby);
         void   set_family(String familyname);
         void   aging();
-        void   status();
         bool    get_gender();
         String  get_family();
         String  get_name();
@@ -45,7 +44,6 @@ class HEAD
         void change(HEAD *gene);
         void meiosis(HEAD *mother, HEAD *father);
         void blend(HEAD *mother, HEAD *father);
-        void status();
         String  get_hair_color();
         uint8_t get_hair_curl();
         String  get_eye_color();
@@ -77,7 +75,6 @@ class BODY {
         void change(BODY *gene);
         void meiosis(BODY *mother, BODY *father);
         void blend(BODY *mother, BODY *father);
-        void status();
         String   get_blood();
         uint16_t get_weight();
         uint16_t get_BMI(uint16_t weight);
@@ -150,7 +147,6 @@ class EROGENOUS {
         void change(EROGENOUS *gene);
         void meiosis(EROGENOUS *mother, EROGENOUS *father);
         void blend(EROGENOUS *mother, EROGENOUS *father);
-        void status();
         uint16_t get_hood_width();
         uint16_t get_hood_length();
         String   get_hood();

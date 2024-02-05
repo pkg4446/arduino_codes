@@ -27,13 +27,6 @@ void INFO::aging(){
     age += 1;
 }
 /*******************************************************************************************/
-void INFO::status(){
-    perforation("info");
-    spacebar(false,"gender");Serial.println(gen_xy);
-    spacebar(false,"full name");Serial.print(family);Serial.println(name);
-    spacebar(false,"age");Serial.println(age);
-}
-/*******************************************************************************************/
 bool    INFO::get_gender(){return gen_xy;}
 /*******************************************************************************************/
 String  INFO::get_family(){return family;}
@@ -102,16 +95,6 @@ void HEAD::blend(HEAD *mother, HEAD *father){
     dimple     = heredity_bool(mother->dimple,  father->dimple, true);
     bald       = heredity_bool(mother->bald,    father->bald,   true);
     if(!gen_xy) bald = false;
-}
-/*******************************************************************************************/
-void HEAD::status(){
-    perforation("head");
-    spacebar(false,"hair color"); Serial.println(hair_color);
-    spacebar(false,"eye color");  Serial.println(eye_color);
-    spacebar(false,"hair curl");  Serial.println(hair_curl);
-    spacebar(false,"eyelid");     Serial.println(eyelid);
-    spacebar(false,"dimple");     Serial.println(dimple);
-    spacebar(false,"bald");       Serial.println(bald);
 }
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 String  HEAD::get_hair_color(){
@@ -299,23 +282,6 @@ void BODY::blend(BODY *mother, BODY *father){
 
     if(chest < waist)               swap(&chest,&waist);
     if(!gen_xy && breast < chest)   swap(&chest,&breast);
-}
-/*******************************************************************************************/
-void BODY::status(){
-    perforation("body");
-    spacebar(false,"bloodA");     Serial.println(blood_A);
-    spacebar(false,"bloodB");     Serial.println(blood_B);
-    spacebar(false,"skin color"); Serial.println(body_color);
-    spacebar(false,"height");     Serial.print(height);unit_mm();
-    if(gen_xy){
-        spacebar(false,"hidden");Serial.print(breast);unit_mm();
-    }else{
-        spacebar(false,"breast");Serial.print(breast);unit_mm();
-    }
-    spacebar(false,"chest");      Serial.print(chest);unit_mm();
-    spacebar(false,"waist");      Serial.print(waist);unit_mm();
-    spacebar(false,"hip");        Serial.print(hip);unit_mm();
-    spacebar(false,"leg ratio");  unit_split(leg_ratio,10);Serial.println(" %");
 }
 /*******************************************************************************************/
 String   BODY::get_blood(){
@@ -675,6 +641,7 @@ void EROGENOUS::blend(EROGENOUS *mother, EROGENOUS *father){
     nipple_h        = heredity_u16(mother->nipple_h,    father->nipple_h);
     nipple_h_e      = heredity_u16(mother->nipple_h_e,  father->nipple_h_e);
 }
+/*
 void EROGENOUS::status(){
     perforation("erogenous");
     if(gen_xy){
@@ -723,6 +690,7 @@ void EROGENOUS::status(){
     spacebar(false,"nipple_h");   unit_split(nipple_h,100);unit_mm();
     spacebar(false,"nipple_h_e"); unit_split(nipple_h_e,100);unit_mm();
 }
+*/
 /*******************************************************************************************/
 uint16_t EROGENOUS::get_hood_width(){return hood_width;}
 /*******************************************************************************************/

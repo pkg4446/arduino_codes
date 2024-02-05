@@ -16,17 +16,24 @@
 
 String path_current = "/";
 bool   dos_mode     = false;
-/***** Player *****/
+/***** Model *****/
+/***** Hardware *****/
 INFO      *info_class   = new INFO();
 HEAD      *head_class   = new HEAD();
 BODY      *body_class   = new BODY();
 EROGENOUS *parts_class  = new EROGENOUS();
+/***** Software *****/
 STAT      *stat_class   = new STAT();
 HOLE      *hole_class   = new HOLE();
 SENSE     *sense_class  = new SENSE();
 NATURE    *nature_class = new NATURE();
 EROS      *eros_class   = new EROS();
-/***** Player *****/
+/***** Status *****/
+MENS      *mens_class   = new MENS();
+CURRENT   *feel_class   = new CURRENT();
+BREED     *breed_class  = new BREED();
+
+/***** Model *****/
 /***** Variable *****/
 uint32_t  calendar    = 1;
 uint8_t   hour_count  = 6;
@@ -201,8 +208,11 @@ void setup() {
     scene_number = 2;
   }
   //////////
-  read_model_hard(path_avatar(),info_class,head_class,body_class,parts_class);
-  read_model_soft(path_avatar(),stat_class,hole_class,sense_class,nature_class,eros_class);
+  read_model_hard(path_assist(),info_class,head_class,body_class,parts_class);
+  read_model_soft(path_assist(),stat_class,hole_class,sense_class,nature_class,eros_class);
+  read_model_mens(path_assist(),mens_class);
+  read_model_feel(path_assist(),feel_class);
+  read_model_breed(path_assist(),breed_class);
 
   if(scene_number == 2){
     display_prologue();

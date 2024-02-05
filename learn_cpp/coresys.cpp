@@ -195,7 +195,6 @@ bool check_model_hash(String model_path, uint8_t hash_num){
 }
 
 void read_model_hard(String model_path,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts){
-    uint8_t file_number = dir_list(model_path,false,false);
     if(check_model_hash(model_path,1)){
         String csv_file_str = file_read(model_path+file_hard());
         char *csv_file  = const_cast<char*>(csv_file_str.c_str());
@@ -208,20 +207,12 @@ void read_model_hard(String model_path,INFO *class_info,HEAD *class_head,BODY *c
         class_head  ->set_csv(class_text[1]);
         class_body  ->set_csv(class_text[2]);
         class_parts ->set_csv(class_text[3]);
-        /*
-        class_info-> status();
-        class_head-> status();
-        class_body-> status();
-        class_body-> get_weight();
-        class_parts->status();
-        */
     }else{
         Serial.println("nofile");
     }
 }
 
 void read_model_soft(String model_path,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
-    uint8_t file_number = dir_list(model_path,false,false);
     if(check_model_hash(model_path,2)){
         String csv_file_str = file_read(model_path+file_soft());
         char *csv_file  = const_cast<char*>(csv_file_str.c_str());
@@ -235,19 +226,23 @@ void read_model_soft(String model_path,STAT *class_stat,HOLE *class_hole,SENSE *
         class_sense ->set_csv(class_text[2]);
         class_nature->set_csv(class_text[3]);
         class_eros  ->set_csv(class_text[4]);
-        /*
-        class_info-> status();
-        class_head-> status();
-        class_body-> status();
-        class_body-> get_weight();
-        class_parts->status();
-        class_stat-> status();
-        class_hole-> status(class_info->get_gender());
-        class_sense->status(class_info->get_gender());
-        class_nature->status();
-        class_eros-> status();
-        */
     }else{
         Serial.println("nofile");
     }
+}
+
+void read_model_mens(String model_path, MENS *mens_class){
+    String csv_file_str = file_read(model_path+file_mens());
+    char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+    mens_class  ->set_csv(csv_file);
+}
+void read_model_feel(String model_path, CURRENT *feel_class){
+    String csv_file_str = file_read(model_path+file_mens());
+    char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+    feel_class  ->set_csv(csv_file);
+}
+void read_model_breed(String model_path, BREED *breed_class){
+    String csv_file_str = file_read(model_path+file_mens());
+    char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+    breed_class ->set_csv(csv_file);
 }
