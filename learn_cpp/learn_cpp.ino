@@ -195,8 +195,10 @@ void setup() {
     new_model_body(path_avatar(),gender);
     new_model_status(path_avatar(),gender);
   }
+  check_model_hash(path_avatar(),true);
+  check_model_hash(path_avatar(),false);
   //////////
-  read_model_hardware(path_avatar(),info_class,head_class,body_class,parts_class,stat_class,hole_class,sense_class,nature_class,eros_class);
+  read_model_body(path_avatar(),info_class,head_class,body_class,parts_class,stat_class,hole_class,sense_class,nature_class,eros_class);
 
   if(scene_number == 2){
     display_prologue();

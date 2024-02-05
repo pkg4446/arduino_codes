@@ -156,23 +156,55 @@ void new_model_status(String model_path, bool gender){
     delete breed_class;
 }
 
-void read_model_hardware(String model_path,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
+bool check_model_hash(String model_path, bool type){
+    bool response = false;
+    if(exisits_check(model_path+"hash.csv") && exisits_check(model_path+"model.csv") && exisits_check(model_path+"mother.csv") && exisits_check(model_path+"father.csv")){
+        String csv_file_str = file_read(model_path+"hash.csv").c_str();
+        String hash_value[2];
+        char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+        hash_value[0] = strtok(csv_file, ",");
+        hash_value[1] = strtok(0x00, ",");
+        Sha1.init();
+        if(type){
+            csv_file_str = file_read(model_path+"mother.csv") + file_read(model_path+"father.csv");
+            
+        }else{
+            csv_file_str = file_read(model_path+"model.csv").c_str();
+            *csv_file  = const_cast<char*>(csv_file_str.c_str());
+            String class_text[4];
+            class_text[0] = strtok(csv_file, "\n");
+            for(uint8_t index=1; index<4; index++){
+                class_text[index] = strtok(0x00, "\n");
+            }
+            csv_file_str = class_text[0];
+            make_csv_text(&csv_file_str, class_text[1]);
+            make_csv_text(&csv_file_str, class_text[2]);
+            make_csv_text(&csv_file_str, class_text[3]);
+        }
+        Sha1.print(csv_file_str);
+        String hashs = Sha1.result();
+        Serial.println(hashs);
+        //Serial.println(hash_value[type]);
+    }
+    return response;
+}
+
+void read_model_body(String model_path,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
     uint8_t file_number = dir_list(model_path,false,false);
     if(exisits_check(model_path+"model.csv") && exisits_check(model_path+"mother.csv") && exisits_check(model_path+"father.csv")){
         String csv_file_str = file_read(model_path+"model.csv").c_str();
         char *csv_file  = const_cast<char*>(csv_file_str.c_str());
         char *class_text[9];
         class_text[0] = strtok(csv_file, "\n");
-        /*
         for(uint8_t index=1; index<9; index++){
             class_text[index] = strtok(0x00, "\n");
-            Serial.println(class_text[index]);
+            //Serial.println(class_text[index]);
         }
-        */
         class_info  ->set_csv(class_text[0]);
         class_head  ->set_csv(class_text[1]);
         class_body  ->set_csv(class_text[2]);
         class_parts ->set_csv(class_text[3]);
+
         class_stat  ->set_csv(class_text[4]);
         class_hole  ->set_csv(class_text[5]);
         class_sense ->set_csv(class_text[6]);
