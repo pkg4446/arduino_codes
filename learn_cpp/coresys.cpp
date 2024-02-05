@@ -1,12 +1,14 @@
 #include "coresys.h"
 #include "funtions.h"
 
-void new_model_hardware(String model_path, bool gender){
+void new_model_body(String model_path, bool gender){
+    /***** GENE *****/
     /***** HARDWARE *****/
     INFO        *info_class[model_gen];
     HEAD        *head_class[model_gen];
     BODY        *body_class[model_gen];
     EROGENOUS   *parts_class[model_gen];
+    /***** SOFTWARE *****/
     STAT        *stat_class[model_gen];
     HOLE        *hole_class[model_gen];
     SENSE       *sense_class[model_gen];
@@ -52,7 +54,6 @@ void new_model_hardware(String model_path, bool gender){
     file_write(model_path+"mother.csv", models);
     Sha1.init();
     Sha1.print(models);
-    String hashs = Sha1.result();
     /***** FATHER *****/
     info_class[1]-> generate(true, false);
     
@@ -79,9 +80,8 @@ void new_model_hardware(String model_path, bool gender){
     make_csv_text(&models, nature_class[1]->get_csv());
     make_csv_text(&models, eros_class[1]->get_csv());
     file_write(model_path+"father.csv", models);
-    Sha1.init();
     Sha1.print(models);
-    make_csv(&hashs, Sha1.result());
+    String hashs = Sha1.result();
     /***** BABY *****/
     info_class[2]-> generate(gender, false);
     info_class[2]-> set_family(info_class[0]->get_family());
@@ -106,13 +106,14 @@ void new_model_hardware(String model_path, bool gender){
     make_csv_text(&models, head_class[2]->get_csv());
     make_csv_text(&models, body_class[2]->get_csv());
     make_csv_text(&models, parts_class[2]->get_csv());
+    Sha1.init();
+    Sha1.print(models);
     make_csv_text(&models, stat_class[2]->get_csv());
     make_csv_text(&models, hole_class[2]->get_csv());
     make_csv_text(&models, sense_class[2]->get_csv());
     make_csv_text(&models, nature_class[2]->get_csv());
     make_csv_text(&models, eros_class[2]->get_csv());
     file_write(model_path+"model.csv", models);
-    Sha1.init();
     Sha1.print(models);
     make_csv(&hashs, Sha1.result());
 
@@ -130,7 +131,7 @@ void new_model_hardware(String model_path, bool gender){
     file_write(model_path+"hash.csv", hashs);
 }
 
-void new_model_software(String model_path, bool gender){
+void new_model_status(String model_path, bool gender){
     /***** SOFTWARE *****/
     MENS    *mens_class     = new MENS();
     CURRENT *current_class  = new CURRENT();

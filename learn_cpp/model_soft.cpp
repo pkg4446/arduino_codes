@@ -1,183 +1,418 @@
 #include "model_soft.h"
 
-/*********************************** MENS CLASS FUNCTION ***********************************/
-MENS::MENS() {}
+/*********************************** STAT CLASS FUNCTION ***********************************/
+STAT::STAT(){}
 /*******************************************************************************************/
-MENS::~MENS(){destruct();}
+STAT::~STAT(){destruct();}
 /*******************************************************************************************/
-void MENS::generate(bool gender){
-    gen_xy    = gender;
-    pregnant  = false;
-    periode   = 28;
-    blood     = 0;
-    cycle     = 0;
-    ovulation = 0;
-    d_day     = 0;
+void STAT::generate(){
+    intelligence = gaussian_range(50,12);
+    strength     = gaussian_range(50,12);
+    dexterity    = gaussian_range(50,12);
+    charisma     = gaussian_range(50,12);
+    constitution = gaussian_range(50,12);
 }
 /*******************************************************************************************/
-void MENS::daily(){
-    if(!gen_xy){
-        if(pregnant){
-            if(d_day > 0) d_day--;
-            else{
-                pregnant = false;
-                //baby out
-            }
-        }else{
-            if(cycle == 0){
-                if(periode<21)      periode = 20;
-                else if(periode>35) periode = 36;
-                cycle = gaussian_range(periode,2);
-                blood = random(1,cycle/5);
-                ovulation = gaussian_range(cycle/2,1);
-                periode   = (2*periode + cycle)/3;
-            }else{
-                if(cycle > 0) cycle -= 1;
-                if(blood > 0) blood -= 1;
-                if(ovulation > 0) ovulation -= 1;
-            }
-        }
+void STAT::change(STAT *gene){
+    intelligence = gene->intelligence;
+    strength     = gene->strength;
+    dexterity    = gene->dexterity;
+    charisma     = gene->charisma;
+    constitution = gene->constitution;
+}
+/*******************************************************************************************/
+void STAT::meiosis(STAT *mother, STAT *father){
+    intelligence = mutation_u8(mother->intelligence, father->intelligence); 
+    strength     = mutation_u8(mother->strength,     father->strength); 
+    dexterity    = mutation_u8(mother->dexterity,    father->dexterity); 
+    charisma     = mutation_u8(mother->charisma,     father->charisma); 
+    constitution = mutation_u8(mother->constitution, father->constitution); 
+}
+/*******************************************************************************************/
+void STAT::blend(STAT *mother, STAT *father){
+    intelligence = heredity_u8(mother->intelligence, father->intelligence); 
+    strength     = heredity_u8(mother->strength,     father->strength); 
+    dexterity    = heredity_u8(mother->dexterity,    father->dexterity); 
+    charisma     = heredity_u8(mother->charisma,     father->charisma); 
+    constitution = heredity_u8(mother->constitution, father->constitution); 
+}
+/*******************************************************************************************/
+void STAT::status(){
+    perforation("stat");
+    spacebar(false,"intelligence");   Serial.println(intelligence);
+    spacebar(false,"strength");       Serial.println(strength);
+    spacebar(false,"dexterity");      Serial.println(dexterity);
+    spacebar(false,"charisma");       Serial.println(charisma);
+    spacebar(false,"constitution");   Serial.println(constitution);
+}
+/*******************************************************************************************/
+uint8_t STAT::get_intelligence(){return intelligence;}
+/*******************************************************************************************/
+uint8_t STAT::get_strength(){return strength;}
+/*******************************************************************************************/
+uint8_t STAT::get_dexterity(){return dexterity;}
+/*******************************************************************************************/
+uint8_t STAT::get_charisma(){return charisma;}
+/*******************************************************************************************/
+uint8_t STAT::get_constitution(){return constitution;}
+/*********************************** STAT CLASS FUNCTION ***********************************/
+/*******************************************************************************************/
+String  STAT::get_csv(){
+    String response = String(intelligence);
+    make_csv(&response, String(strength));
+    make_csv(&response, String(dexterity));
+    make_csv(&response, String(charisma));
+    make_csv(&response, String(constitution));
+    return response;
+}
+/*******************************************************************************************/
+void  STAT::set_csv(char* save_file){
+    intelligence    = atoi(strtok(save_file, ","));
+    strength        = atoi(strtok(0x00, ","));
+    dexterity       = atoi(strtok(0x00, ","));
+    charisma        = atoi(strtok(0x00, ","));
+    constitution    = atoi(strtok(0x00, ","));
+}
+/*********************************** HOLE CLASS FUNCTION ***********************************/
+HOLE::HOLE(){}
+/*******************************************************************************************/
+HOLE::~HOLE(){destruct();}
+/*******************************************************************************************/
+void HOLE::generate(){
+    gape_u = gaussian_range(650,40);
+    gape_v = gaussian_range(5550,400);
+    gape_a = gaussian_range(6950,800);
+    pressure_u = gaussian_range(2500,300);
+    pressure_v = gaussian_range(6950,800);
+    pressure_a = gaussian_range(9220,1300);
+}
+/*******************************************************************************************/
+void HOLE::change(HOLE *gene){
+    gape_u     = gene->gape_u;
+    gape_v     = gene->gape_v;
+    gape_a     = gene->gape_a;
+    pressure_u = gene->pressure_u;
+    pressure_v = gene->pressure_v;
+    pressure_a = gene->pressure_a;
+}
+/*******************************************************************************************/
+void HOLE::meiosis(HOLE *mother, HOLE *father){
+    gape_u      = mutation_u16(mother->gape_u,      father->gape_u); 
+    gape_v      = mutation_u16(mother->gape_v,      father->gape_v);
+    gape_a      = mutation_u16(mother->gape_a,      father->gape_a);
+    pressure_u  = mutation_u16(mother->pressure_u,  father->pressure_u);
+    pressure_v  = mutation_u16(mother->pressure_v,  father->pressure_v);
+    pressure_a  = mutation_u16(mother->pressure_a,  father->pressure_a);
+}
+/*******************************************************************************************/
+void HOLE::blend(HOLE *mother, HOLE *father){
+    gape_u      = heredity_u16(mother->gape_u,      father->gape_u);
+    gape_v      = heredity_u16(mother->gape_v,      father->gape_v);
+    gape_a      = heredity_u16(mother->gape_a,      father->gape_a);
+    pressure_u  = heredity_u16(mother->pressure_u,  father->pressure_u);
+    pressure_v  = heredity_u16(mother->pressure_v,  father->pressure_v);
+    pressure_a  = heredity_u16(mother->pressure_a,  father->pressure_a);
+}
+/*******************************************************************************************/
+void HOLE::status(bool gender){
+    perforation("hole");
+    if(!gender){
+        spacebar(false,"gape_v");     unit_split(gape_v,100);unit_mm();
+        spacebar(false,"pressure_v"); unit_split(pressure_v,10);Serial.println(" torr");
     }
+    spacebar(false,"gape_u");     unit_split(gape_u,100);unit_mm();
+    spacebar(false,"pressure_u"); unit_split(pressure_u,10);Serial.println(" torr");
+    spacebar(false,"gape_a");     unit_split(gape_a,100);unit_mm();
+    spacebar(false,"pressure_a"); unit_split(gape_v,10);Serial.println(" torr");
 }
 /*******************************************************************************************/
-void MENS::status(){
-    perforation("mens");
-    spacebar(false,"pregnant");  Serial.println(pregnant);
-    spacebar(false,"periode");   Serial.println(periode);
-    spacebar(false,"blood");     Serial.println(blood);
-    spacebar(false,"cycle");     Serial.println(cycle);
-    spacebar(false,"ovulation"); Serial.println(ovulation);
-    spacebar(false,"d_day");     Serial.println(d_day);
-}
-/*******************************************************************************************/
-uint8_t MENS::get(){
-    //normal_safe == 0
-    //egg drop    == 1
-    //blooding    == 2
-    if(blood>0) return 2;
-    else if((ovulation != 0) && (ovulation < 3)) return 1;
+uint16_t HOLE::get_gape(uint8_t item){
+    if(item == 1) return gape_u;
+    else if(item == 2) return gape_v;
+    else if(item == 3) return gape_a;
     return 0;
 }
 /*******************************************************************************************/
-bool MENS::get_pregnant(){
-    return pregnant;
-}
-/*******************************************************************************************/
-String  MENS::get_csv(){
-    String response = String(gen_xy);
-    make_csv(&response, String(pregnant));
-    make_csv(&response, String(periode));
-    make_csv(&response, String(blood));
-    make_csv(&response, String(cycle));
-    make_csv(&response, String(ovulation));
-    make_csv(&response, String(d_day));
-    return response;
-}
-/*******************************************************************************************/
-void    MENS::set_csv(char* save_file){
-    gen_xy      = String(strtok(save_file, ",")) == "0" ? false:true;
-    pregnant    = String(strtok(0x00, ",")) == "0" ? false:true;
-    periode     = atoi(strtok(0x00, ","));
-    blood       = atoi(strtok(0x00, ","));
-    cycle       = atoi(strtok(0x00, ","));
-    ovulation   = atoi(strtok(0x00, ","));
-    d_day       = atoi(strtok(0x00, ","));
-}
-/*********************************** MENS CLASS FUNCTION ***********************************/
-/*********************************** CURRENT CLASS FUNCTION ***********************************/
-CURRENT::CURRENT() {}
-/*******************************************************************************************/
-CURRENT::~CURRENT(){destruct();}
-/*******************************************************************************************/
-void CURRENT::generate(){
-    furr    = random(5000);
-    lubric  = 0;
-    pee     = 0;
-    poo     = 0;
-    stamina = 0;
-    mental  = 0;
-    stress  = 0;
-    horny   = 0;
-    fain    = 0;
-    ecstasy = 0;
-}
-/*******************************************************************************************/
-void CURRENT::daily(){
-    if(pee < 5000) furr += random(10,30);
-    if(pee < 100)  pee += random(5,50);
-    if(poo < 100)  poo += random(1,10);
-}
-/*******************************************************************************************/
-void CURRENT::update(uint8_t item, int8_t count){
-    if(item == 1) stamina += count;
-    else if(item == 2) lubric  += count;
-    else if(item == 3) pee     += count;
-    else if(item == 4) poo     += count;
-    else if(item == 5) mental  += count;
-    else if(item == 6) stress  += count;
-    else if(item == 7) horny   += count;
-    else if(item == 8) fain    += count;
-    else if(item == 9) ecstasy += count;
-}
-/*******************************************************************************************/
-void CURRENT::status(){
-    perforation("currnet");
-    spacebar(false,"furr");   Serial.println(furr);
-    spacebar(false,"lubric"); Serial.println(lubric);
-    spacebar(false,"pee");    Serial.println(pee);
-    spacebar(false,"poo");    Serial.println(poo);
-    spacebar(false,"stamina");Serial.println(stamina);
-    spacebar(false,"mental"); Serial.println(mental);
-    spacebar(false,"stress"); Serial.println(stress);
-    spacebar(false,"horny");  Serial.println(horny);
-    spacebar(false,"fain");   Serial.println(fain);
-    spacebar(false,"ecstasy");Serial.println(ecstasy);
-}
-/*******************************************************************************************/
-uint16_t CURRENT::get_furr(){
-    return  furr;
-}
-/*******************************************************************************************/
-uint8_t CURRENT::get(uint8_t item){
-    if(item == 1)      return lubric;
-    else if(item == 2) return pee;
-    else if(item == 3) return poo;
-    else if(item == 4) return stamina;
-    else if(item == 5) return mental;
-    else if(item == 6) return stress;
-    else if(item == 7) return horny;
-    else if(item == 8) return fain;
-    else if(item == 9) return ecstasy;
+uint16_t HOLE::get_pressure(uint8_t item){
+    if(item == 1) return pressure_u;
+    else if(item == 2) return pressure_v;
+    else if(item == 3) return pressure_a;
     return 0;
 }
 /*******************************************************************************************/
-String  CURRENT::get_csv(){
-    String response = String(furr);
-    make_csv(&response, String(lubric));
-    make_csv(&response, String(pee));
-    make_csv(&response, String(poo));
-    make_csv(&response, String(stamina));
-    make_csv(&response, String(mental));
-    make_csv(&response, String(stress));
-    make_csv(&response, String(horny));
-    make_csv(&response, String(fain));
-    make_csv(&response, String(ecstasy));
+String  HOLE::get_csv(){
+    String response = String(gape_u);
+    make_csv(&response, String(gape_v));
+    make_csv(&response, String(gape_a));
+    make_csv(&response, String(pressure_u));
+    make_csv(&response, String(pressure_v));
+    make_csv(&response, String(pressure_a));
     return response;
 }
 /*******************************************************************************************/
-void    CURRENT::set_csv(char* save_file){
-    furr    = atoi(strtok(save_file, ","));
-    lubric  = atoi(strtok(0x00, ","));
-    pee     = atoi(strtok(0x00, ","));
-    poo     = atoi(strtok(0x00, ","));
-    stamina = atoi(strtok(0x00, ","));
-    mental  = atoi(strtok(0x00, ","));
-    stress  = atoi(strtok(0x00, ","));
-    horny   = atoi(strtok(0x00, ","));
-    fain    = atoi(strtok(0x00, ","));
-    ecstasy = atoi(strtok(0x00, ","));
+void  HOLE::set_csv(char* save_file){
+    gape_u  = atoi(strtok(save_file, ","));
+    gape_v  = atoi(strtok(0x00, ","));
+    gape_a  = atoi(strtok(0x00, ","));
+    pressure_u  = atoi(strtok(0x00, ","));
+    pressure_v  = atoi(strtok(0x00, ","));
+    pressure_a  = atoi(strtok(0x00, ","));
 }
-/*********************************** CURRENT CLASS FUNCTION ***********************************/
+/*********************************** HOLE CLASS FUNCTION ***********************************/
+/*********************************** SENSE CLASS FUNCTION **********************************/
+SENSE::SENSE(){}
+/*******************************************************************************************/
+SENSE::~SENSE(){destruct();}
+/*******************************************************************************************/
+void SENSE::generate(){
+    cervix          = gaussian_range(50,12);
+    skin            = gaussian_range(50,12);
+    vagina_balls    = gaussian_range(50,12);
+    urethra         = gaussian_range(50,12);
+    anal            = gaussian_range(50,12);
+    nipple          = gaussian_range(50,12);
+}
+/*******************************************************************************************/
+void SENSE::change(SENSE *gene){
+    cervix       = gene->cervix;
+    skin         = gene->skin;
+    vagina_balls = gene->vagina_balls;
+    urethra      = gene->urethra;
+    anal         = gene->anal;
+    nipple       = gene->nipple;
+}
+/*******************************************************************************************/
+void SENSE::meiosis(SENSE *mother, SENSE *father){
+    cervix          = mutation_u8(mother->cervix,       father->cervix); 
+    skin            = mutation_u8(mother->skin,         father->skin); 
+    vagina_balls    = mutation_u8(mother->vagina_balls, father->vagina_balls); 
+    urethra         = mutation_u8(mother->urethra,      father->urethra); 
+    anal            = mutation_u8(mother->anal,         father->anal); 
+    nipple          = mutation_u8(mother->nipple,       father->nipple); 
+}
+/*******************************************************************************************/
+void SENSE::blend(SENSE *mother, SENSE *father){
+    cervix          = heredity_u8(mother->cervix,       father->cervix); 
+    skin            = heredity_u8(mother->skin,         father->skin); 
+    vagina_balls    = heredity_u8(mother->vagina_balls, father->vagina_balls); 
+    urethra         = heredity_u8(mother->urethra,      father->urethra); 
+    anal            = heredity_u8(mother->anal,         father->anal); 
+    nipple          = heredity_u8(mother->nipple,       father->nipple);  
+}
+/*******************************************************************************************/
+void SENSE::status(bool gender){
+    perforation("sense");
+    if(gender){
+        spacebar(false,"balls");  Serial.println(vagina_balls);
+    }else{
+        spacebar(false,"cervix"); Serial.println(cervix);
+        spacebar(false,"vagina"); Serial.println(vagina_balls);
+    }
+    spacebar(false,"skin");   Serial.println(skin);
+    spacebar(false,"urethra");Serial.println(urethra);
+    spacebar(false,"anal");   Serial.println(anal);
+    spacebar(false,"nipple"); Serial.println(nipple);
+}
+/*******************************************************************************************/
+uint8_t SENSE::get_cervix(){return cervix;}
+/*******************************************************************************************/
+uint8_t SENSE::get_skin(){return skin;}
+/*******************************************************************************************/
+uint8_t SENSE::get_clit_glans(){return clit_glans;}
+/*******************************************************************************************/
+uint8_t SENSE::get_vagina_balls(){return vagina_balls;}
+/*******************************************************************************************/
+uint8_t SENSE::get_urethra(){return urethra;}
+/*******************************************************************************************/
+uint8_t SENSE::get_anal(){return anal;}
+/*******************************************************************************************/
+uint8_t SENSE::get_nipple(){return nipple;}
+/*******************************************************************************************/
+String  SENSE::get_csv(){
+    String response = String(cervix);
+    make_csv(&response, String(skin));
+    make_csv(&response, String(clit_glans));
+    make_csv(&response, String(vagina_balls));
+    make_csv(&response, String(urethra));
+    make_csv(&response, String(anal));
+    make_csv(&response, String(nipple));
+    return response;
+}
+/*******************************************************************************************/
+void  SENSE::set_csv(char* save_file){
+    cervix  = atoi(strtok(save_file, ","));
+    skin    = atoi(strtok(0x00, ","));
+    clit_glans      = atoi(strtok(0x00, ","));
+    vagina_balls    = atoi(strtok(0x00, ","));
+    urethra = atoi(strtok(0x00, ","));
+    anal    = atoi(strtok(0x00, ","));
+    nipple  = atoi(strtok(0x00, ","));
+}
+/*********************************** SENSE CLASS FUNCTION **********************************/
+/*********************************** NATURE CLASS FUNCTION *********************************/
+NATURE::NATURE(){}
+/*******************************************************************************************/
+NATURE::~NATURE(){destruct();}
+/*******************************************************************************************/
+void NATURE::generate(){
+    at_e_i  = gaussian_range(50,12);
+    at_s_n  = gaussian_range(50,12);
+    fn_t_f  = gaussian_range(50,12);
+    fn_j_p  = gaussian_range(50,12);
+    mbti    = 0b00000000;
+    if(at_e_i>50)mbti|=0b00001000;
+    if(at_s_n>50)mbti|=0b00000100;
+    if(fn_t_f>50)mbti|=0b00000010;
+    if(fn_j_p>50)mbti|=0b00000001;
+}
+/*******************************************************************************************/
+void NATURE::change(NATURE *gene){
+    mbti    = gene->mbti;
+    at_e_i  = gene->at_e_i;
+    at_s_n  = gene->at_s_n;
+    fn_t_f  = gene->fn_t_f;
+    fn_j_p  = gene->fn_j_p;
+}
+/*******************************************************************************************/
+void NATURE::meiosis(NATURE *mother, NATURE *father){
+    at_e_i  = mutation_u8(mother->at_e_i, father->at_e_i);
+    at_s_n  = mutation_u8(mother->at_s_n, father->at_s_n);
+    fn_t_f  = mutation_u8(mother->fn_t_f, father->fn_t_f);
+    fn_j_p  = mutation_u8(mother->fn_j_p, father->fn_j_p);
+    mbti    = 0b00000000;
+    if(at_e_i>50)mbti|=0b00001000;
+    if(at_s_n>50)mbti|=0b00000100;
+    if(fn_t_f>50)mbti|=0b00000010;
+    if(fn_j_p>50)mbti|=0b00000001;
+}
+/*******************************************************************************************/
+void NATURE::blend(NATURE *mother, NATURE *father){
+    at_e_i  = heredity_u8(mother->at_e_i, father->at_e_i); 
+    at_s_n  = heredity_u8(mother->at_s_n, father->at_s_n); 
+    fn_t_f  = heredity_u8(mother->fn_t_f, father->fn_t_f); 
+    fn_j_p  = heredity_u8(mother->fn_j_p, father->fn_j_p);    
+    mbti    = 0b00000000;
+    if(at_e_i>50)mbti|=0b00001000;
+    if(at_s_n>50)mbti|=0b00000100;
+    if(fn_t_f>50)mbti|=0b00000010;
+    if(fn_j_p>50)mbti|=0b00000001;
+}
+/*******************************************************************************************/
+void NATURE::status(){
+    perforation("nature");
+    spacebar(false,"MBTI");
+    if(at_e_i>50)Serial.print("E");
+    else Serial.print("I");
+    if(at_s_n>50)Serial.print("S");
+    else Serial.print("N");
+    if(fn_t_f>50)Serial.print("T");
+    else Serial.print("F");
+    if(fn_j_p>50)Serial.print("J");
+    else Serial.print("P");
+    Serial.print(" [");
+    Serial.print(at_e_i);
+    Serial.print(",");
+    Serial.print(at_s_n);
+    Serial.print(",");
+    Serial.print(fn_t_f);
+    Serial.print(",");
+    Serial.print(fn_j_p);
+    Serial.print("] ");
+    Serial.println(mbti);    
+}
+/*******************************************************************************************/
+uint8_t NATURE::get_MBTI(){return mbti;}
+/*******************************************************************************************/
+String  NATURE::get_csv(){
+    String response = String(mbti);
+    make_csv(&response, String(at_e_i));
+    make_csv(&response, String(at_s_n));
+    make_csv(&response, String(fn_t_f));
+    make_csv(&response, String(fn_j_p));
+    return response;
+}
+/*******************************************************************************************/
+void  NATURE::set_csv(char* save_file){
+    mbti    = atoi(strtok(save_file, ","));
+    at_e_i  = atoi(strtok(0x00, ","));
+    at_s_n  = atoi(strtok(0x00, ","));
+    fn_t_f  = atoi(strtok(0x00, ","));
+    fn_j_p  = atoi(strtok(0x00, ","));
+}
+/*********************************** NATURE CLASS FUNCTION *********************************/
+/*********************************** EROS CLASS FUNCTION ***********************************/
+EROS::EROS(){}
+/*******************************************************************************************/
+EROS::~EROS(){destruct();}
+/*******************************************************************************************/
+void EROS::generate(){
+    lust       = gaussian_range(50,12);
+    sadism     = gaussian_range(50,12);
+    masohism   = gaussian_range(50,12);
+    exhibition = gaussian_range(50,12);
+    service    = gaussian_range(50,12);
+}
+/*******************************************************************************************/
+void EROS::change(EROS *gene){
+    lust       = gene->lust;
+    sadism     = gene->sadism;
+    masohism   = gene->masohism;
+    exhibition = gene->exhibition;
+    service    = gene->service;
+}
+/*******************************************************************************************/
+void EROS::meiosis(EROS *mother, EROS *father){
+    lust       = mutation_u8(mother->lust, father->lust); 
+    sadism     = mutation_u8(mother->sadism, father->sadism); 
+    masohism   = mutation_u8(mother->masohism, father->masohism); 
+    exhibition = mutation_u8(mother->exhibition, father->exhibition);
+    service    = mutation_u8(mother->service, father->service);
+}
+/*******************************************************************************************/
+void EROS::blend(EROS *mother, EROS *father){
+    lust       = heredity_u8(mother->lust, father->lust); 
+    sadism     = heredity_u8(mother->sadism, father->sadism); 
+    masohism   = heredity_u8(mother->masohism, father->masohism); 
+    exhibition = heredity_u8(mother->exhibition, father->exhibition);
+    service    = heredity_u8(mother->service, father->service);
+}
+/*******************************************************************************************/
+void EROS::status(){
+    perforation("eros");
+    spacebar(false,"lust");       Serial.println(lust);
+    spacebar(false,"sadism");     Serial.println(sadism);
+    spacebar(false,"masohism");   Serial.println(masohism);
+    spacebar(false,"exhibition"); Serial.println(exhibition);
+    spacebar(false,"service");    Serial.println(service);
+}
+/*******************************************************************************************/
+uint8_t EROS::get_lust(){return lust;}
+/*******************************************************************************************/
+uint8_t EROS::get_sadism(){return sadism;}
+/*******************************************************************************************/
+uint8_t EROS::get_masohism(){return masohism;}
+/*******************************************************************************************/
+uint8_t EROS::get_exhibition(){return exhibition;}
+/*******************************************************************************************/
+uint8_t EROS::get_service(){return service;}
+/*******************************************************************************************/
+String  EROS::get_csv(){
+    String response = String(lust);
+    make_csv(&response, String(sadism));
+    make_csv(&response, String(masohism));
+    make_csv(&response, String(exhibition));
+    make_csv(&response, String(service));
+    return response;
+}
+/*******************************************************************************************/
+void  EROS::set_csv(char* save_file){
+    lust        = atoi(strtok(save_file, ","));
+    sadism      = atoi(strtok(0x00, ","));
+    masohism    = atoi(strtok(0x00, ","));
+    exhibition  = atoi(strtok(0x00, ","));
+    service     = atoi(strtok(0x00, ","));
+}
+/*********************************** EROS CLASS FUNCTION ***********************************/
 /*********************************** EXP CLASS FUNCTION ***********************************/
 EXP::EXP() {}
 /*******************************************************************************************/
@@ -285,44 +520,3 @@ void    EXP::set_csv(char* save_file){
     sperm_a  = atoi(strtok(0x00, ","));
 }
 /*********************************** EXP CLASS FUNCTION ***********************************/
-/*********************************** BREED CLASS FUNCTION ***********************************/
-BREED::BREED() {}
-/*******************************************************************************************/
-BREED::~BREED(){destruct();}
-/*******************************************************************************************/
-void BREED::generate(){
-    pregnancy   = 0;
-    birth       = 0;
-    miscarriage = 0;
-}
-/*******************************************************************************************/
-void BREED::update(){
-}
-/*******************************************************************************************/
-void BREED::status(){
-    perforation("mens");
-    spacebar(false,"pregnancy");   Serial.println(pregnancy);
-    spacebar(false,"birth");       Serial.println(birth);
-    spacebar(false,"miscarriage"); Serial.println(miscarriage);
-}
-/*******************************************************************************************/
-uint8_t BREED::get(uint8_t item){
-    if(item == 1)      return pregnancy;
-    else if(item == 2) return birth;
-    else if(item == 3) return miscarriage;
-    return 0;
-}
-/*******************************************************************************************/
-String  BREED::get_csv(){
-    String response = String(pregnancy);
-    make_csv(&response, String(birth));
-    make_csv(&response, String(miscarriage));
-    return response;
-}
-/*******************************************************************************************/
-void    BREED::set_csv(char* save_file){
-    pregnancy   = atoi(strtok(save_file, ","));
-    birth       = atoi(strtok(0x00, ","));
-    miscarriage = atoi(strtok(0x00, ","));
-}
-/*********************************** BREED CLASS FUNCTION ***********************************/

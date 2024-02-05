@@ -2,6 +2,7 @@
 
 #include "model_hard.h"
 #include "model_soft.h"
+#include "model_status.h"
 #include "enum.h"
 #include "define.h"
 #include "utility.h"
@@ -191,8 +192,8 @@ void setup() {
     scene_number = 2;
     dir_make(path_avatar());
     bool gender = random(2);
-    new_model_hardware(path_avatar(),gender);
-    new_model_software(path_avatar(),gender);
+    new_model_body(path_avatar(),gender);
+    new_model_status(path_avatar(),gender);
   }
   //////////
   read_model_hardware(path_avatar(),info_class,head_class,body_class,parts_class,stat_class,hole_class,sense_class,nature_class,eros_class);
