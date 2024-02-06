@@ -68,7 +68,7 @@ void display_prologue(String name, bool gender){
     for(uint16_t index=0; index<strlen_P(scene_prologue3); index++){
         response += char(pgm_read_byte_near(scene_prologue3+index));
     }
-    Serial.print(response);
+    Serial.println(response);
 };
 /*******************************************************/
 void display_continue(){
@@ -86,6 +86,7 @@ void display_game_help(){
     for(uint16_t index=0; index<strlen_P(scene_help_game); index++){
         response += char(pgm_read_byte_near(scene_help_game+index));
     }
+    Serial.println(response);
     spacebar_option(true,2,word_yes());
     spacebar_option(true,1,word_no());
     Serial.println();

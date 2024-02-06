@@ -207,6 +207,15 @@ void setup() {
   
   if(scene_number == 2){
     display_prologue(info_class->get_family() + info_class->get_name(), info_class->get_gender());
+    scene_number = 0;
+    display_game_help();
+    while (scene_number==0)
+    {
+      if (Serial.available()) get_command(Serial.read());
+    }
+    if(scene_number == 2){
+      Serial.println("설명");
+    }
     scene_number = 100;
   }else{
     display_continue();
