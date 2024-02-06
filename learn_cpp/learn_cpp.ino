@@ -204,7 +204,7 @@ void setup() {
   read_model_feel(path_assist(),feel_class);
   read_model_breed(path_assist(),breed_class);
   */
-
+  
   if(scene_number == 2){
     display_prologue(info_class->get_family() + info_class->get_name());
     scene_number = 100;
