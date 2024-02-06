@@ -35,11 +35,11 @@ BREED     *breed_class  = new BREED();
 
 /***** Model *****/
 /***** Variable *****/
+uint8_t   aggro_point = 0;
+
 uint32_t  calendar    = 1;
 uint8_t   hour_count  = 6;
 uint8_t   season      = 0; // month = rand(12);
-
-uint8_t   aggro_point = 0;
 
 unsigned long time_clock  = 0UL;
 bool          time_stop   = false;
