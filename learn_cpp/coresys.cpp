@@ -201,40 +201,32 @@ bool check_model_hash(String model_path, uint8_t hash_num){
 }
 
 void read_model_hard(String model_path,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts){
-    if(check_model_hash(model_path,1)){
-        String csv_file_str = file_read(model_path+file_hard());
-        char *csv_file  = const_cast<char*>(csv_file_str.c_str());
-        char *class_text[9];
-        class_text[0] = strtok(csv_file, "\n");
-        for(uint8_t index=1; index<4; index++){
-            class_text[index] = strtok(0x00, "\n");
-        }
-        class_info  ->set_csv(class_text[0]);
-        class_head  ->set_csv(class_text[1]);
-        class_body  ->set_csv(class_text[2]);
-        class_parts ->set_csv(class_text[3]);
-    }else{
-        Serial.println("nofile");
+    String csv_file_str = file_read(model_path+file_hard());
+    char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+    char *class_text[4];
+    class_text[0] = strtok(csv_file, "\n");
+    for(uint8_t index=1; index<4; index++){
+        class_text[index] = strtok(0x00, "\n");
     }
+    class_info  ->set_csv(class_text[0]);
+    class_head  ->set_csv(class_text[1]);
+    class_body  ->set_csv(class_text[2]);
+    class_parts ->set_csv(class_text[3]);
 }
 
 void read_model_soft(String model_path,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
-    if(check_model_hash(model_path,2)){
-        String csv_file_str = file_read(model_path+file_soft());
-        char *csv_file  = const_cast<char*>(csv_file_str.c_str());
-        char *class_text[9];
-        class_text[0] = strtok(csv_file, "\n");
-        for(uint8_t index=1; index<9; index++){
-            class_text[index] = strtok(0x00, "\n");
-        }
-        class_stat  ->set_csv(class_text[0]);
-        class_hole  ->set_csv(class_text[1]);
-        class_sense ->set_csv(class_text[2]);
-        class_nature->set_csv(class_text[3]);
-        class_eros  ->set_csv(class_text[4]);
-    }else{
-        Serial.println("nofile");
+    String csv_file_str = file_read(model_path+file_soft());
+    char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+    char *class_text[5];
+    class_text[0] = strtok(csv_file, "\n");
+    for(uint8_t index=1; index<5; index++){
+        class_text[index] = strtok(0x00, "\n");
     }
+    class_stat  ->set_csv(class_text[0]);
+    class_hole  ->set_csv(class_text[1]);
+    class_sense ->set_csv(class_text[2]);
+    class_nature->set_csv(class_text[3]);
+    class_eros  ->set_csv(class_text[4]);
 }
 
 void read_model_mens(String model_path, MENS *mens_class){
@@ -330,5 +322,12 @@ void display_newday(uint32_t *calendar, INFO *class_info, STAT *class_stat, MENS
     uint8_t get_mental  = class_current->get(5);
     spacebar(true,"체력");   Serial.println(get_stamina);
     spacebar(true,"정신력"); Serial.println(get_mental);
+}
+*/
+/***** funtion gene *******/
+/*
+void pregnant(String family_name){
+  info_class[e_baby]->generate(random(2), true);
+  info_class[e_baby]->set_family(family_name);
 }
 */

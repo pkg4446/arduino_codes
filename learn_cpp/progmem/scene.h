@@ -5,6 +5,8 @@ const PROGMEM char scene_help_cmd[]     = "***** help *****\nhelp  this text\nls
 const PROGMEM char scene_boot[]         = "새롭게 시작 하시겠습니까?";
 const PROGMEM char scene_boot_cmd[]     = "Command Prompt";
 /*************** Display ***************/
+const PROGMEM char scene_hash_check[]   = "외계의 바이러스를 검역 중 입니다.";
+/*************** Display ***************/
 const PROGMEM char scene_make_assist[]  = "새로운 마왕 소환자가 탄생했습니다.";
 /*************** Display ***************/
 const PROGMEM char scene_make_user[]    = "대륙을 공포로 물들일 마왕의 육체가 새로이 탄생합니다.";
@@ -20,9 +22,13 @@ const PROGMEM char scene_continue[]     = "소녀, 마왕님을 뵙사옵니다.
 const PROGMEM char scene_sun_rise[]     = "캄캄한 밤이다.새벽이 밝아온다.해가 떠오른다.아침이 밝았다.";
 const PROGMEM char scene_sun_fall[]     = "해가 중천에 떳다.해가 저문다.노을이 진다.어둠이 내렸다.";
 /*************** Display ***************/
-const PROGMEM char scene_main_opt1[]    = "탐험";
-const PROGMEM char scene_main_opt2[]    = "관리";
-const PROGMEM char scene_main_opt3[]    = "정보";
+const PROGMEM char scene_main_cmd[]     = "무엇을 하는게 좋을까?";
+const PROGMEM char scene_main_opt1[]    = "포로교육";
+const PROGMEM char scene_main_opt2[]    = "던전관리";
+const PROGMEM char scene_main_opt3[]    = "지옥상회";
+const PROGMEM char scene_main_opt4[]    = "대륙침공";
+const PROGMEM char scene_main_opt5[]    = "정보확인";
+const PROGMEM char scene_main_opt6[]    = "개인훈련";
 /*************** Display ***************/
 const PROGMEM char scene_edu[]          = "교육합니다.";
 /*************** Display ***************/

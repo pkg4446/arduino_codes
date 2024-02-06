@@ -60,6 +60,7 @@ bool time_stream(unsigned long millisec){
 }
 /***** funtion scene ****/
 void display_scene(){
+  if(scene_number == COMMAND_MAIN)            display_cmd_main();
   if(scene_number == COMMAND_EDUCATION)       display_edu();
   else if(scene_number == COMMAND_INFOMATION) display_info();
 }
@@ -135,13 +136,6 @@ void command_progress(String recieve){
   }
   display_scene();
 }
-/***** funtion gene *******/
-/*
-void pregnant(String family_name){
-  info_class[e_baby]->generate(random(2), true);
-  info_class[e_baby]->set_family(family_name);
-}
-*/
 /***** funtion routine ****/
 bool routine_hours(){
   bool response = false;
@@ -191,6 +185,11 @@ void setup() {
     new_model_body(path_assist(),false);
     new_model_status(path_assist(),false);
     display_make_assist();
+  }else{
+    display_hash_check();
+    check_model_hash(path_assist(),0);
+    check_model_hash(path_assist(),1);
+    check_model_hash(path_assist(),2);
   }
   if(!exisits_check(path_avatar())) dir_make(path_avatar());
   if(scene_number==2 || dir_list(path_avatar(),false,false) < 8){
@@ -199,6 +198,11 @@ void setup() {
     new_model_status(path_avatar(),gender);
     display_make_user();
     scene_number = 2;
+  }else{
+    display_hash_check();
+    check_model_hash(path_avatar(),0);
+    check_model_hash(path_avatar(),1);
+    check_model_hash(path_avatar(),2);
   }
   //////////
   read_model_hard(path_assist(),info_class,head_class,body_class,parts_class);
@@ -220,10 +224,10 @@ void setup() {
     if(scene_number == 2){
       Serial.println("설명");
     }
-    scene_number = 100;
+    scene_number = COMMAND_MAIN;
   }else{
     display_continue();
-    scene_number = 100;
+    scene_number = COMMAND_MAIN;
   }
 
   time_clock = millis();

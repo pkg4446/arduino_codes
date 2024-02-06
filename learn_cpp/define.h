@@ -8,5 +8,6 @@
 #define LINE_NUM                90
 
 #define COMMAND_CANCLE          99
+#define COMMAND_MAIN            100
 #define COMMAND_EDUCATION       140
 #define COMMAND_INFOMATION      150

@@ -12,6 +12,8 @@ void display_model_err();
 /*************** Display ***************/
 void display_boot();
 /*************** Display ***************/
+void display_hash_check();
+/*************** Display ***************/
 void display_help_cmd();
 /*************** Display ***************/
 void display_hour(uint8_t *clock_hours);
@@ -27,6 +29,8 @@ void display_continue();
 void display_game_help();
 /*************** Display ***************/
 void cancle_cmd(bool line_break);
+/*************** Display ***************/
+void display_cmd_main();
 /*************** Display ***************/
 void display_edu();
 /*************** Display ***************/

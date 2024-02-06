@@ -37,6 +37,15 @@ void display_boot(){
     Serial.println();
 };
 /*******************************************************/
+void display_hash_check(){
+    paging();
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(scene_hash_check); index++){
+        response += char(pgm_read_byte_near(scene_hash_check+index));
+    }
+    Serial.println(response);
+};
+/*******************************************************/
 void display_help_cmd(){
     paging();
     String response = "";
@@ -137,6 +146,48 @@ void display_hour(uint8_t *clock_hours){
 void cancle_cmd(bool line_break){
     if(line_break)  Serial.println();
     spacebar_option(true,COMMAND_CANCLE,"취소");
+    Serial.println();
+};
+/*******************************************************/
+void display_cmd_main(){
+    paging();
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(scene_main_cmd); index++){
+        response += char(pgm_read_byte_near(scene_main_cmd+index));
+    }
+    Serial.println(response);
+
+    response = "";
+    for(uint16_t index=0; index<strlen_P(scene_main_opt1); index++){
+        response += char(pgm_read_byte_near(scene_main_opt1+index));
+    }
+    spacebar_option(true,1,response);
+    response = "";
+    for(uint16_t index=0; index<strlen_P(scene_main_opt2); index++){
+        response += char(pgm_read_byte_near(scene_main_opt2+index));
+    }
+    spacebar_option(true,2,response);
+    response = "";
+    for(uint16_t index=0; index<strlen_P(scene_main_opt3); index++){
+        response += char(pgm_read_byte_near(scene_main_opt3+index));
+    }
+    spacebar_option(true,3,response);
+    Serial.println();
+    response = "";
+    for(uint16_t index=0; index<strlen_P(scene_main_opt4); index++){
+        response += char(pgm_read_byte_near(scene_main_opt4+index));
+    }
+    spacebar_option(true,4,response);
+    response = "";
+    for(uint16_t index=0; index<strlen_P(scene_main_opt5); index++){
+        response += char(pgm_read_byte_near(scene_main_opt5+index));
+    }
+    spacebar_option(true,5,response);
+    response = "";
+    for(uint16_t index=0; index<strlen_P(scene_main_opt6); index++){
+        response += char(pgm_read_byte_near(scene_main_opt6+index));
+    }
+    spacebar_option(true,5,response);
     Serial.println();
 };
 /*******************************************************/
