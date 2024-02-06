@@ -17,22 +17,21 @@
 String path_current = "/";
 bool   dos_mode     = false;
 /***** Model *****/
-/***** Hardware *****/
+/***** Hardware *****//*
 INFO      *info_class   = new INFO();
 HEAD      *head_class   = new HEAD();
 BODY      *body_class   = new BODY();
 EROGENOUS *parts_class  = new EROGENOUS();
-/***** Software *****/
+/***** Software *****//*
 STAT      *stat_class   = new STAT();
 HOLE      *hole_class   = new HOLE();
 SENSE     *sense_class  = new SENSE();
 NATURE    *nature_class = new NATURE();
 EROS      *eros_class   = new EROS();
-/***** Status *****/
+/***** Status *****//*
 MENS      *mens_class   = new MENS();
 CURRENT   *feel_class   = new CURRENT();
 BREED     *breed_class  = new BREED();
-
 /***** Model *****/
 /***** Variable *****/
 uint8_t   aggro_point = 0;
@@ -205,8 +204,8 @@ void setup() {
     check_model_hash(path_avatar(),2);
   }
   //////////
-  read_model_hard(path_assist(),info_class,head_class,body_class,parts_class);
   /*
+  read_model_hard(path_assist(),info_class,head_class,body_class,parts_class);
   read_model_soft(path_assist(),stat_class,hole_class,sense_class,nature_class,eros_class);
   read_model_mens(path_assist(),mens_class);
   read_model_feel(path_assist(),feel_class);
@@ -214,7 +213,7 @@ void setup() {
   */
   
   if(scene_number == 2){
-    display_prologue(info_class->get_family() + info_class->get_name(), info_class->get_gender());
+    prologue_txt();
     scene_number = 0;
     display_game_help();
     while (scene_number==0)

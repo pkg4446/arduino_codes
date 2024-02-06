@@ -1,5 +1,4 @@
 #include "funtions.h"
-#include "utility.h"
 
 void routines_day(MENS *class_mens, CURRENT *class_current){
     class_mens->daily();
@@ -12,4 +11,18 @@ void routines_day(MENS *class_mens, CURRENT *class_current){
         }
         class_current->status();
     #endif
+}
+
+void prologue_txt(){
+    /***** Model *****/
+    /***** Hardware *****/
+    INFO      *info_class   = new INFO();
+    HEAD      *head_class   = new HEAD();
+    BODY      *body_class   = new BODY();
+    EROGENOUS *parts_class  = new EROGENOUS();
+    /***** Model *****/
+    read_model_hard(path_avatar(),info_class,head_class,body_class,parts_class);
+    bool gender = info_class->get_gender();
+    read_model_hard(path_assist(),info_class,head_class,body_class,parts_class);
+    display_prologue(info_class->get_family() + info_class->get_name(), gender);
 }
