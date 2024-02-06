@@ -223,18 +223,6 @@ void new_model_status(String model_path, bool gender){
     delete breed_class;
 }
 
-void model_kill(String model_path){
-    file_remove(model_path+file_mother());
-    file_remove(model_path+file_father());
-    file_remove(model_path+file_hard());
-    file_remove(model_path+file_soft());
-    file_remove(model_path+file_mens());
-    file_remove(model_path+file_current());
-    file_remove(model_path+file_exp());
-    file_remove(model_path+file_hash());
-    dir_remove(model_path);
-}
-
 bool check_model_hash(String model_path, uint8_t hash_num){
     bool response = false;
     if(exisits_check(model_path+file_hash()) && exisits_check(model_path+file_hard()) && exisits_check(model_path+file_soft()) && exisits_check(model_path+file_mother()) && exisits_check(model_path+file_father())){
@@ -257,7 +245,7 @@ bool check_model_hash(String model_path, uint8_t hash_num){
         response = (hashs == hash_value[hash_num]);
     }
     if(!response){
-        model_kill(model_path);
+        dir_remove(model_path);
         display_model_err();
     }
     return response;
