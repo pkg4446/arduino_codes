@@ -33,6 +33,13 @@ MENS      *mens_class   = new MENS();
 CURRENT   *feel_class   = new CURRENT();
 BREED     *breed_class  = new BREED();
 /***** Model *****/
+/*
+read_model_hard(path_assist(),info_class,head_class,body_class,parts_class);
+read_model_soft(path_assist(),stat_class,hole_class,sense_class,nature_class,eros_class);
+read_model_mens(path_assist(),mens_class);
+read_model_feel(path_assist(),feel_class);
+read_model_breed(path_assist(),breed_class);
+*/
 /***** Variable *****/
 uint8_t   aggro_point = 0;
 
@@ -203,15 +210,7 @@ void setup() {
     check_model_hash(path_avatar(),1);
     check_model_hash(path_avatar(),2);
   }
-  //////////
-  /*
-  read_model_hard(path_assist(),info_class,head_class,body_class,parts_class);
-  read_model_soft(path_assist(),stat_class,hole_class,sense_class,nature_class,eros_class);
-  read_model_mens(path_assist(),mens_class);
-  read_model_feel(path_assist(),feel_class);
-  read_model_breed(path_assist(),breed_class);
-  */
-  
+
   if(scene_number == 2){
     prologue_txt();
     scene_number = 0;
