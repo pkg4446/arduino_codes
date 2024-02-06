@@ -13,8 +13,8 @@ const PROGMEM uint8_t sha1InitState[] = {
   0x76,0x54,0x32,0x10, // H3
   0xf0,0xe1,0xd2,0xc3  // H4
 };
-const PROGMEM char hash_hex1[] = "0123456789abcdef";
-const PROGMEM char hash_hex2[] = "ghijklmnopqrstuv";
+const PROGMEM char hash_hex1[] = "rRseEfaqQtTdwWcz";
+const PROGMEM char hash_hex2[] = "xvkoiOjpuPhynbml";
 
 class Sha1Class : public Print
 {
