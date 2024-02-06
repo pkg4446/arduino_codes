@@ -150,8 +150,7 @@ void file_write(String path, String contents){
     fs::FS &fs = SD;
     file = fs.open(path, FILE_WRITE);
   #else
-    SD.remove(path);
-    file = SD.open(path, FILE_WRITE);
+    file = SD.open(path, O_CREAT|O_RDWR);
     file.seek (0);
   #endif
   file.print(contents);

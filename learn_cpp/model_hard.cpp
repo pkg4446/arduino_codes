@@ -36,7 +36,8 @@ String  INFO::get_name(){return name;}
 uint8_t INFO::get_age(){return age;}
 /*******************************************************************************************/
 String  INFO::get_csv(){
-    String response = String(gen_xy);
+    String response = "";
+    make_csv(&response, String(gen_xy));
     make_csv(&response, family);
     make_csv(&response, name);
     make_csv(&response, String(age));
@@ -128,7 +129,8 @@ bool    HEAD::get_dimple(){return dimple;}
 bool    HEAD::get_bald(){return bald;}
 /*******************************************************************************************/
 String  HEAD::get_csv(){
-    String response = String(gen_xy);
+    String response = "";
+    make_csv(&response, String(gen_xy));
     make_csv(&response, String(hair_color));
     make_csv(&response, String(hair_curl));
     make_csv(&response, String(eye_color));
@@ -404,7 +406,8 @@ uint16_t BODY::get_hip(){return hip;}
 uint16_t BODY::get_leg_ratio(){return leg_ratio;}
 /*******************************************************************************************/
 String  BODY::get_csv(){
-    String response = String(gen_xy);
+    String response = "";
+    make_csv(&response, String(gen_xy));
     make_csv(&response, String(blood_A));
     make_csv(&response, String(blood_B));
     make_csv(&response, String(body_color));
@@ -814,7 +817,8 @@ uint16_t EROGENOUS::get_nipple(uint8_t item){
 }
 /*******************************************************************************************/
 String  EROGENOUS::get_csv(){
-    String response = String(gen_xy);
+    String response ="";
+    make_csv(&response, String(gen_xy));
     make_csv(&response, String(hood_shape));
     make_csv(&response, String(hood_start));
     make_csv(&response, String(hood_texture));

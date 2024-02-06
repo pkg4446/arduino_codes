@@ -64,7 +64,8 @@ bool MENS::get_pregnant(){
 }
 /*******************************************************************************************/
 String  MENS::get_csv(){
-    String response = String(gen_xy);
+    String response = "";
+    make_csv(&response, String(gen_xy));
     make_csv(&response, String(pregnant));
     make_csv(&response, String(periode));
     make_csv(&response, String(blood));
@@ -152,7 +153,8 @@ uint8_t CURRENT::get(uint8_t item){
 }
 /*******************************************************************************************/
 String  CURRENT::get_csv(){
-    String response = String(furr);
+    String response = "";
+    make_csv(&response, String(furr));
     make_csv(&response, String(lubric));
     make_csv(&response, String(pee));
     make_csv(&response, String(poo));
@@ -207,7 +209,8 @@ uint8_t BREED::get(uint8_t item){
 }
 /*******************************************************************************************/
 String  BREED::get_csv(){
-    String response = String(pregnancy);
+    String response = "";
+    make_csv(&response, String(pregnancy));
     make_csv(&response, String(birth));
     make_csv(&response, String(miscarriage));
     return response;

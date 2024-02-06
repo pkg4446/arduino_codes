@@ -42,7 +42,9 @@ void new_model_body(String model_path, bool gender){
     nature_class[0]->generate();
     eros_class[0]-> generate();
 
-    String models = info_class[0]->get_csv();
+    String hashs = "";
+    String models = "";
+    make_csv_text(&models, info_class[0]->get_csv());
     make_csv_text(&models, head_class[0]->get_csv());
     make_csv_text(&models, body_class[0]->get_csv());
     make_csv_text(&models, parts_class[0]->get_csv());
@@ -70,7 +72,8 @@ void new_model_body(String model_path, bool gender){
     nature_class[1]->generate();
     eros_class[1]-> generate();
 
-    models = info_class[1]->get_csv();
+    models = "";
+    make_csv_text(&models, info_class[1]->get_csv());
     make_csv_text(&models, head_class[1]->get_csv());
     make_csv_text(&models, body_class[1]->get_csv());
     make_csv_text(&models, parts_class[1]->get_csv());
@@ -81,7 +84,7 @@ void new_model_body(String model_path, bool gender){
     make_csv_text(&models, eros_class[1]->get_csv());
     file_write(model_path+file_father(), models);
     Sha1.print(models);
-    String hashs = Sha1.result();
+    make_csv(&hashs, Sha1.result());
     /***** BABY *****/
     info_class[2]-> generate(gender, false);
     info_class[2]-> set_family(info_class[0]->get_family());
@@ -99,7 +102,8 @@ void new_model_body(String model_path, bool gender){
     nature_class[2]->blend(nature_class[0],nature_class[1]);
     eros_class[2]-> blend(eros_class[0],eros_class[1]);
 
-    models = info_class[2]->get_csv();
+    models = "";
+    make_csv_text(&models, info_class[2]->get_csv());
     make_csv_text(&models, head_class[2]->get_csv());
     make_csv_text(&models, body_class[2]->get_csv());
     make_csv_text(&models, parts_class[2]->get_csv());
@@ -107,7 +111,8 @@ void new_model_body(String model_path, bool gender){
     Sha1.print(models);
     make_csv(&hashs, Sha1.result());
     file_write(model_path+file_hard(), models);
-    models = stat_class[2]->get_csv();
+    models = "";
+    make_csv_text(&models, stat_class[2]->get_csv());
     make_csv_text(&models, hole_class[2]->get_csv());
     make_csv_text(&models, sense_class[2]->get_csv());
     make_csv_text(&models, nature_class[2]->get_csv());

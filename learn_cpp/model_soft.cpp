@@ -49,7 +49,8 @@ uint8_t STAT::get_constitution(){return constitution;}
 /*********************************** STAT CLASS FUNCTION ***********************************/
 /*******************************************************************************************/
 String  STAT::get_csv(){
-    String response = String(intelligence);
+    String response = "";
+    make_csv(&response, String(intelligence));
     make_csv(&response, String(strength));
     make_csv(&response, String(dexterity));
     make_csv(&response, String(charisma));
@@ -134,7 +135,8 @@ uint16_t HOLE::get_pressure(uint8_t item){
 }
 /*******************************************************************************************/
 String  HOLE::get_csv(){
-    String response = String(gape_u);
+    String response = "";
+    make_csv(&response, String(gape_u));
     make_csv(&response, String(gape_v));
     make_csv(&response, String(gape_a));
     make_csv(&response, String(pressure_u));
@@ -208,7 +210,8 @@ uint8_t SENSE::get_anal(){return anal;}
 uint8_t SENSE::get_nipple(){return nipple;}
 /*******************************************************************************************/
 String  SENSE::get_csv(){
-    String response = String(cervix);
+    String response = "";
+    make_csv(&response, String(cervix));
     make_csv(&response, String(skin));
     make_csv(&response, String(clit_glans));
     make_csv(&response, String(vagina_balls));
@@ -303,7 +306,8 @@ void NATURE::status(){
 uint8_t NATURE::get_MBTI(){return mbti;}
 /*******************************************************************************************/
 String  NATURE::get_csv(){
-    String response = String(mbti);
+    String response = "";
+    make_csv(&response, String(mbti));
     make_csv(&response, String(at_e_i));
     make_csv(&response, String(at_s_n));
     make_csv(&response, String(fn_t_f));
@@ -367,7 +371,8 @@ uint8_t EROS::get_exhibition(){return exhibition;}
 uint8_t EROS::get_service(){return service;}
 /*******************************************************************************************/
 String  EROS::get_csv(){
-    String response = String(lust);
+    String response = "";
+    make_csv(&response, String(lust));
     make_csv(&response, String(sadism));
     make_csv(&response, String(masohism));
     make_csv(&response, String(exhibition));
@@ -445,7 +450,8 @@ uint8_t EXP::get_shot(uint8_t item){
 }
 /*******************************************************************************************/
 String  EXP::get_csv(){
-    String response = String(orgasm);
+    String response = "";
+    make_csv(&response, String(orgasm));
     make_csv(&response, String(squirt));
     make_csv(&response, String(mouth));
     make_csv(&response, String(vagina));
