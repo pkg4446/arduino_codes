@@ -17,6 +17,14 @@ String path_assist(){
     return response;
 };
 /*******************************************************/
+String path_womb(){
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(path_womb_str); index++){
+        response += char(pgm_read_byte_near(path_womb_str+index));
+    }
+    return response;
+};
+/*******************************************************/
 String file_mother(){
     String response = "";
     for(uint16_t index=0; index<strlen_P(file_mother_str); index++){

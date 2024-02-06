@@ -58,14 +58,22 @@ void dir_remove(String path){
     #if defined(ESP32)
       removeDir(SD,path);
     #else
-      SD.rmdir(path);
-      if(exisits_check(path)){
-        uint16_t file_last = dir_list(path,false,false);
-        for(uint16_t index=file_last; index>0; index--){
-          file_remove(path +"/"+ dir_index(path,false,index-1));
+      uint16_t dir_last   = dir_list(path,true,false);
+      String   now_path   = "";
+      uint16_t file_last  = 0;
+      for(uint16_t index_d=dir_last; index_d>0; index_d--){
+        now_path  = path+"/"+ dir_index(path,true,index_d);
+        file_last = dir_list(now_path,false,false)
+        for(uint16_t index_f=file_last; index_f>0; index_f--){
+          file_remove(now_path+"/"+ dir_index(path,false,index_f));
         }
-        SD.rmdir(path);
+        SD.rmdir(now_path);
       }
+      file_last = dir_list(path,false,false);
+      for(uint16_t index=file_last; index>0; index--){
+        file_remove(path +"/"+ dir_index(path,false,index));
+      }
+      SD.rmdir(path);
     #endif
     if(exisits_check(path)){
       String response = "";
@@ -107,24 +115,23 @@ uint16_t dir_list(String path, bool type, bool show) {
 }
 
 String dir_index(String path, bool type, uint16_t dir_index) {
-  File root = SD.open(path);
-  File file = root.openNextFile();
-  String response = "null";
-
-  while(file){
-    if(dir_index <=1 ){
-      response = file.name();
-      break;
+  String response = "";
+  if(dir_index != 0){
+    File root = SD.open(path);
+    File file = root.openNextFile();
+    while(file){
+      if(file.isDirectory()){
+        if(type)dir_index--;
+      }else{
+        if(!type)dir_index--;
+      }
+      if(dir_index <1 ){
+        response = file.name();
+        break;
+      }
+      file = root.openNextFile();
     }
-    if(file.isDirectory()){
-      if(type)dir_index--;
-    }else{
-      if(!type)dir_index--;
-    }
-    file = root.openNextFile();
   }
-
-  Serial.println(response);
   return response;
 }
 

@@ -4,6 +4,8 @@ const PROGMEM char path_avatar_str[]    = "/avatar";
 /*************** Path ***************/
 const PROGMEM char path_assist_str[]    = "/assist";
 /*************** File ***************/
+const PROGMEM char path_womb_str[]      = "/womb";
+/*************** File ***************/
 const PROGMEM char file_mother_str[]    = "/mother.csv";
 /*************** File ***************/
 const PROGMEM char file_father_str[]    = "/father.csv";

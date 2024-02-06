@@ -4,6 +4,7 @@
 
 String path_avatar();
 String path_assist();
+String path_womb();
 
 String file_mother();
 String file_father();

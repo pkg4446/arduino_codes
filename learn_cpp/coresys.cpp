@@ -1,5 +1,110 @@
 #include "coresys.h"
 #include "funtions.h"
+/***** Inner funtion *****/
+String merge_parent_csv(INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
+    String response = "";
+    make_csv_text(&response, class_info->get_csv());
+    make_csv_text(&response, class_head->get_csv());
+    make_csv_text(&response, class_body->get_csv());
+    make_csv_text(&response, class_parts->get_csv());
+    make_csv_text(&response, class_stat->get_csv());
+    make_csv_text(&response, class_hole->get_csv());
+    make_csv_text(&response, class_sense->get_csv());
+    make_csv_text(&response, class_nature->get_csv());
+    make_csv_text(&response, class_eros->get_csv());
+    return response;
+}
+String merge_hard_csv(INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts){
+    String response = "";
+    make_csv_text(&response, class_info->get_csv());
+    make_csv_text(&response, class_head->get_csv());
+    make_csv_text(&response, class_body->get_csv());
+    make_csv_text(&response, class_parts->get_csv());
+    return response;
+}
+String merge_soft_csv(STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
+    String response = "";
+    make_csv_text(&response, class_stat->get_csv());
+    make_csv_text(&response, class_hole->get_csv());
+    make_csv_text(&response, class_sense->get_csv());
+    make_csv_text(&response, class_nature->get_csv());
+    make_csv_text(&response, class_eros->get_csv());
+    return response;
+}
+void read_model_gene(String model_path,bool parent,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
+    if(check_model_hash(model_path,0)){
+        String csv_file_str = "";
+        if(parent) csv_file_str = file_read(model_path+file_father());
+        else       csv_file_str = file_read(model_path+file_mother());
+        char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+        char *class_text[9];
+        class_text[0]   = strtok(csv_file, "\n");
+        for(uint8_t index=1; index<9; index++){
+            class_text[index] = strtok(0x00, "\n");
+        }
+        class_info  ->set_csv(class_text[0]);
+        class_head  ->set_csv(class_text[1]);
+        class_body  ->set_csv(class_text[2]);
+        class_parts ->set_csv(class_text[3]);
+        class_stat  ->set_csv(class_text[4]);
+        class_hole  ->set_csv(class_text[5]);
+        class_sense ->set_csv(class_text[6]);
+        class_nature->set_csv(class_text[7]);
+        class_eros  ->set_csv(class_text[8]);
+    }else{
+        Serial.println("nofile");
+    }
+}
+void gene_meiosis(String model_path,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
+    /***** HARDWARE *****/
+    INFO        *info_class[parents_gen];
+    HEAD        *head_class[parents_gen];
+    BODY        *body_class[parents_gen];
+    EROGENOUS   *parts_class[parents_gen];
+    /***** SOFTWARE *****/
+    STAT        *stat_class[parents_gen];
+    HOLE        *hole_class[parents_gen];
+    SENSE       *sense_class[parents_gen];
+    NATURE      *nature_class[parents_gen];
+    EROS        *eros_class[parents_gen];
+
+    for(uint8_t index=0; index<parents_gen; index++){
+        info_class[index]   = new INFO();
+        head_class[index]   = new HEAD();
+        body_class[index]   = new BODY();
+        parts_class[index]  = new EROGENOUS();
+        stat_class[index]   = new STAT();
+        hole_class[index]   = new HOLE();
+        sense_class[index]  = new SENSE();
+        nature_class[index] = new NATURE();
+        eros_class[index]   = new EROS();
+    }
+
+    read_model_gene(model_path,false,info_class[0],head_class[0],body_class[0],parts_class[0],stat_class[0],hole_class[0],sense_class[0],nature_class[0],eros_class[0]);
+    read_model_gene(model_path,true,info_class[1],head_class[1],body_class[1],parts_class[1],stat_class[1],hole_class[1],sense_class[1],nature_class[1],eros_class[1]);
+    
+    class_head->   meiosis(head_class[0],  head_class[1]);
+    class_body->   meiosis(body_class[0],  body_class[1]);
+    class_parts->  meiosis(parts_class[0], parts_class[1]);
+    class_stat->   meiosis(stat_class[0],  stat_class[1]);
+    class_hole->   meiosis(hole_class[0],  hole_class[1]);
+    class_sense->  meiosis(sense_class[0], sense_class[1]);
+    class_nature-> meiosis(nature_class[0],nature_class[1]);
+    class_eros->   meiosis(eros_class[0],  eros_class[1]);
+
+    for(uint8_t index=0; index<parents_gen; index++){
+        delete info_class[index];
+        delete head_class[index];
+        delete body_class[index];
+        delete parts_class[index];
+        delete stat_class[index];
+        delete hole_class[index];
+        delete sense_class[index];
+        delete nature_class[index];
+        delete eros_class[index];
+    }
+}
+/***** Inner funtion *****/
 
 void new_model_body(String model_path, bool gender){
     /***** GENE *****/
@@ -26,73 +131,27 @@ void new_model_body(String model_path, bool gender){
         nature_class[index] = new NATURE();
         eros_class[index]   = new EROS();
     }
-    /***** MOTHER *****/
     info_class[0]-> generate(false, false);
-    
-    head_class[0]-> set_gender(info_class[0]->get_gender());
-    body_class[0]-> set_gender(info_class[0]->get_gender());
-    parts_class[0]->set_gender(info_class[0]->get_gender());
-
-    head_class[0]-> generate();
-    body_class[0]-> generate();
-    parts_class[0]->generate();
-    stat_class[0]-> generate();
-    hole_class[0]-> generate();
-    sense_class[0]->generate();
-    nature_class[0]->generate();
-    eros_class[0]-> generate();
-
-    String hashs = "";
-    String models = "";
-    make_csv_text(&models, info_class[0]->get_csv());
-    make_csv_text(&models, head_class[0]->get_csv());
-    make_csv_text(&models, body_class[0]->get_csv());
-    make_csv_text(&models, parts_class[0]->get_csv());
-    make_csv_text(&models, stat_class[0]->get_csv());
-    make_csv_text(&models, hole_class[0]->get_csv());
-    make_csv_text(&models, sense_class[0]->get_csv());
-    make_csv_text(&models, nature_class[0]->get_csv());
-    make_csv_text(&models, eros_class[0]->get_csv());
-    file_write(model_path+file_mother(), models);
-    Sha1.init();
-    Sha1.print(models);
-    /***** FATHER *****/
     info_class[1]-> generate(true, false);
-    
-    head_class[1]-> set_gender(info_class[1]->get_gender());
-    body_class[1]-> set_gender(info_class[1]->get_gender());
-    parts_class[1]->set_gender(info_class[1]->get_gender());
-
-    head_class[1]-> generate();
-    body_class[1]-> generate();
-    parts_class[1]->generate();
-    stat_class[1]-> generate();
-    hole_class[1]-> generate();
-    sense_class[1]->generate();
-    nature_class[1]->generate();
-    eros_class[1]-> generate();
-
-    models = "";
-    make_csv_text(&models, info_class[1]->get_csv());
-    make_csv_text(&models, head_class[1]->get_csv());
-    make_csv_text(&models, body_class[1]->get_csv());
-    make_csv_text(&models, parts_class[1]->get_csv());
-    make_csv_text(&models, stat_class[1]->get_csv());
-    make_csv_text(&models, hole_class[1]->get_csv());
-    make_csv_text(&models, sense_class[1]->get_csv());
-    make_csv_text(&models, nature_class[1]->get_csv());
-    make_csv_text(&models, eros_class[1]->get_csv());
-    file_write(model_path+file_father(), models);
-    Sha1.print(models);
-    make_csv(&hashs, Sha1.result());
-    /***** BABY *****/
     info_class[2]-> generate(gender, false);
     info_class[2]-> set_family(info_class[0]->get_family());
-    
-    head_class[2]-> set_gender(info_class[2]->get_gender());
-    body_class[2]-> set_gender(info_class[2]->get_gender());
-    parts_class[2]->set_gender(info_class[2]->get_gender());
 
+    for(uint8_t index=0; index<model_gen; index++){
+        head_class[index]-> set_gender(info_class[index]->get_gender());
+        body_class[index]-> set_gender(info_class[index]->get_gender());
+        parts_class[index]->set_gender(info_class[index]->get_gender());
+
+        if(index < model_gen-1){
+            head_class[index]-> generate();
+            body_class[index]-> generate();
+            parts_class[index]->generate();
+            stat_class[index]-> generate();
+            hole_class[index]-> generate();
+            sense_class[index]->generate();
+            nature_class[index]->generate();
+            eros_class[index]-> generate();
+        }
+    }
     head_class[2]-> blend(head_class[0],head_class[1]);
     body_class[2]-> blend(body_class[0],body_class[1]);
     parts_class[2]->blend(parts_class[0],parts_class[1]);
@@ -102,26 +161,30 @@ void new_model_body(String model_path, bool gender){
     nature_class[2]->blend(nature_class[0],nature_class[1]);
     eros_class[2]-> blend(eros_class[0],eros_class[1]);
 
-    models = "";
-    make_csv_text(&models, info_class[2]->get_csv());
-    make_csv_text(&models, head_class[2]->get_csv());
-    make_csv_text(&models, body_class[2]->get_csv());
-    make_csv_text(&models, parts_class[2]->get_csv());
+    String hashs  = "";
+    String models = merge_parent_csv(info_class[0],head_class[0],body_class[0],parts_class[0],stat_class[0],hole_class[0],sense_class[0],nature_class[0],eros_class[0]);
+    file_write(model_path+file_mother(), models);
+    Sha1.init();
+    Sha1.print(models);
+    
+    models = merge_parent_csv(info_class[1],head_class[1],body_class[1],parts_class[1],stat_class[1],hole_class[1],sense_class[1],nature_class[1],eros_class[1]);
+    file_write(model_path+file_father(), models);
+    Sha1.print(models);
+    make_csv(&hashs, Sha1.result());
+
+    models = merge_hard_csv(info_class[2],head_class[2],body_class[2],parts_class[2]);
     Sha1.init();
     Sha1.print(models);
     make_csv(&hashs, Sha1.result());
     file_write(model_path+file_hard(), models);
-    models = "";
-    make_csv_text(&models, stat_class[2]->get_csv());
-    make_csv_text(&models, hole_class[2]->get_csv());
-    make_csv_text(&models, sense_class[2]->get_csv());
-    make_csv_text(&models, nature_class[2]->get_csv());
-    make_csv_text(&models, eros_class[2]->get_csv());
+
+    models = merge_soft_csv(stat_class[2],hole_class[2],sense_class[2],nature_class[2],eros_class[2]);
     Sha1.init();
     Sha1.print(models);
     make_csv(&hashs, Sha1.result());
     file_write(model_path+file_hash(), hashs);
     file_write(model_path+file_soft(), models);
+
     for(uint8_t index=0; index<model_gen; index++){
         delete info_class[index];
         delete head_class[index];
@@ -245,64 +308,87 @@ void read_model_breed(String model_path, BREED *breed_class){
     breed_class ->set_csv(csv_file);
 }
 
-void read_model_gene(String model_path,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
-    if(check_model_hash(model_path,0)){
-        String csv_file_str = file_read(model_path);
-        char *csv_file  = const_cast<char*>(csv_file_str.c_str());
-        char *class_text[9];
-        class_text[0] = strtok(csv_file, "\n");
-        for(uint8_t index=1; index<9; index++){
-            class_text[index] = strtok(0x00, "\n");
-        }
-        class_info  ->set_csv(class_text[0]);
-        class_head  ->set_csv(class_text[1]);
-        class_body  ->set_csv(class_text[2]);
-        class_parts ->set_csv(class_text[3]);
-        class_stat  ->set_csv(class_text[4]);
-        class_hole  ->set_csv(class_text[5]);
-        class_sense ->set_csv(class_text[6]);
-        class_nature->set_csv(class_text[7]);
-        class_eros  ->set_csv(class_text[8]);
-    }else{
-        Serial.println("nofile");
-    }
-}
 //////////여기 바꾸기///shot 하고 mother에 gene으로.
-void pregnant_baby(String mother_path, String father_path){
+void pregnant_baby(String mother_path, String father_path, bool gender){
     /***** HARDWARE *****/
-    INFO        *info_class[model_gen+1];
-    HEAD        *head_class[model_gen+1];
-    BODY        *body_class[model_gen+1];
-    EROGENOUS   *parts_class[model_gen+1];
+    INFO        *info_class[model_gen];
+    HEAD        *head_class[model_gen];
+    BODY        *body_class[model_gen];
+    EROGENOUS   *parts_class[model_gen];
     /***** SOFTWARE *****/
-    STAT        *stat_class[model_gen+1];
-    HOLE        *hole_class[model_gen+1];
-    SENSE       *sense_class[model_gen+1];
-    NATURE      *nature_class[model_gen+1];
-    EROS        *eros_class[model_gen+1];
-    read_model_gene(mother_path+file_mother(),info_class[0],head_class[0],body_class[0],parts_class[0],stat_class[0],hole_class[0],sense_class[0],nature_class[0],eros_class[0]);
-    read_model_gene(mother_path+file_father(),info_class[1],head_class[1],body_class[1],parts_class[1],stat_class[1],hole_class[1],sense_class[1],nature_class[1],eros_class[1]);
-    
-    head_class[3]->   meiosis(head_class[0],  head_class[1]);
-    body_class[3]->   meiosis(body_class[0],  body_class[1]);
-    parts_class[3]->  meiosis(parts_class[0], parts_class[1]);
-    stat_class[3]->   meiosis(stat_class[0],  stat_class[1]);
-    hole_class[3]->   meiosis(hole_class[0],  hole_class[1]);
-    sense_class[3]->  meiosis(sense_class[0], sense_class[1]);
-    nature_class[3]-> meiosis(nature_class[0],nature_class[1]);
-    eros_class[3]->   meiosis(eros_class[0],  eros_class[1]);
-    
-    read_model_gene(father_path+file_mother(),info_class[0],head_class[0],body_class[0],parts_class[0],stat_class[0],hole_class[0],sense_class[0],nature_class[0],eros_class[0]);
-    read_model_gene(father_path+file_father(),info_class[1],head_class[1],body_class[1],parts_class[1],stat_class[1],hole_class[1],sense_class[1],nature_class[1],eros_class[1]);
+    STAT        *stat_class[model_gen];
+    HOLE        *hole_class[model_gen];
+    SENSE       *sense_class[model_gen];
+    NATURE      *nature_class[model_gen];
+    EROS        *eros_class[model_gen];
 
-    head_class[model_gen]->   meiosis(head_class[0],  head_class[1]);
-    body_class[model_gen]->   meiosis(body_class[0],  body_class[1]);
-    parts_class[model_gen]->  meiosis(parts_class[0], parts_class[1]);
-    stat_class[model_gen]->   meiosis(stat_class[0],  stat_class[1]);
-    hole_class[model_gen]->   meiosis(hole_class[0],  hole_class[1]);
-    sense_class[model_gen]->  meiosis(sense_class[0], sense_class[1]);
-    nature_class[model_gen]-> meiosis(nature_class[0],nature_class[1]);
-    eros_class[model_gen]->   meiosis(eros_class[0],  eros_class[1]);
+    for(uint8_t index=0; index<model_gen; index++){
+        info_class[index]   = new INFO();
+        head_class[index]   = new HEAD();
+        body_class[index]   = new BODY();
+        parts_class[index]  = new EROGENOUS();
+        stat_class[index]   = new STAT();
+        hole_class[index]   = new HOLE();
+        sense_class[index]  = new SENSE();
+        nature_class[index] = new NATURE();
+        eros_class[index]   = new EROS();
+    }
+    
+    gene_meiosis(mother_path,info_class[0],head_class[0],body_class[0],parts_class[0],stat_class[0],hole_class[0],sense_class[0],nature_class[0],eros_class[0]);
+    gene_meiosis(father_path,info_class[1],head_class[1],body_class[1],parts_class[1],stat_class[1],hole_class[1],sense_class[1],nature_class[1],eros_class[1]);
+
+    info_class[2]-> generate(gender, true);
+    info_class[2]-> set_family(info_class[0]->get_family());
+
+    head_class[2]-> set_gender(info_class[2]->get_gender());
+    body_class[2]-> set_gender(info_class[2]->get_gender());
+    parts_class[2]->set_gender(info_class[2]->get_gender());
+
+    head_class[2]-> blend(head_class[0],head_class[1]);
+    body_class[2]-> blend(body_class[0],body_class[1]);
+    parts_class[2]->blend(parts_class[0],parts_class[1]);
+    stat_class[2]-> blend(stat_class[0],stat_class[1]);
+    hole_class[2]-> blend(hole_class[0],hole_class[1]);
+    sense_class[2]->blend(sense_class[0],sense_class[1]);
+    nature_class[2]->blend(nature_class[0],nature_class[1]);
+    eros_class[2]-> blend(eros_class[0],eros_class[1]);
+
+    String model_path = mother_path + path_womb();
+    String hashs  = "";
+    String models = merge_parent_csv(info_class[0],head_class[0],body_class[0],parts_class[0],stat_class[0],hole_class[0],sense_class[0],nature_class[0],eros_class[0]);
+    file_write(model_path+file_mother(), models);
+    Sha1.init();
+    Sha1.print(models);
+    
+    models = merge_parent_csv(info_class[1],head_class[1],body_class[1],parts_class[1],stat_class[1],hole_class[1],sense_class[1],nature_class[1],eros_class[1]);
+    file_write(model_path+file_father(), models);
+    Sha1.print(models);
+    make_csv(&hashs, Sha1.result());
+
+    models = merge_hard_csv(info_class[2],head_class[2],body_class[2],parts_class[2]);
+    Sha1.init();
+    Sha1.print(models);
+    make_csv(&hashs, Sha1.result());
+    file_write(model_path+file_hard(), models);
+
+    models = merge_soft_csv(stat_class[2],hole_class[2],sense_class[2],nature_class[2],eros_class[2]);
+    Sha1.init();
+    Sha1.print(models);
+    make_csv(&hashs, Sha1.result());
+    file_write(model_path+file_hash(), hashs);
+    file_write(model_path+file_soft(), models);
+
+    for(uint8_t index=0; index<model_gen; index++){
+        delete info_class[index];
+        delete head_class[index];
+        delete body_class[index];
+        delete parts_class[index];
+        delete stat_class[index];
+        delete hole_class[index];
+        delete sense_class[index];
+        delete nature_class[index];
+        delete eros_class[index];
+    }
 }
 
 /*

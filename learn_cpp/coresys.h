@@ -9,7 +9,8 @@
 #include "model_soft.h"
 #include "model_status.h"
 
-#define model_gen 3
+#define parents_gen 2
+#define model_gen   3
 
 void new_model_body(String model_path, bool gender);
 void new_model_status(String model_path, bool gender);
@@ -22,4 +23,4 @@ void read_model_mens(String model_path,MENS *mens_class);
 void read_model_feel(String model_path,CURRENT *feel_class);
 void read_model_breed(String model_path,BREED *breed_class);
 
-void pregnant_baby(String father_path, String mother_path);
+void pregnant_baby(String father_path, String mother_path, bool gender);
