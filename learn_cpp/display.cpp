@@ -80,6 +80,17 @@ void display_continue(){
     Serial.println(response);
 };
 /*******************************************************/
+void display_game_help(){
+    paging();
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(scene_help_game); index++){
+        response += char(pgm_read_byte_near(scene_help_game+index));
+    }
+    spacebar_option(true,2,word_yes());
+    spacebar_option(true,1,word_no());
+    Serial.println();
+};
+/*******************************************************/
 void display_hour(uint8_t *clock_hours){
     int8_t index_start = 0;
     int8_t index_end   = 83;

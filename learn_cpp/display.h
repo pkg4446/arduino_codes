@@ -20,6 +20,8 @@ void display_prologue(String name, bool gender);
 /*************** Display ***************/
 void display_continue();
 /*************** Display ***************/
+void display_game_help();
+/*************** Display ***************/
 void cancle_cmd(bool line_break);
 /*************** Display ***************/
 void display_edu();
