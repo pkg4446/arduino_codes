@@ -63,7 +63,7 @@ void dir_remove(String path){
       uint16_t file_last  = 0;
       for(uint16_t index_d=dir_last; index_d>0; index_d--){
         now_path  = path+"/"+ dir_index(path,true,index_d);
-        file_last = dir_list(now_path,false,false)
+        file_last = dir_list(now_path,false,false);
         for(uint16_t index_f=file_last; index_f>0; index_f--){
           file_remove(now_path+"/"+ dir_index(path,false,index_f));
         }
