@@ -37,13 +37,22 @@ void display_boot(){
     Serial.println();
 };
 /*******************************************************/
+void display_help_cmd(){
+    paging();
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(scene_help_cmd); index++){
+        response += char(pgm_read_byte_near(scene_help_cmd+index));
+    }
+    Serial.println(response);
+};
+/*******************************************************/
 void display_make_assist(){
     paging();
     String response = "";
     for(uint16_t index=0; index<strlen_P(scene_make_assist); index++){
         response += char(pgm_read_byte_near(scene_make_assist+index));
     }
-    Serial.print(response);
+    Serial.println(response);
 };
 /*******************************************************/
 void display_make_user(){
@@ -51,15 +60,6 @@ void display_make_user(){
     String response = "";
     for(uint16_t index=0; index<strlen_P(scene_make_user); index++){
         response += char(pgm_read_byte_near(scene_make_user+index));
-    }
-    Serial.print(response);
-};
-/*******************************************************/
-void display_help_cmd(){
-    paging();
-    String response = "";
-    for(uint16_t index=0; index<strlen_P(scene_help_cmd); index++){
-        response += char(pgm_read_byte_near(scene_help_cmd+index));
     }
     Serial.println(response);
 };
