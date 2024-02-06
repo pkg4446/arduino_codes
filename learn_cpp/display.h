@@ -12,6 +12,10 @@ void display_model_err();
 /*************** Display ***************/
 void display_boot();
 /*************** Display ***************/
+void display_make_assist();
+/*************** Display ***************/
+void display_make_user();
+/*************** Display ***************/
 void display_help_cmd();
 /*************** Display ***************/
 void display_hour(uint8_t *clock_hours);

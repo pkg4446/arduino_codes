@@ -188,12 +188,14 @@ void setup() {
   if(scene_number==2 || dir_list(path_assist(),false,false) < 8){
     new_model_body(path_assist(),false);
     new_model_status(path_assist(),false);
+    display_make_assist();
   }
   if(!exisits_check(path_avatar())) dir_make(path_avatar());
   if(scene_number==2 || dir_list(path_avatar(),false,false) < 8){
     bool gender = random(2);
     new_model_body(path_avatar(),gender);
     new_model_status(path_avatar(),gender);
+    display_make_user();
     scene_number = 2;
   }
   //////////
