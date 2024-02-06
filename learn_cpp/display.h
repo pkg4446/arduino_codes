@@ -16,7 +16,7 @@ void display_help_cmd();
 /*************** Display ***************/
 void display_hour(uint8_t *clock_hours);
 /*************** Display ***************/
-void display_prologue(String name);
+void display_prologue(String name, bool gender);
 /*************** Display ***************/
 void display_continue();
 /*************** Display ***************/

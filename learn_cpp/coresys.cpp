@@ -192,7 +192,8 @@ bool check_model_hash(String model_path, uint8_t hash_num){
         Sha1.print(csv_file_str);
         String hashs = Sha1.result();
         response = (hashs == hash_value[hash_num]);
-    }else{
+    }
+    if(!response){
         model_kill(model_path);
         display_model_err();
     }

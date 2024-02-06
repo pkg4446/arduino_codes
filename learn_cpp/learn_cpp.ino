@@ -206,7 +206,7 @@ void setup() {
   */
   
   if(scene_number == 2){
-    display_prologue(info_class->get_family() + info_class->get_name());
+    display_prologue(info_class->get_family() + info_class->get_name(), info_class->get_gender());
     scene_number = 100;
   }else{
     display_continue();

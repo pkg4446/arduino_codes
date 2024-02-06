@@ -5,8 +5,9 @@ const PROGMEM char scene_help_cmd[]     = "***** help *****\nhelp  this text\nls
 const PROGMEM char scene_boot[]         = "새롭게 시작 하시겠습니까?";
 const PROGMEM char scene_boot_cmd[]     = "Command Prompt";
 /*************** Display ***************/
-const PROGMEM char scene_prologue1[]    = "\"처음 뵙사옵니다.\"\n\n\"?!\"\n\n낯선 목소리에 화들짝 놀라 몸을 일으키니\n선명한 어둠속에 누군가 나를 바라보고 있다.\n\n소녀, 마왕님을 소환한 ";
-const PROGMEM char scene_prologue2[]    = "(이)라 하옵니다.";
+const PROGMEM char scene_prologue1[]    = "\"처음 뵙사옵니다.\"\n\n\"?!\"\n\n낯선 목소리에 화들짝 놀라 몸을 일으키니,\n선명한 어둠속에서 누군가 나를 바라보고 있다.\n\n소녀, 마왕님을 소환한 ";
+const PROGMEM char scene_prologue2[]    = "(이)라 하옵니다.\n\n\"...\"\n\n당황스러움으로 굳어있는 나에게,\n그녀는 나를 소환한 경위를 설명하기 시작했다.\n\n그녀를 도와 이곳 던전의 중심부,\n거울처럼 생긴 던전의 핵을 지키는 것.\n\n그것이 그녀가 나를 소환한 이유였다.\n\n던전의 핵에는 처음보는 ";
+const PROGMEM char scene_prologue3[]    = "가 서 있다.\n\n그것은 마왕으로 소환된 나의 모습이었다.";
 /*************** Display ***************/
 const PROGMEM char scene_help_game[]    = "게임 설명을 듣습니까?";
 /*************** Display ***************/

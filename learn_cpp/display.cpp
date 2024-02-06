@@ -46,7 +46,7 @@ void display_help_cmd(){
     Serial.println(response);
 };
 /*******************************************************/
-void display_prologue(String name){
+void display_prologue(String name, bool gender){
     paging();
     String response = "";
     for(uint16_t index=0; index<strlen_P(scene_prologue1); index++){
@@ -57,6 +57,16 @@ void display_prologue(String name){
     response = "";
     for(uint16_t index=0; index<strlen_P(scene_prologue2); index++){
         response += char(pgm_read_byte_near(scene_prologue2+index));
+    }
+    Serial.print(response);
+
+    if(gender)  response = word_male();
+    else        response = word_female();
+    Serial.print(response);
+    
+    response = "";
+    for(uint16_t index=0; index<strlen_P(scene_prologue3); index++){
+        response += char(pgm_read_byte_near(scene_prologue3+index));
     }
     Serial.print(response);
 };
