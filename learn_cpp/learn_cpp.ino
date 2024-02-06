@@ -228,6 +228,8 @@ void setup() {
     scene_number = COMMAND_MAIN;
   }
 
+  //pregnant_baby(path_assist(),path_avatar(),random(2));
+
   time_clock = millis();
   //display_newday(&calendar,info_class,stat_class,mens_class,current_class);
   display_scene();

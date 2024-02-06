@@ -342,6 +342,7 @@ void pregnant_baby(String mother_path, String father_path, bool gender){
     eros_class[2]-> blend(eros_class[0],eros_class[1]);
 
     String model_path = mother_path + path_womb();
+    dir_make(model_path);
     String hashs  = "";
     String models = merge_parent_csv(info_class[0],head_class[0],body_class[0],parts_class[0],stat_class[0],hole_class[0],sense_class[0],nature_class[0],eros_class[0]);
     file_write(model_path+file_mother(), models);
