@@ -58,6 +58,34 @@ void dir_remove(String path){
     #if defined(ESP32)
       removeDir(SD,path);
     #else
+      uint16_t dir_last = dir_list(path,true,false);
+      if(dir_last>0){
+        for(uint16_t index_d=dir_last; index_d>0; index_d--){
+          String now_path = path+"/"+ dir_index(path,true,index_d);
+          dir_remove(now_path);
+        }
+      }
+      uint16_t file_last = dir_list(path,false,false);
+      for(uint16_t index=file_last; index>0; index--){
+        file_remove(path +"/"+ dir_index(path,false,index));
+      }
+      SD.rmdir(path);
+    #endif
+    if(exisits_check(path)){
+      String response = "";
+      for(uint16_t index=0; index<strlen_P(sdcard_option1); index++){
+          response += char(pgm_read_byte_near(sdcard_option1+index));
+      }
+      Serial.println(response);
+    }
+  }
+}
+/*
+void dir_remove(String path){
+  if(exisits_check(path)){
+    #if defined(ESP32)
+      removeDir(SD,path);
+    #else
       uint16_t dir_last   = dir_list(path,true,false);
       String   now_path   = "";
       uint16_t file_last  = 0;
@@ -84,7 +112,7 @@ void dir_remove(String path){
     }
   }
 }
-
+*/
 uint16_t dir_list(String path, bool type, bool show) {
   uint16_t type_index = 0;
   File root = SD.open(path);
