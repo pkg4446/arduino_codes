@@ -4,7 +4,7 @@
 #include <SD.h>
 
 const PROGMEM char check_sdcard1[] = "SD check...";
-const PROGMEM char check_sdcard2[] = "SD Card Mount Failed";
+const PROGMEM char check_sdcard2[] = "SD Card Mount Failed. retrying...";
 const PROGMEM char check_sdcard3[] = "SD Card is OK";
 
 void    sd_init();

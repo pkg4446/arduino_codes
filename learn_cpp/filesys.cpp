@@ -27,16 +27,20 @@ void sd_init() {
   Serial.println(check_sd);
 
   check_sd = "";
-  if (!sd_flage) {
-    for(uint16_t index=0; index<strlen_P(check_sdcard2); index++){
-        check_sd += char(pgm_read_byte_near(check_sdcard2+index));
-    }
-  }else{
+  if (sd_flage) {
     for(uint16_t index=0; index<strlen_P(check_sdcard3); index++){
         check_sd += char(pgm_read_byte_near(check_sdcard3+index));
     }
   }
   Serial.println(check_sd);
+  while (!SD.begin(chipSelect))
+  {
+    for(uint16_t index=0; index<strlen_P(check_sdcard2); index++){
+        Serial.print(char(pgm_read_byte_near(check_sdcard2+index)));
+        delay(50);
+    }
+    Serial.println();
+  }
 }
 
 bool exisits_check(String path){
@@ -55,20 +59,19 @@ void dir_make(String path){
 
 void dir_remove(String path){
   if(exisits_check(path)){
+    uint16_t dir_last = dir_list(path,true,false);
+    if(dir_last>0){
+      for(uint16_t index_d=dir_last; index_d>0; index_d--){
+        dir_remove(path+"/"+ dir_index(path,true,index_d));
+      }
+    }
+    uint16_t file_last = dir_list(path,false,false);
+    for(uint16_t index=file_last; index>0; index--){
+      file_remove(path +"/"+ dir_index(path,false,index));
+    }
     #if defined(ESP32)
       removeDir(SD,path);
     #else
-      uint16_t dir_last = dir_list(path,true,false);
-      if(dir_last>0){
-        for(uint16_t index_d=dir_last; index_d>0; index_d--){
-          String now_path = path+"/"+ dir_index(path,true,index_d);
-          dir_remove(now_path);
-        }
-      }
-      uint16_t file_last = dir_list(path,false,false);
-      for(uint16_t index=file_last; index>0; index--){
-        file_remove(path +"/"+ dir_index(path,false,index));
-      }
       SD.rmdir(path);
     #endif
     if(exisits_check(path)){

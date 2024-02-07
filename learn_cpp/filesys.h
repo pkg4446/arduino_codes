@@ -4,7 +4,7 @@
 #include <SD.h>
 
 const PROGMEM char check_sdcard1[]  = "SD check...";
-const PROGMEM char check_sdcard2[]  = "SD Card 가 없네요! 카드 삽입 후 재부팅 해주세요!";
+const PROGMEM char check_sdcard2[]  = "SD Card 가 없네요! 카드를 삽입 해주세요!";
 const PROGMEM char check_sdcard3[]  = "시스템을 시작합니다.";
 const PROGMEM char sdcard_option1[] = "비어있는 폴더가 아닙니다.";
 
