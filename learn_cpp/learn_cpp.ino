@@ -117,8 +117,6 @@ void command_progress(String recieve){
     }else if(command_buf[0]=='e' && command_buf[1]=='x' && command_buf[2]=='i' && command_buf[3]=='t'){
       dos_mode = false;
       display_boot();
-    }else{
-      Serial.println("wrong command!");
     }
   }else if(scene_number == 0){
     uint8_t scene_command = recieve.toInt();
