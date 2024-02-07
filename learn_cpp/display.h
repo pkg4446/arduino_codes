@@ -1,10 +1,8 @@
 #pragma once
 #include <arduino.h>
-
-#include "./system/define.h"
 #include "./progmem/interfaces.h"
 #include "./progmem/scene.h"
-
+#include "define.h"
 #include "word.h"
 
 /*************** Display ***************/

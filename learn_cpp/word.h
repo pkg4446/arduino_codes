@@ -1,8 +1,6 @@
 #pragma once
 #include <arduino.h>
-
 #include "./progmem/words.h"
-
 /*************** Word ***************/
 String word_yes();
 /*************** Word ***************/

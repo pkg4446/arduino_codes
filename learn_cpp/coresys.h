@@ -1,13 +1,13 @@
 #pragma once
 #include <arduino.h>
+#include "model_hard.h"
+#include "model_soft.h"
+#include "model_status.h"
+
 #include "filesys.h"
 #include "hash.h"
 #include "display.h"
 #include "path_string.h"
-
-#include "model_hard.h"
-#include "model_soft.h"
-#include "model_status.h"
 
 #define parents_gen 2
 #define model_gen   3
