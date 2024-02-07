@@ -1,5 +1,5 @@
 #pragma once
-#include "arduino.h"
+#include <arduino.h>
 #include "./progmem/data_name.h"
 /*************** NAME ***************/
 String new_family();

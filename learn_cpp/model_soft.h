@@ -1,5 +1,5 @@
 #pragma once
-#include "arduino.h"
+#include <arduino.h>
 #include "heredity.h"
 #include "utility.h"
 

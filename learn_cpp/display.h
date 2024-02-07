@@ -1,9 +1,11 @@
 #pragma once
-#include "arduino.h"
+#include <arduino.h>
 
-#include "word.h"
+#include "./system/define.h"
 #include "./progmem/interfaces.h"
 #include "./progmem/scene.h"
+
+#include "word.h"
 
 /*************** Display ***************/
 void display_cmd();

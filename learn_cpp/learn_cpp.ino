@@ -4,7 +4,7 @@
 #include "model_soft.h"
 #include "model_status.h"
 #include "enum.h"
-#include "define.h"
+#include "./system/define.h"
 #include "utility.h"
 #include "funtions.h"
 

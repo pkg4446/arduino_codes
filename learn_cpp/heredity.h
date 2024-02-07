@@ -1,5 +1,5 @@
 #pragma once
-#include "arduino.h"
+#include <arduino.h>
 
 uint16_t change_gender(uint16_t ex_average, uint16_t average, uint16_t standard_deviation, uint16_t value, uint16_t ratio);
 String   mutation_string(String mother, String father);

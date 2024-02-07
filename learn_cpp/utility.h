@@ -1,6 +1,6 @@
 #pragma once
-#include "arduino.h"
-#include "define.h"
+#include <arduino.h>
+#define LINE_NUM    90
 
 void make_csv(String *csv_text, String add_data);
 void make_csv_text(String *csv_text, String add_data);

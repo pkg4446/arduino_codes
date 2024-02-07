@@ -4,8 +4,6 @@
 #define COMMAND_LENGTH      32
 #define ONE_HOUR            60000
 
-#define LINE_NUM            90
-
 #define COMMAND_YES         2
 #define COMMAND_NO          1
 #define COMMAND_CANCLE      99
