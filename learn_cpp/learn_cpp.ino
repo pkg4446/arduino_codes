@@ -42,10 +42,12 @@ read_model_breed(path_assist(),breed_class);
 */
 /***** Variable *****/
 uint8_t   aggro_point = 0;
+uint32_t  play_time   = 0;
 
-uint32_t  calendar    = 1;
-uint8_t   hour_count  = 6;
-uint8_t   season      = 0; // month = rand(12);
+uint16_t year_count   = 0; // year  = rand(1001);
+uint8_t month_count   = 1; // month = rand(1,13);
+uint8_t day_count     = 1; // day   = rand(1,31);
+uint8_t hour_count    = 0;
 
 unsigned long time_clock  = 0UL;
 bool          time_stop   = false;
@@ -63,12 +65,6 @@ bool time_stream(unsigned long millisec){
     response = true;
   }
   return response;
-}
-/***** funtion scene ****/
-void display_scene(){
-  if(scene_number == COMMAND_MAIN)            display_cmd_main();
-  if(scene_number == COMMAND_EDUCATION)       display_edu();
-  else if(scene_number == COMMAND_INFOMATION) display_info();
 }
 /***** funtion command ****/
 char command_buf[COMMAND_LENGTH] = {0x00,};
@@ -126,48 +122,48 @@ void command_progress(String recieve){
     }
   }else if(scene_number == 0){
     uint8_t scene_command = recieve.toInt();
-    if(scene_command == 1 || scene_command == 2) scene_number = scene_command;
-    else if(scene_command == 99){
+    if(scene_command == COMMAND_YES || scene_command == COMMAND_NO) scene_number = scene_command;
+    else if(scene_command == COMMAND_CANCLE){
       dos_mode = true;
       display_help_cmd();
     }
-  }else if(scene_number == 1){
+  }else if(scene_number == COMMAND_MAIN){
     uint8_t scene_command = recieve.toInt();
     bool select_check = false;
-    if(scene_command == COMMAND_EDUCATION || scene_command == COMMAND_INFOMATION){
+    if(scene_command>COMMAND_MAIN && scene_command<=COMMAND_TRAINING){
       scene_number = scene_command;
-    }else{
-
+      play_main(&scene_number);
     }
   }
-  display_scene();
 }
 /***** funtion routine ****/
-bool routine_hours(){
+bool routine_hour(){
   bool response = false;
   if(time_stream(millis())){
+    play_time++;
     if(++hour_count > 23){
       hour_count = 0;
       response = true;
-    }else{
-      //time spand
-      display_hour(&hour_count);
     }
-    //here
+    //hour routine is here
+    display_hour(&hour_count);
   }
   return response;
 }
-
-void routine_days(){
-  if(routine_hours()){
-    calendar ++;
-    for(uint8_t index=0; index<CLASS_ARRAY; index++){
-      //routines_day(mens_class[index],current_class[index]);
+void routine_day(){
+  if(routine_hour()){
+    if(++day_count > 30){
+      day_count = 1;
+      if(++month_count > 12){
+        month_count = 1;
+        year_count++;
+      }
     }
-    //display_newday(&calendar,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
-    display_scene();
+    //routines_day(mens_class[index],current_class[index]);
+    //display_newday(&month_count,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
   }
 }
+
 /***** funtions ************/
 /***** CORE ****************/
 /***** setup ***************/
@@ -187,7 +183,7 @@ void setup() {
     if (Serial.available()) get_command(Serial.read());
   }
   if(!exisits_check(path_assist())) dir_make(path_assist());
-  if(scene_number==2 || dir_list(path_assist(),false,false) < 8){
+  if(scene_number==COMMAND_YES || dir_list(path_assist(),false,false) < 8){
     new_model(path_assist(),false);
     display_make_assist();
   }else{
@@ -197,11 +193,11 @@ void setup() {
     check_model_hash(path_assist(),2);
   }
   if(!exisits_check(path_avatar())) dir_make(path_avatar());
-  if(scene_number==2 || dir_list(path_avatar(),false,false) < 8){
+  if(scene_number==COMMAND_YES || dir_list(path_avatar(),false,false) < 8){
     bool gender = random(2);
     new_model(path_avatar(),gender);
     display_make_user();
-    scene_number = 2;
+    scene_number = COMMAND_YES;
   }else{
     display_hash_check();
     check_model_hash(path_avatar(),0);
@@ -209,7 +205,7 @@ void setup() {
     check_model_hash(path_avatar(),2);
   }
 
-  if(scene_number == 2){
+  if(scene_number == COMMAND_YES){
     prologue_txt();
     scene_number = 0;
     display_game_help();
@@ -217,7 +213,7 @@ void setup() {
     {
       if (Serial.available()) get_command(Serial.read());
     }
-    if(scene_number == 2){
+    if(scene_number == COMMAND_YES){
       Serial.println("설명");
     }
     scene_number = COMMAND_MAIN;
@@ -230,12 +226,12 @@ void setup() {
   //dir_move(path_assist()+"/womb","/baby");
 
   time_clock = millis();
-  //display_newday(&calendar,info_class,stat_class,mens_class,current_class);
-  display_scene();
+  //display_newday(&month_count,info_class,stat_class,mens_class,current_class);
+  play_main(&scene_number);
 }
 /***** loop ****************/
 void loop() {
   if (Serial.available()) get_command(Serial.read());
-  routine_days();
+  routine_day();
 }
 /***** CORE ****************/

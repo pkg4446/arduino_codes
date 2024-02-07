@@ -6,11 +6,20 @@ String word_yes(){
         response += char(pgm_read_byte_near(word_yes_str+index));
     }
     return response;
-};/*******************************************************/
+};
+/*******************************************************/
 String word_no(){
     String response = "";
     for(uint16_t index=0; index<strlen_P(word_no_str); index++){
         response += char(pgm_read_byte_near(word_no_str+index));
+    }
+    return response;
+};
+/*******************************************************/
+String word_cancle(){
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(word_cancle_str); index++){
+        response += char(pgm_read_byte_near(word_cancle_str+index));
     }
     return response;
 };

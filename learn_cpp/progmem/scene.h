@@ -30,7 +30,5 @@ const PROGMEM char scene_main_opt4[]    = "대륙침공";
 const PROGMEM char scene_main_opt5[]    = "정보확인";
 const PROGMEM char scene_main_opt6[]    = "개인훈련";
 /*************** Display ***************/
-const PROGMEM char scene_edu[]          = "교육합니다.";
-/*************** Display ***************/
 const PROGMEM char scene_info[]         = "정보를 확인합니다.";
 /*************** Display ***************/

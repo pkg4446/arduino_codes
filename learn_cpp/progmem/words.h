@@ -7,3 +7,5 @@ const PROGMEM char word_female_str[]    = "여자";
 const PROGMEM char word_yes_str[]       = "예";
 /*************** Word ***************/
 const PROGMEM char word_no_str[]        = "아니오";
+/*************** Word ***************/
+const PROGMEM char word_cancle_str[]    = "취소";

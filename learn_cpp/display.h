@@ -32,6 +32,4 @@ void cancle_cmd(bool line_break);
 /*************** Display ***************/
 void display_cmd_main();
 /*************** Display ***************/
-void display_edu();
-/*************** Display ***************/
 void display_info();

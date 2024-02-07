@@ -8,6 +8,8 @@ String word_yes();
 /*************** Word ***************/
 String word_no();
 /*************** Word ***************/
+String word_cancle();
+/*************** Word ***************/
 String word_male();
 /*************** Word ***************/
 String word_female();

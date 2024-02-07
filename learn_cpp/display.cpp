@@ -24,14 +24,14 @@ void display_boot(){
     }
     Serial.println();
 
-    spacebar_option(true,2,word_yes());
-    spacebar_option(true,1,word_no());
+    spacebar_option(true,COMMAND_YES,word_yes());
+    spacebar_option(true,COMMAND_NO,word_no());
 
     String response = "";
     for(uint16_t index=0; index<strlen_P(scene_boot_cmd); index++){
         response += char(pgm_read_byte_near(scene_boot_cmd+index));
     }
-    spacebar_option(false,99,response);
+    spacebar_option(false,COMMAND_CANCLE,response);
     Serial.println();
 };
 /*******************************************************/
@@ -103,8 +103,8 @@ void display_game_help(){
     for(uint16_t index=0; index<strlen_P(scene_help_game); index++){
         Serial.print(char(pgm_read_byte_near(scene_help_game+index)));
     }
-    spacebar_option(true,2,word_yes());
-    spacebar_option(true,1,word_no());
+    spacebar_option(true,COMMAND_YES,word_yes());
+    spacebar_option(true,COMMAND_NO,word_no());
     Serial.println();
 };
 /*******************************************************/
@@ -134,7 +134,7 @@ void display_hour(uint8_t *clock_hours){
 /*******************************************************/
 void cancle_cmd(bool line_break){
     if(line_break)  Serial.println();
-    spacebar_option(true,COMMAND_CANCLE,"취소");
+    spacebar_option(true,COMMAND_CANCLE,"word_cancle()");
     Serial.println();
 };
 /*******************************************************/
@@ -149,41 +149,33 @@ void display_cmd_main(){
     for(uint16_t index=0; index<strlen_P(scene_main_opt1); index++){
         response += char(pgm_read_byte_near(scene_main_opt1+index));
     }
-    spacebar_option(true,1,response);
+    spacebar_option(true,COMMAND_RESOURCE,response);
     response = "";
     for(uint16_t index=0; index<strlen_P(scene_main_opt2); index++){
         response += char(pgm_read_byte_near(scene_main_opt2+index));
     }
-    spacebar_option(true,2,response);
+    spacebar_option(true,COMMAND_DUNGEON,response);
     response = "";
     for(uint16_t index=0; index<strlen_P(scene_main_opt3); index++){
         response += char(pgm_read_byte_near(scene_main_opt3+index));
     }
-    spacebar_option(true,3,response);
+    spacebar_option(true,COMMAND_STORE,response);
     Serial.println();
     response = "";
     for(uint16_t index=0; index<strlen_P(scene_main_opt4); index++){
         response += char(pgm_read_byte_near(scene_main_opt4+index));
     }
-    spacebar_option(true,4,response);
+    spacebar_option(true,COMMAND_INVASION,response);
     response = "";
     for(uint16_t index=0; index<strlen_P(scene_main_opt5); index++){
         response += char(pgm_read_byte_near(scene_main_opt5+index));
     }
-    spacebar_option(true,5,response);
+    spacebar_option(true,COMMAND_INFOMATION,response);
     response = "";
     for(uint16_t index=0; index<strlen_P(scene_main_opt6); index++){
         response += char(pgm_read_byte_near(scene_main_opt6+index));
     }
-    spacebar_option(true,6,response);
-    Serial.println();
-};
-/*******************************************************/
-void display_edu(){
-    paging();
-    for(uint16_t index=0; index<strlen_P(scene_edu); index++){
-        Serial.print(char(pgm_read_byte_near(scene_edu+index)));
-    }
+    spacebar_option(true,COMMAND_TRAINING,response);
     Serial.println();
 };
 /*******************************************************/
