@@ -1,35 +1,33 @@
 #include "display.h"
 #include "utility.h"
 
+void type_dly(){
+    delay(10);
+}
 /*******************************************************/
 void display_cmd(){
-    String response = "";
     for(uint16_t index=0; index<strlen_P(interface_cmd); index++){
-        response += char(pgm_read_byte_near(interface_cmd+index));
+       Serial.print(char(pgm_read_byte_near(interface_cmd+index)));
     }
-    Serial.print(response);
 };
 /*******************************************************/
 void display_model_err(){
-    String response = "";
     for(uint16_t index=0; index<strlen_P(interface_model_err); index++){
-        response += char(pgm_read_byte_near(interface_model_err+index));
+        Serial.print(char(pgm_read_byte_near(interface_model_err+index)));
     }
-    Serial.print(response);
 };
 /*******************************************************/
 void display_boot(){
     paging();
-    String response = "";
     for(uint16_t index=0; index<strlen_P(scene_boot); index++){
-        response += char(pgm_read_byte_near(scene_boot+index));
+        Serial.print(char(pgm_read_byte_near(scene_boot+index)));
     }
-    Serial.println(response);
+    Serial.println();
 
     spacebar_option(true,2,word_yes());
     spacebar_option(true,1,word_no());
 
-    response = "";
+    String response = "";
     for(uint16_t index=0; index<strlen_P(scene_boot_cmd); index++){
         response += char(pgm_read_byte_near(scene_boot_cmd+index));
     }
@@ -39,81 +37,72 @@ void display_boot(){
 /*******************************************************/
 void display_hash_check(){
     paging();
-    String response = "";
     for(uint16_t index=0; index<strlen_P(scene_hash_check); index++){
-        response += char(pgm_read_byte_near(scene_hash_check+index));
+        Serial.print(char(pgm_read_byte_near(scene_hash_check+index)));
     }
-    Serial.println(response);
+    Serial.println();
 };
 /*******************************************************/
 void display_help_cmd(){
     paging();
-    String response = "";
     for(uint16_t index=0; index<strlen_P(scene_help_cmd); index++){
-        response += char(pgm_read_byte_near(scene_help_cmd+index));
+        Serial.print(char(pgm_read_byte_near(scene_help_cmd+index)));
     }
-    Serial.println(response);
+    Serial.println();
 };
 /*******************************************************/
 void display_make_assist(){
     paging();
-    String response = "";
     for(uint16_t index=0; index<strlen_P(scene_make_assist); index++){
-        response += char(pgm_read_byte_near(scene_make_assist+index));
+        Serial.print(char(pgm_read_byte_near(scene_make_assist+index)));
     }
-    Serial.println(response);
+    Serial.println();
 };
 /*******************************************************/
 void display_make_user(){
     paging();
-    String response = "";
     for(uint16_t index=0; index<strlen_P(scene_make_user); index++){
-        response += char(pgm_read_byte_near(scene_make_user+index));
+        Serial.print(char(pgm_read_byte_near(scene_make_user+index)));
     }
-    Serial.println(response);
+    Serial.println();
 };
 /*******************************************************/
 void display_prologue(String name, bool gender){
     paging();
-    String response = "";
     for(uint16_t index=0; index<strlen_P(scene_prologue1); index++){
-        response += char(pgm_read_byte_near(scene_prologue1+index));
+        Serial.print(char(pgm_read_byte_near(scene_prologue1+index)));
+        type_dly();
     }
-    Serial.print(response);
     Serial.print(name);
-    response = "";
     for(uint16_t index=0; index<strlen_P(scene_prologue2); index++){
-        response += char(pgm_read_byte_near(scene_prologue2+index));
+        Serial.print(char(pgm_read_byte_near(scene_prologue2+index)));
+        type_dly();
     }
-    Serial.print(response);
-
+    String response = "";
     if(gender)  response = word_male();
     else        response = word_female();
     Serial.print(response);
     
-    response = "";
     for(uint16_t index=0; index<strlen_P(scene_prologue3); index++){
-        response += char(pgm_read_byte_near(scene_prologue3+index));
+        Serial.print(char(pgm_read_byte_near(scene_prologue3+index)));
+        type_dly();
     }
-    Serial.println(response);
+    Serial.println();
 };
 /*******************************************************/
 void display_continue(){
     paging();
-    String response = "";
     for(uint16_t index=0; index<strlen_P(scene_continue); index++){
-        response += char(pgm_read_byte_near(scene_continue+index));
+        Serial.print(char(pgm_read_byte_near(scene_continue+index)));
     }
-    Serial.println(response);
+    Serial.println();
 };
 /*******************************************************/
 void display_game_help(){
     paging();
-    String response = "";
     for(uint16_t index=0; index<strlen_P(scene_help_game); index++){
-        response += char(pgm_read_byte_near(scene_help_game+index));
+        Serial.print(char(pgm_read_byte_near(scene_help_game+index)));
     }
-    Serial.println(response);
     spacebar_option(true,2,word_yes());
     spacebar_option(true,1,word_no());
     Serial.println();
@@ -151,13 +140,11 @@ void cancle_cmd(bool line_break){
 /*******************************************************/
 void display_cmd_main(){
     paging();
-    String response = "";
     for(uint16_t index=0; index<strlen_P(scene_main_cmd); index++){
-        response += char(pgm_read_byte_near(scene_main_cmd+index));
+        Serial.print(char(pgm_read_byte_near(scene_main_cmd+index)));
     }
-    Serial.println(response);
 
-    response = "";
+    String response = "";
     for(uint16_t index=0; index<strlen_P(scene_main_opt1); index++){
         response += char(pgm_read_byte_near(scene_main_opt1+index));
     }
@@ -193,18 +180,16 @@ void display_cmd_main(){
 /*******************************************************/
 void display_edu(){
     paging();
-    String response = "";
     for(uint16_t index=0; index<strlen_P(scene_edu); index++){
-        response += char(pgm_read_byte_near(scene_edu+index));
+        Serial.print(char(pgm_read_byte_near(scene_edu+index)));
     }
-    Serial.println(response);
+    Serial.println();
 };
 /*******************************************************/
 void display_info(){
     paging();
-    String response = "";
     for(uint16_t index=0; index<strlen_P(scene_info); index++){
-        response += char(pgm_read_byte_near(scene_info+index));
+        Serial.print(char(pgm_read_byte_near(scene_info+index)));
     }
-    Serial.println(response);
+    Serial.println();
 };
