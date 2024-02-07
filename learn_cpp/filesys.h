@@ -15,6 +15,7 @@ String   dir_index(String path, bool type, uint16_t dir_index);
 uint16_t dir_list(String path, bool type, bool show);
 void     dir_make(String path);
 void     dir_remove(String path);
+void     dir_move(String path, String target);
 
 String   file_read(String path);
 void     file_write(String path, String contents);

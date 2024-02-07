@@ -54,6 +54,7 @@ void dir_make(String path){
       char *path_root  = const_cast<char*>(path.c_str());
       String make_dir  = "";
       String dir_path  = strtok(path_root, "/");
+      Serial.println(dir_path);
       while(dir_path != ""){
         make_dir += "/" + dir_path;
         dir_path = strtok(0x00, "/");
@@ -76,6 +77,38 @@ void dir_remove(String path){
     uint16_t file_last = dir_list(path,false,false);
     for(uint16_t index=file_last; index>0; index--){
       file_remove(path +"/"+ dir_index(path,false,index));
+    }
+    #if defined(ESP32)
+      removeDir(SD,path);
+    #else
+      SD.rmdir(path);
+    #endif
+    if(exisits_check(path)){
+      String response = "";
+      for(uint16_t index=0; index<strlen_P(sdcard_option1); index++){
+          response += char(pgm_read_byte_near(sdcard_option1+index));
+      }
+      Serial.println(response);
+    }
+  }
+}
+
+void dir_move(String path, String target){
+  if(exisits_check(path)){
+    dir_make(target);
+    uint16_t dir_last = dir_list(path,true,false);
+    if(dir_last>0){
+      for(uint16_t index_d=dir_last; index_d>0; index_d--){
+        String inner_dir  = "/"+ dir_index(path,true,index_d);
+        dir_move(path+inner_dir, target+inner_dir);
+      }
+    }
+    uint16_t file_last = dir_list(path,false,false);
+    for(uint16_t index=file_last; index>0; index--){
+      String file_name      = "/"+ dir_index(path,false,index);
+      String file_contents  = file_read(path+file_name);
+      file_write(target+file_name, file_contents);
+      file_remove(path+file_name);
     }
     #if defined(ESP32)
       removeDir(SD,path);

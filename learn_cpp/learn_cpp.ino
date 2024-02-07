@@ -229,6 +229,7 @@ void setup() {
   }
 
   pregnant_baby(path_assist(),path_avatar(),random(2));
+  dir_move(path_assist(),"/test");
 
   time_clock = millis();
   //display_newday(&calendar,info_class,stat_class,mens_class,current_class);

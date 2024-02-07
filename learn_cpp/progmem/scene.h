@@ -5,7 +5,7 @@ const PROGMEM char scene_help_cmd[]     = "***** help *****\nhelp  this text\nls
 const PROGMEM char scene_boot[]         = "새롭게 시작 하시겠습니까?";
 const PROGMEM char scene_boot_cmd[]     = "Command Prompt";
 /*************** Display ***************/
-const PROGMEM char scene_hash_check[]   = "외계의 바이러스를 검역 중 입니다.";
+const PROGMEM char scene_hash_check[]   = "이계의 침식을 확인 중 입니다.";
 /*************** Display ***************/
 const PROGMEM char scene_make_assist[]  = "새로운 마왕 소환자가 탄생했습니다.";
 /*************** Display ***************/
