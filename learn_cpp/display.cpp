@@ -143,6 +143,7 @@ void display_cmd_main(){
     for(uint16_t index=0; index<strlen_P(scene_main_cmd); index++){
         Serial.print(char(pgm_read_byte_near(scene_main_cmd+index)));
     }
+    Serial.println();
 
     String response = "";
     for(uint16_t index=0; index<strlen_P(scene_main_opt1); index++){
