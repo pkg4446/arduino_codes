@@ -86,8 +86,31 @@ void dir_remove(String path){
     #else
       SD.rmdir(path);
     #endif
-    if(exisits_check(path)) Serial.println("inner contents");
-    else Serial.println("delete success");
+  }
+}
+
+void dir_move(String path, String target){
+  if(exisits_check(path)){
+    dir_make(target);
+    uint16_t dir_last = dir_list(path,true,false);
+    if(dir_last>0){
+      for(uint16_t index_d=dir_last; index_d>0; index_d--){
+        String inner_dir  = "/"+ dir_index(path,true,index_d);
+        dir_move(path+inner_dir, target+inner_dir);
+      }
+    }
+    uint16_t file_last = dir_list(path,false,false);
+    for(uint16_t index=file_last; index>0; index--){
+      String file_name      = "/"+ dir_index(path,false,index);
+      String file_contents  = file_read(path+file_name);
+      file_write(target+file_name, file_contents);
+      file_remove(path+file_name);
+    }
+    #if defined(ESP32)
+      removeDir(SD,path);
+    #else
+      SD.rmdir(path);
+    #endif
   }
 }
 
@@ -196,5 +219,14 @@ void file_remove(String path){
     #endif
     if(exisits_check(path)) Serial.println("inner contents");
     else Serial.println("delete success");
+  }
+}
+
+void file_move(String dir, String file, String target){
+  String file_path = dir+"/"+file;
+  if(exisits_check(file_path) && exisits_check(target)){
+    String file_contents  = file_read(file_path);
+    file_write(target+"/"+file, file_contents);
+    file_remove(file_path);
   }
 }

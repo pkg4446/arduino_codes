@@ -83,13 +83,6 @@ void dir_remove(String path){
     #else
       SD.rmdir(path);
     #endif
-    if(exisits_check(path)){
-      String response = "";
-      for(uint16_t index=0; index<strlen_P(sdcard_option1); index++){
-          response += char(pgm_read_byte_near(sdcard_option1+index));
-      }
-      Serial.println(response);
-    }
   }
 }
 
@@ -115,13 +108,6 @@ void dir_move(String path, String target){
     #else
       SD.rmdir(path);
     #endif
-    if(exisits_check(path)){
-      String response = "";
-      for(uint16_t index=0; index<strlen_P(sdcard_option1); index++){
-          response += char(pgm_read_byte_near(sdcard_option1+index));
-      }
-      Serial.println(response);
-    }
   }
 }
 
@@ -227,5 +213,14 @@ void file_remove(String path){
     #else
       SD.remove(path);
     #endif
+  }
+}
+
+void file_move(String dir, String file, String target){
+  String file_path = dir+"/"+file;
+  if(exisits_check(file_path) && exisits_check(target)){
+    String file_contents  = file_read(file_path);
+    file_write(target+"/"+file, file_contents);
+    file_remove(file_path);
   }
 }
