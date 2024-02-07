@@ -12,8 +12,7 @@
 #define parents_gen 2
 #define model_gen   3
 
-void new_model_body(String model_path, bool gender);
-void new_model_status(String model_path, bool gender);
+void new_model(String model_path, bool gender);
 
 bool check_model_hash(String model_path, uint8_t hash_num);
 void read_model_hard(String model_path,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts);

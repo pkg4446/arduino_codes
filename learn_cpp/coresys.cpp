@@ -106,7 +106,7 @@ void gene_meiosis(String model_path,INFO *class_info,HEAD *class_head,BODY *clas
 }
 /***** Inner funtion *****/
 
-void new_model_body(String model_path, bool gender){
+void new_model(String model_path, bool gender){
     /***** GENE *****/
     /***** HARDWARE *****/
     INFO        *info_class[model_gen];
@@ -196,10 +196,7 @@ void new_model_body(String model_path, bool gender){
         delete nature_class[index];
         delete eros_class[index];
     }
-}
-
-void new_model_status(String model_path, bool gender){
-    /***** SOFTWARE *****/
+    /***** STATUS *****/
     MENS    *mens_class     = new MENS();
     CURRENT *current_class  = new CURRENT();
     EXP     *exp_class      = new EXP();
@@ -209,7 +206,7 @@ void new_model_status(String model_path, bool gender){
     exp_class   ->generate();
     breed_class ->generate();
 
-    String models = mens_class->get_csv();
+    models = mens_class->get_csv();
     file_write(model_path+file_mens(), models);
     models = current_class->get_csv();
     file_write(model_path+file_current(), models);
@@ -378,6 +375,28 @@ void pregnant_baby(String mother_path, String father_path, bool gender){
         delete nature_class[index];
         delete eros_class[index];
     }
+    /***** STATUS *****/
+    MENS    *mens_class     = new MENS();
+    CURRENT *current_class  = new CURRENT();
+    EXP     *exp_class      = new EXP();
+    BREED   *breed_class    = new BREED();
+    mens_class  ->generate(gender);
+    current_class->generate();
+    exp_class   ->generate();
+    breed_class ->generate();
+
+    models = mens_class->get_csv();
+    file_write(model_path+file_mens(), models);
+    models = current_class->get_csv();
+    file_write(model_path+file_current(), models);
+    models = exp_class->get_csv();
+    make_csv_text(&models, breed_class->get_csv());
+    file_write(model_path+file_exp(), models);
+
+    delete exp_class;
+    delete current_class;
+    delete mens_class;
+    delete breed_class;
 }
 
 /*

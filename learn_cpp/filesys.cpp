@@ -161,18 +161,20 @@ String dir_index(String path, bool type, uint16_t dir_index) {
 }
 
 String file_read(String path){
-  File file;
   String response = "";
-  #if defined(ESP32)
-    fs::FS &fs = SD;
-    file = fs.open(path);
-  #else
-    file = SD.open(path);
-  #endif
-  while (file.available()) {
-    response += char(file.read());
+  if(exisits_check(path)){
+    File file;
+    #if defined(ESP32)
+      fs::FS &fs = SD;
+      file = fs.open(path);
+    #else
+      file = SD.open(path);
+    #endif
+    while (file.available()) {
+      response += char(file.read());
+    }
+    file.close();
   }
-  file.close();
   return response;
 }
 
