@@ -23,7 +23,7 @@ const PROGMEM char scene_sun_rise[]     = "캄캄한 밤이다.새벽이 밝아�
 const PROGMEM char scene_sun_fall[]     = "해가 중천에 떳다.해가 저문다.노을이 진다.어둠이 내렸다.";
 /*************** Display ***************/
 const PROGMEM char scene_main_cmd[]     = "무엇을 하는게 좋을까?";
-const PROGMEM char scene_main_opt1[]    = "포로교육";
+const PROGMEM char scene_main_opt1[]    = "자원관리";
 const PROGMEM char scene_main_opt2[]    = "던전관리";
 const PROGMEM char scene_main_opt3[]    = "지옥상회";
 const PROGMEM char scene_main_opt4[]    = "대륙침공";
