@@ -1,12 +1,19 @@
 #include "path_string.h"
-
+/*******************************************************/
+String path_root(){
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(path_root_str); index++){
+        response += char(pgm_read_byte_near(path_root_str+index));
+    }
+    return response;
+};
 /*******************************************************/
 String path_avatar(){
     String response = "";
     for(uint16_t index=0; index<strlen_P(path_avatar_str); index++){
         response += char(pgm_read_byte_near(path_avatar_str+index));
     }
-    return response;
+    return path_root() + response;
 };
 /*******************************************************/
 String path_assist(){
@@ -14,7 +21,7 @@ String path_assist(){
     for(uint16_t index=0; index<strlen_P(path_assist_str); index++){
         response += char(pgm_read_byte_near(path_assist_str+index));
     }
-    return response;
+    return path_root() + response;
 };
 /*******************************************************/
 String path_womb(){
