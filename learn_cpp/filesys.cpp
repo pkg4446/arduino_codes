@@ -37,7 +37,7 @@ void sd_init() {
   {
     for(uint16_t index=0; index<strlen_P(check_sdcard2); index++){
         Serial.print(char(pgm_read_byte_near(check_sdcard2+index)));
-        delay(50);
+        delay(20);
     }
     Serial.println();
   }
