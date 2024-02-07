@@ -175,7 +175,7 @@ void display_cmd_main(){
     for(uint16_t index=0; index<strlen_P(scene_main_opt6); index++){
         response += char(pgm_read_byte_near(scene_main_opt6+index));
     }
-    spacebar_option(true,5,response);
+    spacebar_option(true,6,response);
     Serial.println();
 };
 /*******************************************************/
