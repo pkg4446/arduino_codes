@@ -54,7 +54,6 @@ void dir_make(String path){
       char *path_root  = const_cast<char*>(path.c_str());
       String make_dir  = "";
       String dir_path  = strtok(path_root, "/");
-      Serial.println(dir_path);
       while(dir_path != ""){
         make_dir += "/" + dir_path;
         dir_path = strtok(0x00, "/");

@@ -62,9 +62,6 @@ void dir_make(String path){
     #else
       SD.mkdir(path);
     #endif
-    Serial.println("make success");
-  }else{
-    Serial.println("already exisited");
   }
 }
 
