@@ -32,15 +32,16 @@ void sd_init() {
         check_sd += char(pgm_read_byte_near(check_sdcard3+index));
     }
   }
-  Serial.println(check_sd);
+  Serial.print(check_sd);
   while (!SD.begin(chipSelect))
   {
+    Serial.println();
     for(uint16_t index=0; index<strlen_P(check_sdcard2); index++){
         Serial.print(char(pgm_read_byte_near(check_sdcard2+index)));
         delay(20);
     }
-    Serial.println();
   }
+  Serial.println();
 }
 
 bool exisits_check(String path){
@@ -50,7 +51,14 @@ bool exisits_check(String path){
 void dir_make(String path){
   if(!exisits_check(path)){
     #if defined(ESP32)
-      createDir(SD,path);
+      char *path_root  = const_cast<char*>(path.c_str());
+      String make_dir  = "";
+      String dir_path  = strtok(path_root, "/");
+      while(dir_path != ""){
+        make_dir += "/" + dir_path;
+        dir_path = strtok(0x00, "/");
+        createDir(SD,make_dir);
+      }
     #else
       SD.mkdir(path);
     #endif
