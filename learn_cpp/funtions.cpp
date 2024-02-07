@@ -14,17 +14,10 @@ void prologue_txt(){
     display_prologue(info_class->get_family() + info_class->get_name(), gender);
 }
 /*************** funtion ***************/
-void routines_day(MENS *class_mens, CURRENT *class_current){
-    class_mens->daily();
-    class_current->daily();
-    #ifdef DEBUG
-        perforation("daily");
-        if(!gender){
-            class_mens->status();
-            Serial.println(class_mens->get());
-        }
-        class_current->status();
-    #endif
+void routine_day_mens(){
+    mens_check(path_assist(),true);
+    mens_check(path_avatar(),true);
+    //나머지 체크
 }
 /*************** funtion ***************/
 void play_main(uint8_t *scene_number){

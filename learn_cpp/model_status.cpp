@@ -15,7 +15,7 @@ void MENS::generate(bool gender){
     d_day     = 0;
 }
 /*******************************************************************************************/
-void MENS::daily(){
+bool MENS::daily(){
     if(!gen_xy){
         if(pregnant){
             if(d_day > 0) d_day--;
@@ -38,6 +38,7 @@ void MENS::daily(){
             }
         }
     }
+    return !gen_xy;
 }
 /*******************************************************************************************/
 void MENS::status(){

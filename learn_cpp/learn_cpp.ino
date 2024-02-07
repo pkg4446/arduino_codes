@@ -157,7 +157,8 @@ void routine_day(){
         year_count++;
       }
     }
-    //routines_day(mens_class[index],current_class[index]);
+    //day routine is here
+    routine_day_mens();
     //display_newday(&month_count,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
   }
 }

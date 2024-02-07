@@ -9,5 +9,6 @@
 #include "path_string.h"
 
 void prologue_txt();
-void routines_day(MENS *class_mens, CURRENT *class_current);
+void routine_day_mens();
+//void routine_day();
 void play_main(uint8_t *scene_number);

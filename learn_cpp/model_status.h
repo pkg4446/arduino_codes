@@ -17,7 +17,7 @@ class MENS
         MENS();
         ~MENS();
         void generate(bool gender);
-        void daily();
+        bool daily();
         void status();
         uint8_t get();
         bool    get_pregnant();

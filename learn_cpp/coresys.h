@@ -22,3 +22,4 @@ void read_model_feel(String model_path,CURRENT *feel_class);
 void read_model_breed(String model_path,BREED *breed_class);
 
 void pregnant_baby(String father_path, String mother_path, bool gender);
+uint8_t mens_check(String model_path, bool daily);

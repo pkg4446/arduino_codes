@@ -205,10 +205,8 @@ void new_model(String model_path, bool gender){
     exp_class   ->generate();
     breed_class ->generate();
 
-    models = mens_class->get_csv();
-    file_write(model_path+file_mens(), models);
-    models = current_class->get_csv();
-    file_write(model_path+file_current(), models);
+    file_write(model_path+file_mens(), mens_class->get_csv());
+    file_write(model_path+file_current(), current_class->get_csv());
     models = exp_class->get_csv();
     make_csv_text(&models, breed_class->get_csv());
     file_write(model_path+file_exp(), models);
@@ -396,6 +394,16 @@ void pregnant_baby(String mother_path, String father_path, bool gender){
     delete current_class;
     delete mens_class;
     delete breed_class;
+}
+
+uint8_t mens_check(String model_path, bool daily){
+    MENS    *mens_class = new MENS();
+    String csv_file_str = file_read(model_path+file_mens());
+    mens_class->set_csv(const_cast<char*>(csv_file_str.c_str()));
+    if(daily && mens_class->daily()){
+        file_write(model_path+file_mens(), mens_class->get_csv());
+    }
+    return mens_class->get();
 }
 
 /*
