@@ -75,7 +75,7 @@ void Sha1Class::pad() {
   // Implement SHA-1 padding (fips180-2 §5.1.1)
   // Pad with 0x80 followed by 0x00 until the end of the block
   addUncounted(0x80);
-  while (bufferOffset != 56) addUncounted(0x00);
+  while (bufferOffset != BLOCK_LENGTH-8) addUncounted(0x00);
   // Append length in the last 8 bytes
   addUncounted(0); // We're only using 32 bit lengths
   addUncounted(0); // But SHA-1 supports 64 bit lengths
