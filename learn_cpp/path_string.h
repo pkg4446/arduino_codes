@@ -2,6 +2,8 @@
 #include <arduino.h>
 #include "./progmem/path.h"
 
+String path_config();
+String path_cryobank();
 String path_avatar();
 String path_assist();
 String path_womb();

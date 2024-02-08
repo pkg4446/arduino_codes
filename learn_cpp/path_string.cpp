@@ -8,6 +8,22 @@ String path_root(){
     return response;
 };
 /*******************************************************/
+String path_config(){
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(path_config_str); index++){
+        response += char(pgm_read_byte_near(path_config_str+index));
+    }
+    return path_root() + response;
+};
+/*******************************************************/
+String path_cryobank(){
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(path_cryobank_str); index++){
+        response += char(pgm_read_byte_near(path_cryobank_str+index));
+    }
+    return path_root() + response;
+};
+/*******************************************************/
 String path_avatar(){
     String response = "";
     for(uint16_t index=0; index<strlen_P(path_avatar_str); index++){

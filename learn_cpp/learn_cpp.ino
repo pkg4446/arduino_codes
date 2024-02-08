@@ -43,6 +43,7 @@ read_model_breed(path_assist(),breed_class);
 /***** Variable *****/
 uint8_t   aggro_point = 0;
 uint32_t  play_time   = 0;
+//uint8_t   maps[7][3]  = {{0,},};
 
 uint16_t year_count   = 0; // year  = rand(1001);
 uint8_t month_count   = 1; // month = rand(1,13);
@@ -181,6 +182,8 @@ void setup() {
   {
     if (Serial.available()) get_command(Serial.read());
   }
+  if(!exisits_check(path_config())) dir_make(path_config());
+
   if(!exisits_check(path_assist())) dir_make(path_assist());
   if(scene_number==COMMAND_YES || dir_list(path_assist(),false,false) < 8){
     new_model(path_assist(),false);

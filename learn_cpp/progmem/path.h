@@ -2,6 +2,10 @@
 /*************** Path ***************/
 const PROGMEM char path_root_str[]      = "/data";
 /*************** Path ***************/
+const PROGMEM char path_config_str[]    = "/config";
+/*************** Path ***************/
+const PROGMEM char path_cryobank_str[]  = "/cryobank";
+/*************** Path ***************/
 const PROGMEM char path_avatar_str[]    = "/avatar";
 /*************** Path ***************/
 const PROGMEM char path_assist_str[]    = "/assist";
