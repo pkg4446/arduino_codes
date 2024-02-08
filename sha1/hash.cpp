@@ -15,7 +15,7 @@ String Sha1Class::result(void) {
   // Pad to complete the last block
   pad();
   // Swap byte order back
-  for (int i=0; i<5; i++) {
+  for (int i=0; i<HASH_LENGTH/4; i++) {
     uint32_t a,b;
     a=state.w[i];
     b=a<<24;

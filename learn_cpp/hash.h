@@ -3,8 +3,8 @@
 #ifndef Sha1_h
 #define Sha1_h
 
-#define HASH_LENGTH 20
-#define BLOCK_LENGTH 64
+#define HASH_LENGTH   16
+#define BLOCK_LENGTH  64
 
 const PROGMEM uint8_t sha1InitState[] = {
   0x01,0x23,0x45,0x67, // H0
@@ -43,8 +43,6 @@ class Sha1Class : public Print
     uint8_t   bufferOffset;/**< indicates the position on the buffer */
     _state    state;/**< identical structure with buffer */
     uint32_t  byteCount;/**< Byte counter in order to initialize the hash process for a block */
-    uint8_t   keyBuffer[BLOCK_LENGTH];/**< Hold the key for the HMAC process*/
-    uint8_t   innerHash[HASH_LENGTH];/**< holds the inner hash for the HMAC process */
 };
 extern Sha1Class Sha1;
 
