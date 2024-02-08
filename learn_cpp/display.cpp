@@ -15,6 +15,7 @@ void display_model_err(){
     for(uint16_t index=0; index<strlen_P(interface_model_err); index++){
         Serial.print(char(pgm_read_byte_near(interface_model_err+index)));
     }
+    Serial.println();
 };
 /*******************************************************/
 void display_boot(){

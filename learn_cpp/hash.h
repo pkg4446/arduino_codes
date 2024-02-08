@@ -4,7 +4,7 @@
 #define Sha1_h
 
 #define USING_BIT     16
-#define HASH_LENGTH   16
+#define HASH_LENGTH   4
 #define BLOCK_LENGTH  32
 
 const PROGMEM uint8_t sha1InitState[] = {
