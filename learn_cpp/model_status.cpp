@@ -41,16 +41,6 @@ bool MENS::daily(){
     return !gen_xy;
 }
 /*******************************************************************************************/
-void MENS::status(){
-    perforation("mens");
-    spacebar(false,"pregnant");  Serial.println(pregnant);
-    spacebar(false,"periode");   Serial.println(periode);
-    spacebar(false,"blood");     Serial.println(blood);
-    spacebar(false,"cycle");     Serial.println(cycle);
-    spacebar(false,"ovulation"); Serial.println(ovulation);
-    spacebar(false,"d_day");     Serial.println(d_day);
-}
-/*******************************************************************************************/
 uint8_t MENS::get(){
     //normal_safe == 0
     //egg drop    == 1
@@ -122,20 +112,6 @@ void CURRENT::update(uint8_t item, int8_t count){
     else if(item == 9) ecstasy += count;
 }
 /*******************************************************************************************/
-void CURRENT::status(){
-    perforation("currnet");
-    spacebar(false,"furr");   Serial.println(furr);
-    spacebar(false,"lubric"); Serial.println(lubric);
-    spacebar(false,"pee");    Serial.println(pee);
-    spacebar(false,"poo");    Serial.println(poo);
-    spacebar(false,"stamina");Serial.println(stamina);
-    spacebar(false,"mental"); Serial.println(mental);
-    spacebar(false,"stress"); Serial.println(stress);
-    spacebar(false,"horny");  Serial.println(horny);
-    spacebar(false,"fain");   Serial.println(fain);
-    spacebar(false,"ecstasy");Serial.println(ecstasy);
-}
-/*******************************************************************************************/
 uint16_t CURRENT::get_furr(){
     return  furr;
 }
@@ -193,13 +169,6 @@ void BREED::generate(){
 }
 /*******************************************************************************************/
 void BREED::update(){
-}
-/*******************************************************************************************/
-void BREED::status(){
-    perforation("mens");
-    spacebar(false,"pregnancy");   Serial.println(pregnancy);
-    spacebar(false,"birth");       Serial.println(birth);
-    spacebar(false,"miscarriage"); Serial.println(miscarriage);
 }
 /*******************************************************************************************/
 uint8_t BREED::get(uint8_t item){

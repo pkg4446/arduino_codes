@@ -18,7 +18,6 @@ class MENS
         ~MENS();
         void generate(bool gender);
         bool daily();
-        void status();
         uint8_t get();
         bool    get_pregnant();
 
@@ -45,7 +44,6 @@ class CURRENT
         void generate();
         void daily();
         void update(uint8_t item, int8_t count);
-        void status();
         uint16_t get_furr();
         uint8_t  get(uint8_t item);
 
@@ -64,7 +62,6 @@ class BREED
         ~BREED();
         void generate();
         void update();
-        void status();
         uint8_t get(uint8_t item);
 
         String  get_csv();
