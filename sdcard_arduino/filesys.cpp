@@ -66,7 +66,6 @@ void dir_make(String path){
 }
 
 void dir_remove(String path){
-  Serial.println(path);
   if(exisits_check(path)){
     uint16_t dir_last = dir_list(path,true,false);
     if(dir_last>0){
@@ -111,52 +110,53 @@ void dir_move(String path, String target){
   }
 }
 
-uint16_t dir_list(String path, bool type) {
+uint16_t dir_list(String path, bool type, bool show) {
   uint16_t type_index = 0;
   File root = SD.open(path);
   if(!root){return 0;}
   if(!root.isDirectory()){return 0;}
 
   File file = root.openNextFile();
-  Serial.println(path);
+  if(show) Serial.println(path);
   while(file){
-    Serial.print("\t");
+    if(show) Serial.print("\t");
     if(file.isDirectory()){
       if(type)type_index++;
-      Serial.print(file.name());
-      Serial.println("/");
+      if(show){
+        Serial.print(file.name());
+        Serial.println("/");
+      }
     }else{
       if(!type)type_index++;
-      Serial.print(file.name());
-      Serial.print("\t");
-      Serial.println(file.size());
+      if(show){
+        Serial.print(file.name());
+        Serial.print("\t");
+        Serial.println(file.size());
+      }
     }
     file = root.openNextFile();
   }
-  Serial.print("Listing type:");
-  Serial.println(type_index);
   return type_index;
 }
 
 String dir_index(String path, bool type, uint16_t dir_index) {
-  File root = SD.open(path);
-  File file = root.openNextFile();
-  String response = "null";
-
-  while(file){
-    if(dir_index <=1 ){
-      response = file.name();
-      break;
+  String response = "";
+  if(dir_index != 0){
+    File root = SD.open(path);
+    File file = root.openNextFile();
+    while(file){
+      if(file.isDirectory()){
+        if(type)dir_index--;
+      }else{
+        if(!type)dir_index--;
+      }
+      if(dir_index <1 ){
+        response = file.name();
+        break;
+      }
+      file = root.openNextFile();
     }
-    if(file.isDirectory()){
-      if(type)dir_index--;
-    }else{
-      if(!type)dir_index--;
-    }
-    file = root.openNextFile();
   }
-
-  Serial.println(response);
   return response;
 }
 
@@ -184,13 +184,14 @@ void file_write(String path, String contents){
     fs::FS &fs = SD;
     file = fs.open(path, FILE_WRITE);
   #else
-    //file = SD.open(path, FILE_WRITE);
+    /*
     file = SD.open(path, O_CREAT|O_RDWR);
     file.seek (0);
+    */
+    SD.remove(path);
+    file = SD.open(path, FILE_WRITE);
   #endif
-  Serial.print("write ");
-  if(file.print(contents)) Serial.println("ok");
-  else Serial.println("fail");
+  file.print(contents);
   file.close();
 }
 
@@ -202,22 +203,17 @@ void file_append(String path, String contents){
   #else
     file = SD.open(path, FILE_WRITE);
   #endif
-  Serial.print("write ");
-  if(file.print(contents)) Serial.println("ok");
-  else Serial.println("fail");
+  file.print(contents);
   file.close();
 }
 
 void file_remove(String path){
-  Serial.println(path);
   if(exisits_check(path)){
     #if defined(ESP32)
       removeFile(SD,path);
     #else
       SD.remove(path);
     #endif
-    if(exisits_check(path)) Serial.println("inner contents");
-    else Serial.println("delete success");
   }
 }
 

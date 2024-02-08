@@ -49,7 +49,7 @@ void command_progress(){
     path_current = "/";
     Serial.println(path_current);
   }else if(command_buf[0]=='l' && command_buf[1]=='s'){
-    dir_list(path_current,true);
+    dir_list(path_current,true,true);
   }else if(command_buf[0]=='m' && command_buf[1]=='d'){
     dir_make(path_current+temp_text);
   }else if(command_buf[0]=='r' && command_buf[1]=='d'){
@@ -70,7 +70,7 @@ void setup() {
 
   sd_init();
 
-  dir_list("/",false); //true = dir, false = file
+  dir_list("/",false,true); //true = dir, false = file
   dir_index("/",false,4);
   dir_index("/",true,4);
 
