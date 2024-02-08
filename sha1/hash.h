@@ -36,7 +36,7 @@ class Sha1Class : public Print
     void addUncounted(uint8_t data);
     void hashBlock();
 	
-    uint32_t  rol32(uint32_t number, uint8_t bits);
+    uint32_t  rol16(uint16_t number, uint8_t bits);
     String    hash_text(bool hex_num);
     String    printHash(uint8_t* hash);
     _buffer   buffer;/**< hold the buffer for the hashing process */
