@@ -3,8 +3,9 @@
 #ifndef Sha1_h
 #define Sha1_h
 
+#define USING_BIT     16
 #define HASH_LENGTH   16
-#define BLOCK_LENGTH  64
+#define BLOCK_LENGTH  32
 
 const PROGMEM uint8_t sha1InitState[] = {
   0x01,0x23,0x45,0x67, // H0
@@ -21,11 +22,11 @@ class Sha1Class : public Print
   public:
     union _buffer {
       uint8_t b[BLOCK_LENGTH];
-      uint32_t w[BLOCK_LENGTH/4];
+      uint16_t w[BLOCK_LENGTH/4];
     };
     union _state {
       uint8_t b[HASH_LENGTH];
-      uint32_t w[HASH_LENGTH/4];
+      uint16_t w[HASH_LENGTH/4];
     };
     void      init(void);
     String    result(void);
@@ -36,7 +37,7 @@ class Sha1Class : public Print
     void addUncounted(uint8_t data);
     void hashBlock();
 	
-    uint32_t  rol32(uint32_t number, uint8_t bits);
+    uint16_t  rol16(uint16_t number, uint8_t bits);
     String    hash_text(bool hex_num);
     String    printHash(uint8_t* hash);
     _buffer   buffer;/**< hold the buffer for the hashing process */

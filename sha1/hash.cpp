@@ -16,12 +16,12 @@ String Sha1Class::result(void) {
   pad();
   // Swap byte order back
   for (int i=0; i<HASH_LENGTH/4; i++) {
-    uint32_t a,b;
+    uint16_t a,b;
     a=state.w[i];
-    b=a<<24;
+    b=a<<(USING_BIT-8);
     b|=(a<<8) & 0x00ff0000;
     b|=(a>>8) & 0x0000ff00;
-    b|=a>>24;
+    b|=a>>(USING_BIT-8);
     state.w[i]=b;
   }
   // Return pointer to hash (20 characters)
@@ -31,19 +31,19 @@ String Sha1Class::result(void) {
 size_t Sha1Class::write(uint8_t data) {
   ++byteCount;
   addUncounted(data);
-  return 1;
+  return true;
 }
 
 void Sha1Class::hashBlock() {
-    uint32_t a, b, c, d, e, temp;
-    uint32_t w[BLOCK_LENGTH];
+    uint16_t a, b, c, d, e, temp;
+    uint16_t w[BLOCK_LENGTH];
 
     // Message schedule
-    for (int i = 0; i < 16; ++i) {
+    for (int i = 0; i < USING_BIT/2; ++i) {
         w[i] = buffer.w[i];
     }
-    for (int i = 16; i < BLOCK_LENGTH; ++i) {
-        w[i] = rol16(w[i - 4] ^ w[i - 8] ^ w[i - 12] ^ w[i - 16], 1);
+    for (int i = USING_BIT/2; i < BLOCK_LENGTH; ++i) {
+        w[i] = rol16(w[i - USING_BIT/16] ^ w[i - USING_BIT/4] ^ w[i - USING_BIT/3] ^ w[i - USING_BIT/2], 1);
     }
 
     // Initialize hash value for this chunk
@@ -57,21 +57,21 @@ void Sha1Class::hashBlock() {
     for (int i = 0; i < BLOCK_LENGTH; ++i) {
         if (i < BLOCK_LENGTH/4) {
             temp = (b & c) | ((~b) & d);
-            temp += rol16(a, 5) + e + w[i] + SHA1_K0;
+            temp += rol16(a, USING_BIT/4-1) + e + w[i] + SHA1_K0;
         } else if (i < BLOCK_LENGTH/2) {
             temp = b ^ c ^ d;
-            temp += rol16(a, 5) + e + w[i] + SHA1_K20;
+            temp += rol16(a, USING_BIT/4-1) + e + w[i] + SHA1_K20;
         } else if (i < BLOCK_LENGTH/4*3) {
             temp = (b & c) | (b & d) | (c & d);
-            temp += rol16(a, 5) + e + w[i] + SHA1_K40;
+            temp += rol16(a, USING_BIT/4-1) + e + w[i] + SHA1_K40;
         } else {
             temp = b ^ c ^ d;
-            temp += rol16(a, 5) + e + w[i] + SHA1_K60;
+            temp += rol16(a, USING_BIT/4-1) + e + w[i] + SHA1_K60;
         }
 
         e = d;
         d = c;
-        c = rol16(b, 14);
+        c = rol16(b, USING_BIT-2);
         b = a;
         a = temp;
     }
@@ -88,7 +88,9 @@ void Sha1Class::pad() {
   // Implement SHA-1 padding (fips180-2 §5.1.1)
   // Pad with 0x80 followed by 0x00 until the end of the block
   addUncounted(0x80);
-  while (bufferOffset != BLOCK_LENGTH-8) addUncounted(0x00);
+  for (int i = bufferOffset + 1; i < BLOCK_LENGTH - 8; ++i) {
+    addUncounted(0x00);
+  }
   addUncounted(0); // So zero pad the top bits
   
   addUncounted(byteCount >> 13);
@@ -105,8 +107,8 @@ void Sha1Class::addUncounted(uint8_t data) {
   }
 }
 
-uint32_t Sha1Class::rol16(uint16_t number, uint8_t bits) {
-  return ((number << bits) | (number >> (16-bits)));
+uint16_t Sha1Class::rol16(uint16_t number, uint8_t bits) {
+  return (number << bits) | (number >> (16-bits));
 }
 
 String Sha1Class::hash_text(bool hex_num) {
