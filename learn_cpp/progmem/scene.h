@@ -32,8 +32,8 @@ const PROGMEM char scene_main_opt6[]    = "개인훈련";
 /*************** Display ***************/
 const PROGMEM char scene_invasion_cmd[] = "무엇을 하는게 좋을까?";
 const PROGMEM char scene_invasion_opt1[]= "정찰";
-const PROGMEM char scene_invasion_opt1[]= "납치";
-const PROGMEM char scene_invasion_opt1[]= "공격";
+const PROGMEM char scene_invasion_opt2[]= "납치";
+const PROGMEM char scene_invasion_opt3[]= "공격";
 /*************** Display ***************/
 const PROGMEM char scene_info[]         = "정보를 확인합니다.";
 /*************** Display ***************/

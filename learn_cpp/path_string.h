@@ -8,6 +8,7 @@ String path_avatar();
 String path_assist();
 String path_womb();
 
+String file_map();
 String file_mother();
 String file_father();
 String file_hard();

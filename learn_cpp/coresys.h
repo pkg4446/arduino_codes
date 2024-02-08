@@ -8,9 +8,13 @@
 #include "hash.h"
 #include "display.h"
 #include "path_string.h"
+#include "funtions.h"
 
 #define parents_gen 2
 #define model_gen   3
+
+void map_write();
+void map_read();
 
 void new_model(String model_path, bool gender);
 

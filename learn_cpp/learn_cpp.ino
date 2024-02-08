@@ -43,7 +43,7 @@ read_model_breed(path_assist(),breed_class);
 /***** Variable *****/
 uint8_t   aggro_point = 0;
 uint32_t  play_time   = 0;
-//uint8_t   maps[7][3]  = {{0,},};
+uint8_t   maps[7][3]  = {{0,},};
 
 uint16_t year_count   = 0; // year  = rand(1001);
 uint8_t month_count   = 1; // month = rand(1,13);

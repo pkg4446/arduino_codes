@@ -9,8 +9,11 @@ const PROGMEM char path_cryobank_str[]  = "/cryobank";
 const PROGMEM char path_avatar_str[]    = "/avatar";
 /*************** Path ***************/
 const PROGMEM char path_assist_str[]    = "/assist";
-/*************** File ***************/
+/*************** Path ***************/
 const PROGMEM char path_womb_str[]      = "/womb";
+
+/*************** File ***************/
+const PROGMEM char file_map_str[]       = "/maps.csv";
 /*************** File ***************/
 const PROGMEM char file_mother_str[]    = "/mother.csv";
 /*************** File ***************/

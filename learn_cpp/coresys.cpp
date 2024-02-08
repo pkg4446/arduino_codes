@@ -1,5 +1,4 @@
 #include "coresys.h"
-#include "funtions.h"
 /***** Inner funtion *****/
 String merge_parent_csv(INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
     String response = "";
@@ -30,6 +29,13 @@ String merge_soft_csv(STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATUR
     make_csv_text(&response, class_nature->get_csv());
     make_csv_text(&response, class_eros->get_csv());
     return response;
+}
+/***** Inner funtion *****/
+void map_write(){
+    //file_map();
+}
+void map_read(){
+    //file_map();
 }
 void read_model_gene(String model_path,bool parent,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
     if(check_model_hash(model_path,0)){

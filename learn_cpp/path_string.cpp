@@ -47,6 +47,15 @@ String path_womb(){
     }
     return response;
 };
+
+/*******************************************************/
+String file_map(){
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(file_map_str); index++){
+        response += char(pgm_read_byte_near(file_map_str+index));
+    }
+    return response;
+};
 /*******************************************************/
 String file_mother(){
     String response = "";
