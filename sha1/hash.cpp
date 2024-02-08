@@ -36,14 +36,14 @@ size_t Sha1Class::write(uint8_t data) {
 
 void Sha1Class::hashBlock() {
     uint32_t a, b, c, d, e, temp;
-    uint32_t w[80];
+    uint32_t w[BLOCK_LENGTH];
 
     // Message schedule
     for (int i = 0; i < 16; ++i) {
         w[i] = buffer.w[i];
     }
-    for (int i = 16; i < 80; ++i) {
-        w[i] = rol16(w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16], 1);
+    for (int i = 16; i < BLOCK_LENGTH; ++i) {
+        w[i] = rol16(w[i - 4] ^ w[i - 8] ^ w[i - 12] ^ w[i - 16], 1);
     }
 
     // Initialize hash value for this chunk
@@ -54,14 +54,14 @@ void Sha1Class::hashBlock() {
     e = state.w[4];
 
     // Main loop
-    for (int i = 0; i < 80; ++i) {
-        if (i < 20) {
+    for (int i = 0; i < BLOCK_LENGTH; ++i) {
+        if (i < BLOCK_LENGTH/4) {
             temp = (b & c) | ((~b) & d);
             temp += rol16(a, 5) + e + w[i] + SHA1_K0;
-        } else if (i < 40) {
+        } else if (i < BLOCK_LENGTH/2) {
             temp = b ^ c ^ d;
             temp += rol16(a, 5) + e + w[i] + SHA1_K20;
-        } else if (i < 60) {
+        } else if (i < BLOCK_LENGTH/4*3) {
             temp = (b & c) | (b & d) | (c & d);
             temp += rol16(a, 5) + e + w[i] + SHA1_K40;
         } else {
@@ -71,7 +71,7 @@ void Sha1Class::hashBlock() {
 
         e = d;
         d = c;
-        c = rol16(b, 30);
+        c = rol16(b, 14);
         b = a;
         a = temp;
     }
@@ -89,13 +89,9 @@ void Sha1Class::pad() {
   // Pad with 0x80 followed by 0x00 until the end of the block
   addUncounted(0x80);
   while (bufferOffset != BLOCK_LENGTH-8) addUncounted(0x00);
-  // Append length in the last 8 bytes
-  addUncounted(0); // We're only using 32 bit lengths
-  addUncounted(0); // But SHA-1 supports 64 bit lengths
   addUncounted(0); // So zero pad the top bits
-  addUncounted(byteCount >> 29); // Shifting to multiply by 8
-  addUncounted(byteCount >> 21); // as SHA-1 supports bitstreams as well as
-  addUncounted(byteCount >> 13); // byte.
+  
+  addUncounted(byteCount >> 13);
   addUncounted(byteCount >> 5);
   addUncounted(byteCount << 3);
 }
