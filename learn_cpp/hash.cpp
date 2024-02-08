@@ -125,7 +125,7 @@ String Sha1Class::printHash(uint8_t* hash) {
   String response = "";
   String hash_1 = hash_text(true);
   String hash_2 = hash_text(false);
-  for (uint8_t index=0; index<HASH_LENGTH; index++) {
+  for (uint8_t index=0; index<HASH_LENGTH/2; index++) {
     response += hash_1[hash[index]>>4];
     response += hash_2[hash[index]&0xf];
   }
