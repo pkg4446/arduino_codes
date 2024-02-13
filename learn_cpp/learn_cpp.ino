@@ -8,6 +8,8 @@
 #include "utility.h"
 #include "funtions.h"
 
+#include "dungeon.h"
+
 #include "database.h"
 #include "display.h"
 #include "path_string.h"
@@ -229,6 +231,11 @@ void setup() {
   time_clock = millis();
   //display_newday(&month_count,info_class,stat_class,mens_class,current_class);
   play_main(&scene_number);
+
+  /*
+  playmap.init();
+  playmap.view();
+  */
 }
 /***** loop ****************/
 void loop() {
