@@ -8,7 +8,7 @@
 #include "display.h"
 #include "path_string.h"
 
-void prologue_txt();
-void routine_day_mens();
+void prologue_txt(void);
+void routine_day_mens(void);
 //void routine_day();
 void play_main(uint8_t *scene_number);

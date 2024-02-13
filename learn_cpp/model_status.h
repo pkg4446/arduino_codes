@@ -14,14 +14,14 @@ class MENS
         uint8_t ovulation;
         uint8_t d_day;
     public:
-        MENS();
-        ~MENS();
+        MENS(void);
+        ~MENS(void);
         void generate(bool gender);
-        bool daily();
-        uint8_t get();
-        bool    get_pregnant();
+        bool daily(void);
+        uint8_t get(void);
+        bool    get_pregnant(void);
 
-        String  get_csv();
+        String  get_csv(void);
         void    set_csv(char *save_file);
 };
 
@@ -39,15 +39,15 @@ class CURRENT
         uint8_t  fain;
         uint8_t  ecstasy;
     public:
-        CURRENT();
-        ~CURRENT();
-        void generate();
-        void daily();
+        CURRENT(void);
+        ~CURRENT(void);
+        void generate(void);
+        void daily(void);
         void update(uint8_t item, int8_t count);
-        uint16_t get_furr();
+        uint16_t get_furr(void);
         uint8_t  get(uint8_t item);
 
-        String  get_csv();
+        String  get_csv(void);
         void    set_csv(char *save_file);
 };
 
@@ -58,12 +58,12 @@ class BREED
         uint8_t birth;
         uint8_t miscarriage;
     public:
-        BREED();
-        ~BREED();
-        void generate();
-        void update();
+        BREED(void);
+        ~BREED(void);
+        void generate(void);
+        void update(void);
         uint8_t get(uint8_t item);
 
-        String  get_csv();
+        String  get_csv(void);
         void    set_csv(char *save_file);
 };

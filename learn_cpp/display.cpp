@@ -1,18 +1,18 @@
 #include "display.h"
 
-void type_dly(){
+void type_dly(void){
     delay(10);
 }
 /*******************************************************/
-void display_cmd(){
+void display_cmd(void){
     Serial.print(get_progmem(interface_cmd));
 };
 /*******************************************************/
-void display_model_err(){
+void display_model_err(void){
     Serial.println(get_progmem(interface_model_err));
 };
 /*******************************************************/
-void display_boot(){
+void display_boot(void){
     paging();
     Serial.println(get_progmem(scene_boot));
     spacebar_option(true,COMMAND_YES,get_progmem(word_yes));
@@ -21,22 +21,22 @@ void display_boot(){
     Serial.println();
 };
 /*******************************************************/
-void display_hash_check(){
+void display_hash_check(void){
     paging();
     Serial.println(get_progmem(scene_hash_check));
 };
 /*******************************************************/
-void display_help_cmd(){
+void display_help_cmd(void){
     paging();
     Serial.println(get_progmem(scene_help_cmd));
 };
 /*******************************************************/
-void display_make_assist(){
+void display_make_assist(void){
     paging();
     Serial.println(get_progmem(scene_make_assist));
 };
 /*******************************************************/
-void display_make_user(){
+void display_make_user(void){
     paging();
     Serial.println(get_progmem(scene_make_user));
 };
@@ -64,12 +64,12 @@ void display_prologue(String name, bool gender){
     Serial.println();
 };
 /*******************************************************/
-void display_continue(){
+void display_continue(void){
     paging();
     Serial.println(get_progmem(scene_continue));
 };
 /*******************************************************/
-void display_game_help(){
+void display_game_help(void){
     paging();
     Serial.println(get_progmem(scene_help_game));
     spacebar_option(true,COMMAND_YES,get_progmem(word_yes));
@@ -107,7 +107,7 @@ void cancle_cmd(bool line_break){
     Serial.println();
 };
 /*******************************************************/
-void display_cmd_main(){
+void display_cmd_main(void){
     paging();
     Serial.println(get_progmem(scene_main_cmd));
     spacebar_option(true,COMMAND_RESOURCE,get_progmem(scene_main_opt1));
@@ -120,7 +120,7 @@ void display_cmd_main(){
     Serial.println();
 };
 /*******************************************************/
-void display_info(){
+void display_info(void){
     paging();
     Serial.println(get_progmem(scene_info));
 };

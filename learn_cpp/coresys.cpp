@@ -31,12 +31,6 @@ String merge_soft_csv(STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATUR
     return response;
 }
 /***** Inner funtion *****/
-void map_write(){
-    //file_map();
-}
-void map_read(){
-    //file_map();
-}
 void read_model_gene(String model_path,bool parent,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
     if(check_model_hash(model_path,0)){
         String csv_file_str = "";

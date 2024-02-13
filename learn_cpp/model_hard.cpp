@@ -3,9 +3,9 @@
 #define RAND_NUM   100
 #define RAND_FLAGE 2
 /*********************************** INFO CLASS FUNCTION ***********************************/
-INFO::INFO(){}
+INFO::INFO(void){}
 /*******************************************************************************************/
-INFO::~INFO(){destruct();}
+INFO::~INFO(void){destruct();}
 /*******************************************************************************************/
 void INFO::generate(bool gender, bool baby){
     gen_xy  = gender;
@@ -23,19 +23,19 @@ void INFO::set_family(String familyname){
     family = familyname;
 }
 /*******************************************************************************************/
-void INFO::aging(){
+void INFO::aging(void){
     age += 1;
 }
 /*******************************************************************************************/
-bool    INFO::get_gender(){return gen_xy;}
+bool    INFO::get_gender(void){return gen_xy;}
 /*******************************************************************************************/
-String  INFO::get_family(){return family;}
+String  INFO::get_family(void){return family;}
 /*******************************************************************************************/
-String  INFO::get_name(){return name;}
+String  INFO::get_name(void){return name;}
 /*******************************************************************************************/
-uint8_t INFO::get_age(){return age;}
+uint8_t INFO::get_age(void){return age;}
 /*******************************************************************************************/
-String  INFO::get_csv(){
+String  INFO::get_csv(void){
     String response = "";
     make_csv(&response, String(gen_xy));
     make_csv(&response, family);
@@ -52,15 +52,15 @@ void  INFO::set_csv(char* save_file){
 }
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 /*********************************** HEAD CLASS FUNCTION ***********************************/
-HEAD::HEAD() {}
+HEAD::HEAD(void) {}
 /*******************************************************************************************/
-HEAD::~HEAD(){destruct();}
+HEAD::~HEAD(void){destruct();}
 /*******************************************************************************************/
 void HEAD::set_gender(bool gender){
     gen_xy  = gender;
 }
 /*******************************************************************************************/
-void HEAD::generate(){
+void HEAD::generate(void){
     hair_color = random(RAND_NUM);
     eye_color  = random(RAND_NUM);
     hair_curl  = random(RAND_NUM);
@@ -98,7 +98,7 @@ void HEAD::blend(HEAD *mother, HEAD *father){
     if(!gen_xy) bald = false;
 }
 /*********************************** HEAD CLASS FUNCTION ***********************************/
-String  HEAD::get_hair_color(){
+String  HEAD::get_hair_color(void){
     String color_hair;
     if(hair_color<22){color_hair = "Black";}
     else if(hair_color<41){color_hair = "Blue";}
@@ -109,9 +109,9 @@ String  HEAD::get_hair_color(){
     return color_hair;
 }
 /*******************************************************************************************/
-uint8_t HEAD::get_hair_curl(){return hair_curl;}
+uint8_t HEAD::get_hair_curl(void){return hair_curl;}
 /*******************************************************************************************/
-String  HEAD::get_eye_color(){
+String  HEAD::get_eye_color(void){
     String color_eye;
     if(eye_color<8){color_eye = "Gold";}
     else if(eye_color<27){color_eye = "Obsidian";}
@@ -122,13 +122,13 @@ String  HEAD::get_eye_color(){
     return color_eye;
 }
 /*******************************************************************************************/
-bool    HEAD::get_eyelid(){return eyelid;}
+bool    HEAD::get_eyelid(void){return eyelid;}
 /*******************************************************************************************/
-bool    HEAD::get_dimple(){return dimple;}
+bool    HEAD::get_dimple(void){return dimple;}
 /*******************************************************************************************/
-bool    HEAD::get_bald(){return bald;}
+bool    HEAD::get_bald(void){return bald;}
 /*******************************************************************************************/
-String  HEAD::get_csv(){
+String  HEAD::get_csv(void){
     String response = "";
     make_csv(&response, String(gen_xy));
     make_csv(&response, String(hair_color));
@@ -151,15 +151,15 @@ void  HEAD::set_csv(char* save_file){
 }
 /*********************************** HEAD CLASS FUNCTION ***********************************/
 /*********************************** BODY CLASS FUNCTION ***********************************/
-BODY::BODY() {}
+BODY::BODY(void) {}
 /*******************************************************************************************/
-BODY::~BODY(){destruct();}
+BODY::~BODY(void){destruct();}
 /*******************************************************************************************/
 void BODY::set_gender(bool gender){
     gen_xy  = gender;
 }
 /*******************************************************************************************/
-void BODY::generate(){
+void BODY::generate(void){
     blood_A    = random(3);
     blood_B    = random(3);
     body_color = random(RAND_NUM);;
@@ -286,7 +286,7 @@ void BODY::blend(BODY *mother, BODY *father){
     if(!gen_xy && breast < chest)   swap(&chest,&breast);
 }
 /*******************************************************************************************/
-String   BODY::get_blood(){
+String   BODY::get_blood(void){
     String blood_type;
     if(blood_A == 0){
         if(blood_B == 1){blood_type = "A";}
@@ -304,7 +304,7 @@ String   BODY::get_blood(){
     return blood_type;
 }
 /*******************************************************************************************/
-uint16_t BODY::get_weight(){
+uint16_t BODY::get_weight(void){
     float math_pi   = 3.14159265359;
     float height_c  = float(height);
     float chest_c   = float(chest);
@@ -349,7 +349,7 @@ uint16_t BODY::get_BMI(uint16_t weight){
     return BMI;
 }
 /*******************************************************************************************/
-String   BODY::get_body_color(){
+String   BODY::get_body_color(void){
     String color_body;
     if(body_color<20){color_body = "Black";}
     else if(body_color<40){color_body = "brown";}
@@ -359,7 +359,7 @@ String   BODY::get_body_color(){
     return color_body;
 }
 /*******************************************************************************************/
-String   BODY::get_cup(){
+String   BODY::get_cup(void){
     String   cup     = "NULL";
     if(!gen_xy){
         uint16_t cupsize = breast - chest;
@@ -393,19 +393,19 @@ String   BODY::get_cup(){
     return cup;
 }
 /*******************************************************************************************/
-uint16_t BODY::get_breast(){return breast;}
+uint16_t BODY::get_breast(void){return breast;}
 /*******************************************************************************************/
-uint16_t BODY::get_height(){return height;}
+uint16_t BODY::get_height(void){return height;}
 /*******************************************************************************************/
-uint16_t BODY::get_chest(){return chest;}
+uint16_t BODY::get_chest(void){return chest;}
 /*******************************************************************************************/
-uint16_t BODY::get_waist(){return waist;}
+uint16_t BODY::get_waist(void){return waist;}
 /*******************************************************************************************/
-uint16_t BODY::get_hip(){return hip;}
+uint16_t BODY::get_hip(void){return hip;}
 /*******************************************************************************************/
-uint16_t BODY::get_leg_ratio(){return leg_ratio;}
+uint16_t BODY::get_leg_ratio(void){return leg_ratio;}
 /*******************************************************************************************/
-String  BODY::get_csv(){
+String  BODY::get_csv(void){
     String response = "";
     make_csv(&response, String(gen_xy));
     make_csv(&response, String(blood_A));
@@ -434,9 +434,9 @@ void  BODY::set_csv(char* save_file){
 }
 /*********************************** BODY CLASS FUNCTION ***********************************/
 /*********************************** EROGENOUS CLASS FUNCTION ******************************/
-EROGENOUS::EROGENOUS(){}
+EROGENOUS::EROGENOUS(void){}
 /*******************************************************************************************/
-EROGENOUS::~EROGENOUS(){destruct();}
+EROGENOUS::~EROGENOUS(void){destruct();}
 /*******************************************************************************************/
 void EROGENOUS::set_gender(bool gender){
     gen_xy  = gender;
@@ -510,7 +510,7 @@ void EROGENOUS::generate(){
 /*******************************************************************************************/
 void EROGENOUS::change(EROGENOUS *gene){
     gen_xy          = gene->gen_xy;
-    hood_shape          = gene->hood_shape;
+    hood_shape      = gene->hood_shape;
     hood_start      = gene->hood_start;
     hood_texture    = gene->hood_texture;
     hood_width      = gene->hood_width;
@@ -550,7 +550,7 @@ void EROGENOUS::change(EROGENOUS *gene){
 }
 /*******************************************************************************************/
 void EROGENOUS::meiosis(EROGENOUS *mother, EROGENOUS *father){
-    hood_shape          = mutation_u8(mother->hood_shape,           father->hood_shape);
+    hood_shape      = mutation_u8(mother->hood_shape,           father->hood_shape);
     hood_start      = mutation_u8(mother->hood_start,       father->hood_start);
     hood_texture    = mutation_u8(mother->hood_texture,     father->hood_texture);
 
@@ -695,11 +695,11 @@ void EROGENOUS::status(){
 }
 */
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_hood_width(){return hood_width;}
+uint16_t EROGENOUS::get_hood_width(void){return hood_width;}
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_hood_length(){return hood_length;}
+uint16_t EROGENOUS::get_hood_length(void){return hood_length;}
 /*******************************************************************************************/
-String   EROGENOUS::get_hood(){
+String   EROGENOUS::get_hood(void){
     String hood = "";
     if(hood_start < 15){hood+="둥근 모양의 시작점에서";}
     else if(hood_start < 38){hood+="삼각형으로 뻗어";}
@@ -722,7 +722,7 @@ String   EROGENOUS::get_hood(){
     return hood;
 }
 /*******************************************************************************************/
-String   EROGENOUS::get_lips(){
+String   EROGENOUS::get_lips(void){
     String lip = "";
     if(lip_o_texture < 7){lip+="반들거리고";}
     else if(lip_o_texture < 26){lip+="매끈하고";}
@@ -791,11 +791,11 @@ uint8_t  EROGENOUS::get_balls(bool item){
     return ball_l;
 }
 /*******************************************************************************************/
-bool     EROGENOUS::get_prepuce(){return prepuce;}
+bool     EROGENOUS::get_prepuce(void){return prepuce;}
 /*******************************************************************************************/
-bool     EROGENOUS::get_invert(){return invert;}
+bool     EROGENOUS::get_invert(void){return invert;}
 /*******************************************************************************************/
-String   EROGENOUS::get_perineum(){
+String   EROGENOUS::get_perineum(void){
     String perineum_txt = "회음부는 ";
     if(perineum < 66){perineum_txt+="매끄럽다.";}
     else if(perineum < 83){perineum_txt+="회음봉선의 흔적이 보인다.";}
@@ -804,9 +804,9 @@ String   EROGENOUS::get_perineum(){
     return perineum_txt ;
 }
 /*******************************************************************************************/
-uint8_t EROGENOUS::get_wrinkle(){return wrinkle;}
+uint8_t EROGENOUS::get_wrinkle(void){return wrinkle;}
 /*******************************************************************************************/
-uint16_t EROGENOUS::get_areola(){return areola;}
+uint16_t EROGENOUS::get_areola(void){return areola;}
 /*******************************************************************************************/
 uint16_t EROGENOUS::get_nipple(uint8_t item){
     if(item == 1) return nipple_d;
@@ -816,7 +816,7 @@ uint16_t EROGENOUS::get_nipple(uint8_t item){
     return 0;
 }
 /*******************************************************************************************/
-String  EROGENOUS::get_csv(){
+String  EROGENOUS::get_csv(void){
     String response ="";
     make_csv(&response, String(gen_xy));
     make_csv(&response, String(hood_shape));

@@ -3,18 +3,18 @@
 #include "utility.h"
 #include "./progmem/path.h"
 
-String path_config();
-String path_cryobank();
-String path_avatar();
-String path_assist();
-String path_womb();
+String path_config(void);
+String path_cryobank(void);
+String path_avatar(void);
+String path_assist(void);
+String path_womb(void);
 
-String file_map();
-String file_mother();
-String file_father();
-String file_hard();
-String file_soft();
-String file_mens();
-String file_current();
-String file_exp();
-String file_hash();
+String file_map(void);
+String file_mother(void);
+String file_father(void);
+String file_hard(void);
+String file_soft(void);
+String file_mens(void);
+String file_current(void);
+String file_exp(void);
+String file_hash(void);

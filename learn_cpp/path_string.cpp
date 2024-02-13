@@ -1,62 +1,62 @@
 #include "path_string.h"
 /*******************************************************/
-String path_root(){
+String path_root(void){
     return get_progmem(path_root_str);
 };
 /*******************************************************/
-String path_config(){
+String path_config(void){
     return path_root() + get_progmem(path_config_str);
 };
 /*******************************************************/
-String path_cryobank(){
+String path_cryobank(void){
     return path_root() + get_progmem(path_cryobank_str);
 };
 /*******************************************************/
-String path_avatar(){
+String path_avatar(void){
     return path_root() + get_progmem(path_avatar_str);
 };
 /*******************************************************/
-String path_assist(){
+String path_assist(void){
     return path_root() + get_progmem(path_assist_str);
 };
 /*******************************************************/
-String path_womb(){
+String path_womb(void){
     return get_progmem(path_womb_str);
 };
 
 /*******************************************************/
-String file_map(){
+String file_map(void){
     return get_progmem(file_map_str);
 };
 /*******************************************************/
-String file_mother(){
+String file_mother(void){
     return get_progmem(file_mother_str);
 };
 /*******************************************************/
-String file_father(){
+String file_father(void){
     return get_progmem(file_father_str);
 };
 /*******************************************************/
-String file_hard(){
+String file_hard(void){
     return get_progmem(file_hard_str);
 };
 /*******************************************************/
-String file_soft(){
+String file_soft(void){
     return get_progmem(file_soft_str);
 };
 /*******************************************************/
-String file_mens(){
+String file_mens(void){
     return get_progmem(file_mens_str);
 };
 /*******************************************************/
-String file_current(){
+String file_current(void){
     return get_progmem(file_current_str);
 };
 /*******************************************************/
-String file_exp(){
+String file_exp(void){
     return get_progmem(file_exp_str);
 };
 /*******************************************************/
-String file_hash(){
+String file_hash(void){
     return get_progmem(file_hash_str);
 };

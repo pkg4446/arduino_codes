@@ -97,9 +97,9 @@ void unit_split(uint16_t values, uint16_t divides){
     Serial.print(".");
     Serial.print(values%divides);
 }
-void unit_mm(){
+void unit_mm(void){
     Serial.println(" mm");
 }
-void destruct(){
+void destruct(void){
     //Serial.println("Destructed");
 }

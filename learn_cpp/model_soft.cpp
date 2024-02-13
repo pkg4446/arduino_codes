@@ -1,9 +1,9 @@
 #include "model_soft.h"
 
 /*********************************** STAT CLASS FUNCTION ***********************************/
-STAT::STAT(){}
+STAT::STAT(void){}
 /*******************************************************************************************/
-STAT::~STAT(){destruct();}
+STAT::~STAT(void){destruct();}
 /*******************************************************************************************/
 void STAT::generate(){
     intelligence = gaussian_range(50,12);
@@ -37,18 +37,18 @@ void STAT::blend(STAT *mother, STAT *father){
     constitution = heredity_u8(mother->constitution, father->constitution); 
 }
 /*******************************************************************************************/
-uint8_t STAT::get_intelligence(){return intelligence;}
+uint8_t STAT::get_intelligence(void){return intelligence;}
 /*******************************************************************************************/
-uint8_t STAT::get_strength(){return strength;}
+uint8_t STAT::get_strength(void){return strength;}
 /*******************************************************************************************/
-uint8_t STAT::get_dexterity(){return dexterity;}
+uint8_t STAT::get_dexterity(void){return dexterity;}
 /*******************************************************************************************/
-uint8_t STAT::get_charisma(){return charisma;}
+uint8_t STAT::get_charisma(void){return charisma;}
 /*******************************************************************************************/
-uint8_t STAT::get_constitution(){return constitution;}
+uint8_t STAT::get_constitution(void){return constitution;}
 /*********************************** STAT CLASS FUNCTION ***********************************/
 /*******************************************************************************************/
-String  STAT::get_csv(){
+String  STAT::get_csv(void){
     String response = "";
     make_csv(&response, String(intelligence));
     make_csv(&response, String(strength));
@@ -66,11 +66,11 @@ void  STAT::set_csv(char* save_file){
     constitution    = atoi(strtok(0x00, ","));
 }
 /*********************************** HOLE CLASS FUNCTION ***********************************/
-HOLE::HOLE(){}
+HOLE::HOLE(void){}
 /*******************************************************************************************/
-HOLE::~HOLE(){destruct();}
+HOLE::~HOLE(void){destruct();}
 /*******************************************************************************************/
-void HOLE::generate(){
+void HOLE::generate(void){
     gape_u = gaussian_range(650,40);
     gape_v = gaussian_range(5550,400);
     gape_a = gaussian_range(6950,800);
@@ -134,7 +134,7 @@ uint16_t HOLE::get_pressure(uint8_t item){
     return 0;
 }
 /*******************************************************************************************/
-String  HOLE::get_csv(){
+String  HOLE::get_csv(void){
     String response = "";
     make_csv(&response, String(gape_u));
     make_csv(&response, String(gape_v));
@@ -155,11 +155,11 @@ void  HOLE::set_csv(char* save_file){
 }
 /*********************************** HOLE CLASS FUNCTION ***********************************/
 /*********************************** SENSE CLASS FUNCTION **********************************/
-SENSE::SENSE(){}
+SENSE::SENSE(void){}
 /*******************************************************************************************/
-SENSE::~SENSE(){destruct();}
+SENSE::~SENSE(void){destruct();}
 /*******************************************************************************************/
-void SENSE::generate(){
+void SENSE::generate(void){
     cervix          = gaussian_range(50,12);
     skin            = gaussian_range(50,12);
     vagina_balls    = gaussian_range(50,12);
@@ -195,21 +195,21 @@ void SENSE::blend(SENSE *mother, SENSE *father){
     nipple          = heredity_u8(mother->nipple,       father->nipple);  
 }
 /*******************************************************************************************/
-uint8_t SENSE::get_cervix(){return cervix;}
+uint8_t SENSE::get_cervix(void){return cervix;}
 /*******************************************************************************************/
-uint8_t SENSE::get_skin(){return skin;}
+uint8_t SENSE::get_skin(void){return skin;}
 /*******************************************************************************************/
-uint8_t SENSE::get_clit_glans(){return clit_glans;}
+uint8_t SENSE::get_clit_glans(void){return clit_glans;}
 /*******************************************************************************************/
-uint8_t SENSE::get_vagina_balls(){return vagina_balls;}
+uint8_t SENSE::get_vagina_balls(void){return vagina_balls;}
 /*******************************************************************************************/
-uint8_t SENSE::get_urethra(){return urethra;}
+uint8_t SENSE::get_urethra(void){return urethra;}
 /*******************************************************************************************/
-uint8_t SENSE::get_anal(){return anal;}
+uint8_t SENSE::get_anal(void){return anal;}
 /*******************************************************************************************/
-uint8_t SENSE::get_nipple(){return nipple;}
+uint8_t SENSE::get_nipple(void){return nipple;}
 /*******************************************************************************************/
-String  SENSE::get_csv(){
+String  SENSE::get_csv(void){
     String response = "";
     make_csv(&response, String(cervix));
     make_csv(&response, String(skin));
@@ -232,11 +232,11 @@ void  SENSE::set_csv(char* save_file){
 }
 /*********************************** SENSE CLASS FUNCTION **********************************/
 /*********************************** NATURE CLASS FUNCTION *********************************/
-NATURE::NATURE(){}
+NATURE::NATURE(void){}
 /*******************************************************************************************/
-NATURE::~NATURE(){destruct();}
+NATURE::~NATURE(void){destruct();}
 /*******************************************************************************************/
-void NATURE::generate(){
+void NATURE::generate(void){
     at_e_i  = gaussian_range(50,12);
     at_s_n  = gaussian_range(50,12);
     fn_t_f  = gaussian_range(50,12);
@@ -280,7 +280,7 @@ void NATURE::blend(NATURE *mother, NATURE *father){
     if(fn_j_p>50)mbti|=0b00000001;
 }
 /*******************************************************************************************/
-void NATURE::status(){
+void NATURE::status(void){
     perforation("nature");
     spacebar(false,"MBTI");
     if(at_e_i>50)Serial.print("E");
@@ -303,9 +303,9 @@ void NATURE::status(){
     Serial.println(mbti);    
 }
 /*******************************************************************************************/
-uint8_t NATURE::get_MBTI(){return mbti;}
+uint8_t NATURE::get_MBTI(void){return mbti;}
 /*******************************************************************************************/
-String  NATURE::get_csv(){
+String  NATURE::get_csv(void){
     String response = "";
     make_csv(&response, String(mbti));
     make_csv(&response, String(at_e_i));
@@ -324,11 +324,11 @@ void  NATURE::set_csv(char* save_file){
 }
 /*********************************** NATURE CLASS FUNCTION *********************************/
 /*********************************** EROS CLASS FUNCTION ***********************************/
-EROS::EROS(){}
+EROS::EROS(void){}
 /*******************************************************************************************/
-EROS::~EROS(){destruct();}
+EROS::~EROS(void){destruct();}
 /*******************************************************************************************/
-void EROS::generate(){
+void EROS::generate(void){
     lust       = gaussian_range(50,12);
     sadism     = gaussian_range(50,12);
     masohism   = gaussian_range(50,12);
@@ -360,17 +360,17 @@ void EROS::blend(EROS *mother, EROS *father){
     service    = heredity_u8(mother->service, father->service);
 }
 /*******************************************************************************************/
-uint8_t EROS::get_lust(){return lust;}
+uint8_t EROS::get_lust(void){return lust;}
 /*******************************************************************************************/
-uint8_t EROS::get_sadism(){return sadism;}
+uint8_t EROS::get_sadism(void){return sadism;}
 /*******************************************************************************************/
-uint8_t EROS::get_masohism(){return masohism;}
+uint8_t EROS::get_masohism(void){return masohism;}
 /*******************************************************************************************/
-uint8_t EROS::get_exhibition(){return exhibition;}
+uint8_t EROS::get_exhibition(void){return exhibition;}
 /*******************************************************************************************/
-uint8_t EROS::get_service(){return service;}
+uint8_t EROS::get_service(void){return service;}
 /*******************************************************************************************/
-String  EROS::get_csv(){
+String  EROS::get_csv(void){
     String response = "";
     make_csv(&response, String(lust));
     make_csv(&response, String(sadism));
@@ -389,11 +389,11 @@ void  EROS::set_csv(char* save_file){
 }
 /*********************************** EROS CLASS FUNCTION ***********************************/
 /*********************************** EXP CLASS FUNCTION ***********************************/
-EXP::EXP() {}
+EXP::EXP(void) {}
 /*******************************************************************************************/
-EXP::~EXP(){destruct();}
+EXP::~EXP(void){destruct();}
 /*******************************************************************************************/
-void EXP::generate(){
+void EXP::generate(void){
     orgasm  = 0;
     squirt  = 0;
     mouth   = 0;
@@ -449,7 +449,7 @@ uint8_t EXP::get_shot(uint8_t item){
     return 0;
 }
 /*******************************************************************************************/
-String  EXP::get_csv(){
+String  EXP::get_csv(void){
     String response = "";
     make_csv(&response, String(orgasm));
     make_csv(&response, String(squirt));

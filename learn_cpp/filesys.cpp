@@ -19,7 +19,7 @@ void  print_progmem(const char* progmem_ptr){
     Serial.println(response);
 }
 
-void sd_init() {
+void sd_init(void) {
   // Open serial communications and wait for port to open:
   uint8_t chipSelect = 53;
   #if defined(ESP32)

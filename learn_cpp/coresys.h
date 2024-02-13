@@ -13,9 +13,6 @@
 #define parents_gen 2
 #define model_gen   3
 
-void map_write();
-void map_read();
-
 void new_model(String model_path, bool gender);
 
 bool check_model_hash(String model_path, uint8_t hash_num);

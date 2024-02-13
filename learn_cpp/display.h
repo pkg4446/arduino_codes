@@ -7,30 +7,30 @@
 #include "utility.h"
 
 /*************** Display ***************/
-void display_cmd();
+void display_cmd(void);
 /*************** Display ***************/
-void display_model_err();
+void display_model_err(void);
 /*************** Display ***************/
-void display_boot();
+void display_boot(void);
 /*************** Display ***************/
-void display_hash_check();
+void display_hash_check(void);
 /*************** Display ***************/
-void display_help_cmd();
+void display_help_cmd(void);
 /*************** Display ***************/
 void display_hour(uint8_t *clock_hours);
 /*************** Display ***************/
-void display_make_assist();
+void display_make_assist(void);
 /*************** Display ***************/
-void display_make_user();
+void display_make_user(void);
 /*************** Display ***************/
 void display_prologue(String name, bool gender);
 /*************** Display ***************/
-void display_continue();
+void display_continue(void);
 /*************** Display ***************/
-void display_game_help();
+void display_game_help(void);
 /*************** Display ***************/
 void cancle_cmd(bool line_break);
 /*************** Display ***************/
-void display_cmd_main();
+void display_cmd_main(void);
 /*************** Display ***************/
-void display_info();
+void display_info(void);

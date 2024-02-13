@@ -1,9 +1,9 @@
 #include "model_status.h"
 
 /*********************************** MENS CLASS FUNCTION ***********************************/
-MENS::MENS() {}
+MENS::MENS(void) {}
 /*******************************************************************************************/
-MENS::~MENS(){destruct();}
+MENS::~MENS(void){destruct();}
 /*******************************************************************************************/
 void MENS::generate(bool gender){
     gen_xy    = gender;
@@ -15,7 +15,7 @@ void MENS::generate(bool gender){
     d_day     = 0;
 }
 /*******************************************************************************************/
-bool MENS::daily(){
+bool MENS::daily(void){
     if(!gen_xy){
         if(pregnant){
             if(d_day > 0) d_day--;
@@ -41,7 +41,7 @@ bool MENS::daily(){
     return !gen_xy;
 }
 /*******************************************************************************************/
-uint8_t MENS::get(){
+uint8_t MENS::get(void){
     //normal_safe == 0
     //egg drop    == 1
     //blooding    == 2
@@ -50,11 +50,11 @@ uint8_t MENS::get(){
     return 0;
 }
 /*******************************************************************************************/
-bool MENS::get_pregnant(){
+bool MENS::get_pregnant(void){
     return pregnant;
 }
 /*******************************************************************************************/
-String  MENS::get_csv(){
+String  MENS::get_csv(void){
     String response = "";
     make_csv(&response, String(gen_xy));
     make_csv(&response, String(pregnant));
@@ -77,11 +77,11 @@ void    MENS::set_csv(char* save_file){
 }
 /*********************************** MENS CLASS FUNCTION ***********************************/
 /*********************************** CURRENT CLASS FUNCTION ***********************************/
-CURRENT::CURRENT() {}
+CURRENT::CURRENT(void) {}
 /*******************************************************************************************/
-CURRENT::~CURRENT(){destruct();}
+CURRENT::~CURRENT(void){destruct();}
 /*******************************************************************************************/
-void CURRENT::generate(){
+void CURRENT::generate(void){
     furr    = random(5000);
     lubric  = 0;
     pee     = 0;
@@ -94,7 +94,7 @@ void CURRENT::generate(){
     ecstasy = 0;
 }
 /*******************************************************************************************/
-void CURRENT::daily(){
+void CURRENT::daily(void){
     if(pee < 5000) furr += random(10,30);
     if(pee < 100)  pee += random(5,50);
     if(poo < 100)  poo += random(1,10);
@@ -112,7 +112,7 @@ void CURRENT::update(uint8_t item, int8_t count){
     else if(item == 9) ecstasy += count;
 }
 /*******************************************************************************************/
-uint16_t CURRENT::get_furr(){
+uint16_t CURRENT::get_furr(void){
     return  furr;
 }
 /*******************************************************************************************/
@@ -129,7 +129,7 @@ uint8_t CURRENT::get(uint8_t item){
     return 0;
 }
 /*******************************************************************************************/
-String  CURRENT::get_csv(){
+String  CURRENT::get_csv(void){
     String response = "";
     make_csv(&response, String(furr));
     make_csv(&response, String(lubric));
@@ -158,17 +158,17 @@ void    CURRENT::set_csv(char* save_file){
 }
 /*********************************** CURRENT CLASS FUNCTION ***********************************/
 /*********************************** BREED CLASS FUNCTION ***********************************/
-BREED::BREED() {}
+BREED::BREED(void) {}
 /*******************************************************************************************/
-BREED::~BREED(){destruct();}
+BREED::~BREED(void){destruct();}
 /*******************************************************************************************/
-void BREED::generate(){
+void BREED::generate(void){
     pregnancy   = 0;
     birth       = 0;
     miscarriage = 0;
 }
 /*******************************************************************************************/
-void BREED::update(){
+void BREED::update(void){
 }
 /*******************************************************************************************/
 uint8_t BREED::get(uint8_t item){
@@ -178,7 +178,7 @@ uint8_t BREED::get(uint8_t item){
     return 0;
 }
 /*******************************************************************************************/
-String  BREED::get_csv(){
+String  BREED::get_csv(void){
     String response = "";
     make_csv(&response, String(pregnancy));
     make_csv(&response, String(birth));

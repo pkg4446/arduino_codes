@@ -1,6 +1,6 @@
 #include "database.h"
 /*************** NAME ***************/
-String new_family(){
+String new_family(void){
     String response = "";
     uint8_t index_family  = random(strlen_P(family)/3)*3;
     for(uint16_t index=index_family; index<index_family+3; index++){

@@ -12,17 +12,17 @@ class INFO
         String  name;
         uint8_t age;
     public:
-        INFO();
-        ~INFO();
+        INFO(void);
+        ~INFO(void);
         void   generate(bool gender, bool baby);
         void   set_family(String familyname);
-        void   aging();
-        bool    get_gender();
-        String  get_family();
-        String  get_name();
-        uint8_t get_age();
+        void   aging(void);
+        bool    get_gender(void);
+        String  get_family(void);
+        String  get_name(void);
+        uint8_t get_age(void);
 
-        String  get_csv();
+        String  get_csv(void);
         void    set_csv(char *save_file);
 };
 
@@ -37,21 +37,21 @@ class HEAD
         bool    dimple;
         bool    bald;
     public:
-        HEAD();
-        ~HEAD();
+        HEAD(void);
+        ~HEAD(void);
         void set_gender(bool gender);
-        void generate();
+        void generate(void);
         void change(HEAD *gene);
         void meiosis(HEAD *mother, HEAD *father);
         void blend(HEAD *mother, HEAD *father);
-        String  get_hair_color();
-        uint8_t get_hair_curl();
-        String  get_eye_color();
-        bool    get_eyelid();
-        bool    get_dimple();
-        bool    get_bald();
+        String  get_hair_color(void);
+        uint8_t get_hair_curl(void);
+        String  get_eye_color(void);
+        bool    get_eyelid(void);
+        bool    get_dimple(void);
+        bool    get_bald(void);
 
-        String  get_csv();
+        String  get_csv(void);
         void    set_csv(char *save_file);
 };
 
@@ -68,26 +68,26 @@ class BODY {
         uint16_t hip;       //w_ a:880  ,s:70.0 /m_ a:930  ,s:43.0
         uint16_t leg_ratio; //w_ a:458  ,s:18.0 /m_ a:453  ,s:20.0
     public:
-        BODY();
-        ~BODY();
+        BODY(void);
+        ~BODY(void);
         void set_gender(bool gender);
-        void generate();
+        void generate(void);
         void change(BODY *gene);
         void meiosis(BODY *mother, BODY *father);
         void blend(BODY *mother, BODY *father);
-        String   get_blood();
-        uint16_t get_weight();
+        String   get_blood(void);
+        uint16_t get_weight(void);
         uint16_t get_BMI(uint16_t weight);
-        String   get_body_color();
-        String   get_cup();
-        uint16_t get_breast();
-        uint16_t get_height();
-        uint16_t get_chest();
-        uint16_t get_waist();
-        uint16_t get_hip();
-        uint16_t get_leg_ratio();
+        String   get_body_color(void);
+        String   get_cup(void);
+        uint16_t get_breast(void);
+        uint16_t get_height(void);
+        uint16_t get_chest(void);
+        uint16_t get_waist(void);
+        uint16_t get_hip(void);
+        uint16_t get_leg_ratio(void);
 
-        String  get_csv();
+        String  get_csv(void);
         void    set_csv(char *save_file);
 };
 
@@ -140,29 +140,29 @@ class EROGENOUS {
         uint16_t nipple_h_e;
 
     public:
-        EROGENOUS();
-        ~EROGENOUS();
+        EROGENOUS(void);
+        ~EROGENOUS(void);
         void set_gender(bool gender);
-        void generate();
+        void generate(void);
         void change(EROGENOUS *gene);
         void meiosis(EROGENOUS *mother, EROGENOUS *father);
         void blend(EROGENOUS *mother, EROGENOUS *father);
-        uint16_t get_hood_width();
-        uint16_t get_hood_length();
-        String   get_hood();
-        String   get_lips();
+        uint16_t get_hood_width(void);
+        uint16_t get_hood_length(void);
+        String   get_hood(void);
+        String   get_lips(void);
         uint16_t get_wing(uint8_t item);
         uint16_t get_clit(uint8_t item);
         uint16_t get_glans(uint8_t item);
         uint16_t get_body(uint8_t item);
         uint8_t  get_balls(bool item);
-        bool     get_prepuce();
-        bool     get_invert();
-        String   get_perineum();
-        uint8_t  get_wrinkle();
-        uint16_t get_areola();
+        bool     get_prepuce(void);
+        bool     get_invert(void);
+        String   get_perineum(void);
+        uint8_t  get_wrinkle(void);
+        uint16_t get_areola(void);
         uint16_t get_nipple(uint8_t item);
         
-        String  get_csv();
+        String  get_csv(void);
         void    set_csv(char *save_file);
 };

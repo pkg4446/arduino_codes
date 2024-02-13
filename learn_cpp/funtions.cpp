@@ -1,6 +1,6 @@
 #include "funtions.h"
 /*************** funtion ***************/
-void prologue_txt(){
+void prologue_txt(void){
     /***** Model *****/
     /***** Hardware *****/
     INFO      *info_class   = new INFO();
@@ -14,7 +14,7 @@ void prologue_txt(){
     display_prologue(info_class->get_family() + info_class->get_name(), gender);
 }
 /*************** funtion ***************/
-void routine_day_mens(){
+void routine_day_mens(void){
     mens_check(path_assist(),true);
     mens_check(path_avatar(),true);
     //나머지 체크
