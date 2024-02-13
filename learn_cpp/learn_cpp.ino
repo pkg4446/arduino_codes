@@ -195,11 +195,11 @@ void setup() {
     check_model_hash(path_avatar(),1);
     check_model_hash(path_avatar(),2);
   }
-  if(dir_list(path_assist(),false,false) < 8){
+  if(dir_list(path_assist(),false,false) < FILE_AMOUNT){
     new_model(path_assist(),false);
     display_make_assist();
   }
-  if(dir_list(path_avatar(),false,false) < 8){
+  if(dir_list(path_avatar(),false,false) < FILE_AMOUNT){
     bool gender = random(2);
     new_model(path_avatar(),gender);
     display_make_user();
