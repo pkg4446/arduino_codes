@@ -183,28 +183,26 @@ void setup() {
     if (Serial.available()) get_command(Serial.read());
   }
   if(!exisits_check(path_config())) dir_make(path_config());
-
   if(!exisits_check(path_assist())) dir_make(path_assist());
-  if(scene_number==COMMAND_YES || dir_list(path_assist(),false,false) < 8){
-    new_model(path_assist(),false);
-    display_make_assist();
-  }else{
+  if(!exisits_check(path_avatar())) dir_make(path_avatar());
+  if(scene_number!=COMMAND_YES){
     display_hash_check();
     check_model_hash(path_assist(),0);
     check_model_hash(path_assist(),1);
     check_model_hash(path_assist(),2);
+    check_model_hash(path_avatar(),0);
+    check_model_hash(path_avatar(),1);
+    check_model_hash(path_avatar(),2);
   }
-  if(!exisits_check(path_avatar())) dir_make(path_avatar());
-  if(scene_number==COMMAND_YES || dir_list(path_avatar(),false,false) < 8){
+  if(dir_list(path_assist(),false,false) < 8){
+    new_model(path_assist(),false);
+    display_make_assist();
+  }
+  if(dir_list(path_avatar(),false,false) < 8){
     bool gender = random(2);
     new_model(path_avatar(),gender);
     display_make_user();
     scene_number = COMMAND_YES;
-  }else{
-    display_hash_check();
-    check_model_hash(path_avatar(),0);
-    check_model_hash(path_avatar(),1);
-    check_model_hash(path_avatar(),2);
   }
 
   if(scene_number == COMMAND_YES){
