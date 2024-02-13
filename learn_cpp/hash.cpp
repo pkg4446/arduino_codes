@@ -16,23 +16,16 @@ size_t hashClass::write(uint8_t data) {
   return true;
 }
 
-String hashClass::hash_text(bool hex_num) {
-    String response = "";
-    const char* hash_ptr = hex_num ? hash_hex1 : hash_hex2;
-    uint16_t hash_len = strlen_P(hash_ptr);
-    for (uint16_t index = 0; index < hash_len; index++) {
-        response += char(pgm_read_byte_near(hash_ptr + index));
-    }
-    return response;
+char hashClass::hash_text(bool hex_num, uint8_t index) {
+  const char* hash_ptr = hex_num ? hash_hex1 : hash_hex2;
+  return pgm_read_byte_near(hash_ptr + index);
 }
 
 String hashClass::printHash(uint32_t* hash) {
   String response = "";
-  String hash_1 = hash_text(true);
-  String hash_2 = hash_text(false);
-  for (uint8_t index=0; index<4; index++) {
-    response += hash_1[((*hash >> (8*index)) & 0xFF) % 16];
-    response += hash_2[((*hash >> (8*index)) & 0xFF) % 16];
+  for (uint8_t index = 0; index < TEXT_LENGTH; index++) {
+    response += hash_text(true,((*hash >> ((32/TEXT_LENGTH)*index)) & 0xFF) % 16);
+    response += hash_text(false,((*hash >> ((32/TEXT_LENGTH)*index)) & 0xFF) % 16);
   }
   return response;
 }

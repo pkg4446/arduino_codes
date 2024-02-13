@@ -14,7 +14,7 @@ class hashClass : public Print
     virtual   size_t write(uint8_t);
     using     Print::write;
   private:
-    String    hash_text(bool hex_num);
+    char      hash_text(bool hex_num, uint8_t index);
     String    printHash(uint32_t* hash);
 
     uint16_t  byteCount;
