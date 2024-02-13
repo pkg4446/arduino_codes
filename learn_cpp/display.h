@@ -2,8 +2,9 @@
 #include <arduino.h>
 #include "./progmem/interfaces.h"
 #include "./progmem/scene.h"
+#include "./progmem/words.h"
 #include "define.h"
-#include "word.h"
+#include "utility.h"
 
 /*************** Display ***************/
 void display_cmd();

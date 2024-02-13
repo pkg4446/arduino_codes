@@ -11,6 +11,13 @@
     fs.remove(path);
   }
 #endif
+void  print_progmem(const char* progmem_ptr){
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(progmem_ptr); index++){
+        response += char(pgm_read_byte_near(progmem_ptr+index));
+    }
+    Serial.println(response);
+}
 
 void sd_init() {
   // Open serial communications and wait for port to open:

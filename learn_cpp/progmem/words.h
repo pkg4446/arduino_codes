@@ -1,11 +1,11 @@
 #pragma once
 /*************** Word ***************/
-const PROGMEM char word_male_str[]      = "남자";
+const PROGMEM char word_male[]      = "남자";
 /*************** Word ***************/
-const PROGMEM char word_female_str[]    = "여자";
+const PROGMEM char word_female[]    = "여자";
 /*************** Word ***************/
-const PROGMEM char word_yes_str[]       = "예";
+const PROGMEM char word_yes[]       = "예";
 /*************** Word ***************/
-const PROGMEM char word_no_str[]        = "아니오";
+const PROGMEM char word_no[]        = "아니오";
 /*************** Word ***************/
-const PROGMEM char word_cancle_str[]    = "취소";
+const PROGMEM char word_cancle[]    = "취소";

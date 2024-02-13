@@ -1,5 +1,6 @@
 #pragma once
 #include <arduino.h>
+#include "utility.h"
 #include "./progmem/path.h"
 
 String path_config();
