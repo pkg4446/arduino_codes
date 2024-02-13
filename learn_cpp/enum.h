@@ -1,3 +1,3 @@
 #pragma once
 
-enum dungeon_types{load, wall, trap, room};
+enum dungeon_types{wall, load, trap, room};

@@ -233,6 +233,11 @@ void setup() {
   play_main(&scene_number);
 
   playmap.init();
+  Serial.println(playmap.pathfinder());
+  playmap.rebuild(0,4,0);
+  playmap.rebuild(1,4,0);
+  playmap.rebuild(2,4,0);
+  Serial.println(playmap.pathfinder());
   playmap.view();
 
 }
