@@ -190,6 +190,7 @@ void setup() {
     check_model_hash(path_assist(),0);
     check_model_hash(path_assist(),1);
     check_model_hash(path_assist(),2);
+    display_hash_check();
     check_model_hash(path_avatar(),0);
     check_model_hash(path_avatar(),1);
     check_model_hash(path_avatar(),2);
