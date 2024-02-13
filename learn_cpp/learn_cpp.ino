@@ -232,10 +232,9 @@ void setup() {
   //display_newday(&month_count,info_class,stat_class,mens_class,current_class);
   play_main(&scene_number);
 
-  /*
   playmap.init();
   playmap.view();
-  */
+
 }
 /***** loop ****************/
 void loop() {
