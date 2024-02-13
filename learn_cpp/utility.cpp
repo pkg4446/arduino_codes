@@ -43,6 +43,14 @@ uint16_t get_gaussian(uint16_t average, uint16_t standard_deviation, uint16_t va
     return uint16_t(response);
 }
 
+String   get_progmem(const char* progmem_ptr){
+    String response = "";
+    for(uint16_t index=0; index<strlen_P(progmem_ptr); index++){
+        response += char(pgm_read_byte_near(progmem_ptr+index));
+    }
+    return response;
+}
+
 void paging(){
     for(uint8_t index=0; index<LINE_NUM; index++){
         Serial.print("-");

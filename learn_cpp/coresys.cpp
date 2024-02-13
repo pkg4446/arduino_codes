@@ -169,24 +169,24 @@ void new_model(String model_path, bool gender){
     String hashs  = "";
     String models = merge_parent_csv(info_class[0],head_class[0],body_class[0],parts_class[0],stat_class[0],hole_class[0],sense_class[0],nature_class[0],eros_class[0]);
     file_write(model_path+file_mother(), models);
-    Sha1.init();
-    Sha1.print(models);
+    hash.init();
+    hash.print(models);
     
     models = merge_parent_csv(info_class[1],head_class[1],body_class[1],parts_class[1],stat_class[1],hole_class[1],sense_class[1],nature_class[1],eros_class[1]);
     file_write(model_path+file_father(), models);
-    Sha1.print(models);
-    make_csv(&hashs, Sha1.result());
+    hash.print(models);
+    make_csv(&hashs, hash.result());
 
     models = merge_hard_csv(info_class[2],head_class[2],body_class[2],parts_class[2]);
-    Sha1.init();
-    Sha1.print(models);
-    make_csv(&hashs, Sha1.result());
+    hash.init();
+    hash.print(models);
+    make_csv(&hashs, hash.result());
     file_write(model_path+file_hard(), models);
 
     models = merge_soft_csv(stat_class[2],hole_class[2],sense_class[2],nature_class[2],eros_class[2]);
-    Sha1.init();
-    Sha1.print(models);
-    make_csv(&hashs, Sha1.result());
+    hash.init();
+    hash.print(models);
+    make_csv(&hashs, hash.result());
     file_write(model_path+file_hash(), hashs);
     file_write(model_path+file_soft(), models);
 
@@ -232,7 +232,7 @@ bool check_model_hash(String model_path, uint8_t hash_num){
         hash_value[0] = strtok(csv_file, ",");
         hash_value[1] = strtok(0x00, ",");
         hash_value[2] = strtok(0x00, ",");
-        Sha1.init();
+        hash.init();
         if(hash_num == 1){
             csv_file_str = file_read(model_path+file_hard());
         }else if(hash_num == 2){
@@ -240,8 +240,8 @@ bool check_model_hash(String model_path, uint8_t hash_num){
         }else{
             csv_file_str = file_read(model_path+file_mother()) + file_read(model_path+file_father());
         }
-        Sha1.print(csv_file_str);
-        String hashs = Sha1.result();
+        hash.print(csv_file_str);
+        String hashs = hash.result();
         response = (hashs == hash_value[hash_num]);
     }
     if(!response){
@@ -346,24 +346,24 @@ void pregnant_baby(String mother_path, String father_path, bool gender){
     String hashs  = "";
     String models = merge_parent_csv(info_class[0],head_class[0],body_class[0],parts_class[0],stat_class[0],hole_class[0],sense_class[0],nature_class[0],eros_class[0]);
     file_write(model_path+file_mother(), models);
-    Sha1.init();
-    Sha1.print(models);
+    hash.init();
+    hash.print(models);
     
     models = merge_parent_csv(info_class[1],head_class[1],body_class[1],parts_class[1],stat_class[1],hole_class[1],sense_class[1],nature_class[1],eros_class[1]);
     file_write(model_path+file_father(), models);
-    Sha1.print(models);
-    make_csv(&hashs, Sha1.result());
+    hash.print(models);
+    make_csv(&hashs, hash.result());
 
     models = merge_hard_csv(info_class[2],head_class[2],body_class[2],parts_class[2]);
-    Sha1.init();
-    Sha1.print(models);
-    make_csv(&hashs, Sha1.result());
+    hash.init();
+    hash.print(models);
+    make_csv(&hashs, hash.result());
     file_write(model_path+file_hard(), models);
 
     models = merge_soft_csv(stat_class[2],hole_class[2],sense_class[2],nature_class[2],eros_class[2]);
-    Sha1.init();
-    Sha1.print(models);
-    make_csv(&hashs, Sha1.result());
+    hash.init();
+    hash.print(models);
+    make_csv(&hashs, hash.result());
     file_write(model_path+file_hash(), hashs);
     file_write(model_path+file_soft(), models);
 
