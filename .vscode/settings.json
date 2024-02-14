@@ -2,6 +2,9 @@
     "cmake.configureOnOpen": false,
     "C_Cpp.errorSquiggles": "disabled",
     "files.associations": {
-        "iosfwd": "cpp"
+        "iosfwd": "cpp",
+        "vector": "cpp",
+        "xstring": "cpp",
+        "xutility": "cpp"
     }
 }
