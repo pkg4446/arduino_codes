@@ -113,48 +113,6 @@ void enable_led(bool en)
 }
 #endif
 
-static esp_err_t bmp_handler(httpd_req_t *req)
-{
-    camera_fb_t *fb = NULL;
-    esp_err_t res = ESP_OK;
-#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
-    uint64_t fr_start = esp_timer_get_time();
-#endif
-    fb = esp_camera_fb_get();
-    if (!fb)
-    {
-        log_e("Camera capture failed");
-        httpd_resp_send_500(req);
-        return ESP_FAIL;
-    }
-
-    httpd_resp_set_type(req, "image/x-windows-bmp");
-    httpd_resp_set_hdr(req, "Content-Disposition", "inline; filename=capture.bmp");
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-
-    char ts[32];
-    snprintf(ts, 32, "%ld.%06ld", fb->timestamp.tv_sec, fb->timestamp.tv_usec);
-    httpd_resp_set_hdr(req, "X-Timestamp", (const char *)ts);
-
-
-    uint8_t * buf = NULL;
-    size_t buf_len = 0;
-    bool converted = frame2bmp(fb, &buf, &buf_len);
-    esp_camera_fb_return(fb);
-    if(!converted){
-        log_e("BMP Conversion failed");
-        httpd_resp_send_500(req);
-        return ESP_FAIL;
-    }
-    res = httpd_resp_send(req, (const char *)buf, buf_len);
-    free(buf);
-#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
-    uint64_t fr_end = esp_timer_get_time();
-#endif
-    log_i("BMP: %llums, %uB", (uint64_t)((fr_end - fr_start) / 1000), buf_len);
-    return res;
-}
-
 static size_t jpg_encode_stream(void *arg, size_t index, const void *data, size_t len)
 {
     jpg_chunking_t *j = (jpg_chunking_t *)arg;
@@ -619,13 +577,6 @@ void startCameraServer()
         .uri = "/stream",
         .method = HTTP_GET,
         .handler = stream_handler,
-        .user_ctx = NULL
-    };
-
-    httpd_uri_t bmp_uri = {
-        .uri = "/bmp",
-        .method = HTTP_GET,
-        .handler = bmp_handler,
         .user_ctx = NULL
     };
 
