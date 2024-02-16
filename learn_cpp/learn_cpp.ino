@@ -233,7 +233,11 @@ void setup() {
   play_main(&scene_number);
 
   playmap.init();
-  Serial.println(playmap.pathfinder());
+  playmap.rebuild(6,0,0);
+  playmap.rebuild(6,1,0);
+  playmap.rebuild(5,1,0);
+  playmap.rebuild(3,2,0);
+  playmap.rebuild(1,2,0);
   playmap.view();
 
   moveClass *mob1 = new moveClass();
