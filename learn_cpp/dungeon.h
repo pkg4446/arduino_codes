@@ -7,20 +7,37 @@
 class mapClass
 {
   public:
+    uint8_t maze[MAP_Y][MAP_X];
     void    init(void);
     void    view(void);
     bool    pathfinder(void);
     void    rebuild(uint8_t axis_x, uint8_t axis_y, uint8_t types);
     uint8_t get(uint8_t axis_x, uint8_t axis_y);
+    uint8_t get_enter(void);
   private:
     uint8_t enter_y;
     uint8_t exit_y;
-    uint8_t maze[MAP_Y][MAP_X];
-    bool visited[MAP_Y][MAP_X];
+    bool    visited[MAP_Y][MAP_X];
     struct Point {
       int row;
       int col;
     };
+};
+
+class moveClass
+{
+  public:
+    uint8_t gps_x;
+    uint8_t gps_y;
+    void    init(uint8_t enter);
+    void    moving(uint8_t (*maze)[MAP_X]);
+    bool    event(void);
+  private:
+    uint8_t act_point;
+    bool    back_move;
+    bool    target_x;
+    bool    target_y;
+    bool    visited[MAP_Y][MAP_X];
 };
 
 class dungeonClass
