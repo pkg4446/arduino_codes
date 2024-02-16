@@ -234,12 +234,15 @@ void setup() {
 
   playmap.init();
   Serial.println(playmap.pathfinder());
-  playmap.rebuild(0,4,0);
-  playmap.rebuild(1,4,0);
-  playmap.rebuild(2,4,0);
-  Serial.println(playmap.pathfinder());
   playmap.view();
 
+  moveClass *mob1 = new moveClass();
+  uint8_t move_point = mob1->init(playmap.get_enter());
+  for(uint8_t index=0; index<move_point; index++){
+    mob1->moving(playmap.maze);
+    mob1->event();
+  }
+  delete mob1;
 }
 /***** loop ****************/
 void loop() {

@@ -14,6 +14,7 @@ class mapClass
     void    rebuild(uint8_t axis_x, uint8_t axis_y, uint8_t types);
     uint8_t get(uint8_t axis_x, uint8_t axis_y);
     uint8_t get_enter(void);
+    uint8_t get_exit(void);
   private:
     uint8_t enter_y;
     uint8_t exit_y;
@@ -29,7 +30,7 @@ class moveClass
   public:
     uint8_t gps_x;
     uint8_t gps_y;
-    void    init(uint8_t enter);
+    uint8_t init(uint8_t enter);
     void    moving(uint8_t (*maze)[MAP_X]);
     bool    event(void);
   private:

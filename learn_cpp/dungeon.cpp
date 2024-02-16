@@ -70,34 +70,33 @@ uint8_t mapClass::get(uint8_t axis_x, uint8_t axis_y) {
 uint8_t mapClass::get_enter(void) {
   return enter_y;
 }
+uint8_t mapClass::get_exit(void) {
+  return exit_y;
+}
 /**************************************************************************************/
-void moveClass::init(uint8_t enter) {
+uint8_t moveClass::init(uint8_t enter) {
   memset(visited, false, sizeof(visited));
   act_point = random(8,48);
   back_move = false;
   gps_x = 0;
   gps_y = enter;
+  return act_point;
 }
 
 void moveClass::moving(uint8_t (*maze)[MAP_X]) {
+  if(act_point == 0) return;
+  else act_point-=1;
   if(back_move){
 	  if(gps_x>target_x && maze[gps_y][gps_x-1]!=wall){
       gps_x-=1;
-    }else{
-      if(gps_x==target_x && gps_y==target_y){
-        back_move = false;
-      }else if(gps_x==target_x){
-        if(gps_y>target_y)  gps_y-=1;
-        else                gps_y+=1;
-      }else if(gps_y == 1 && maze[0][gps_x]!=wall){
-        gps_y++;
-      }else if(gps_y == 1 && maze[2][gps_x]!=wall){
-        gps_y--;
-      }else if(gps_y==0 && maze[1][gps_x]!=wall){
-        gps_y++;
-      }else if(gps_y==2 && maze[1][gps_x]!=wall){
-        gps_y--;
-      }
+    }else if(gps_x<target_x && maze[gps_y][gps_x+1]!=wall){
+      gps_x+=1;
+    }else if(gps_y>target_y && maze[gps_y-1][gps_x]!=wall){
+      gps_y-=1;
+    }else if(gps_y<target_y && maze[gps_y+1][gps_x]!=wall){
+      gps_y+=1;
+    }else if(gps_x==target_x && gps_y==target_y){
+      back_move = false;
     }
   }else{
     //move direction 0=x-1,1=x+1,2=y-1,3=y+1.
@@ -197,6 +196,17 @@ void moveClass::moving(uint8_t (*maze)[MAP_X]) {
 }
 
 bool moveClass::event(void) {
+  Serial.print("x: ");
+  Serial.print(gps_x);
+  Serial.print(", y: ");
+  Serial.println(gps_y);
+  for (uint8_t index_y = 0; index_y < MAP_Y; index_y++){
+    for (uint8_t index_x = 0; index_x < MAP_X; index_x++){
+      Serial.print(visited[index_y][index_x]);
+      if(index_x != MAP_X-1)Serial.print(",");
+    }
+    Serial.println();
+  }
   return true;
 }
 
