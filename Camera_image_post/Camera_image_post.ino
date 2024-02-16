@@ -1,5 +1,7 @@
+#include "esp_camera.h"
 #include <WiFi.h>
-#include <esp_camera.h>
+#include <HTTPClient.h>
+
 #include "EEPROM.h"
 #define SERIAL_MAX  32
 #define EEPROM_SIZE 16
@@ -8,7 +10,8 @@ const uint8_t eep_ssid[EEPROM_SIZE] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 const uint8_t eep_pass[EEPROM_SIZE] = {16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 /******************EEPROM******************/
 char ssid[EEPROM_SIZE];
-char password[EEPROM_SIZE]; 
+char password[EEPROM_SIZE];
+const char* serverUrl = "http://192.168.1.15:3004/upload";
 /******************CARMERA******************/
 #define PWDN_GPIO_NUM     32
 #define RESET_GPIO_NUM    -1
@@ -29,7 +32,6 @@ char password[EEPROM_SIZE];
 #define PCLK_GPIO_NUM     22
 // 4 for flash led or 33 for normal led
 #define LED_GPIO_NUM       4
-/*******************************************/
 // ===========================
 // Enter your WiFi credentials
 // ===========================
@@ -81,28 +83,17 @@ void Serial_process() {
       break;
   }
 }
-/*******************************************/
-void startCameraServer();
-void setupLedFlash(int pin);
 
 void setup() {
   Serial.begin(115200);
-  Serial.setDebugOutput(true);
+
   if (!EEPROM.begin(EEPROM_SIZE*2)){
     Serial.println("Failed to initialise eeprom");
     Serial.println("Restarting...");
     delay(1000);
     ESP.restart();
   }
-  for (int index = 0; index < EEPROM_SIZE; index++) {
-    ssid[index]     = EEPROM.read(eep_ssid[index]);
-    password[index] = EEPROM.read(eep_pass[index]);
-  }
-  Serial.println("------- wifi config -------");
-  Serial.println("AT+WIFI=SSID=PASS;");
-  Serial.print("ssid: "); Serial.println(ssid);
-  Serial.print("pass: "); Serial.println(password);
-  Serial.println("---------------------------");
+
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -118,54 +109,37 @@ void setup() {
   config.pin_pclk = PCLK_GPIO_NUM;
   config.pin_vsync = VSYNC_GPIO_NUM;
   config.pin_href = HREF_GPIO_NUM;
-  config.pin_sccb_sda = SIOD_GPIO_NUM;
-  config.pin_sccb_scl = SIOC_GPIO_NUM;
+  config.pin_sscb_sda = SIOD_GPIO_NUM;
+  config.pin_sscb_scl = SIOC_GPIO_NUM;
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
-  config.frame_size = FRAMESIZE_UXGA;
-  config.pixel_format = PIXFORMAT_JPEG; // for streaming
-  //config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
+  config.pixel_format = PIXFORMAT_JPEG;
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   config.fb_location = CAMERA_FB_IN_PSRAM;
-  config.jpeg_quality = 12;
+  config.jpeg_quality = 4;
   config.fb_count = 1;
   
-  // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
-  //                      for larger pre-allocated frame buffer.
-  if(config.pixel_format == PIXFORMAT_JPEG){
-    if(psramFound()){
-      config.jpeg_quality = 10;
-      config.fb_count = 2;
-      config.grab_mode = CAMERA_GRAB_LATEST;
-    } else {
-      // Limit the frame size when PSRAM is not available
-      config.frame_size = FRAMESIZE_SVGA;
-      config.fb_location = CAMERA_FB_IN_DRAM;
-    }
-  } else {
-    // Best option for face detection/recognition
-    config.frame_size = FRAMESIZE_240X240;
+  // 카메라 시작
+  esp_err_t err = esp_camera_init(&config);
+  if (err != ESP_OK) {
+    Serial.printf("Camera init failed with error 0x%x", err);
+    return;
   }
-  // camera init
-esp_err_t err = esp_camera_init(&config);
-if (err != ESP_OK) {
-  Serial.printf("Camera init failed with error 0x%x", err);
-  return;
-}
 
-sensor_t * s = esp_camera_sensor_get();
-s->set_quality(s, 4);
-s->set_framesize(s, FRAMESIZE_QVGA);
-
-// Setup LED FLash if LED pin is defined in camera_pins.h
-#if defined(LED_GPIO_NUM)
-  setupLedFlash(LED_GPIO_NUM);
-#endif
+  for (int index = 0; index < EEPROM_SIZE; index++) {
+    ssid[index]     = EEPROM.read(eep_ssid[index]);
+    password[index] = EEPROM.read(eep_pass[index]);
+  }
+  Serial.println("------- wifi config -------");
+  Serial.println("AT+WIFI=SSID=PASS;");
+  Serial.print("ssid: "); Serial.println(ssid);
+  Serial.print("pass: "); Serial.println(password);
+  Serial.println("---------------------------");
 
   WiFi.disconnect(true);
   WiFi.begin(ssid, password);
-
+  WiFi.setSleep(false);
   unsigned long wifi_config_update = 0UL;
   while (WiFi.status() != WL_CONNECTED) {
     if (Serial.available()) Serial_process();
@@ -175,18 +149,32 @@ s->set_framesize(s, FRAMESIZE_QVGA);
       Serial.println("Connecting to WiFi..");
     }
   }
-  
-  WiFi.setSleep(false);
-  Serial.println("");
-  Serial.println("WiFi connected");
-
-  startCameraServer();
-
-  Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("' to connect");
+ 
 }
 
 void loop() {
-  // Do nothing. Everything is done in another task by the web server
+  // 영상 촬영
+  camera_fb_t *fb = esp_camera_fb_get();
+  if (!fb) {
+    Serial.println("Camera capture failed");
+    return;
+  }
+
+  // HTTP POST 요청 전송
+  HTTPClient http;
+  http.begin(serverUrl);
+  http.addHeader("Content-Type", "image/jpeg");
+  int httpResponseCode = http.POST((uint8_t *)fb->buf, fb->len);
+  if (httpResponseCode > 0) {
+    Serial.printf("HTTP Response code: %d\n", httpResponseCode);
+  } else {
+    Serial.printf("HTTP Error code: %s\n", http.errorToString(httpResponseCode).c_str());
+  }
+  http.end();
+
+  // 메모리 반환
+  esp_camera_fb_return(fb);
+
+  // 5초 대기
+  delay(5000);
 }

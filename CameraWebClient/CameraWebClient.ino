@@ -1,5 +1,7 @@
+#include <ArduinoWebsockets.h>
 #include <WiFi.h>
-#include <esp_camera.h>
+#include "esp_camera.h"
+
 #include "EEPROM.h"
 #define SERIAL_MAX  32
 #define EEPROM_SIZE 16
@@ -9,6 +11,13 @@ const uint8_t eep_pass[EEPROM_SIZE] = {16,17,18,19,20,21,22,23,24,25,26,27,28,29
 /******************EEPROM******************/
 char ssid[EEPROM_SIZE];
 char password[EEPROM_SIZE]; 
+/******************CARMERA******************/
+const char* websockets_server_host = "192.168.1.15";
+const uint16_t websockets_server_port = 3000;
+
+using namespace websockets;
+WebsocketsClient client;
+
 /******************CARMERA******************/
 #define PWDN_GPIO_NUM     32
 #define RESET_GPIO_NUM    -1
@@ -29,6 +38,7 @@ char password[EEPROM_SIZE];
 #define PCLK_GPIO_NUM     22
 // 4 for flash led or 33 for normal led
 #define LED_GPIO_NUM       4
+/*******************************************/
 /*******************************************/
 // ===========================
 // Enter your WiFi credentials
@@ -82,12 +92,11 @@ void Serial_process() {
   }
 }
 /*******************************************/
-void startCameraServer();
-void setupLedFlash(int pin);
+uint8_t* camera_frame = nullptr;
+size_t frame_length = 0;
 
 void setup() {
   Serial.begin(115200);
-  Serial.setDebugOutput(true);
   if (!EEPROM.begin(EEPROM_SIZE*2)){
     Serial.println("Failed to initialise eeprom");
     Serial.println("Restarting...");
@@ -103,6 +112,24 @@ void setup() {
   Serial.print("ssid: "); Serial.println(ssid);
   Serial.print("pass: "); Serial.println(password);
   Serial.println("---------------------------");
+  // Connect to WiFi
+  WiFi.disconnect(true);
+  WiFi.begin(ssid, password);
+  unsigned long wifi_config_update = 0UL;
+  while (WiFi.status() != WL_CONNECTED) {
+    if (Serial.available()) Serial_process();
+    unsigned long update_time = millis();
+    if(update_time - wifi_config_update > 3000){
+      wifi_config_update = update_time;
+      Serial.println("Connecting to WiFi..");
+    }
+  }
+  
+  WiFi.setSleep(false);
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("Connected to WiFi");
+
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -123,70 +150,37 @@ void setup() {
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
-  config.frame_size = FRAMESIZE_UXGA;
+  config.frame_size = FRAMESIZE_QVGA;
   config.pixel_format = PIXFORMAT_JPEG; // for streaming
   //config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   config.fb_location = CAMERA_FB_IN_PSRAM;
-  config.jpeg_quality = 12;
+  config.jpeg_quality = 4;
   config.fb_count = 1;
-  
-  // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
-  //                      for larger pre-allocated frame buffer.
-  if(config.pixel_format == PIXFORMAT_JPEG){
-    if(psramFound()){
-      config.jpeg_quality = 10;
-      config.fb_count = 2;
-      config.grab_mode = CAMERA_GRAB_LATEST;
-    } else {
-      // Limit the frame size when PSRAM is not available
-      config.frame_size = FRAMESIZE_SVGA;
-      config.fb_location = CAMERA_FB_IN_DRAM;
+
+    // Initialize the camera
+    esp_err_t err = esp_camera_init(&config);
+    if (err != ESP_OK) {
+        Serial.printf("Camera init failed with error 0x%x", err);
+        return;
     }
-  } else {
-    // Best option for face detection/recognition
-    config.frame_size = FRAMESIZE_240X240;
-  }
-  // camera init
-esp_err_t err = esp_camera_init(&config);
-if (err != ESP_OK) {
-  Serial.printf("Camera init failed with error 0x%x", err);
-  return;
-}
 
-sensor_t * s = esp_camera_sensor_get();
-s->set_quality(s, 4);
-s->set_framesize(s, FRAMESIZE_QVGA);
-
-// Setup LED FLash if LED pin is defined in camera_pins.h
-#if defined(LED_GPIO_NUM)
-  setupLedFlash(LED_GPIO_NUM);
-#endif
-
-  WiFi.disconnect(true);
-  WiFi.begin(ssid, password);
-
-  unsigned long wifi_config_update = 0UL;
-  while (WiFi.status() != WL_CONNECTED) {
-    if (Serial.available()) Serial_process();
-    unsigned long update_time = millis();
-    if(update_time - wifi_config_update > 3000){
-      wifi_config_update = update_time;
-      Serial.println("Connecting to WiFi..");
-    }
-  }
-  
-  WiFi.setSleep(false);
-  Serial.println("");
-  Serial.println("WiFi connected");
-
-  startCameraServer();
-
-  Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("' to connect");
+    // Connect to WebSocket server
+    client.connect(websockets_server_host, websockets_server_port, "/");
 }
 
 void loop() {
-  // Do nothing. Everything is done in another task by the web server
+    client.poll();
+
+    camera_fb_t * fb = esp_camera_fb_get();
+    if (fb) {
+        // 카메라 프레임 및 길이를 전역 변수에 저장
+        camera_frame = fb->buf;
+        frame_length = fb->len;
+
+        // WebSocket을 통해 바이너리 데이터 전송
+        client.sendBinary(reinterpret_cast<char*>(camera_frame), frame_length);
+        esp_camera_fb_return(fb);
+    }
+    delay(100);
 }
