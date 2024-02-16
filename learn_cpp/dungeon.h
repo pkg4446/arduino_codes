@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include "enum.h"
+#include "utility.h"
+const PROGMEM char path_err[] = "외부와 열결 통로는 남겨두어야 합니다.";
 
 #define MAP_X 8
 #define MAP_Y 3

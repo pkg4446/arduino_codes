@@ -238,6 +238,8 @@ void setup() {
   playmap.rebuild(5,1,0);
   playmap.rebuild(3,2,0);
   playmap.rebuild(1,2,0);
+
+  playmap.rebuild(4,2,0);
   playmap.view();
 
   moveClass *mob1 = new moveClass();

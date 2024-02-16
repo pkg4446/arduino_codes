@@ -18,7 +18,10 @@ void mapClass::rebuild(uint8_t axis_x, uint8_t axis_y, uint8_t types) {
   if(types == wall && axis_y == enter_y &&(axis_x == 0 || axis_x == MAP_X-1)) return;
   uint8_t previuos_type = maze[axis_y][axis_x];
   maze[axis_y][axis_x]  = types;
-  if(!pathfinder()) maze[axis_y][axis_x] = previuos_type;
+  if(!pathfinder()){
+    maze[axis_y][axis_x] = previuos_type;
+    Serial.println(get_progmem(path_err));
+  }
 }
 uint8_t mapClass::get(uint8_t axis_x, uint8_t axis_y) {
   return maze[axis_y][axis_x];
