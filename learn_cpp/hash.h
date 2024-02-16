@@ -7,16 +7,16 @@ const PROGMEM char hash_hex2[] = "xvkoiOjpuPhynbml";
 
 class hashClass : public Print
 {
+  private:
+    char      hash_text(bool hex_num, uint8_t index);
+    String    printHash(uint32_t* hash);
+    uint16_t  byteCount;
+    
   public:
     uint32_t  hash_value;
     void      init(void);
     String    result(void);
     virtual   size_t write(uint8_t);
     using     Print::write;
-  private:
-    char      hash_text(bool hex_num, uint8_t index);
-    String    printHash(uint32_t* hash);
-
-    uint16_t  byteCount;
 };
 extern hashClass hash;
