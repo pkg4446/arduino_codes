@@ -173,7 +173,7 @@ void moveClass::moving(uint8_t (*maze)[MAP_X]) {
     }
 
     else if(gps_x == MAP_X-1){
-      //goal
+      Serial.println("Incounter!");
     }else if(gps_x == 0){
       //run out
     }else{
@@ -199,7 +199,15 @@ bool moveClass::event(void) {
   Serial.print("x: ");
   Serial.print(gps_x);
   Serial.print(", y: ");
-  Serial.println(gps_y);
+  Serial.print(gps_y);
+  Serial.print(", y: ");
+  Serial.print(gps_y);
+  Serial.print(", back_move: ");
+  Serial.print(back_move);
+  Serial.print(", target_x: ");
+  Serial.print(target_x);
+  Serial.print(", target_y: ");
+  Serial.println(target_y);
   for (uint8_t index_y = 0; index_y < MAP_Y; index_y++){
     for (uint8_t index_x = 0; index_x < MAP_X; index_x++){
       Serial.print(visited[index_y][index_x]);
