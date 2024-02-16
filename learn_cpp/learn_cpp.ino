@@ -246,7 +246,7 @@ void setup() {
   uint8_t move_point = mob1->init(playmap.get_enter());
   for(uint8_t index=0; index<move_point; index++){
     mob1->moving(playmap.maze);
-    mob1->view();
+    mob1->event();
   }
   delete mob1;
 }

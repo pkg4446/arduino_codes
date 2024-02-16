@@ -80,22 +80,6 @@ uint8_t moveClass::init(uint8_t enter) {
   return act_point;
 }
 
-void moveClass::view(void) {
-  spacebar_option(false,gps_x,get_progmem(move_x));
-  spacebar_option(false,gps_y,get_progmem(move_y));
-  spacebar_option(false,back_move,get_progmem(stuck_));
-  spacebar_option(false,target_x,get_progmem(stuck_x));
-  spacebar_option(false,target_y,get_progmem(stuck_y));
-  Serial.println();
-  for (uint8_t index_y = 0; index_y < MAP_Y; index_y++){
-    for (uint8_t index_x = 0; index_x < MAP_X; index_x++){
-      Serial.print(visited[index_y][index_x]);
-      if(index_x != MAP_X-1)Serial.print(",");
-    }
-    Serial.println();
-  }
-}
-
 void moveClass::moving(uint8_t (*maze)[MAP_X]) {
   if(act_point == 0) return;
   else act_point-=1;

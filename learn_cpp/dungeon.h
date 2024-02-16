@@ -1,13 +1,10 @@
 #include <Arduino.h>
 #include "enum.h"
 #include "utility.h"
-const PROGMEM char path_err[] = "외부와 열결 통로는 남겨두어야 합니다.";
+#include "filesys.h"
+#include "path_string.h"
 
-const PROGMEM char move_x[]  = "GPS X";
-const PROGMEM char move_y[]  = "GPS Y";
-const PROGMEM char stuck_[]  = "Stuck";
-const PROGMEM char stuck_x[] = "Target X";
-const PROGMEM char stuck_y[] = "Target Y";
+const PROGMEM char path_err[] = "외부와 열결 통로는 남겨두어야 합니다.";
 
 #define MAP_X 8
 #define MAP_Y 3
@@ -47,7 +44,6 @@ class moveClass
     uint8_t gps_x;
     uint8_t gps_y;
     uint8_t init(uint8_t enter);
-    void    view(void);
     void    moving(uint8_t (*maze)[MAP_X]);
     bool    event(void);
 };
