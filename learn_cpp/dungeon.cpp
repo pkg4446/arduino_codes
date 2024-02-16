@@ -42,6 +42,10 @@ void mapClass::init(void) {
   exit_y  = (MAP_Y-1)/2;
   memset(maze, load, sizeof(maze));
 }
+void mapClass::save_csv(void) {
+}
+void mapClass::load_csv(void) {
+}
 void mapClass::view(void) {
   for (uint8_t index_y = 0; index_y < MAP_Y; index_y++){
     for (uint8_t index_x = 0; index_x < MAP_X; index_x++){
