@@ -50,9 +50,9 @@ uint8_t   map_pos_x   = 0;
 uint8_t   map_pos_y   = 0;
 
 uint16_t year_count   = 0; // year  = rand(1001);
-uint8_t month_count   = 1; // month = rand(1,13);
-uint8_t day_count     = 1; // day   = rand(1,31);
-uint8_t hour_count    = 0;
+uint8_t  month_count  = 1; // month = rand(1,13);
+uint8_t  day_count    = 1; // day   = rand(1,31);
+uint8_t  hour_count   = 0;
 
 unsigned long time_clock  = 0UL;
 bool          time_stop   = false;
@@ -124,7 +124,7 @@ void command_progress(String recieve){
       display_boot();
     }
   }else{
-    uint8_t scene_command = recieve.toInt();
+    uint16_t scene_command = recieve.toInt();
     if(scene_number == 0){
       if(scene_command == COMMAND_YES || scene_command == COMMAND_NO) scene_number = scene_command;
       else if(scene_command == COMMAND_CANCLE){
@@ -133,24 +133,27 @@ void command_progress(String recieve){
       }
     }else{
       if(scene_number == COMMAND_MAIN){
-        bool select_check = false;
-        if(scene_command>COMMAND_MAIN && scene_command<=COMMAND_REST){
+        if(scene_command == COMMAND_DUNGEON){
+          playmap.view(map_pos_x,map_pos_y);
           scene_number = scene_command;
-          if(scene_number == COMMAND_DUNGEON) playmap.view();
-          play_main(&scene_number);
-        }
+        }else if(scene_command == COMMAND_INFOMATION || scene_command == COMMAND_STORE || 
+        scene_command == COMMAND_INVASION || scene_command == COMMAND_TRAINING){scene_command = scene_command;
+        }else if(scene_command == COMMAND_REST){
+          time_clock = millis()-one_hour_sec;
+          display_rest();
+          back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
+        };
+        play_main(&scene_number);
       }else if(scene_number == COMMAND_DUNGEON){
-        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
+        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
       }else if(scene_number == COMMAND_INFOMATION){
-        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
+        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
       }else if(scene_number == COMMAND_STORE){
-        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
+        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
       }else if(scene_number == COMMAND_INVASION){
-        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
+        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
       }else if(scene_number == COMMAND_TRAINING){
-        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
-      }else if(scene_number == COMMAND_REST){
-        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
+        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
       }
     }
   }
@@ -269,7 +272,7 @@ void setup() {
   }
   delete mob1;
   */
-  back_to_main(&scene_number);
+  back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
 }
 /***** loop ****************/
 void loop() {

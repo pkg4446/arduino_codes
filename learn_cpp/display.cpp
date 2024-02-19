@@ -17,6 +17,10 @@ void display_cmd(void){
 void display_model_err(void){
     Serial.println(get_progmem(interface_model_err));
 };
+/*************** Display ***************/
+void display_rest(void){
+    Serial.println(get_progmem(scene_rest));
+};
 /*******************************************************/
 void display_boot(void){
     paging();
@@ -81,6 +85,17 @@ void display_game_help(void){
     spacebar_option(true,COMMAND_YES,get_progmem(word_yes));
     spacebar_option(true,COMMAND_NO,get_progmem(word_no));
     Serial.println();
+};
+/*******************************************************/
+void display_time(uint16_t *time_year, uint8_t *time_month, uint8_t *time_day, uint8_t *time_hour){
+    Serial.print(*time_year);
+    Serial.print(get_progmem(scene_time_y));
+    Serial.print(*time_month);
+    Serial.print(get_progmem(scene_time_m));
+    Serial.print(*time_day);
+    Serial.print(get_progmem(scene_time_d));
+    Serial.print(*time_hour);
+    Serial.println(get_progmem(scene_time_h));
 };
 /*******************************************************/
 void display_hour(uint8_t *clock_hours){

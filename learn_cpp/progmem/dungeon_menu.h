@@ -2,6 +2,8 @@
 /*************** Word ***************/
 const PROGMEM char word_now[]       = "선택위치";
 /*************** Word ***************/
+const PROGMEM char word_enter[]     = "던전입구";
+/*************** Word ***************/
 const PROGMEM char word_core[]      = "코어";
 /*************** Word ***************/
 const PROGMEM char word_obstruct[]  = "벽";

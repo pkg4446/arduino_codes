@@ -2,6 +2,13 @@
 /*************** Display ***************/
 const PROGMEM char scene_help_cmd[]     = "***** help *****\nhelp  this text\nls    show list\ncd    move path\ncd/   move root\nmd    make dir\nrd    remove dir\nop    open file\nrf    remove file\nexit  return\n***** help *****";
 /*************** Display ***************/
+const PROGMEM char scene_rest[]         = "아무것도 하지 않고 시간을 흘려보냈다.";
+/*************** Display ***************/
+const PROGMEM char scene_time_y[]       = "년";
+const PROGMEM char scene_time_m[]       = "월";
+const PROGMEM char scene_time_d[]       = "일";
+const PROGMEM char scene_time_h[]       = "시";
+/*************** Display ***************/
 const PROGMEM char scene_boot[]         = "새롭게 시작 하시겠습니까?";
 const PROGMEM char scene_boot_cmd[]     = "Command Prompt";
 /*************** Display ***************/

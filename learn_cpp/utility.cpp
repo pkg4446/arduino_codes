@@ -79,7 +79,7 @@ void spacebar(bool korea, String text){
     }
     Serial.print(": ");
 }
-void spacebar_option(bool korea, uint8_t number, String text){
+void spacebar_option(bool korea, uint16_t number, String text){
     Serial.print("[");
     if(number<100) Serial.print("0");
     if(number<10)  Serial.print("0");

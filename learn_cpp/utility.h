@@ -13,7 +13,7 @@ void swap(uint16_t *num_a, uint16_t *num_b);
 void paging();
 void perforation(String text);
 void spacebar(bool korea, String text);
-void spacebar_option(bool korea, uint8_t number, String text);
+void spacebar_option(bool korea, uint16_t number, String text);
 void unit_split(uint16_t values, uint16_t divides);
 void unit_mm(void);
 void destruct(void);

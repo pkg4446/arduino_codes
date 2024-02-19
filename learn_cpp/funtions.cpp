@@ -20,8 +20,9 @@ void routine_day_mens(void){
     //나머지 체크
 }
 /*************** funtion ***************/
-void back_to_main(uint16_t *scene_number){
-  *scene_number = 100;
+void back_to_main(uint16_t *scene_number,uint16_t *time_year, uint8_t *time_month, uint8_t *time_day, uint8_t *time_hour){
+  *scene_number = COMMAND_MAIN;
+  display_time(time_year,time_month,time_day,time_hour);
   display_cmd_main();
 }
 /*************** funtion ***************/
