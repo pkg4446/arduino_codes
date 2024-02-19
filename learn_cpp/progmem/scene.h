@@ -38,8 +38,7 @@ const PROGMEM char scene_dungeon_opt1[] = "통로막기";
 const PROGMEM char scene_dungeon_opt2[] = "함정설치";
 const PROGMEM char scene_dungeon_opt3[] = "요격시설";
 const PROGMEM char scene_dungeon_opt4[] = "편의시설";
-const PROGMEM char scene_dungeon_opt5[] = "감금시설";
-const PROGMEM char scene_dungeon_opt6[] = "병력배치";
+const PROGMEM char scene_dungeon_opt5[] = "병력배치";
 /*************** Display ***************/
 const PROGMEM char scene_info[]         = "정보를 확인합니다.";
 /*************** Display ***************/

@@ -7,6 +7,8 @@
 #include "utility.h"
 
 /*************** Display ***************/
+void cancle_cmd(bool line_break);
+/*************** Display ***************/
 void display_cmd(void);
 /*************** Display ***************/
 void display_model_err(void);
@@ -28,8 +30,6 @@ void display_prologue(String name, bool gender);
 void display_continue(void);
 /*************** Display ***************/
 void display_game_help(void);
-/*************** Display ***************/
-void cancle_cmd(bool line_break);
 /*************** Display ***************/
 void display_cmd_main(void);
 /*************** Display ***************/
