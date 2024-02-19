@@ -121,19 +121,34 @@ void command_progress(String recieve){
       dos_mode = false;
       display_boot();
     }
-  }else if(scene_number == 0){
+  }else{
     uint8_t scene_command = recieve.toInt();
-    if(scene_command == COMMAND_YES || scene_command == COMMAND_NO) scene_number = scene_command;
-    else if(scene_command == COMMAND_CANCLE){
-      dos_mode = true;
-      display_help_cmd();
-    }
-  }else if(scene_number == COMMAND_MAIN){
-    uint8_t scene_command = recieve.toInt();
-    bool select_check = false;
-    if(scene_command>COMMAND_MAIN && scene_command<=COMMAND_TRAINING){
-      scene_number = scene_command;
-      play_main(&scene_number);
+    if(scene_number == 0){
+      if(scene_command == COMMAND_YES || scene_command == COMMAND_NO) scene_number = scene_command;
+      else if(scene_command == COMMAND_CANCLE){
+        dos_mode = true;
+        display_help_cmd();
+      }
+    }else{
+      if(scene_number == COMMAND_MAIN){
+        bool select_check = false;
+        if(scene_command>COMMAND_MAIN && scene_command<=COMMAND_TRAINING){
+          scene_number = scene_command;
+          play_main(&scene_number);
+        }
+      }else if(scene_number == COMMAND_RESOURCE){
+        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
+      }else if(scene_number == COMMAND_DUNGEON){
+        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
+      }else if(scene_number == COMMAND_STORE){
+        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
+      }else if(scene_number == COMMAND_INVASION){
+        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
+      }else if(scene_number == COMMAND_INFOMATION){
+        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
+      }else if(scene_number == COMMAND_TRAINING){
+        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
+      }
     }
   }
 }
@@ -230,7 +245,7 @@ void setup() {
 
   time_clock = millis();
   //display_newday(&month_count,info_class,stat_class,mens_class,current_class);
-  play_main(&scene_number);
+  back_to_main(&scene_number);
 
   playmap.init();
   /*
@@ -244,7 +259,7 @@ void setup() {
   */
 
   playmap.view();
-
+  /*
   moveClass *mob1 = new moveClass();
   uint8_t move_point = mob1->init(playmap.get_enter());
   for(uint8_t index=0; index<move_point; index++){
@@ -252,6 +267,7 @@ void setup() {
     mob1->event();
   }
   delete mob1;
+  */
 }
 /***** loop ****************/
 void loop() {
