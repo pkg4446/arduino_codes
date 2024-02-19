@@ -27,7 +27,6 @@ class mapClass
   public:
     uint8_t maze[MAP_Y][MAP_X];
     void    init(void);
-    void    load_csv(void);
     void    view(uint8_t axis_x, uint8_t axis_y);
     void    rebuild(uint8_t axis_x, uint8_t axis_y, uint8_t types);
     uint8_t get(uint8_t axis_x, uint8_t axis_y);

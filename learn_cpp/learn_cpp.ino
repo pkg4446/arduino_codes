@@ -139,7 +139,7 @@ void command_progress(String recieve){
         }else if(scene_command == COMMAND_INFOMATION || scene_command == COMMAND_STORE || 
         scene_command == COMMAND_INVASION || scene_command == COMMAND_TRAINING){scene_command = scene_command;
         }else if(scene_command == COMMAND_REST){
-          time_clock = millis()-one_hour_sec;
+          time_clock -= one_hour_sec;
           display_rest();
           back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
         };

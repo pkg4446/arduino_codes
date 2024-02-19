@@ -84,8 +84,6 @@ void mapClass::init(void) {
     exit_y  = atoi(strtok(0x00, ","));
   }
 }
-void mapClass::load_csv(void) {
-}
 void mapClass::view(uint8_t axis_x, uint8_t axis_y) {
   paging();
   for (uint8_t index_y = 0; index_y < MAP_Y; index_y++){
