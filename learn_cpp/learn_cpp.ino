@@ -133,19 +133,19 @@ void command_progress(String recieve){
       }
     }else{
       if(scene_number == COMMAND_MAIN){
-        if(scene_command == COMMAND_DUNGEON){
-          playmap.view(map_pos_x,map_pos_y);
-          scene_number = scene_command;
-        }else if(scene_command == COMMAND_INFOMATION || scene_command == COMMAND_STORE || 
-        scene_command == COMMAND_INVASION || scene_command == COMMAND_TRAINING){scene_command = scene_command;
+        if(scene_command == COMMAND_DUNGEON){ playmap.view(map_pos_x,map_pos_y);
         }else if(scene_command == COMMAND_REST){
           time_clock -= one_hour_sec;
           display_rest();
           back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
         };
-        play_main(&scene_number);
+        play_main(&scene_number,scene_command);
       }else if(scene_number == COMMAND_DUNGEON){
-        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
+        if(scene_command == COMMAND_CANCLE)           back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
+        else if(scene_command == COMMAND_COORDINATE)  display_coordinate(&scene_number);
+      }else if(scene_number == COMMAND_COORDINATE){
+        if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
+        else playmap.pos_move(&map_pos_x,&map_pos_y,scene_command);
       }else if(scene_number == COMMAND_INFOMATION){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
       }else if(scene_number == COMMAND_STORE){

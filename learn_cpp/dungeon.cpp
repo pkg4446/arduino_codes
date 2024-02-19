@@ -101,6 +101,13 @@ void mapClass::view(uint8_t axis_x, uint8_t axis_y) {
     Serial.println();
   }
 }
+void mapClass::pos_move(uint8_t *axis_x, uint8_t *axis_y, uint16_t direction) {
+  if(direction == COMMAND_MOVE8      && *axis_y>0) *axis_y -= 1;
+  else if(direction == COMMAND_MOVE4 && *axis_x>0) *axis_x -= 1;
+  else if(direction == COMMAND_MOVE6 && *axis_x<MAP_X) *axis_x += 1;
+  else if(direction == COMMAND_MOVE2 && *axis_y<MAP_Y) *axis_y += 1;
+  view(*axis_x,*axis_y);
+}
 void mapClass::rebuild(uint8_t axis_x, uint8_t axis_y, uint8_t types) {
   if(maze[axis_y][axis_x] == types || (types == wall && axis_y == enter_y &&(axis_x == 0 || axis_x == MAP_X-1))) return;
   uint8_t previuos_type = maze[axis_y][axis_x];

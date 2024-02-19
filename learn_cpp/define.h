@@ -20,7 +20,6 @@
 #define COMMAND_WAYLAY      203
 #define COMMAND_TRAP        204
 #define COMMAND_AMENITY     205
-#define COMMAND_TROOP       206
 
 #define COMMAND_INFOMATION  300
 #define COMMAND_STORE       400

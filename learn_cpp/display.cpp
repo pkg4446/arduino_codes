@@ -138,12 +138,24 @@ void display_cmd_main(void){
 void display_dungeon(void){
     paging();
     Serial.println(get_progmem(scene_main_cmd));
-    spacebar_option(true,COMMAND_OBSTRUCT,get_progmem(scene_dungeon_opt1));
-    spacebar_option(true,COMMAND_WAYLAY,get_progmem(scene_dungeon_opt2));
-    spacebar_option(true,COMMAND_TRAP,get_progmem(scene_dungeon_opt3));
+    spacebar_option(true,COMMAND_COORDINATE,get_progmem(scene_dungeon_opt1));
+    spacebar_option(true,COMMAND_OBSTRUCT,get_progmem(scene_dungeon_opt2));
+    spacebar_option(true,COMMAND_WAYLAY,get_progmem(scene_dungeon_opt3));
     Serial.println();
-    spacebar_option(true,COMMAND_AMENITY,get_progmem(scene_dungeon_opt4));
-    spacebar_option(true,COMMAND_TROOP,get_progmem(scene_dungeon_opt5));
+    spacebar_option(true,COMMAND_TRAP,get_progmem(scene_dungeon_opt4));
+    spacebar_option(true,COMMAND_AMENITY,get_progmem(scene_dungeon_opt5));
+    cancle_cmd(false);
+};
+/*******************************************************/
+void display_coordinate(uint16_t *scene_number){
+    *scene_number = COMMAND_COORDINATE;
+    paging();
+    Serial.println(get_progmem(scene_position));
+    spacebar_option(true,COMMAND_MOVE4,get_progmem(scene_pos_opt4));
+    spacebar_option(true,COMMAND_MOVE2,get_progmem(scene_pos_opt2));
+    spacebar_option(true,COMMAND_MOVE6,get_progmem(scene_pos_opt6));
+    Serial.println();
+    spacebar_option(true,COMMAND_MOVE8,get_progmem(scene_pos_opt8));
     cancle_cmd(false);
 };
 /*******************************************************/

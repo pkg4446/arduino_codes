@@ -26,11 +26,21 @@ void back_to_main(uint16_t *scene_number,uint16_t *time_year, uint8_t *time_mont
   display_cmd_main();
 }
 /*************** funtion ***************/
-void play_main(uint16_t *scene_number){
-  if(*scene_number == COMMAND_DUNGEON)          display_dungeon();
-  else if(*scene_number == COMMAND_INFOMATION)  display_info();
-  else if(*scene_number == COMMAND_STORE)       ;
-  else if(*scene_number == COMMAND_INVASION)    display_cmd_invasion();
-  else if(*scene_number == COMMAND_TRAINING)    ;
-  else if(*scene_number == COMMAND_REST)        ;
+void play_main(uint16_t *scene_number,uint16_t scene_command){
+  if(scene_command == COMMAND_DUNGEON){
+    *scene_number = scene_command;
+    display_dungeon();
+  }else if(scene_command == COMMAND_INFOMATION){
+    *scene_number = scene_command;
+    display_info();
+  }else if(scene_command == COMMAND_STORE){
+    *scene_number = scene_command;
+  }else if(scene_command == COMMAND_INVASION){
+    *scene_number = scene_command;
+    display_cmd_invasion();
+  }else if(scene_command == COMMAND_TRAINING){
+    *scene_number = scene_command;
+  }else if(scene_command == COMMAND_REST){
+    *scene_number = scene_command;
+  }
 }

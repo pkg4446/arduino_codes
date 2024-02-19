@@ -41,11 +41,17 @@ const PROGMEM char scene_invasion_opt1[]= "정찰";
 const PROGMEM char scene_invasion_opt2[]= "납치";
 const PROGMEM char scene_invasion_opt3[]= "공격";
 /*************** Display ***************/
-const PROGMEM char scene_dungeon_opt1[] = "길막기";
-const PROGMEM char scene_dungeon_opt2[] = "길뚫기";
-const PROGMEM char scene_dungeon_opt3[] = "함정설치";
-const PROGMEM char scene_dungeon_opt4[] = "편의시설";
-const PROGMEM char scene_dungeon_opt5[] = "병력배치";
+const PROGMEM char scene_dungeon_opt1[] = "선택위치변경";
+const PROGMEM char scene_dungeon_opt2[] = "길막기";
+const PROGMEM char scene_dungeon_opt3[] = "길뚫기";
+const PROGMEM char scene_dungeon_opt4[] = "함정설치";
+const PROGMEM char scene_dungeon_opt5[] = "시설변경";
+/*************** Display ***************/
+const PROGMEM char scene_position[]     = "어디로 이동할까요?";
+const PROGMEM char scene_pos_opt2[]     = "아래";
+const PROGMEM char scene_pos_opt4[]     = "왼쪽";
+const PROGMEM char scene_pos_opt6[]     = "오른쪽";
+const PROGMEM char scene_pos_opt8[]     = "위";
 /*************** Display ***************/
 const PROGMEM char scene_info[]         = "정보를 확인합니다.";
 /*************** Display ***************/
