@@ -36,6 +36,21 @@ bool mapClass::pathfinder(void) {
   // 목적지에 도달하지 못한 경우
   return false;
 }
+
+void mapClass::parse_map(uint8_t map_type){
+    uint8_t text_end = 10;
+    String  text;
+    if(map_type == wall)          text = get_progmem(word_obstruct);
+    else if(map_type == load)     text = get_progmem(word_waylay);
+    else if(map_type == trap)     text = get_progmem(word_trap);
+    else if(map_type == amenity)  text = get_progmem(word_amenity);
+    text_end += text.length()/3;
+    Serial.print(text);
+    for(uint8_t index=text.length(); index<text_end; index++){
+        Serial.print(" ");
+    }
+}
+
 void mapClass::save_csv(void) {
   String csv_file = "";
   for (uint8_t index_y = 0; index_y < MAP_Y; index_y++){
@@ -79,8 +94,7 @@ void mapClass::load_csv(void) {
 void mapClass::view(void) {
   for (uint8_t index_y = 0; index_y < MAP_Y; index_y++){
     for (uint8_t index_x = 0; index_x < MAP_X; index_x++){
-      Serial.print(maze[index_y][index_x]);
-      if(index_x != MAP_X-1)Serial.print(",");
+      parse_map(maze[index_y][index_x]);
     }
     Serial.println();
   }

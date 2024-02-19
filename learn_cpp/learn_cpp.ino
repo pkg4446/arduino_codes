@@ -46,6 +46,8 @@ read_model_breed(path_assist(),breed_class);
 uint8_t   aggro_point = 0;
 uint32_t  play_time   = 0;
 uint8_t   maps[7][3]  = {{0,},};
+uint8_t   map_pos_x   = 0;
+uint8_t   map_pos_y   = 0;
 
 uint16_t year_count   = 0; // year  = rand(1001);
 uint8_t month_count   = 1; // month = rand(1,13);
@@ -132,21 +134,21 @@ void command_progress(String recieve){
     }else{
       if(scene_number == COMMAND_MAIN){
         bool select_check = false;
-        if(scene_command>COMMAND_MAIN && scene_command<=COMMAND_TRAINING){
+        if(scene_command>COMMAND_MAIN && scene_command<=COMMAND_REST){
           scene_number = scene_command;
           play_main(&scene_number);
         }
-      }else if(scene_number == COMMAND_RESOURCE){
-        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
       }else if(scene_number == COMMAND_DUNGEON){
+        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
+      }else if(scene_number == COMMAND_INFOMATION){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
       }else if(scene_number == COMMAND_STORE){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
       }else if(scene_number == COMMAND_INVASION){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
-      }else if(scene_number == COMMAND_INFOMATION){
-        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
       }else if(scene_number == COMMAND_TRAINING){
+        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
+      }else if(scene_number == COMMAND_REST){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number);
       }
     }

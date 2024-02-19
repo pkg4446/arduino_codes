@@ -110,35 +110,35 @@ void display_hour(uint8_t *clock_hours){
 void display_cmd_main(void){
     paging();
     Serial.println(get_progmem(scene_main_cmd));
-    spacebar_option(true,COMMAND_RESOURCE,get_progmem(scene_main_opt1));
-    spacebar_option(true,COMMAND_DUNGEON,get_progmem(scene_main_opt2));
+    spacebar_option(true,COMMAND_DUNGEON,get_progmem(scene_main_opt1));
+    spacebar_option(true,COMMAND_INFOMATION,get_progmem(scene_main_opt2));
     spacebar_option(true,COMMAND_STORE,get_progmem(scene_main_opt3));
     Serial.println();
     spacebar_option(true,COMMAND_INVASION,get_progmem(scene_main_opt4));
-    spacebar_option(true,COMMAND_INFOMATION,get_progmem(scene_main_opt5));
-    spacebar_option(true,COMMAND_TRAINING,get_progmem(scene_main_opt6));
+    spacebar_option(true,COMMAND_TRAINING,get_progmem(scene_main_opt5));
+    spacebar_option(true,COMMAND_REST,get_progmem(scene_main_opt6));
     Serial.println();
-};
-/*******************************************************/
-void display_cmd_invasion(void){
-    paging();
-    Serial.println(get_progmem(scene_main_cmd));
-    spacebar_option(true,COMMAND_RESOURCE,get_progmem(scene_invasion_opt1));
-    spacebar_option(true,COMMAND_DUNGEON,get_progmem(scene_invasion_opt2));
-    spacebar_option(true,COMMAND_STORE,get_progmem(scene_invasion_opt3));
-    cancle_cmd(true);
 };
 /*******************************************************/
 void display_dungeon(void){
     paging();
     Serial.println(get_progmem(scene_main_cmd));
-    spacebar_option(true,COMMAND_RESOURCE,get_progmem(scene_dungeon_opt1));
-    spacebar_option(true,COMMAND_DUNGEON,get_progmem(scene_dungeon_opt2));
-    spacebar_option(true,COMMAND_STORE,get_progmem(scene_dungeon_opt3));
+    spacebar_option(true,COMMAND_OBSTRUCT,get_progmem(scene_dungeon_opt1));
+    spacebar_option(true,COMMAND_WAYLAY,get_progmem(scene_dungeon_opt2));
+    spacebar_option(true,COMMAND_TRAP,get_progmem(scene_dungeon_opt3));
     Serial.println();
-    spacebar_option(true,COMMAND_INVASION,get_progmem(scene_dungeon_opt4));
-    spacebar_option(true,COMMAND_INFOMATION,get_progmem(scene_dungeon_opt5));
+    spacebar_option(true,COMMAND_AMENITY,get_progmem(scene_dungeon_opt4));
+    spacebar_option(true,COMMAND_TROOP,get_progmem(scene_dungeon_opt5));
     cancle_cmd(false);
+};
+/*******************************************************/
+void display_cmd_invasion(void){
+    paging();
+    Serial.println(get_progmem(scene_main_cmd));
+    spacebar_option(true,COMMAND_SEARCH,get_progmem(scene_invasion_opt1));
+    spacebar_option(true,COMMAND_KIDNAP,get_progmem(scene_invasion_opt2));
+    spacebar_option(true,COMMAND_ATTACK,get_progmem(scene_invasion_opt3));
+    cancle_cmd(true);
 };
 /*******************************************************/
 void display_info(void){

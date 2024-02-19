@@ -3,6 +3,7 @@
 #include "utility.h"
 #include "filesys.h"
 #include "path_string.h"
+#include "./progmem/words.h"
 
 const PROGMEM char path_err[] = "외부와 열결 통로는 남겨두어야 합니다.";
 
@@ -16,6 +17,7 @@ class mapClass
     uint8_t exit_y;
     bool    visited[MAP_Y][MAP_X];
     bool    pathfinder(void);
+    void    parse_map(uint8_t map_type);
     void    save_csv(void);
     struct Point {
       int row;

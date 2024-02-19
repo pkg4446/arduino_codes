@@ -33,8 +33,8 @@ void display_game_help(void);
 /*************** Display ***************/
 void display_cmd_main(void);
 /*************** Display ***************/
-void display_cmd_invasion(void);
-/*************** Display ***************/
 void display_dungeon(void);
+/*************** Display ***************/
+void display_cmd_invasion(void);
 /*************** Display ***************/
 void display_info(void);

@@ -23,20 +23,20 @@ const PROGMEM char scene_sun_rise[]     = "캄캄한 밤이다.새벽이 밝아�
 const PROGMEM char scene_sun_fall[]     = "해가 중천에 떳다.해가 저문다.노을이 진다.어둠이 내렸다.";
 /*************** Display ***************/
 const PROGMEM char scene_main_cmd[]     = "무엇을 하는게 좋을까?";
-const PROGMEM char scene_main_opt1[]    = "자원관리";
-const PROGMEM char scene_main_opt2[]    = "던전관리";
+const PROGMEM char scene_main_opt1[]    = "던전관리";
+const PROGMEM char scene_main_opt2[]    = "정보확인";
 const PROGMEM char scene_main_opt3[]    = "지옥상회";
 const PROGMEM char scene_main_opt4[]    = "대륙침략";
-const PROGMEM char scene_main_opt5[]    = "정보확인";
-const PROGMEM char scene_main_opt6[]    = "개인훈련";
+const PROGMEM char scene_main_opt5[]    = "개인훈련";
+const PROGMEM char scene_main_opt6[]    = "휴식하기";
 /*************** Display ***************/
 const PROGMEM char scene_invasion_opt1[]= "정찰";
 const PROGMEM char scene_invasion_opt2[]= "납치";
 const PROGMEM char scene_invasion_opt3[]= "공격";
 /*************** Display ***************/
-const PROGMEM char scene_dungeon_opt1[] = "통로막기";
-const PROGMEM char scene_dungeon_opt2[] = "함정설치";
-const PROGMEM char scene_dungeon_opt3[] = "요격시설";
+const PROGMEM char scene_dungeon_opt1[] = "길막기";
+const PROGMEM char scene_dungeon_opt2[] = "길뚫기";
+const PROGMEM char scene_dungeon_opt3[] = "함정설치";
 const PROGMEM char scene_dungeon_opt4[] = "편의시설";
 const PROGMEM char scene_dungeon_opt5[] = "병력배치";
 /*************** Display ***************/
