@@ -65,7 +65,7 @@ void mapClass::save_csv(void) {
 void mapClass::init(void) {
   enter_y = (MAP_Y-1)/2;
   exit_y  = (MAP_Y-1)/2;
-  memset(maze, load, sizeof(maze));
+  memset(maze, road, sizeof(maze));
   if(exisits_check(path_config()+file_map())){
     String csv_file_str = file_read(path_config()+file_map());
     char *csv_file      = const_cast<char*>(csv_file_str.c_str());
@@ -89,13 +89,13 @@ void mapClass::view(uint8_t axis_x, uint8_t axis_y) {
   for (uint8_t index_y = 0; index_y < MAP_Y; index_y++){
     for (uint8_t index_x = 0; index_x < MAP_X; index_x++){
       String  text;
-      if(index_x==axis_x && index_y==axis_y)        text = get_progmem(word_now);
-      else if(index_x==MAP_X-1 && index_y==exit_y)  text = get_progmem(word_core);
-      else if(index_x==0  && index_y==enter_y)      text = get_progmem(word_enter);
-      else if(maze[index_y][index_x] == wall)       text = get_progmem(word_obstruct);
-      else if(maze[index_y][index_x] == load)       text = get_progmem(word_waylay);
-      else if(maze[index_y][index_x] == trap)       text = get_progmem(word_trap);
-      else if(maze[index_y][index_x] == amenity)    text = get_progmem(word_amenity);
+      if(index_x==MAP_X-1 && index_y==exit_y)     text = get_progmem(word_core);
+      else if(index_x==0  && index_y==enter_y)    text = get_progmem(word_enter);
+      else if(maze[index_y][index_x] == wall)     text = get_progmem(word_obstruct);
+      else if(maze[index_y][index_x] == road)     text = get_progmem(word_waylay);
+      else if(maze[index_y][index_x] == trap)     text = get_progmem(word_trap);
+      else if(maze[index_y][index_x] == amenity)  text = get_progmem(word_amenity);
+      if(index_x==axis_x && index_y==axis_y)      text += get_progmem(word_now);
       parse_map(text);
     }
     Serial.println();
