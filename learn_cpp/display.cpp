@@ -120,6 +120,28 @@ void display_cmd_main(void){
     Serial.println();
 };
 /*******************************************************/
+void display_cmd_invasion(void){
+    paging();
+    Serial.println(get_progmem(scene_main_cmd));
+    spacebar_option(true,COMMAND_RESOURCE,get_progmem(scene_invasion_opt1));
+    spacebar_option(true,COMMAND_DUNGEON,get_progmem(scene_invasion_opt2));
+    spacebar_option(true,COMMAND_STORE,get_progmem(scene_invasion_opt3));
+    Serial.println();
+};
+/*******************************************************/
+void display_dungeon(void){
+    paging();
+    Serial.println(get_progmem(scene_main_cmd));
+    spacebar_option(true,COMMAND_RESOURCE,get_progmem(scene_main_opt1));
+    spacebar_option(true,COMMAND_DUNGEON,get_progmem(scene_main_opt2));
+    spacebar_option(true,COMMAND_STORE,get_progmem(scene_main_opt3));
+    Serial.println();
+    spacebar_option(true,COMMAND_INVASION,get_progmem(scene_main_opt4));
+    spacebar_option(true,COMMAND_INFOMATION,get_progmem(scene_main_opt5));
+    spacebar_option(true,COMMAND_TRAINING,get_progmem(scene_main_opt6));
+    Serial.println();
+};
+/*******************************************************/
 void display_info(void){
     paging();
     Serial.println(get_progmem(scene_info));

@@ -45,6 +45,10 @@ void mapClass::save_csv(void) {
     }
     make_csv_text(&csv_file,csv_x);
   }
+  String csv_door = "";
+  make_csv(&csv_door,String(enter_y));
+  make_csv(&csv_door,String(exit_y));
+  make_csv_text(&csv_file,csv_door);
   file_write(path_config()+file_map(), csv_file);
 }
 
@@ -52,6 +56,23 @@ void mapClass::init(void) {
   enter_y = (MAP_Y-1)/2;
   exit_y  = (MAP_Y-1)/2;
   memset(maze, load, sizeof(maze));
+  if(exisits_check(path_config()+file_map())){
+    String csv_file_str = file_read(path_config()+file_map());
+    char *csv_file      = const_cast<char*>(csv_file_str.c_str());
+    char *csv_text[MAP_Y+1];
+    csv_text[0] = strtok(csv_file, "\n");
+    for(uint8_t index=1; index<=MAP_Y; index++){
+      csv_text[index] = strtok(0x00, "\n");
+    }
+    for (uint8_t index_y = 0; index_y < MAP_Y; index_y++){
+      maze[index_y][0] = atoi(strtok(csv_text[index_y], ","));
+      for (uint8_t index_x = 1; index_x < MAP_X; index_x++){
+        maze[index_y][index_x] = atoi(strtok(0x00, ","));
+      }
+    }
+    enter_y = atoi(strtok(csv_text[MAP_Y], ","));
+    exit_y  = atoi(strtok(0x00, ","));
+  }
 }
 void mapClass::load_csv(void) {
 }

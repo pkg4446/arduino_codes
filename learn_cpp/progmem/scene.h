@@ -26,14 +26,20 @@ const PROGMEM char scene_main_cmd[]     = "무엇을 하는게 좋을까?";
 const PROGMEM char scene_main_opt1[]    = "자원관리";
 const PROGMEM char scene_main_opt2[]    = "던전관리";
 const PROGMEM char scene_main_opt3[]    = "지옥상회";
-const PROGMEM char scene_main_opt4[]    = "대륙침공";
+const PROGMEM char scene_main_opt4[]    = "대륙침략";
 const PROGMEM char scene_main_opt5[]    = "정보확인";
 const PROGMEM char scene_main_opt6[]    = "개인훈련";
 /*************** Display ***************/
-const PROGMEM char scene_invasion_cmd[] = "무엇을 하는게 좋을까?";
 const PROGMEM char scene_invasion_opt1[]= "정찰";
 const PROGMEM char scene_invasion_opt2[]= "납치";
 const PROGMEM char scene_invasion_opt3[]= "공격";
+/*************** Display ***************/
+const PROGMEM char scene_dungeon_opt1[] = "통로막기";
+const PROGMEM char scene_dungeon_opt2[] = "함정설치";
+const PROGMEM char scene_dungeon_opt3[] = "요격시설";
+const PROGMEM char scene_dungeon_opt4[] = "편의시설";
+const PROGMEM char scene_dungeon_opt5[] = "감금시설";
+const PROGMEM char scene_dungeon_opt6[] = "병력배치";
 /*************** Display ***************/
 const PROGMEM char scene_info[]         = "정보를 확인합니다.";
 /*************** Display ***************/

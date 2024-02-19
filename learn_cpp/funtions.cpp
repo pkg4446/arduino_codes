@@ -21,9 +21,11 @@ void routine_day_mens(void){
 }
 /*************** funtion ***************/
 void play_main(uint8_t *scene_number){
-  if(*scene_number == COMMAND_MAIN)            display_cmd_main();
-  else if(*scene_number == COMMAND_INFOMATION) display_info();
-  else if(*scene_number == COMMAND_INFOMATION) ;
-  else if(*scene_number == COMMAND_INFOMATION) ;
-  else if(*scene_number == COMMAND_INFOMATION) ;
+  if(*scene_number == COMMAND_MAIN)             display_cmd_main();
+  else if(*scene_number == COMMAND_RESOURCE)    ;
+  else if(*scene_number == COMMAND_DUNGEON)     display_dungeon();
+  else if(*scene_number == COMMAND_STORE)       ;
+  else if(*scene_number == COMMAND_INVASION)    display_cmd_invasion();
+  else if(*scene_number == COMMAND_INFOMATION)  display_info();
+  else if(*scene_number == COMMAND_TRAINING)    ;
 }
