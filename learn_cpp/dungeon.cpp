@@ -36,13 +36,22 @@ bool mapClass::pathfinder(void) {
   // 목적지에 도달하지 못한 경우
   return false;
 }
+void mapClass::save_csv(void) {
+  String csv_file = "";
+  for (uint8_t index_y = 0; index_y < MAP_Y; index_y++){
+    String csv_x = "";
+    for (uint8_t index_x = 0; index_x < MAP_X; index_x++){
+      make_csv(&csv_x,String(maze[index_y][index_x]));
+    }
+    make_csv_text(&csv_file,csv_x);
+  }
+  file_write(path_config()+file_map(), csv_file);
+}
 
 void mapClass::init(void) {
   enter_y = (MAP_Y-1)/2;
   exit_y  = (MAP_Y-1)/2;
   memset(maze, load, sizeof(maze));
-}
-void mapClass::save_csv(void) {
 }
 void mapClass::load_csv(void) {
 }
@@ -56,10 +65,12 @@ void mapClass::view(void) {
   }
 }
 void mapClass::rebuild(uint8_t axis_x, uint8_t axis_y, uint8_t types) {
-  if(types == wall && axis_y == enter_y &&(axis_x == 0 || axis_x == MAP_X-1)) return;
+  if(maze[axis_y][axis_x] == types || (types == wall && axis_y == enter_y &&(axis_x == 0 || axis_x == MAP_X-1))) return;
   uint8_t previuos_type = maze[axis_y][axis_x];
   maze[axis_y][axis_x]  = types;
-  if(!pathfinder()){
+  if(pathfinder()){
+    save_csv();
+  }else{
     maze[axis_y][axis_x] = previuos_type;
     Serial.println(get_progmem(path_err));
   }

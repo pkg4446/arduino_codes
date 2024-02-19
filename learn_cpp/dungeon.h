@@ -16,6 +16,7 @@ class mapClass
     uint8_t exit_y;
     bool    visited[MAP_Y][MAP_X];
     bool    pathfinder(void);
+    void    save_csv(void);
     struct Point {
       int row;
       int col;
@@ -24,7 +25,6 @@ class mapClass
   public:
     uint8_t maze[MAP_Y][MAP_X];
     void    init(void);
-    void    save_csv(void);
     void    load_csv(void);
     void    view(void);
     void    rebuild(uint8_t axis_x, uint8_t axis_y, uint8_t types);
