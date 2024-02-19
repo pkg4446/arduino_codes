@@ -41,7 +41,7 @@ const PROGMEM char scene_invasion_opt1[]= "정찰";
 const PROGMEM char scene_invasion_opt2[]= "납치";
 const PROGMEM char scene_invasion_opt3[]= "공격";
 /*************** Display ***************/
-const PROGMEM char scene_dungeon_opt1[] = "←  변경";
+const PROGMEM char scene_dungeon_opt1[] = "→  변경";
 const PROGMEM char scene_dungeon_opt2[] = "길막기";
 const PROGMEM char scene_dungeon_opt3[] = "길뚫기";
 const PROGMEM char scene_dungeon_opt4[] = "함정설치";
