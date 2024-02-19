@@ -58,7 +58,7 @@ unsigned long time_clock  = 0UL;
 bool          time_stop   = false;
 uint32_t    one_hour_sec  = ONE_HOUR;
 
-uint8_t   scene_number    = 0;
+uint16_t   scene_number   = 0;
 /***** Variable *****/
 
 /***** funtions ************/
@@ -136,6 +136,7 @@ void command_progress(String recieve){
         bool select_check = false;
         if(scene_command>COMMAND_MAIN && scene_command<=COMMAND_REST){
           scene_number = scene_command;
+          if(scene_number == COMMAND_DUNGEON) playmap.view();
           play_main(&scene_number);
         }
       }else if(scene_number == COMMAND_DUNGEON){
@@ -247,7 +248,6 @@ void setup() {
 
   time_clock = millis();
   //display_newday(&month_count,info_class,stat_class,mens_class,current_class);
-  back_to_main(&scene_number);
 
   playmap.init();
   /*
@@ -259,8 +259,7 @@ void setup() {
 
   playmap.rebuild(4,2,0);
   */
-
-  playmap.view();
+  
   /*
   moveClass *mob1 = new moveClass();
   uint8_t move_point = mob1->init(playmap.get_enter());
@@ -270,6 +269,7 @@ void setup() {
   }
   delete mob1;
   */
+  back_to_main(&scene_number);
 }
 /***** loop ****************/
 void loop() {

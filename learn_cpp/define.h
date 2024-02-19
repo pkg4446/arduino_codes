@@ -14,21 +14,21 @@
 #define COMMAND_MOVE6       56
 #define COMMAND_MOVE8       58
 
-#define COMMAND_DUNGEON     101
-#define COMMAND_COORDINATE  110
-#define COMMAND_OBSTRUCT    111
-#define COMMAND_WAYLAY      113
-#define COMMAND_TRAP        115
-#define COMMAND_AMENITY     117
-#define COMMAND_TROOP       119
+#define COMMAND_DUNGEON     200
+#define COMMAND_COORDINATE  201
+#define COMMAND_OBSTRUCT    202
+#define COMMAND_WAYLAY      203
+#define COMMAND_TRAP        204
+#define COMMAND_AMENITY     205
+#define COMMAND_TROOP       206
 
-#define COMMAND_INFOMATION  102
-#define COMMAND_STORE       103
+#define COMMAND_INFOMATION  300
+#define COMMAND_STORE       400
 
-#define COMMAND_INVASION    104
-#define COMMAND_SEARCH      141
-#define COMMAND_KIDNAP      142
-#define COMMAND_ATTACK      143
+#define COMMAND_INVASION    500
+#define COMMAND_SEARCH      501
+#define COMMAND_KIDNAP      502
+#define COMMAND_ATTACK      503
 
-#define COMMAND_TRAINING    105
-#define COMMAND_REST        106
+#define COMMAND_TRAINING    600
+#define COMMAND_REST        999

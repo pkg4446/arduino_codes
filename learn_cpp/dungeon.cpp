@@ -37,13 +37,8 @@ bool mapClass::pathfinder(void) {
   return false;
 }
 
-void mapClass::parse_map(uint8_t map_type){
+void mapClass::parse_map(String  text){
     uint8_t text_end = 10;
-    String  text;
-    if(map_type == wall)          text = get_progmem(word_obstruct);
-    else if(map_type == load)     text = get_progmem(word_waylay);
-    else if(map_type == trap)     text = get_progmem(word_trap);
-    else if(map_type == amenity)  text = get_progmem(word_amenity);
     text_end += text.length()/3;
     Serial.print(text);
     for(uint8_t index=text.length(); index<text_end; index++){
@@ -92,9 +87,15 @@ void mapClass::init(void) {
 void mapClass::load_csv(void) {
 }
 void mapClass::view(void) {
+  paging();
   for (uint8_t index_y = 0; index_y < MAP_Y; index_y++){
     for (uint8_t index_x = 0; index_x < MAP_X; index_x++){
-      parse_map(maze[index_y][index_x]);
+      String  text;
+      if(maze[index_y][index_x] == wall)          text = get_progmem(word_obstruct);
+      else if(maze[index_y][index_x] == load)     text = get_progmem(word_waylay);
+      else if(maze[index_y][index_x] == trap)     text = get_progmem(word_trap);
+      else if(maze[index_y][index_x] == amenity)  text = get_progmem(word_amenity);
+      parse_map(text);
     }
     Serial.println();
   }

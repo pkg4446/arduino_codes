@@ -20,13 +20,13 @@ void routine_day_mens(void){
     //나머지 체크
 }
 /*************** funtion ***************/
-void back_to_main(uint8_t *scene_number){
+void back_to_main(uint16_t *scene_number){
   *scene_number = 100;
   display_cmd_main();
 }
 /*************** funtion ***************/
-void play_main(uint8_t *scene_number){
-  if(*scene_number == COMMAND_DUNGEON)     display_dungeon();
+void play_main(uint16_t *scene_number){
+  if(*scene_number == COMMAND_DUNGEON)          display_dungeon();
   else if(*scene_number == COMMAND_INFOMATION)  display_info();
   else if(*scene_number == COMMAND_STORE)       ;
   else if(*scene_number == COMMAND_INVASION)    display_cmd_invasion();
