@@ -146,6 +146,7 @@ void command_progress(String recieve){
           if(scene_command == COMMAND_COORDINATE)     display_coordinate(&scene_number);
           else if(scene_command == COMMAND_OBSTRUCT)  playmap.rebuild(map_pos_x,map_pos_y,wall);
           else if(scene_command == COMMAND_WAYLAY)    playmap.rebuild(map_pos_x,map_pos_y,road);
+          else if(scene_command == COMMAND_TRAP)      playmap.rebuild(map_pos_x,map_pos_y,trap);
           playmap.view(map_pos_x,map_pos_y);
           play_main(&scene_number,scene_number);
         }
