@@ -13,6 +13,8 @@ const PROGMEM char path_assist_str[]    = "/assist";
 const PROGMEM char path_womb_str[]      = "/womb";
 
 /*************** File ***************/
+const PROGMEM char file_time_str[]       = "/times.csv";
+/*************** File ***************/
 const PROGMEM char file_map_str[]       = "/maps.csv";
 /*************** File ***************/
 const PROGMEM char file_mother_str[]    = "/mother.csv";

@@ -40,7 +40,5 @@ void play_main(uint16_t *scene_number,uint16_t scene_command){
     display_cmd_invasion();
   }else if(scene_command == COMMAND_TRAINING){
     *scene_number = scene_command;
-  }else if(scene_command == COMMAND_REST){
-    *scene_number = scene_command;
   }
 }

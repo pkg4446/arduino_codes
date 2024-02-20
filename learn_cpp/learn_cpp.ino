@@ -167,6 +167,7 @@ void command_progress(String recieve){
 bool routine_hour(){
   bool response = false;
   if(time_stream(millis())){
+    save_time_csv(&year_count,&month_count,&day_count,&hour_count);
     play_time++;
     if(++hour_count > 23){
       hour_count = 0;
@@ -250,14 +251,16 @@ void setup() {
     display_continue();
     scene_number = COMMAND_MAIN;
   }
+  playmap.init();
+  load_time_csv(&year_count,&month_count,&day_count,&hour_count);
+  time_clock = millis();
 
   //pregnant_baby(path_assist(),path_avatar(),random(2));
   //dir_move(path_assist()+"/womb","/baby");
-
-  time_clock = millis();
+  
+  
   //display_newday(&month_count,info_class,stat_class,mens_class,current_class);
 
-  playmap.init();
   /*
   playmap.rebuild(6,0,0);
   playmap.rebuild(6,1,0);

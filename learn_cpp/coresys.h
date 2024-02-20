@@ -13,6 +13,9 @@
 #define parents_gen 2
 #define model_gen   3
 
+void save_time_csv(uint16_t *time_year, uint8_t *time_month, uint8_t *time_day, uint8_t *time_hour);
+void load_time_csv(uint16_t *time_year, uint8_t *time_month, uint8_t *time_day, uint8_t *time_hour);
+
 void new_model(String model_path, bool gender);
 
 bool check_model_hash(String model_path, uint8_t hash_num);

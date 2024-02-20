@@ -25,6 +25,10 @@ String path_womb(void){
 };
 
 /*******************************************************/
+String file_time(void){
+    return get_progmem(file_time_str);
+};
+/*******************************************************/
 String file_map(void){
     return get_progmem(file_map_str);
 };

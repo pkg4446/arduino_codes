@@ -9,6 +9,7 @@ String path_avatar(void);
 String path_assist(void);
 String path_womb(void);
 
+String file_time(void);
 String file_map(void);
 String file_mother(void);
 String file_father(void);

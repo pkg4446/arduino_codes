@@ -105,6 +105,26 @@ void gene_meiosis(String model_path,INFO *class_info,HEAD *class_head,BODY *clas
 }
 /***** Inner funtion *****/
 
+void save_time_csv(uint16_t *time_year, uint8_t *time_month, uint8_t *time_day, uint8_t *time_hour){
+    String time_csv = "";
+    make_csv(&time_csv,String(*time_year));
+    make_csv(&time_csv,String(*time_month));
+    make_csv(&time_csv,String(*time_day));
+    make_csv(&time_csv,String(*time_hour));
+    file_write(path_config()+file_time(), time_csv);
+
+};
+void load_time_csv(uint16_t *time_year, uint8_t *time_month, uint8_t *time_day, uint8_t *time_hour){
+    if(exisits_check(path_config()+file_time())){
+        String time_csv = file_read(path_config()+file_time());
+        char *csv_file  = const_cast<char*>(time_csv.c_str());
+        *time_year  = atoi(strtok(csv_file, ","));
+        *time_month = atoi(strtok(0x00, ","));
+        *time_day   = atoi(strtok(0x00, ","));
+        *time_hour  = atoi(strtok(0x00, ","));
+    }
+};
+
 void new_model(String model_path, bool gender){
     /***** GENE *****/
     /***** HARDWARE *****/
