@@ -53,6 +53,11 @@ const PROGMEM char scene_pos_opt4[]     = "왼쪽";
 const PROGMEM char scene_pos_opt6[]     = "오른쪽";
 const PROGMEM char scene_pos_opt8[]     = "위";
 /*************** Display ***************/
+const PROGMEM char scene_enterexit[]    = "어디에 배치할까요?";
+const PROGMEM char scene_pos_upper[]    = "상단";
+const PROGMEM char scene_pos_middle[]   = "중단";
+const PROGMEM char scene_pos_under[]    = "하단";
+/*************** Display ***************/
 const PROGMEM char scene_info[]         = "정보를 확인합니다.";
 /*************** Display ***************/
 /*************** Display ***************/
