@@ -8,7 +8,7 @@ const PROGMEM char word_core[]      = "코어";
 /*************** Word ***************/
 const PROGMEM char word_obstruct[]  = "벽";
 /*************** Word ***************/
-const PROGMEM char word_waylay[]    = "통로";
+const PROGMEM char word_waylay[]    = "길";
 /*************** Word ***************/
 const PROGMEM char word_trap[]      = "함정";
 /*************** Word ***************/
