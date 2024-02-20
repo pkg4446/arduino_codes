@@ -146,13 +146,30 @@ void command_progress(String recieve){
           if(scene_command == COMMAND_COORDINATE)     display_coordinate(&scene_number);
           else if(scene_command == COMMAND_OBSTRUCT)  playmap.rebuild(map_pos_x,map_pos_y,wall);
           else if(scene_command == COMMAND_WAYLAY)    playmap.rebuild(map_pos_x,map_pos_y,road);
-          else if(scene_command == COMMAND_TRAP)      playmap.rebuild(map_pos_x,map_pos_y,trap);
-          playmap.view(map_pos_x,map_pos_y);
+          else if(scene_command == COMMAND_AMENITY)   display_amenity(&scene_number);
+          else if(scene_command == COMMAND_TRAINNIG)  ;
+          if(scene_command!=COMMAND_AMENITY && scene_command!=COMMAND_TRAINNIG)playmap.view(map_pos_x,map_pos_y);
           play_main(&scene_number,scene_number);
         }
       }else if(scene_number == COMMAND_COORDINATE){
         if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
         else playmap.pos_move(&map_pos_x,&map_pos_y,scene_command);
+      }else if(scene_number == COMMAND_TRAINNIG){
+        if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
+        else ;
+      }else if(scene_number == COMMAND_AMENITY){
+        if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
+        else{
+          if(scene_command == COMMAND_menu1)      playmap.rebuild(map_pos_x,map_pos_y,trap);
+          else if(scene_command == COMMAND_menu2) playmap.rebuild(map_pos_x,map_pos_y,prison);
+          else if(scene_command == COMMAND_menu3) playmap.rebuild(map_pos_x,map_pos_y,spa);
+          else if(scene_command == COMMAND_menu4) playmap.rebuild(map_pos_x,map_pos_y,inn);
+          else if(scene_command == COMMAND_menu5) playmap.rebuild(map_pos_x,map_pos_y,farm);
+          else if(scene_command == COMMAND_menu6) playmap.rebuild(map_pos_x,map_pos_y,cage);
+          else if(scene_command == COMMAND_menu7) playmap.put_enter(map_pos_y);
+          else if(scene_command == COMMAND_menu8) playmap.put_exit(map_pos_y);
+          playmap.view(map_pos_x,map_pos_y);
+        }
       }else if(scene_number == COMMAND_INFOMATION){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
       }else if(scene_number == COMMAND_STORE){
@@ -170,6 +187,7 @@ bool routine_hour(){
   bool response = false;
   if(time_stream(millis())){
     save_time_csv(&year_count,&month_count,&day_count,&hour_count);
+    raider_new();
     play_time++;
     if(++hour_count > 23){
       hour_count = 0;
@@ -195,6 +213,28 @@ void routine_day(){
   }
 }
 
+void raider_new(){
+  if(aggro_point==0) aggro_point = 1;
+  if(exisits_check(path_raider())){
+    raider_move();
+  }else if(random(255/aggro_point) == 0){
+    if(!exisits_check(path_raider())) dir_make(path_raider());
+    new_model(path_raider(),random(2));
+    raider_move();
+  }
+}
+void raider_move(){
+  moveClass *raider  = new moveClass();
+  uint8_t move_point = raider->init(playmap.get_enter());
+  for(uint8_t index=0; index<move_point; index++){
+    uint8_t event = raider->moving(playmap.maze, playmap.get_exit());
+    if(event == COMMAND_MAIN){
+      break;
+    }
+    Serial.println(event);
+  }
+  delete raider;
+}
 /***** funtions ************/
 /***** CORE ****************/
 /***** setup ***************/
@@ -213,9 +253,11 @@ void setup() {
   {
     if (Serial.available()) get_command(Serial.read());
   }
-  if(!exisits_check(path_config())) dir_make(path_config());
-  if(!exisits_check(path_assist())) dir_make(path_assist());
-  if(!exisits_check(path_avatar())) dir_make(path_avatar());
+  if(!exisits_check(path_config()))   dir_make(path_config());
+  if(!exisits_check(path_assist()))   dir_make(path_assist());
+  if(!exisits_check(path_avatar()))   dir_make(path_avatar());
+  if(!exisits_check(path_troop()))    dir_make(path_troop());
+  if(!exisits_check(path_captive()))  dir_make(path_captive());
   if(scene_number!=COMMAND_YES){
     display_hash_check();
     check_model_hash(path_assist(),0);
@@ -262,26 +304,6 @@ void setup() {
   
   
   //display_newday(&month_count,info_class,stat_class,mens_class,current_class);
-
-  /*
-  playmap.rebuild(6,0,0);
-  playmap.rebuild(6,1,0);
-  playmap.rebuild(5,1,0);
-  playmap.rebuild(3,2,0);
-  playmap.rebuild(1,2,0);
-
-  playmap.rebuild(4,2,0);
-  */
-  
-  /*
-  moveClass *mob1 = new moveClass();
-  uint8_t move_point = mob1->init(playmap.get_enter());
-  for(uint8_t index=0; index<move_point; index++){
-    mob1->moving(playmap.maze);
-    mob1->event();
-  }
-  delete mob1;
-  */
   back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
 }
 /***** loop ****************/

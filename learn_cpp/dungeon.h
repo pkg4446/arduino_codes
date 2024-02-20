@@ -4,7 +4,7 @@
 #include "utility.h"
 #include "filesys.h"
 #include "path_string.h"
-#include "./progmem/dungeon_menu.h"
+#include "./progmem/words.h"
 
 const PROGMEM char path_err[] = "외부와 열결 통로는 남겨두어야 합니다.";
 
@@ -32,6 +32,8 @@ class mapClass
     void    pos_move(uint8_t *axis_x, uint8_t *axis_y, uint16_t direction);
     void    rebuild(uint8_t axis_x, uint8_t axis_y, uint8_t types);
     uint8_t get(uint8_t axis_x, uint8_t axis_y);
+    void    put_enter(uint8_t axis_y);
+    void    put_exit(uint8_t  axis_y);
     uint8_t get_enter(void);
     uint8_t get_exit(void);
 };
@@ -49,8 +51,7 @@ class moveClass
     uint8_t gps_x;
     uint8_t gps_y;
     uint8_t init(uint8_t enter);
-    void    moving(uint8_t (*maze)[MAP_X]);
-    bool    event(void);
+    uint8_t moving(uint8_t (*maze)[MAP_X], uint8_t exit_y);
 };
 
 class dungeonClass

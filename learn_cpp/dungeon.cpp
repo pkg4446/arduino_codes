@@ -89,13 +89,17 @@ void mapClass::view(uint8_t axis_x, uint8_t axis_y) {
   for (uint8_t index_y = 0; index_y < MAP_Y; index_y++){
     for (uint8_t index_x = 0; index_x < MAP_X; index_x++){
       String  text="";
-      if(index_x==axis_x && index_y==axis_y)      text = get_progmem(word_now);
-      if(index_x==MAP_X-1 && index_y==exit_y)     text += get_progmem(word_core);
-      else if(index_x==0  && index_y==enter_y)    text += get_progmem(word_enter);
-      else if(maze[index_y][index_x] == wall)     text += get_progmem(word_obstruct);
-      else if(maze[index_y][index_x] == road)     text += get_progmem(word_waylay);
-      else if(maze[index_y][index_x] == trap)     text += get_progmem(word_trap);
-      else if(maze[index_y][index_x] == amenity)  text += get_progmem(word_amenity);
+      if(index_x==axis_x && index_y==axis_y)    text = get_progmem(word_now);
+      if(index_x==MAP_X-1 && index_y==exit_y)   text += get_progmem(word_core);
+      else if(index_x==0  && index_y==enter_y)  text += get_progmem(word_enter);
+      else if(maze[index_y][index_x] == wall)   text += get_progmem(word_obstruct);
+      else if(maze[index_y][index_x] == road)   text += get_progmem(word_waylay);
+      else if(maze[index_y][index_x] == trap)   text += get_progmem(word_trap);
+      else if(maze[index_y][index_x] == prison) text += get_progmem(word_prison);
+      else if(maze[index_y][index_x] == spa)    text += get_progmem(word_spa);
+      else if(maze[index_y][index_x] == inn)    text += get_progmem(word_inn);
+      else if(maze[index_y][index_x] == farm)   text += get_progmem(word_farm);
+      else if(maze[index_y][index_x] == cage)   text += get_progmem(word_cage);
       parse_map(text);
     }
     Serial.println();
@@ -122,6 +126,24 @@ void mapClass::rebuild(uint8_t axis_x, uint8_t axis_y, uint8_t types) {
 uint8_t mapClass::get(uint8_t axis_x, uint8_t axis_y) {
   return maze[axis_y][axis_x];
 }
+void mapClass::put_enter(uint8_t axis_y) {
+  uint8_t previuos_y = enter_y;
+  enter_y = axis_y;
+  if(pathfinder()){
+    save_csv();
+  }else{
+    enter_y = previuos_y;
+  }
+}
+void mapClass::put_exit(uint8_t axis_y) {
+  uint8_t previuos_y = exit_y;
+  exit_y  = axis_y;
+  if(pathfinder()){
+    save_csv();
+  }else{
+    exit_y = previuos_y;
+  }
+}
 uint8_t mapClass::get_enter(void) {
   return enter_y;
 }
@@ -139,8 +161,8 @@ uint8_t moveClass::init(uint8_t enter) {
   return act_point;
 }
 
-void moveClass::moving(uint8_t (*maze)[MAP_X]) {
-  if(act_point == 0) return;
+uint8_t moveClass::moving(uint8_t (*maze)[MAP_X], uint8_t exit_y) {
+  if(act_point == 0) return COMMAND_CANCLE;
   else act_point-=1;
   if(back_move){
     visited[gps_y][gps_x] = true;
@@ -160,11 +182,8 @@ void moveClass::moving(uint8_t (*maze)[MAP_X]) {
     //move direction 0=x-1,1=x+1,2=y-1,3=y+1.
     uint8_t move_direction = random(4);
 
-    if(gps_x == MAP_X-1){
-      Serial.println("Incounter!");
-    }
-
-    else if(move_direction == 0 && gps_x>0 && !visited[gps_y][gps_x-1] && maze[gps_y][gps_x-1]!=wall){
+    if(gps_x == MAP_X-1 && gps_y == exit_y){ return COMMAND_MAIN;
+    }else if(move_direction == 0 && gps_x>0 && !visited[gps_y][gps_x-1] && maze[gps_y][gps_x-1]!=wall){
       gps_x-=1;
     }else if(move_direction == 0 && gps_x<MAP_X-1 && !visited[gps_y][gps_x+1] && maze[gps_y][gps_x+1]!=wall){
       gps_x+=1;
@@ -205,7 +224,7 @@ void moveClass::moving(uint8_t (*maze)[MAP_X]) {
     }
 
     else{
-      Serial.println("stuck");
+      //stuck
       if(gps_x>0 && visited[gps_y][gps_x-1]){
         for(uint8_t index_x=gps_x; index_x>=0; index_x--){
           uint8_t not_wall_num = 0;
@@ -236,10 +255,7 @@ void moveClass::moving(uint8_t (*maze)[MAP_X]) {
       memset(visited, false, sizeof(visited));
     }
   }
-}
-
-bool moveClass::event(void) {
-  return true;
+  return  maze[gps_y][gps_x];
 }
 
 /**************************************************************************************/

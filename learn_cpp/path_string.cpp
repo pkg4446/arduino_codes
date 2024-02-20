@@ -23,7 +23,18 @@ String path_assist(void){
 String path_womb(void){
     return get_progmem(path_womb_str);
 };
-
+/*******************************************************/
+String path_troop(void){
+    return path_root() + get_progmem(path_troop_str);
+};
+/*******************************************************/
+String path_captive(void){
+    return path_root() + get_progmem(path_captive_str);
+};
+/*******************************************************/
+String path_raider(void){
+    return path_root() + get_progmem(path_raider_str);
+};
 /*******************************************************/
 String file_time(void){
     return get_progmem(file_time_str);

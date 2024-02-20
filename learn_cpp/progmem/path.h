@@ -11,6 +11,12 @@ const PROGMEM char path_avatar_str[]    = "/avatar";
 const PROGMEM char path_assist_str[]    = "/assist";
 /*************** Path ***************/
 const PROGMEM char path_womb_str[]      = "/womb";
+/*************** Path ***************/
+const PROGMEM char path_troop_str[]     = "/troop";
+/*************** Path ***************/
+const PROGMEM char path_captive_str[]   = "/captive";
+/*************** Path ***************/
+const PROGMEM char path_raider_str[]    = "/raider";
 
 /*************** File ***************/
 const PROGMEM char file_time_str[]       = "/times.csv";

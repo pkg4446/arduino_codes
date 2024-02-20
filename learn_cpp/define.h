@@ -14,12 +14,21 @@
 #define COMMAND_MOVE6       56
 #define COMMAND_MOVE8       58
 
+#define COMMAND_menu1       11
+#define COMMAND_menu2       22
+#define COMMAND_menu3       33
+#define COMMAND_menu4       44
+#define COMMAND_menu5       55
+#define COMMAND_menu6       66
+#define COMMAND_menu7       77
+#define COMMAND_menu8       88
+
 #define COMMAND_DUNGEON     200
 #define COMMAND_COORDINATE  201
 #define COMMAND_OBSTRUCT    202
 #define COMMAND_WAYLAY      203
-#define COMMAND_TRAP        204
-#define COMMAND_AMENITY     205
+#define COMMAND_AMENITY     204
+#define COMMAND_TRAINNIG    205
 
 #define COMMAND_INFOMATION  300
 #define COMMAND_STORE       400

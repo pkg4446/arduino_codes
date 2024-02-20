@@ -8,6 +8,9 @@ String path_cryobank(void);
 String path_avatar(void);
 String path_assist(void);
 String path_womb(void);
+String path_troop(void);
+String path_captive(void);
+String path_raider(void);
 
 String file_time(void);
 String file_map(void);
