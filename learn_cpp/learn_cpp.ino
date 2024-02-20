@@ -16,8 +16,9 @@
 
 #include "coresys.h"
 
-String path_current = "/";
 bool   dos_mode     = false;
+String path_current = "/";
+String trainee_path = "";
 /***** Model *****/
 /***** Hardware *****//*
 INFO      *info_class   = new INFO();
@@ -147,14 +148,14 @@ void command_progress(String recieve){
           else if(scene_command == COMMAND_OBSTRUCT)  playmap.rebuild(map_pos_x,map_pos_y,wall);
           else if(scene_command == COMMAND_WAYLAY)    playmap.rebuild(map_pos_x,map_pos_y,road);
           else if(scene_command == COMMAND_AMENITY)   display_amenity(&scene_number);
-          else if(scene_command == COMMAND_TRAINNIG)  ;
-          if(scene_command!=COMMAND_AMENITY && scene_command!=COMMAND_TRAINNIG)playmap.view(map_pos_x,map_pos_y);
+          else if(scene_command == COMMAND_TRAINIG)  ;
+          if(scene_command!=COMMAND_AMENITY && scene_command!=COMMAND_TRAINIG)playmap.view(map_pos_x,map_pos_y);
           play_main(&scene_number,scene_number);
         }
       }else if(scene_number == COMMAND_COORDINATE){
         if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
         else playmap.pos_move(&map_pos_x,&map_pos_y,scene_command);
-      }else if(scene_number == COMMAND_TRAINNIG){
+      }else if(scene_number == COMMAND_TRAINIG){
         if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
         else ;
       }else if(scene_number == COMMAND_AMENITY){
@@ -254,20 +255,25 @@ void setup() {
     if (Serial.available()) get_command(Serial.read());
   }
   if(!exisits_check(path_config()))   dir_make(path_config());
-  if(!exisits_check(path_assist()))   dir_make(path_assist());
-  if(!exisits_check(path_avatar()))   dir_make(path_avatar());
-  if(!exisits_check(path_troop()))    dir_make(path_troop());
-  if(!exisits_check(path_captive()))  dir_make(path_captive());
-  if(scene_number!=COMMAND_YES){
+  if(!exisits_check(path_assist())){
+    dir_make(path_assist());
+  }else if(scene_number!=COMMAND_YES){
     display_hash_check();
     check_model_hash(path_assist(),0);
     check_model_hash(path_assist(),1);
     check_model_hash(path_assist(),2);
+  }
+  if(!exisits_check(path_avatar())){
+    dir_make(path_avatar());
+  }else if(scene_number!=COMMAND_YES){
     display_hash_check();
     check_model_hash(path_avatar(),0);
     check_model_hash(path_avatar(),1);
     check_model_hash(path_avatar(),2);
   }
+  if(!exisits_check(path_troop()))    dir_make(path_troop());
+  if(!exisits_check(path_captive()))  dir_make(path_captive());
+
   if(dir_list(path_assist(),false,false) < FILE_AMOUNT){
     new_model(path_assist(),false);
     display_make_assist();

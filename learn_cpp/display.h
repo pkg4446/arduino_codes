@@ -43,6 +43,8 @@ void display_coordinate(uint16_t *scene_number);
 /*************** Display ***************/
 void display_amenity(uint16_t *scene_number);
 /*************** Display ***************/
+void display_training(uint16_t *scene_number, String name);
+/*************** Display ***************/
 void display_cmd_invasion(void);
 /*************** Display ***************/
 void display_info(void);

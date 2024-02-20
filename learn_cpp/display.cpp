@@ -143,7 +143,7 @@ void display_dungeon(void){
     spacebar_option(true,COMMAND_WAYLAY,get_progmem(scene_dungeon_opt3));
     Serial.println();
     spacebar_option(true,COMMAND_AMENITY,get_progmem(scene_dungeon_opt4));
-    spacebar_option(true,COMMAND_TRAINNIG,get_progmem(scene_dungeon_opt5));
+    spacebar_option(true,COMMAND_TRAINIG,get_progmem(scene_dungeon_opt5));
     cancle_cmd(false);
 };
 /*******************************************************/
@@ -173,6 +173,21 @@ void display_amenity(uint16_t *scene_number){
     Serial.println();
     spacebar_option(true,COMMAND_menu7,get_progmem(word_enter));
     spacebar_option(true,COMMAND_menu8,get_progmem(word_core));
+    cancle_cmd(false);
+};
+/*******************************************************/
+void display_training(uint16_t *scene_number, String name){
+    *scene_number = COMMAND_TRAINIG;
+    paging();
+    Serial.print(get_progmem(scene_training1));
+    Serial.print(name);
+    Serial.println(get_progmem(scene_training2));
+    spacebar_option(true,COMMAND_menu1,get_progmem(scene_train_opt1));
+    spacebar_option(true,COMMAND_menu2,get_progmem(scene_train_opt2));
+    spacebar_option(true,COMMAND_menu3,get_progmem(scene_train_opt3));
+    Serial.println();
+    spacebar_option(true,COMMAND_menu7,get_progmem(scene_train_opt4));
+    spacebar_option(true,COMMAND_menu8,get_progmem(scene_train_opt5));
     cancle_cmd(false);
 };
 /*******************************************************/
