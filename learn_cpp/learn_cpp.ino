@@ -141,12 +141,13 @@ void command_progress(String recieve){
         };
         play_main(&scene_number,scene_command);
       }else if(scene_number == COMMAND_DUNGEON){
-        if(scene_command == COMMAND_CANCLE)           back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
+        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
         else{
-          if(scene_command == COMMAND_COORDINATE)  display_coordinate(&scene_number);
-          else if(scene_command == COMMAND_OBSTRUCT)    playmap.rebuild(map_pos_x,map_pos_y,wall);
-          else if(scene_command == COMMAND_WAYLAY)      playmap.rebuild(map_pos_x,map_pos_y,road);
+          if(scene_command == COMMAND_COORDINATE)     display_coordinate(&scene_number);
+          else if(scene_command == COMMAND_OBSTRUCT)  playmap.rebuild(map_pos_x,map_pos_y,wall);
+          else if(scene_command == COMMAND_WAYLAY)    playmap.rebuild(map_pos_x,map_pos_y,road);
           playmap.view(map_pos_x,map_pos_y);
+          play_main(&scene_number,scene_number);
         }
       }else if(scene_number == COMMAND_COORDINATE){
         if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);

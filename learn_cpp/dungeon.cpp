@@ -38,7 +38,7 @@ bool mapClass::pathfinder(void) {
 }
 
 void mapClass::parse_map(String  text){
-    uint8_t text_end = 10;
+    uint8_t text_end = 11;
     text_end += text.length()/3;
     Serial.print(text);
     for(uint8_t index=text.length(); index<text_end; index++){
