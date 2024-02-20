@@ -714,9 +714,9 @@ String   EROGENOUS::get_hood(void){
     if(hood_shape < 17){hood+="살짝 접힌 모양의 포피가";}
     else if(hood_shape < 55){hood+="완전히 접힌 모양의 포피가";}
     else if(hood_shape < 60){hood+="매끄러운 포피가 부드럽게";}
-    else if(hood_shape < 78){hood+="두겹으로 주름진 포피가 살짝";}
-    else if(hood_shape < 98){hood+="두겹으로 주름진 포피가 완전히";}
-    else{hood+="두겹으로 부드럽게 주름진 포피가";}
+    else if(hood_shape < 78){hood+="주름진 소음순을 두른 포피가 살짝";}
+    else if(hood_shape < 98){hood+="두겹으로 나뉜 소음순이 둘러싼 포피가 완전히";}
+    else{hood+="소음순이 부드럽게 둘러싼 포피가";}
     hood+=" 클리토리스를 덮고 있다.";
     Serial.println(hood);
     return hood;
