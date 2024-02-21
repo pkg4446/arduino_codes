@@ -86,7 +86,7 @@ void get_command(char ch) {
   }
 }
 /***** inner funtion command progress****/
-void command_fn_dos(){
+void command_fn_dos(void){
   String temp_text = "";
   for(uint8_t index_check=3; index_check<COMMAND_LENGTH; index_check++){
     if(command_buf[index_check] == 0x00) break;
@@ -242,7 +242,7 @@ void command_progress(String recieve){
   }
 }
 /***** funtion routine ****/
-bool routine_hour(){
+bool routine_hour(void){
   bool response = false;
   if(time_stream(millis())){
     save_time_csv(&year_count,&month_count,&day_count,&hour_count);
@@ -257,7 +257,7 @@ bool routine_hour(){
   }
   return response;
 }
-void routine_day(){
+void routine_day(void){
   if(routine_hour()){
     if(++day_count > 30){
       day_count = 1;
@@ -272,7 +272,7 @@ void routine_day(){
   }
 }
 
-void raider_new(){
+void raider_new(void){
   if(aggro_point==0) aggro_point = 1;
   if(exisits_check(path_raider())){
     raider_move();
@@ -282,7 +282,7 @@ void raider_new(){
     raider_move();
   }
 }
-void raider_move(){
+void raider_move(void){
   moveClass *raider  = new moveClass();
   uint8_t move_point = raider->init(playmap.get_enter());
   for(uint8_t index=0; index<move_point; index++){
@@ -294,10 +294,16 @@ void raider_move(){
   }
   delete raider;
 }
+void villager(void){
+  if(!exisits_check(path_captive())){
+    dir_make(path_town());
+    new_model(path_captive(),random(2));
+  }
+}
 /***** funtions ************/
 /***** CORE ****************/
 /***** setup ***************/
-void setup() {
+void setup(void) {
   Serial.begin(115200);
   #if defined(ESP32)
     randomSeed(analogRead(39));
@@ -358,22 +364,19 @@ void setup() {
   if(!exisits_check(path_config()))   dir_make(path_config());
   if(!exisits_check(path_troop()))    dir_make(path_troop());
   if(!exisits_check(path_captive()))  dir_make(path_captive());
+  villager();
   playmap.init();
   load_time_csv(&year_count,&month_count,&day_count,&hour_count);
   time_clock = millis();
 
   //pregnant_baby(path_assist(),path_avatar(),random(2));
   //dir_move(path_assist()+"/womb","/baby");
-  /*
-  dir_make(path_captive()+"/test");
-  new_model(path_captive()+"/test",random(2));
-  */
-  
+
   //display_newday(&month_count,info_class,stat_class,mens_class,current_class);
   back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
 }
 /***** loop ****************/
-void loop() {
+void loop(void) {
   if (Serial.available()) get_command(Serial.read());
   routine_day();
 }

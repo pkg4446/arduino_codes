@@ -17,6 +17,8 @@ const PROGMEM char path_troop_str[]     = "/troop";
 const PROGMEM char path_captive_str[]   = "/captive";
 /*************** Path ***************/
 const PROGMEM char path_raider_str[]    = "/raider";
+/*************** Path ***************/
+const PROGMEM char path_town_str[]      = "/town";
 
 /*************** File ***************/
 const PROGMEM char file_time_str[]       = "/times.csv";
@@ -37,6 +39,6 @@ const PROGMEM char file_current_str[]   = "/current.csv";
 /*************** File ***************/
 const PROGMEM char file_exp_str[]       = "/exps.csv";
 /*************** File ***************/
-const PROGMEM char file_breed_str[]       = "/breed.csv";
+const PROGMEM char file_breed_str[]     = "/breed.csv";
 /*************** File ***************/
 const PROGMEM char file_hash_str[]      = "/hash.csv";

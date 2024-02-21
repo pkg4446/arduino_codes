@@ -40,6 +40,12 @@ String path_raider(void){
     return path_root() + get_progmem(path_raider_str);
 };
 /*******************************************************/
+String path_town(void){
+    return path_root() + get_progmem(path_town_str);
+};
+/*******************************************************/
+/*******************************************************/
+/*******************************************************/
 String file_time(void){
     return get_progmem(file_time_str);
 };

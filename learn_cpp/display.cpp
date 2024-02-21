@@ -219,9 +219,9 @@ void display_execute(){
 void display_cmd_invasion(void){
     paging();
     Serial.println(get_progmem(scene_main_cmd));
-    space_option(true,COMMAND_SEARCH,get_progmem(scene_invasion_opt1));
-    space_option(true,COMMAND_KIDNAP,get_progmem(scene_invasion_opt2));
-    space_option(true,COMMAND_ATTACK,get_progmem(scene_invasion_opt3));
+    space_option(true,COMMAND_menu1,get_progmem(scene_invasion_opt1));
+    space_option(true,COMMAND_menu2,get_progmem(scene_invasion_opt2));
+    space_option(true,COMMAND_menu3,get_progmem(scene_invasion_opt3));
     cancle_cmd(true);
 };
 /*******************************************************/

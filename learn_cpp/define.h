@@ -38,9 +38,6 @@
 #define COMMAND_STORE       400
 
 #define COMMAND_INVASION    500
-#define COMMAND_SEARCH      501
-#define COMMAND_KIDNAP      502
-#define COMMAND_ATTACK      503
 
 #define COMMAND_TRAINING    600
 #define COMMAND_REST        999
