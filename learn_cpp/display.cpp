@@ -182,12 +182,12 @@ void display_training(uint16_t *scene_number, String name){
     Serial.print(get_progmem(scene_training1));
     Serial.print(name);
     Serial.println(get_progmem(scene_training2));
-    spacebar_option(true,COMMAND_menu1,get_progmem(scene_train_opt1));
-    spacebar_option(true,COMMAND_menu2,get_progmem(scene_train_opt2));
-    spacebar_option(true,COMMAND_menu3,get_progmem(scene_train_opt3));
+    spacebar_option(true,COMMAND_TARGET,get_progmem(scene_train_opt1));
+    spacebar_option(true,COMMAND_EDUCATION,get_progmem(scene_train_opt2));
+    spacebar_option(true,COMMAND_TRANSFER,get_progmem(scene_train_opt5));
     Serial.println();
-    spacebar_option(true,COMMAND_menu7,get_progmem(scene_train_opt4));
-    spacebar_option(true,COMMAND_menu8,get_progmem(scene_train_opt5));
+    spacebar_option(true,COMMAND_menu1,get_progmem(scene_train_opt3));
+    spacebar_option(true,COMMAND_menu2,get_progmem(scene_train_opt4));
     cancle_cmd(false);
 };
 /*******************************************************/

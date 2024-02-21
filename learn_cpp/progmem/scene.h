@@ -59,10 +59,9 @@ const PROGMEM char scene_training1[]    = "포로 ";
 const PROGMEM char scene_training2[]    = "(을)를 어떻게 할까?";
 const PROGMEM char scene_train_opt1[]   = "대상변경";
 const PROGMEM char scene_train_opt2[]   = "교육";
-const PROGMEM char scene_train_opt3[]   = "석방";
-const PROGMEM char scene_train_opt4[]   = "처형";
-const PROGMEM char scene_train_opt5[]   = "갈아타기";
-const PROGMEM char scene_train_opt6[]   = "보좌";
+const PROGMEM char scene_train_opt3[]   = "빙의";
+const PROGMEM char scene_train_opt4[]   = "석방";
+const PROGMEM char scene_train_opt5[]   = "처형";
 /*************** Display ***************/
 const PROGMEM char scene_info[]         = "정보를 확인합니다.";
 /*************** Display ***************/

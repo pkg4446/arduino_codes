@@ -85,45 +85,48 @@ void get_command(char ch) {
     command_num %= COMMAND_LENGTH;
   }
 }
-
+/***** funtion command progress****/
+void command_fn_dos(){
+  String temp_text = "";
+  for(uint8_t index_check=3; index_check<COMMAND_LENGTH; index_check++){
+    if(command_buf[index_check] == 0x00) break;
+    temp_text += command_buf[index_check];
+  }
+  if(command_buf[0]=='h' && command_buf[1]=='e' && command_buf[2]=='l' && command_buf[3]=='p'){
+    display_help_cmd();
+  }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]==0x20){
+    uint8_t command_index_check = 3;
+    if(exisits_check(path_current+temp_text+"/")){
+      path_current += temp_text;
+      path_current += "/";
+    }
+    Serial.println(path_current);
+  }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]=='/'){
+    path_current = "/";
+    Serial.println(path_current);
+  }else if(command_buf[0]=='l' && command_buf[1]=='s'){
+    dir_list(path_current,true,true);
+  }else if(command_buf[0]=='m' && command_buf[1]=='d'){
+    dir_make(path_current+temp_text);
+  }else if(command_buf[0]=='r' && command_buf[1]=='d'){
+    dir_remove(path_current+temp_text);
+  }else if(command_buf[0]=='r' && command_buf[1]=='f'){
+    file_remove(path_current+temp_text);
+  }else if(command_buf[0]=='o' && command_buf[1]=='p'){
+    Serial.println(file_read(path_current+temp_text));
+  }else if(command_buf[0]=='r' && command_buf[1]=='f'){
+    file_remove(path_current+temp_text);
+  }else if(command_buf[0]=='e' && command_buf[1]=='x' && command_buf[2]=='i' && command_buf[3]=='t'){
+    dos_mode = false;
+    display_boot();
+  }
+}
+/***** funtion command progress****/
 void command_progress(String recieve){
   display_cmd();
   Serial.println(recieve);
-
   if(dos_mode){
-    String temp_text = "";
-    for(uint8_t index_check=3; index_check<COMMAND_LENGTH; index_check++){
-      if(command_buf[index_check] == 0x00) break;
-      temp_text += command_buf[index_check];
-    }
-    if(command_buf[0]=='h' && command_buf[1]=='e' && command_buf[2]=='l' && command_buf[3]=='p'){
-      display_help_cmd();
-    }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]==0x20){
-      uint8_t command_index_check = 3;
-      if(exisits_check(path_current+temp_text+"/")){
-        path_current += temp_text;
-        path_current += "/";
-      }
-      Serial.println(path_current);
-    }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]=='/'){
-      path_current = "/";
-      Serial.println(path_current);
-    }else if(command_buf[0]=='l' && command_buf[1]=='s'){
-      dir_list(path_current,true,true);
-    }else if(command_buf[0]=='m' && command_buf[1]=='d'){
-      dir_make(path_current+temp_text);
-    }else if(command_buf[0]=='r' && command_buf[1]=='d'){
-      dir_remove(path_current+temp_text);
-    }else if(command_buf[0]=='r' && command_buf[1]=='f'){
-      file_remove(path_current+temp_text);
-    }else if(command_buf[0]=='o' && command_buf[1]=='p'){
-      Serial.println(file_read(path_current+temp_text));
-    }else if(command_buf[0]=='r' && command_buf[1]=='f'){
-      file_remove(path_current+temp_text);
-    }else if(command_buf[0]=='e' && command_buf[1]=='x' && command_buf[2]=='i' && command_buf[3]=='t'){
-      dos_mode = false;
-      display_boot();
-    }
+    command_fn_dos();
   }else{
     uint16_t scene_command = recieve.toInt();
     if(scene_number == 0){
@@ -148,7 +151,7 @@ void command_progress(String recieve){
           else if(scene_command == COMMAND_OBSTRUCT)  playmap.rebuild(map_pos_x,map_pos_y,wall);
           else if(scene_command == COMMAND_WAYLAY)    playmap.rebuild(map_pos_x,map_pos_y,road);
           else if(scene_command == COMMAND_AMENITY)   display_amenity(&scene_number);
-          else if(scene_command == COMMAND_TRAINIG)  ;
+          else if(scene_command == COMMAND_TRAINIG)   display_training(&scene_number,"이름");
           if(scene_command!=COMMAND_AMENITY && scene_command!=COMMAND_TRAINIG)playmap.view(map_pos_x,map_pos_y);
           play_main(&scene_number,scene_number);
         }
@@ -157,7 +160,25 @@ void command_progress(String recieve){
         else playmap.pos_move(&map_pos_x,&map_pos_y,scene_command);
       }else if(scene_number == COMMAND_TRAINIG){
         if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
-        else ;
+        else{
+          if(scene_command == COMMAND_TARGET)         ;
+          else if(scene_command == COMMAND_EDUCATION) ;
+          else if(scene_command == COMMAND_TRANSFER)  ;
+          else if(scene_command == COMMAND_menu1)     ;
+          else if(scene_command == COMMAND_menu2)     ;
+        }
+      }else if(scene_number == COMMAND_TARGET){
+        if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
+        else{
+        }
+      }else if(scene_number == COMMAND_EDUCATION){
+        if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
+        else{
+        }
+      }else if(scene_number == COMMAND_TRANSFER){
+        if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
+        else{
+        }
       }else if(scene_number == COMMAND_AMENITY){
         if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
         else{
