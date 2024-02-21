@@ -168,15 +168,15 @@ void command_progress(String recieve){
           else if(scene_command == COMMAND_menu2)     ;
         }
       }else if(scene_number == COMMAND_TARGET){
-        if(scene_command == COMMAND_CANCLE) display_coordinate(&scene_number);
+        if(scene_command == COMMAND_CANCLE) display_training(&scene_number,"이름");
         else{
         }
       }else if(scene_number == COMMAND_EDUCATION){
-        if(scene_command == COMMAND_CANCLE) display_coordinate(&scene_number);
+        if(scene_command == COMMAND_CANCLE) display_training(&scene_number,"이름");
         else{
         }
       }else if(scene_number == COMMAND_TRANSFER){
-        if(scene_command == COMMAND_CANCLE) display_coordinate(&scene_number);
+        if(scene_command == COMMAND_CANCLE) display_training(&scene_number,"이름");
         else{
         }
       }else if(scene_number == COMMAND_AMENITY){
