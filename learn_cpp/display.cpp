@@ -143,7 +143,7 @@ void display_dungeon(void){
     spacebar_option(true,COMMAND_WAYLAY,get_progmem(scene_dungeon_opt3));
     Serial.println();
     spacebar_option(true,COMMAND_AMENITY,get_progmem(scene_dungeon_opt4));
-    spacebar_option(true,COMMAND_TRAINIG,get_progmem(scene_dungeon_opt5));
+    spacebar_option(true,COMMAND_MANAGEMENT,get_progmem(scene_dungeon_opt5));
     cancle_cmd(false);
 };
 /*******************************************************/
@@ -176,18 +176,25 @@ void display_amenity(uint16_t *scene_number){
     cancle_cmd(false);
 };
 /*******************************************************/
-void display_training(uint16_t *scene_number, String name){
-    *scene_number = COMMAND_TRAINIG;
+void display_management(uint16_t *scene_number, String name){
+    *scene_number = COMMAND_MANAGEMENT;
     paging();
     Serial.print(get_progmem(scene_training1));
     Serial.print(name);
     Serial.println(get_progmem(scene_training2));
-    spacebar_option(true,COMMAND_TARGET,get_progmem(scene_train_opt1));
+    spacebar_option(true,COMMAND_VICTIM,get_progmem(scene_train_opt1));
     spacebar_option(true,COMMAND_EDUCATION,get_progmem(scene_train_opt2));
     spacebar_option(true,COMMAND_TRANSFER,get_progmem(scene_train_opt5));
     Serial.println();
     spacebar_option(true,COMMAND_menu1,get_progmem(scene_train_opt3));
     spacebar_option(true,COMMAND_menu2,get_progmem(scene_train_opt4));
+    cancle_cmd(false);
+};
+/*******************************************************/
+void display_victim(uint16_t *scene_number){
+    *scene_number = COMMAND_VICTIM;
+    paging();
+    Serial.println(get_progmem(scene_victim));
     cancle_cmd(false);
 };
 /*******************************************************/

@@ -34,7 +34,7 @@ const PROGMEM char scene_main_opt1[]    = "던전관리";
 const PROGMEM char scene_main_opt2[]    = "정보확인";
 const PROGMEM char scene_main_opt3[]    = "지옥상회";
 const PROGMEM char scene_main_opt4[]    = "대륙침략";
-const PROGMEM char scene_main_opt5[]    = "개인훈련";
+const PROGMEM char scene_main_opt5[]    = "기술훈련";
 const PROGMEM char scene_main_opt6[]    = "휴식하기";
 /*************** Display ***************/
 const PROGMEM char scene_invasion_opt1[]= "정찰";
@@ -62,6 +62,8 @@ const PROGMEM char scene_train_opt2[]   = "교육";
 const PROGMEM char scene_train_opt3[]   = "빙의";
 const PROGMEM char scene_train_opt4[]   = "석방";
 const PROGMEM char scene_train_opt5[]   = "처형";
+/*************** Display ***************/
+const PROGMEM char scene_victim[]       = "누구를 교육할까?";
 /*************** Display ***************/
 const PROGMEM char scene_info[]         = "정보를 확인합니다.";
 /*************** Display ***************/

@@ -17,7 +17,7 @@
 #include "coresys.h"
 
 bool   dos_mode     = false;
-String path_current = "/";
+String path_current = path_slash();
 String trainee_path = "";
 /***** Model *****/
 /***** Hardware *****//*
@@ -85,7 +85,7 @@ void get_command(char ch) {
     command_num %= COMMAND_LENGTH;
   }
 }
-/***** funtion command progress****/
+/***** inner funtion command progress****/
 void command_fn_dos(){
   String temp_text = "";
   for(uint8_t index_check=3; index_check<COMMAND_LENGTH; index_check++){
@@ -96,13 +96,13 @@ void command_fn_dos(){
     display_help_cmd();
   }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]==0x20){
     uint8_t command_index_check = 3;
-    if(exisits_check(path_current+temp_text+"/")){
+    if(exisits_check(path_current+temp_text+path_slash())){
       path_current += temp_text;
-      path_current += "/";
+      path_current += path_slash();
     }
     Serial.println(path_current);
   }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]=='/'){
-    path_current = "/";
+    path_current = path_slash();
     Serial.println(path_current);
   }else if(command_buf[0]=='l' && command_buf[1]=='s'){
     dir_list(path_current,true,true);
@@ -121,7 +121,7 @@ void command_fn_dos(){
     display_boot();
   }
 }
-/***** funtion command progress****/
+/***** inner funtion command progress****/
 void command_progress(String recieve){
   display_cmd();
   Serial.println(recieve);
@@ -151,33 +151,58 @@ void command_progress(String recieve){
           else if(scene_command == COMMAND_OBSTRUCT)  playmap.rebuild(map_pos_x,map_pos_y,wall);
           else if(scene_command == COMMAND_WAYLAY)    playmap.rebuild(map_pos_x,map_pos_y,road);
           else if(scene_command == COMMAND_AMENITY)   display_amenity(&scene_number);
-          //trainee_path
-          else if(scene_command == COMMAND_TRAINIG)   display_training(&scene_number,"이름");
-          if(scene_command!=COMMAND_AMENITY && scene_command!=COMMAND_TRAINIG)playmap.view(map_pos_x,map_pos_y);
+          else if(scene_command == COMMAND_MANAGEMENT){
+            if(!exisits_check(trainee_path+file_hard())){
+              uint8_t model_max_num = dir_list(path_captive(),true,false);
+              if(model_max_num == 0){
+
+                play_main(&scene_number,COMMAND_DUNGEON);
+              }else if(model_max_num == 1){
+                trainee_path = path_captive() + path_slash() + dir_index(path_captive(),true,model_max_num);
+                display_management(&scene_number,get_model_name(trainee_path));
+              }else{
+                display_victim(&scene_number);
+                for(uint8_t index=1; index<=model_max_num; index++){
+                  spacebar_option(true,index,get_model_name(path_captive()+path_slash()+dir_index(path_captive(),true,index)));
+                }
+              }
+            }else display_management(&scene_number,get_model_name(trainee_path));
+          }
+          if(scene_command!=COMMAND_AMENITY && scene_command!=COMMAND_MANAGEMENT)playmap.view(map_pos_x,map_pos_y);
           play_main(&scene_number,scene_number);
         }
       }else if(scene_number == COMMAND_COORDINATE){
         if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
         else playmap.pos_move(&map_pos_x,&map_pos_y,scene_command);
-      }else if(scene_number == COMMAND_TRAINIG){
+      }else if(scene_number == COMMAND_MANAGEMENT){
         if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
         else{
-          if(scene_command == COMMAND_TARGET)         ;
-          else if(scene_command == COMMAND_EDUCATION) ;
-          else if(scene_command == COMMAND_TRANSFER)  ;
-          else if(scene_command == COMMAND_menu1)     ;
-          else if(scene_command == COMMAND_menu2)     ;
+          if(scene_command == COMMAND_VICTIM){
+            display_victim(&scene_number);
+            for(uint8_t index=1; index<=dir_list(path_captive(),true,false); index++){
+              spacebar_option(true,index,get_model_name(path_captive()+path_slash()+dir_index(path_captive(),true,index)));
+            }
+          }else if(scene_command == COMMAND_EDUCATION)  ;
+          else if(scene_command == COMMAND_TRANSFER)    ;
+          else if(scene_command == COMMAND_menu1)       ;
+          else if(scene_command == COMMAND_menu2)       ;
         }
-      }else if(scene_number == COMMAND_TARGET){
-        if(scene_command == COMMAND_CANCLE) display_training(&scene_number,"이름");
+      }else if(scene_number == COMMAND_VICTIM){
+        if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(trainee_path));
         else{
+          uint8_t model_max_num = dir_list(path_captive(),true,false);
+          if(model_max_num != 0){
+            if(scene_command>0 && scene_command<=model_max_num) trainee_path = path_captive() + path_slash() + dir_index(path_captive(),true,scene_command);
+            else trainee_path = path_captive() + path_slash() + dir_index(path_captive(),true,model_max_num);
+            display_management(&scene_number,get_model_name(trainee_path));
+          }else play_main(&scene_number,COMMAND_DUNGEON);
         }
       }else if(scene_number == COMMAND_EDUCATION){
-        if(scene_command == COMMAND_CANCLE) display_training(&scene_number,"이름");
+        if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(trainee_path));
         else{
         }
       }else if(scene_number == COMMAND_TRANSFER){
-        if(scene_command == COMMAND_CANCLE) display_training(&scene_number,"이름");
+        if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(trainee_path));
         else{
         }
       }else if(scene_number == COMMAND_AMENITY){
@@ -328,7 +353,10 @@ void setup() {
 
   //pregnant_baby(path_assist(),path_avatar(),random(2));
   //dir_move(path_assist()+"/womb","/baby");
-  
+  /*
+  dir_make(path_captive()+"/test");
+  new_model(path_captive()+"/test",random(2));
+  */
   
   //display_newday(&month_count,info_class,stat_class,mens_class,current_class);
   back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);

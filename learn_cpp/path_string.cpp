@@ -4,6 +4,10 @@ String path_root(void){
     return get_progmem(path_root_str);
 };
 /*******************************************************/
+String path_slash(void){
+    return "/";
+};
+/*******************************************************/
 String path_config(void){
     return path_root() + get_progmem(path_config_str);
 };
