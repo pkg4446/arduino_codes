@@ -126,32 +126,3 @@ class EROS
         String  get_csv(void);
         void    set_csv(char *save_file);
 };
-
-class EXP
-{
-    private:
-        uint8_t orgasm;
-        uint8_t squirt;
-        uint8_t mouth;
-        uint8_t vagina;
-        uint8_t anal;
-        uint8_t urethra;
-        uint8_t expans_v;
-        uint8_t expans_a;
-        uint8_t sperm_m;
-        uint8_t sperm_v;
-        uint8_t sperm_a;
-    public:
-        EXP(void);
-        ~EXP(void);
-        void generate(void);
-        void update(uint8_t item);
-        void update_expansion(bool item);
-        void update_shot(uint8_t item);
-        uint8_t get(uint8_t item);
-        uint8_t get_expansion(bool item);
-        uint8_t get_shot(uint8_t item);
-
-        String  get_csv(void);
-        void    set_csv(char *save_file);
-};

@@ -37,4 +37,6 @@ const PROGMEM char file_current_str[]   = "/current.csv";
 /*************** File ***************/
 const PROGMEM char file_exp_str[]       = "/exps.csv";
 /*************** File ***************/
+const PROGMEM char file_breed_str[]       = "/breed.csv";
+/*************** File ***************/
 const PROGMEM char file_hash_str[]      = "/hash.csv";

@@ -72,6 +72,10 @@ String file_exp(void){
     return get_progmem(file_exp_str);
 };
 /*******************************************************/
+String file_breed(void){
+    return get_progmem(file_breed_str);
+};
+/*******************************************************/
 String file_hash(void){
     return get_progmem(file_hash_str);
 };

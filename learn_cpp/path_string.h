@@ -21,4 +21,5 @@ String file_soft(void);
 String file_mens(void);
 String file_current(void);
 String file_exp(void);
+String file_breed(void);
 String file_hash(void);

@@ -151,6 +151,7 @@ void command_progress(String recieve){
           else if(scene_command == COMMAND_OBSTRUCT)  playmap.rebuild(map_pos_x,map_pos_y,wall);
           else if(scene_command == COMMAND_WAYLAY)    playmap.rebuild(map_pos_x,map_pos_y,road);
           else if(scene_command == COMMAND_AMENITY)   display_amenity(&scene_number);
+          //trainee_path
           else if(scene_command == COMMAND_TRAINIG)   display_training(&scene_number,"이름");
           if(scene_command!=COMMAND_AMENITY && scene_command!=COMMAND_TRAINIG)playmap.view(map_pos_x,map_pos_y);
           play_main(&scene_number,scene_number);
@@ -275,7 +276,6 @@ void setup() {
   {
     if (Serial.available()) get_command(Serial.read());
   }
-  if(!exisits_check(path_config()))   dir_make(path_config());
   if(!exisits_check(path_assist())){
     dir_make(path_assist());
   }else if(scene_number!=COMMAND_YES){
@@ -292,9 +292,6 @@ void setup() {
     check_model_hash(path_avatar(),1);
     check_model_hash(path_avatar(),2);
   }
-  if(!exisits_check(path_troop()))    dir_make(path_troop());
-  if(!exisits_check(path_captive()))  dir_make(path_captive());
-
   if(dir_list(path_assist(),false,false) < FILE_AMOUNT){
     new_model(path_assist(),false);
     display_make_assist();
@@ -304,9 +301,9 @@ void setup() {
     new_model(path_avatar(),gender);
     display_make_user();
     scene_number = COMMAND_YES;
-  }
-
+  } 
   if(scene_number == COMMAND_YES){
+    dir_remove(path_config());
     prologue_txt();
     scene_number = 0;
     display_game_help();
@@ -322,6 +319,9 @@ void setup() {
     display_continue();
     scene_number = COMMAND_MAIN;
   }
+  if(!exisits_check(path_config()))   dir_make(path_config());
+  if(!exisits_check(path_troop()))    dir_make(path_troop());
+  if(!exisits_check(path_captive()))  dir_make(path_captive());
   playmap.init();
   load_time_csv(&year_count,&month_count,&day_count,&hour_count);
   time_clock = millis();

@@ -227,9 +227,8 @@ void new_model(String model_path, bool gender){
 
     file_write(model_path+file_mens(), mens_class->get_csv());
     file_write(model_path+file_current(), current_class->get_csv());
-    models = exp_class->get_csv();
-    make_csv_text(&models, breed_class->get_csv());
-    file_write(model_path+file_exp(), models);
+    file_write(model_path+file_exp(), exp_class->get_csv());
+    file_write(model_path+file_breed(), breed_class->get_csv());
 
     delete exp_class;
     delete current_class;
@@ -278,6 +277,36 @@ void read_model_hard(String model_path,INFO *class_info,HEAD *class_head,BODY *c
     class_body  ->set_csv(class_text[2]);
     class_parts ->set_csv(class_text[3]);
 }
+void read_model_hard_info(String model_path,INFO *class_info){
+    String csv_file_str = file_read(model_path+file_hard());
+    char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+    char *class_text= strtok(csv_file, "\n");
+    class_info->set_csv(class_text);
+}
+void read_model_hard_head(String model_path,HEAD *class_head){
+    String csv_file_str = file_read(model_path+file_hard());
+    char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+    strtok(csv_file, "\n");
+    char *class_text= strtok(0x00, "\n");
+    class_head  ->set_csv(class_text);
+}
+void read_model_hard_body(String model_path,BODY *class_body){
+    String csv_file_str = file_read(model_path+file_hard());
+    char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+    strtok(csv_file, "\n");
+    strtok(0x00, "\n");
+    char *class_text= strtok(0x00, "\n");
+    class_body  ->set_csv(class_text);
+}
+void read_model_hard_parts(String model_path,EROGENOUS *class_parts){
+    String csv_file_str = file_read(model_path+file_hard());
+    char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+    strtok(csv_file, "\n");
+    strtok(0x00, "\n");
+    strtok(0x00, "\n");
+    char *class_text= strtok(0x00, "\n");
+    class_parts ->set_csv(class_text);
+}
 
 void read_model_soft(String model_path,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
     String csv_file_str = file_read(model_path+file_soft());
@@ -293,6 +322,12 @@ void read_model_soft(String model_path,STAT *class_stat,HOLE *class_hole,SENSE *
     class_nature->set_csv(class_text[3]);
     class_eros  ->set_csv(class_text[4]);
 }
+void read_model_soft_stat(String model_path, STAT *class_stat){
+    String csv_file_str = file_read(model_path+file_soft());
+    char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+    char *class_text= strtok(csv_file, "\n");
+    class_stat  ->set_csv(class_text);
+}
 
 void read_model_mens(String model_path, MENS *mens_class){
     String csv_file_str = file_read(model_path+file_mens());
@@ -300,14 +335,19 @@ void read_model_mens(String model_path, MENS *mens_class){
     mens_class  ->set_csv(csv_file);
 }
 void read_model_feel(String model_path, CURRENT *feel_class){
-    String csv_file_str = file_read(model_path+file_mens());
+    String csv_file_str = file_read(model_path+file_current());
     char *csv_file  = const_cast<char*>(csv_file_str.c_str());
     feel_class  ->set_csv(csv_file);
+}
+void read_model_exp(String model_path, EXP *exp_class){
+    String csv_file_str = file_read(model_path+file_exp());
+    char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+    exp_class->set_csv(csv_file);
 }
 void read_model_breed(String model_path, BREED *breed_class){
     String csv_file_str = file_read(model_path+file_mens());
     char *csv_file  = const_cast<char*>(csv_file_str.c_str());
-    breed_class ->set_csv(csv_file);
+    breed_class->set_csv(csv_file);
 }
 
 //////////여기 바꾸기///shot 하고 mother에 gene으로.
@@ -402,13 +442,10 @@ void pregnant_baby(String mother_path, String father_path, bool gender){
     exp_class   ->generate();
     breed_class ->generate();
 
-    models = mens_class->get_csv();
-    file_write(model_path+file_mens(), models);
-    models = current_class->get_csv();
-    file_write(model_path+file_current(), models);
-    models = exp_class->get_csv();
-    make_csv_text(&models, breed_class->get_csv());
-    file_write(model_path+file_exp(), models);
+    file_write(model_path+file_mens(), mens_class->get_csv());
+    file_write(model_path+file_current(), current_class->get_csv());
+    file_write(model_path+file_exp(), exp_class->get_csv());
+    file_write(model_path+file_breed(), breed_class->get_csv());
 
     delete exp_class;
     delete current_class;

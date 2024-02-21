@@ -1,17 +1,23 @@
 #include "funtions.h"
+/*************** play funtion ***************/
+String get_model_name(String path){
+  /***** Hardware *****/
+  INFO      *info_class   = new INFO();
+  read_model_hard_info(path_assist(),info_class);
+  String response = info_class->get_family()+info_class->get_name();
+  delete info_class;
+}
 /*************** funtion ***************/
 void prologue_txt(void){
     /***** Model *****/
     /***** Hardware *****/
     INFO      *info_class   = new INFO();
-    HEAD      *head_class   = new HEAD();
-    BODY      *body_class   = new BODY();
-    EROGENOUS *parts_class  = new EROGENOUS();
     /***** Model *****/
-    read_model_hard(path_avatar(),info_class,head_class,body_class,parts_class);
+    read_model_hard_info(path_avatar(),info_class);
     bool gender = info_class->get_gender();
-    read_model_hard(path_assist(),info_class,head_class,body_class,parts_class);
+    read_model_hard_info(path_assist(),info_class);
     display_prologue(info_class->get_family() + info_class->get_name(), gender);
+    delete info_class;
 }
 /*************** funtion ***************/
 void routine_day_mens(void){
