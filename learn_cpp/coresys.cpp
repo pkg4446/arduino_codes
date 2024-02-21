@@ -236,6 +236,18 @@ void new_model(String model_path, bool gender){
     delete breed_class;
 }
 
+String read_hash_text(String model_path){
+    String response = "error";
+    if(exisits_check(model_path+file_hash())){
+        String csv_file_str = file_read(model_path+file_hash());
+        char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+        strtok(csv_file, ",");
+        strtok(0x00, ",");
+        response = strtok(0x00, ",");
+    }
+    return response;
+}
+
 bool check_model_hash(String model_path, uint8_t hash_num){
     bool response = false;
     if(exisits_check(model_path+file_hash()) && exisits_check(model_path+file_hard()) && exisits_check(model_path+file_soft()) && exisits_check(model_path+file_mother()) && exisits_check(model_path+file_father())){

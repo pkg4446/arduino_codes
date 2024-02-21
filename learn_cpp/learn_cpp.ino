@@ -183,9 +183,9 @@ void command_progress(String recieve){
             }
           }else if(scene_command == COMMAND_EDUCATION){ ;
           }else if(scene_command == COMMAND_TRANSFER){  ;
-          }else if(scene_command == COMMAND_menu1 || scene_command == COMMAND_menu2){
+          }else if(scene_command == COMMAND_MENU1 || scene_command == COMMAND_MENU2){
             Serial.print(get_model_name(trainee_path));
-            if(scene_command == COMMAND_menu1){
+            if(scene_command == COMMAND_MENU1){
               display_release();
               uint8_t reduce_aggro = random(10);
               if(aggro_point>reduce_aggro) aggro_point-=reduce_aggro;
@@ -219,14 +219,14 @@ void command_progress(String recieve){
       }else if(scene_number == COMMAND_AMENITY){
         if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
         else{
-          if(scene_command == COMMAND_menu1)      playmap.rebuild(map_pos_x,map_pos_y,trap);
-          else if(scene_command == COMMAND_menu2) playmap.rebuild(map_pos_x,map_pos_y,prison);
-          else if(scene_command == COMMAND_menu3) playmap.rebuild(map_pos_x,map_pos_y,spa);
-          else if(scene_command == COMMAND_menu4) playmap.rebuild(map_pos_x,map_pos_y,inn);
-          else if(scene_command == COMMAND_menu5) playmap.rebuild(map_pos_x,map_pos_y,farm);
-          else if(scene_command == COMMAND_menu6) playmap.rebuild(map_pos_x,map_pos_y,cage);
-          else if(scene_command == COMMAND_menu7) playmap.put_enter(map_pos_y);
-          else if(scene_command == COMMAND_menu8) playmap.put_exit(map_pos_y);
+          if(scene_command == COMMAND_MENU1)      playmap.rebuild(map_pos_x,map_pos_y,trap);
+          else if(scene_command == COMMAND_MENU2) playmap.rebuild(map_pos_x,map_pos_y,prison);
+          else if(scene_command == COMMAND_MENU3) playmap.rebuild(map_pos_x,map_pos_y,spa);
+          else if(scene_command == COMMAND_MENU4) playmap.rebuild(map_pos_x,map_pos_y,inn);
+          else if(scene_command == COMMAND_MENU5) playmap.rebuild(map_pos_x,map_pos_y,farm);
+          else if(scene_command == COMMAND_MENU6) playmap.rebuild(map_pos_x,map_pos_y,cage);
+          else if(scene_command == COMMAND_MENU7) playmap.put_enter(map_pos_y);
+          else if(scene_command == COMMAND_MENU8) playmap.put_exit(map_pos_y);
           playmap.view(map_pos_x,map_pos_y);
         }
       }else if(scene_number == COMMAND_INFOMATION){
@@ -236,12 +236,18 @@ void command_progress(String recieve){
       }else if(scene_number == COMMAND_INVASION){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
         else{
-          Serial.println(COMMAND_INVASION);
-          Serial.println(scene_command);
-          if(scene_command == COMMAND_menu1){;
+          if(scene_command == COMMAND_MENU1){;
             get_recon();
-          }else if(scene_command == COMMAND_menu2){ ;
-          }else if(scene_command == COMMAND_menu3){ ;
+          }else if(scene_command==COMMAND_MENU2 || scene_command==COMMAND_MENU3){
+            uint8_t grown_aggro = random(10);
+            if(aggro_point+grown_aggro<255) aggro_point+=grown_aggro;
+            else aggro_point = 255;
+            if(scene_command == COMMAND_MENU2){
+              dir_move(path_town(),path_captive()+path_slash()+read_hash_text(path_town())+file_csv());
+            }else{
+              dir_remove(path_town());
+            }
+            villager();
           }
         }
       }else if(scene_number == COMMAND_TRAINING){

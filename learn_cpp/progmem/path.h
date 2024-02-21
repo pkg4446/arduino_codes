@@ -21,7 +21,9 @@ const PROGMEM char path_raider_str[]    = "/raider";
 const PROGMEM char path_town_str[]      = "/town";
 
 /*************** File ***************/
-const PROGMEM char file_time_str[]       = "/times.csv";
+const PROGMEM char file_csv_str[]       = ".csv";
+/*************** File ***************/
+const PROGMEM char file_time_str[]      = "/times.csv";
 /*************** File ***************/
 const PROGMEM char file_map_str[]       = "/maps.csv";
 /*************** File ***************/

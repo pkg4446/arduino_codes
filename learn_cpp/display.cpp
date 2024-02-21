@@ -166,16 +166,16 @@ void display_amenity(uint16_t *scene_number){
     *scene_number = COMMAND_AMENITY;
     paging();
     Serial.println(get_progmem(scene_amenity));
-    space_option(true,COMMAND_menu1,get_progmem(word_trap));
-    space_option(true,COMMAND_menu2,get_progmem(word_prison));
-    space_option(true,COMMAND_menu3,get_progmem(word_spa));
+    space_option(true,COMMAND_MENU1,get_progmem(word_trap));
+    space_option(true,COMMAND_MENU2,get_progmem(word_prison));
+    space_option(true,COMMAND_MENU3,get_progmem(word_spa));
     Serial.println();
-    space_option(true,COMMAND_menu4,get_progmem(word_inn));
-    space_option(true,COMMAND_menu5,get_progmem(word_farm));
-    space_option(true,COMMAND_menu6,get_progmem(word_cage));
+    space_option(true,COMMAND_MENU4,get_progmem(word_inn));
+    space_option(true,COMMAND_MENU5,get_progmem(word_farm));
+    space_option(true,COMMAND_MENU6,get_progmem(word_cage));
     Serial.println();
-    space_option(true,COMMAND_menu7,get_progmem(word_enter));
-    space_option(true,COMMAND_menu8,get_progmem(word_core));
+    space_option(true,COMMAND_MENU7,get_progmem(word_enter));
+    space_option(true,COMMAND_MENU8,get_progmem(word_core));
     cancle_cmd(false);
 };
 /*******************************************************/
@@ -192,8 +192,8 @@ void display_management(uint16_t *scene_number, String name){
     space_option(true,COMMAND_EDUCATION,get_progmem(scene_train_opt2));
     space_option(true,COMMAND_TRANSFER,get_progmem(scene_train_opt3));
     Serial.println();
-    space_option(true,COMMAND_menu1,get_progmem(scene_train_opt4));
-    space_option(true,COMMAND_menu2,get_progmem(scene_train_opt5));
+    space_option(true,COMMAND_MENU1,get_progmem(scene_train_opt4));
+    space_option(true,COMMAND_MENU2,get_progmem(scene_train_opt5));
     cancle_cmd(false);
 };
 /*******************************************************/
@@ -225,9 +225,9 @@ void display_execute(){
 void display_cmd_invasion(void){
     paging();
     Serial.println(get_progmem(scene_main_cmd));
-    space_option(true,COMMAND_menu1,get_progmem(scene_invasion_opt1));
-    space_option(true,COMMAND_menu2,get_progmem(scene_invasion_opt2));
-    space_option(true,COMMAND_menu3,get_progmem(scene_invasion_opt3));
+    space_option(true,COMMAND_MENU1,get_progmem(scene_invasion_opt1));
+    space_option(true,COMMAND_MENU2,get_progmem(scene_invasion_opt2));
+    space_option(true,COMMAND_MENU3,get_progmem(scene_invasion_opt3));
     cancle_cmd(true);
 };
 /*******************************************************/

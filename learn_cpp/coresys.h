@@ -18,6 +18,7 @@ void load_time_csv(uint16_t *time_year, uint8_t *time_month, uint8_t *time_day, 
 
 void new_model(String model_path, bool gender);
 
+String read_hash_text(String model_path);
 bool check_model_hash(String model_path, uint8_t hash_num);
 void read_model_hard(String model_path, INFO *class_info, HEAD *class_head, BODY *class_body, EROGENOUS *class_parts);
 void read_model_hard_info(String model_path, INFO *class_info);

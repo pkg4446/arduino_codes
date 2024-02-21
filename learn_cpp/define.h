@@ -14,14 +14,14 @@
 #define COMMAND_MOVE6       56
 #define COMMAND_MOVE8       58
 
-#define COMMAND_menu1       11
-#define COMMAND_menu2       22
-#define COMMAND_menu3       33
-#define COMMAND_menu4       44
-#define COMMAND_menu5       55
-#define COMMAND_menu6       66
-#define COMMAND_menu7       77
-#define COMMAND_menu8       88
+#define COMMAND_MENU1       11
+#define COMMAND_MENU2       22
+#define COMMAND_MENU3       33
+#define COMMAND_MENU4       44
+#define COMMAND_MENU5       55
+#define COMMAND_MENU6       66
+#define COMMAND_MENU7       77
+#define COMMAND_MENU8       88
 
 #define COMMAND_DUNGEON     200
 #define COMMAND_COORDINATE  201
