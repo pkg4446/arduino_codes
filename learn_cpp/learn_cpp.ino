@@ -235,6 +235,13 @@ void command_progress(String recieve){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
       }else if(scene_number == COMMAND_INVASION){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
+        else{
+          if(scene_command == COMMAND_menu1){;
+            get_recon();
+          }else if(scene_command == COMMAND_menu2){ ;
+          }else if(scene_command == COMMAND_menu3){ ;
+          }
+        }
       }else if(scene_number == COMMAND_TRAINING){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
       }

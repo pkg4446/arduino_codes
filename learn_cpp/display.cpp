@@ -58,6 +58,9 @@ void display_prologue(String name, bool gender){
         type_dly();
     }
     Serial.print(name);
+    Serial.print(get_progmem(gramma_ip));
+    Serial.print(get_progmem(gramma_la));
+    spacebar();
     for(uint16_t index=0; index<strlen_P(scene_prologue2); index++){
         Serial.print(char(pgm_read_byte_near(scene_prologue2+index)));
         type_dly();
@@ -181,8 +184,9 @@ void display_management(uint16_t *scene_number, String name){
     paging();
     Serial.print(get_progmem(scene_training1));
     Serial.print(name);
-    Serial.print(get_progmem(gramma_ul));
-    spacebar(true);
+    Serial.print(get_progmem(gramma_ul_1));
+    Serial.print(get_progmem(gramma_ul_2));
+    spacebar();
     Serial.println(get_progmem(scene_training2));
     space_option(true,COMMAND_VICTIM,get_progmem(scene_train_opt1));
     space_option(true,COMMAND_EDUCATION,get_progmem(scene_train_opt2));
@@ -205,14 +209,16 @@ void display_no_victim(){
 };
 /*******************************************************/
 void display_release(){
-    Serial.print(get_progmem(gramma_ul));
-    spacebar(true);
+    Serial.print(get_progmem(gramma_ul_1));
+    Serial.print(get_progmem(gramma_ul_2));
+    spacebar();
     Serial.println(get_progmem(scene_release));
 };
 /*******************************************************/
 void display_execute(){
-    Serial.print(get_progmem(gramma_ul));
-    spacebar(true);
+    Serial.print(get_progmem(gramma_ul_1));
+    Serial.print(get_progmem(gramma_ul_2));
+    spacebar();
     Serial.println(get_progmem(scene_execute));
 };
 /*******************************************************/
@@ -229,3 +235,4 @@ void display_info(void){
     paging();
     Serial.println(get_progmem(scene_info));
 };
+/*******************************************************/

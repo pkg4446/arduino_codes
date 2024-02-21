@@ -11,6 +11,38 @@ String get_model_name(String path){
   }
   return response;
 }
+/*************** play funtion ***************/
+void get_recon(void){
+  if(!exisits_check(path_town())) return;
+  /***** Hardware *****/
+  INFO  *info_class = new INFO();
+  read_model_hard_info(path_town(),info_class);
+  Serial.print(get_progmem(scene_recon_1));
+  spacebar();
+  if(info_class->get_gender())  Serial.print(get_progmem(word_male));
+  else  Serial.print(get_progmem(word_female));
+  Serial.print(get_progmem(gramma_ul_2));
+  spacebar();
+  Serial.println(get_progmem(scene_recon_2));
+
+  Serial.print(get_progmem(word_he));
+  if(!info_class->get_gender()) Serial.print(get_progmem(word_she));
+  Serial.print(get_progmem(gramma_ui));
+  spacebar();
+  Serial.print(get_progmem(word_name));
+  Serial.print(get_progmem(gramma_un));
+  spacebar();
+
+  if(info_class->get_gender())  Serial.print(get_progmem(word_male));
+  else  Serial.print(get_progmem(word_female));
+  Serial.print(info_class->get_family()+info_class->get_name());
+  spacebar();
+  Serial.print(get_progmem(gramma_ip));
+  Serial.print(get_progmem(gramma_la));
+  spacebar();
+  Serial.println(get_progmem(scene_recon_2));
+  delete info_class;
+}
 /*************** funtion ***************/
 void prologue_txt(void){
     /***** Model *****/

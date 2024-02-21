@@ -1,11 +1,28 @@
 #pragma once
 /*************** gramma ***************/
-const PROGMEM char gramma_ul[]      = "(을)를";
+const PROGMEM char gramma_ul[]      = "을";
+const PROGMEM char gramma_ul_1[]    = "(을)";
+const PROGMEM char gramma_ul_2[]    = "를";
+
+const PROGMEM char gramma_un[]      = "은";
+const PROGMEM char gramma_un_1[]    = "(은)";
+const PROGMEM char gramma_un_2[]    = "는";
+
+const PROGMEM char gramma_ui[]      = "의";
+
+const PROGMEM char gramma_i[]       = "이";
+const PROGMEM char gramma_ip[]      = "(이)";
+const PROGMEM char gramma_la[]      = "라";
+const PROGMEM char gramma_ga[]      = "가";
 
 /*************** Word ***************/
+const PROGMEM char word_name[]      = "이름";
+/*************** Word ***************/
 const PROGMEM char word_male[]      = "남자";
+const PROGMEM char word_he[]        = "그";
 /*************** Word ***************/
 const PROGMEM char word_female[]    = "여자";
+const PROGMEM char word_she[]       = "녀";
 /*************** Word ***************/
 const PROGMEM char word_yes[]       = "예";
 /*************** Word ***************/

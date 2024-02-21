@@ -14,9 +14,9 @@ class INFO
     public:
         INFO(void);
         ~INFO(void);
-        void   generate(bool gender, bool baby);
-        void   set_family(String familyname);
-        void   aging(void);
+        void generate(bool gender, bool baby);
+        void set_family(String familyname);
+        void aging(void);
         bool    get_gender(void);
         String  get_family(void);
         String  get_name(void);

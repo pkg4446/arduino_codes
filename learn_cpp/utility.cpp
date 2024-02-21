@@ -50,10 +50,8 @@ String   get_progmem(const char* progmem_ptr){
     }
     return response;
 }
-String   spacebar(bool print_flage){
-    String response = " ";
-    if(print_flage) Serial.print(response);
-    return response;
+void spacebar(void){
+    Serial.print(" ");
 }
 
 void paging(){
