@@ -48,6 +48,11 @@ void display_management(uint16_t *scene_number, String name);
 void display_training(uint16_t *scene_number, String name);
 /*************** Display ***************/
 void display_victim(uint16_t *scene_number);
+void display_no_victim();
+/*************** Display ***************/
+void display_release();
+/*************** Display ***************/
+void display_execute();
 /*************** Display ***************/
 void display_cmd_invasion(void);
 /*************** Display ***************/

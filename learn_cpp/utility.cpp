@@ -50,6 +50,11 @@ String   get_progmem(const char* progmem_ptr){
     }
     return response;
 }
+String   spacebar(bool print_flage){
+    String response = " ";
+    if(print_flage) Serial.print(response);
+    return response;
+}
 
 void paging(){
     for(uint8_t index=0; index<LINE_NUM; index++){
@@ -70,7 +75,7 @@ void perforation(String text){
     }
     Serial.println("*");
 }
-void spacebar(bool korea, String text){
+void space(bool korea, String text){
     uint8_t text_end = 15;
     if(korea) text_end += text.length()/3;
     Serial.print(text);
@@ -79,7 +84,7 @@ void spacebar(bool korea, String text){
     }
     Serial.print(": ");
 }
-void spacebar_option(bool korea, uint16_t number, String text){
+void space_option(bool korea, uint16_t number, String text){
     Serial.print("[");
     if(number<100) Serial.print("0");
     if(number<10)  Serial.print("0");

@@ -110,13 +110,13 @@ void HOLE::blend(HOLE *mother, HOLE *father){
 void HOLE::status(bool gender){
     perforation("hole");
     if(!gender){
-        spacebar(false,"gape_v");     unit_split(gape_v,100);unit_mm();
-        spacebar(false,"pressure_v"); unit_split(pressure_v,10);Serial.println(" torr");
+        space(false,"gape_v");     unit_split(gape_v,100);unit_mm();
+        space(false,"pressure_v"); unit_split(pressure_v,10);Serial.println(" torr");
     }
-    spacebar(false,"gape_u");     unit_split(gape_u,100);unit_mm();
-    spacebar(false,"pressure_u"); unit_split(pressure_u,10);Serial.println(" torr");
-    spacebar(false,"gape_a");     unit_split(gape_a,100);unit_mm();
-    spacebar(false,"pressure_a"); unit_split(gape_v,10);Serial.println(" torr");
+    space(false,"gape_u");     unit_split(gape_u,100);unit_mm();
+    space(false,"pressure_u"); unit_split(pressure_u,10);Serial.println(" torr");
+    space(false,"gape_a");     unit_split(gape_a,100);unit_mm();
+    space(false,"pressure_a"); unit_split(gape_v,10);Serial.println(" torr");
 }
 */
 /*******************************************************************************************/
@@ -282,7 +282,7 @@ void NATURE::blend(NATURE *mother, NATURE *father){
 /*******************************************************************************************/
 void NATURE::status(void){
     perforation("nature");
-    spacebar(false,"MBTI");
+    space(false,"MBTI");
     if(at_e_i>50)Serial.print("E");
     else Serial.print("I");
     if(at_s_n>50)Serial.print("S");

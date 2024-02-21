@@ -155,15 +155,14 @@ void command_progress(String recieve){
             if(!exisits_check(trainee_path+file_hard())){
               uint8_t model_max_num = dir_list(path_captive(),true,false);
               if(model_max_num == 0){
-
-                play_main(&scene_number,COMMAND_DUNGEON);
+                display_no_victim();
               }else if(model_max_num == 1){
                 trainee_path = path_captive() + path_slash() + dir_index(path_captive(),true,model_max_num);
                 display_management(&scene_number,get_model_name(trainee_path));
               }else{
                 display_victim(&scene_number);
                 for(uint8_t index=1; index<=model_max_num; index++){
-                  spacebar_option(true,index,get_model_name(path_captive()+path_slash()+dir_index(path_captive(),true,index)));
+                  space_option(true,index,get_model_name(path_captive()+path_slash()+dir_index(path_captive(),true,index)));
                 }
               }
             }else display_management(&scene_number,get_model_name(trainee_path));
@@ -180,12 +179,24 @@ void command_progress(String recieve){
           if(scene_command == COMMAND_VICTIM){
             display_victim(&scene_number);
             for(uint8_t index=1; index<=dir_list(path_captive(),true,false); index++){
-              spacebar_option(true,index,get_model_name(path_captive()+path_slash()+dir_index(path_captive(),true,index)));
+              space_option(true,index,get_model_name(path_captive()+path_slash()+dir_index(path_captive(),true,index)));
             }
-          }else if(scene_command == COMMAND_EDUCATION)  ;
-          else if(scene_command == COMMAND_TRANSFER)    ;
-          else if(scene_command == COMMAND_menu1)       ;
-          else if(scene_command == COMMAND_menu2)       ;
+          }else if(scene_command == COMMAND_EDUCATION){ ;
+          }else if(scene_command == COMMAND_TRANSFER){  ;
+          }else if(scene_command == COMMAND_menu1 || scene_command == COMMAND_menu2){
+            Serial.print(get_model_name(trainee_path));
+            if(scene_command == COMMAND_menu1){
+              display_release();
+              uint8_t reduce_aggro = random(10);
+              if(aggro_point>reduce_aggro) aggro_point-=reduce_aggro;
+              else  aggro_point = 1;
+            }else{
+              display_execute();
+            }
+            dir_remove(trainee_path);
+            trainee_path = "";
+            play_main(&scene_number,COMMAND_DUNGEON);
+          }
         }
       }else if(scene_number == COMMAND_VICTIM){
         if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(trainee_path));

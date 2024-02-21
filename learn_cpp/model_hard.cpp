@@ -337,11 +337,11 @@ uint16_t BODY::get_weight(void){
         if(hight_breast>cupsize/3){hight_cal = hight_breast;}
         float cup_w     = (hight_cal/3)*(diameter/10)*(diameter/50);
         ans += cup_w;
-        spacebar(false,"cup weight");unit_split(cup_w,100);Serial.println(" kg");
+        space(false,"cup weight");unit_split(cup_w,100);Serial.println(" kg");
     }
     float BMI = ans/((height_c/100)*(height_c/100));
-    spacebar(false,"weight"); unit_split(ans,100);Serial.println(" kg");
-    spacebar(false,"BMI");    Serial.println(BMI);
+    space(false,"weight"); unit_split(ans,100);Serial.println(" kg");
+    space(false,"BMI");    Serial.println(BMI);
     return ans;
 }
 uint16_t BODY::get_BMI(uint16_t weight){
@@ -648,50 +648,50 @@ void EROGENOUS::blend(EROGENOUS *mother, EROGENOUS *father){
 void EROGENOUS::status(){
     perforation("erogenous");
     if(gen_xy){
-        spacebar(false,"glans_d");    unit_split(glans_d,100);unit_mm();
-        spacebar(false,"glans_d_e");  unit_split(glans_d_e,100);unit_mm();
-        spacebar(false,"glans_l");    unit_split(glans_l,100);unit_mm();
-        spacebar(false,"glans_l_e");  unit_split(glans_l_e,100);unit_mm();
+        space(false,"glans_d");    unit_split(glans_d,100);unit_mm();
+        space(false,"glans_d_e");  unit_split(glans_d_e,100);unit_mm();
+        space(false,"glans_l");    unit_split(glans_l,100);unit_mm();
+        space(false,"glans_l_e");  unit_split(glans_l_e,100);unit_mm();
         
-        spacebar(false,"body_d");     unit_split(body_d,100);unit_mm();
-        spacebar(false,"body_d_e");   unit_split(body_d_e,100);unit_mm();
-        spacebar(false,"body_l");     unit_split(body_l,100);unit_mm();
-        spacebar(false,"body_l_e");   unit_split(body_l_e,100);unit_mm();
+        space(false,"body_d");     unit_split(body_d,100);unit_mm();
+        space(false,"body_d_e");   unit_split(body_d_e,100);unit_mm();
+        space(false,"body_l");     unit_split(body_l,100);unit_mm();
+        space(false,"body_l_e");   unit_split(body_l_e,100);unit_mm();
 
-        spacebar(false,"ball_r");     unit_split(ball_r,100);Serial.println(" ml");
-        spacebar(false,"ball_l");     unit_split(ball_l,100);Serial.println(" ml");
+        space(false,"ball_r");     unit_split(ball_r,100);Serial.println(" ml");
+        space(false,"ball_l");     unit_split(ball_l,100);Serial.println(" ml");
 
-        spacebar(false,"prepuce");    Serial.println(prepuce);
+        space(false,"prepuce");    Serial.println(prepuce);
     }else{
-        spacebar(false,"hood_shape");     Serial.println(hood_shape);
-        spacebar(false,"hood_start"); Serial.println(hood_start);
-        spacebar(false,"hood_texture");Serial.println(hood_texture);
-        spacebar(false,"hood_width"); unit_split(hood_width,100);unit_mm();
-        spacebar(false,"hood_length");unit_split(hood_length,100);unit_mm();
+        space(false,"hood_shape");     Serial.println(hood_shape);
+        space(false,"hood_start"); Serial.println(hood_start);
+        space(false,"hood_texture");Serial.println(hood_texture);
+        space(false,"hood_width"); unit_split(hood_width,100);unit_mm();
+        space(false,"hood_length");unit_split(hood_length,100);unit_mm();
 
-        spacebar(false,"clit_d");     unit_split(clit_d,100);unit_mm();
-        spacebar(false,"clit_d_e");   unit_split(clit_d_e,100);unit_mm();
-        spacebar(false,"clit_l");     unit_split(clit_l,100);unit_mm();
-        spacebar(false,"clit_l_e");   unit_split(clit_l_e,100);unit_mm();
+        space(false,"clit_d");     unit_split(clit_d,100);unit_mm();
+        space(false,"clit_d_e");   unit_split(clit_d_e,100);unit_mm();
+        space(false,"clit_l");     unit_split(clit_l,100);unit_mm();
+        space(false,"clit_l_e");   unit_split(clit_l_e,100);unit_mm();
 
-        spacebar(false,"wing_shape"); Serial.println(lip_i_shape);
-        spacebar(false,"wing_texture");Serial.println(lip_i_texture);
-        spacebar(false,"wing_width"); unit_split(lip_i_width,100);unit_mm();
-        spacebar(false,"wing_length");unit_split(lip_i_length,100);unit_mm();
-        spacebar(false,"wing_r");     unit_split(lip_i_length_r,100);unit_mm();
-        spacebar(false,"wing_l");     unit_split(lip_i_length_l,100);unit_mm();
-        spacebar(false,"lip_shape");  Serial.println(lip_o_shape);
-        spacebar(false,"lip_texture");Serial.println(lip_o_texture);
+        space(false,"wing_shape"); Serial.println(lip_i_shape);
+        space(false,"wing_texture");Serial.println(lip_i_texture);
+        space(false,"wing_width"); unit_split(lip_i_width,100);unit_mm();
+        space(false,"wing_length");unit_split(lip_i_length,100);unit_mm();
+        space(false,"wing_r");     unit_split(lip_i_length_r,100);unit_mm();
+        space(false,"wing_l");     unit_split(lip_i_length_l,100);unit_mm();
+        space(false,"lip_shape");  Serial.println(lip_o_shape);
+        space(false,"lip_texture");Serial.println(lip_o_texture);
     }
-    spacebar(false,"invert");     Serial.println(invert);
-    spacebar(false,"perineum");   Serial.println(perineum);
-    spacebar(false,"wrinkle");    Serial.println(wrinkle);
+    space(false,"invert");     Serial.println(invert);
+    space(false,"perineum");   Serial.println(perineum);
+    space(false,"wrinkle");    Serial.println(wrinkle);
     
-    spacebar(false,"areola");     unit_split(areola,100);unit_mm();
-    spacebar(false,"nipple_d");   unit_split(nipple_d,100);unit_mm();
-    spacebar(false,"nipple_d_e"); unit_split(nipple_d_e,100);unit_mm();
-    spacebar(false,"nipple_h");   unit_split(nipple_h,100);unit_mm();
-    spacebar(false,"nipple_h_e"); unit_split(nipple_h_e,100);unit_mm();
+    space(false,"areola");     unit_split(areola,100);unit_mm();
+    space(false,"nipple_d");   unit_split(nipple_d,100);unit_mm();
+    space(false,"nipple_d_e"); unit_split(nipple_d_e,100);unit_mm();
+    space(false,"nipple_h");   unit_split(nipple_h,100);unit_mm();
+    space(false,"nipple_h_e"); unit_split(nipple_h_e,100);unit_mm();
 }
 */
 /*******************************************************************************************/

@@ -1,4 +1,7 @@
 #pragma once
+/*************** gramma ***************/
+const PROGMEM char gramma_ul[]      = "(을)를";
+
 /*************** Word ***************/
 const PROGMEM char word_male[]      = "남자";
 /*************** Word ***************/

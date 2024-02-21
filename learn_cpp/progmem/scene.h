@@ -56,7 +56,7 @@ const PROGMEM char scene_pos_opt8[]     = "위";
 const PROGMEM char scene_amenity[]      = "무엇으로 변경할까?";
 /*************** Display ***************/
 const PROGMEM char scene_training1[]    = "포로 ";
-const PROGMEM char scene_training2[]    = "(을)를 어떻게 할까?";
+const PROGMEM char scene_training2[]    = "어떻게 할까?";
 const PROGMEM char scene_train_opt1[]   = "대상변경";
 const PROGMEM char scene_train_opt2[]   = "교육";
 const PROGMEM char scene_train_opt3[]   = "빙의";
@@ -64,6 +64,11 @@ const PROGMEM char scene_train_opt4[]   = "석방";
 const PROGMEM char scene_train_opt5[]   = "처형";
 /*************** Display ***************/
 const PROGMEM char scene_victim[]       = "누구를 교육할까?";
+const PROGMEM char scene_no_victim[]    = "포로가 없다.";
 /*************** Display ***************/
-const PROGMEM char scene_info[]         = "정보를 확인합니다.";
+const PROGMEM char scene_release[]      = "풀어주었다.";
+/*************** Display ***************/
+const PROGMEM char scene_execute[]      = "처형했다.";
+/*************** Display ***************/
+const PROGMEM char scene_info[]         = "어떤 정보를 확인할까?";
 /*************** Display ***************/
