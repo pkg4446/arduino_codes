@@ -33,14 +33,9 @@ void get_recon(void){
   Serial.print(get_progmem(gramma_un));
   spacebar();
 
-  if(info_class->get_gender())  Serial.print(get_progmem(word_male));
-  else  Serial.print(get_progmem(word_female));
   Serial.print(info_class->get_family()+info_class->get_name());
   spacebar();
-  Serial.print(get_progmem(gramma_ip));
-  Serial.print(get_progmem(gramma_la));
-  spacebar();
-  Serial.println(get_progmem(scene_recon_2));
+  Serial.println(get_progmem(scene_recon_3));
   delete info_class;
 }
 /*************** funtion ***************/

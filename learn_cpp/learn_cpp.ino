@@ -236,6 +236,8 @@ void command_progress(String recieve){
       }else if(scene_number == COMMAND_INVASION){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
         else{
+          Serial.println(COMMAND_INVASION);
+          Serial.println(scene_command);
           if(scene_command == COMMAND_menu1){;
             get_recon();
           }else if(scene_command == COMMAND_menu2){ ;
@@ -302,9 +304,9 @@ void raider_move(void){
   delete raider;
 }
 void villager(void){
-  if(!exisits_check(path_captive())){
+  if(!exisits_check(path_town())){
     dir_make(path_town());
-    new_model(path_captive(),random(2));
+    new_model(path_town(),random(2));
   }
 }
 /***** funtions ************/
