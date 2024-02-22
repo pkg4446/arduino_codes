@@ -94,27 +94,25 @@ void command_fn_dos(void){
   if(command_buf[0]=='h' && command_buf[1]=='e' && command_buf[2]=='l' && command_buf[3]=='p'){
     display_help_cmd();
   }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]==0x20){
-    uint8_t command_index_check = 3;
-    if(exisits_check(path_current+temp_text+path_slash())){
-      path_current += temp_text;
-      path_current += path_slash();
+    if(exisits_check(path_current+path_slash()+temp_text)){
+      path_current += path_slash()+temp_text;
     }
-    Serial.println(path_current);
   }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]=='/'){
-    path_current = path_slash();
-    Serial.println(path_current);
+    path_current = "";
   }else if(command_buf[0]=='l' && command_buf[1]=='s'){
-    dir_list(path_current,true,true);
+    if(command_buf[2] != 0x00) dir_list(path_current+path_slash()+temp_text,true,true);
+    else if(path_current=="") dir_list("/",true,true);
+    else dir_list(path_current,true,true);
   }else if(command_buf[0]=='m' && command_buf[1]=='d'){
-    dir_make(path_current+temp_text);
+    dir_make(path_current+path_slash()+temp_text);
   }else if(command_buf[0]=='r' && command_buf[1]=='d'){
-    dir_remove(path_current+temp_text);
+    dir_remove(path_current+path_slash()+temp_text);
   }else if(command_buf[0]=='r' && command_buf[1]=='f'){
-    file_remove(path_current+temp_text);
+    file_remove(path_current+path_slash()+temp_text);
   }else if(command_buf[0]=='o' && command_buf[1]=='p'){
-    Serial.println(file_read(path_current+temp_text));
+    Serial.println(file_read(path_current+path_slash()+temp_text));
   }else if(command_buf[0]=='r' && command_buf[1]=='f'){
-    file_remove(path_current+temp_text);
+    file_remove(path_current+path_slash()+temp_text);
   }else if(command_buf[0]=='e' && command_buf[1]=='x' && command_buf[2]=='i' && command_buf[3]=='t'){
     dos_mode = false;
     display_boot();
@@ -138,7 +136,7 @@ void command_progress(String recieve){
       if(scene_number == COMMAND_MAIN){
         if(scene_command == COMMAND_DUNGEON){
           playmap.view(map_pos_x,map_pos_y);
-          //path_current = path_slash();
+          //path_current = "";
         }else if(scene_command == COMMAND_REST){
           time_clock -= one_hour_sec;
           display_rest();
@@ -164,6 +162,7 @@ void command_progress(String recieve){
                 display_victim(&scene_number);
                 for(uint8_t index=1; index<=model_max_num; index++){
                   space_option(true,index,get_model_name(path_captive()+path_slash()+dir_index(path_captive(),true,index)));
+                  if(index%3 == 0)Serial.println();
                 }
               }
             }else display_management(&scene_number,get_model_name(path_current));
@@ -196,7 +195,7 @@ void command_progress(String recieve){
               display_execute();
             }
             if(path_current != path_slash()) dir_remove(path_current);
-            path_current = path_slash();
+            path_current = "";
             play_main(&scene_number,COMMAND_DUNGEON);
           }
         }
@@ -330,7 +329,7 @@ void villager(void){
 /***** setup ***************/
 void setup(void) {
   Serial.begin(115200);
-  path_current = path_slash();
+  path_current = "";
   #if defined(ESP32)
     randomSeed(analogRead(39));
     Serial.println("ESP32 ver");
