@@ -233,16 +233,16 @@ void display_invasion(void){
 };
 /*******************************************************/
 void display_villager_kidnap(void){
-    Serial.println(get_progmem(gramma_ul_1));
+    Serial.print(get_progmem(gramma_ul_1));
     spacebar();
-    Serial.println(get_progmem(word_kidnap));
+    Serial.print(get_progmem(word_kidnap));
     Serial.println(get_progmem(gramma_da));
 };
 /*******************************************************/
 void display_villager_attack(void){
-    Serial.println(get_progmem(gramma_ul_1));
+    Serial.print(get_progmem(gramma_ul_1));
     spacebar();
-    Serial.println(get_progmem(word_attack));
+    Serial.print(get_progmem(word_attack));
     Serial.println(get_progmem(gramma_da));
 };
 /*******************************************************/
