@@ -139,13 +139,8 @@ void command_progress(String recieve){
       }else if(scene_number == COMMAND_MANAGEMENT){
         if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
         else{
-          if(scene_command == COMMAND_VICTIM){
-            display_victim(&scene_number);
-            for(uint8_t index=1; index<=dir_list(path_captive(),true,false); index++){
-              space_option(true,index,get_model_name(path_captive()+path_slash()+dir_index(path_captive(),true,index)));
-              if(index%3 == 0)Serial.println();
-            }
-          }else if(scene_command == COMMAND_EDUCATION){ ;
+          if(scene_command == COMMAND_VICTIM)cmd_chs_victim(&scene_number, dir_list(path_captive(),true,false));
+          else if(scene_command == COMMAND_EDUCATION){ ;
           }else if(scene_command == COMMAND_TRANSFER){  ;
           }else if(scene_command == COMMAND_MENU1 || scene_command == COMMAND_MENU2){
             Serial.print(get_model_name(path_current));

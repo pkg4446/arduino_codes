@@ -7,4 +7,5 @@
 
 void command_dos(char *command_buf, String *path, bool *exit);
 /*************************************************************/
+void cmd_chs_victim(uint16_t *scene_number, uint8_t model_max_num);
 void cmd_dng_manage(uint16_t *scene_number, String *path);
