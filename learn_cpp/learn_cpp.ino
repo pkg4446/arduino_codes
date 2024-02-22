@@ -368,7 +368,32 @@ void setup(void) {
     new_model(path_avatar(),gender);
     display_make_user();
     scene_number = COMMAND_YES;
-  } 
+  }
+  if(!exisits_check(path_config()))   dir_make(path_config());
+  if(exisits_check(path_troop())){
+    for(uint8_t index=1; index<=dir_list(path_troop(),true,false); index++){
+      String troop_path = path_troop()+path_slash()+dir_index(path_troop(),true,index);
+      if(dir_list(troop_path,false,false) < FILE_AMOUNT) dir_remove(troop_path);
+      else{
+        display_hash_check();
+        check_model_hash(troop_path,0);
+        check_model_hash(troop_path,1);
+        check_model_hash(troop_path,2);
+      }
+    }
+  }else{dir_make(path_troop());}
+  if(exisits_check(path_captive())){
+    for(uint8_t index=1; index<=dir_list(path_captive(),true,false); index++){
+      String capitive_path = path_captive()+path_slash()+dir_index(path_captive(),true,index);
+      if(dir_list(capitive_path,false,false) < FILE_AMOUNT) dir_remove(capitive_path);
+      else{
+        display_hash_check();
+        check_model_hash(capitive_path,0);
+        check_model_hash(capitive_path,1);
+        check_model_hash(capitive_path,2);
+      }
+    }
+  }else{dir_make(path_captive());}
   if(scene_number == COMMAND_YES){
     dir_remove(path_config());
     prologue_txt();
@@ -386,9 +411,7 @@ void setup(void) {
     display_continue();
     scene_number = COMMAND_MAIN;
   }
-  if(!exisits_check(path_config()))   dir_make(path_config());
-  if(!exisits_check(path_troop()))    dir_make(path_troop());
-  if(!exisits_check(path_captive()))  dir_make(path_captive());
+
   playmap.init();
   load_time_csv(&year_count,&month_count,&day_count,&hour_count);
   time_clock = millis();
