@@ -136,7 +136,9 @@ void command_progress(String recieve){
       }
     }else{
       if(scene_number == COMMAND_MAIN){
-        if(scene_command == COMMAND_DUNGEON){ playmap.view(map_pos_x,map_pos_y);
+        if(scene_command == COMMAND_DUNGEON){
+          playmap.view(map_pos_x,map_pos_y);
+          //path_current = path_slash();
         }else if(scene_command == COMMAND_REST){
           time_clock -= one_hour_sec;
           display_rest();
