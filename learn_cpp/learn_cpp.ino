@@ -242,8 +242,9 @@ void command_progress(String recieve){
           if(scene_command == COMMAND_MENU1){;
             get_recon();
           }else if(scene_command==COMMAND_MENU2 || scene_command==COMMAND_MENU3){
-            uint8_t grown_aggro   = random(10);
-            Serial.print(get_model_name(path_town()));
+            uint8_t grown_aggro  = random(10);
+            String villager_name = get_model_name(path_town())
+            Serial.print(villager_name);
             if(aggro_point+grown_aggro<255) aggro_point+=grown_aggro;
             else aggro_point = 255;
             if(scene_command == COMMAND_MENU2){
