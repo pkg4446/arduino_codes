@@ -5,7 +5,7 @@ String get_model_name(String path){
   String response = "";
   if(exisits_check(path+file_hard())){
     INFO      *info_class   = new INFO();
-    read_model_hard_info(path_assist(),info_class);
+    read_model_hard_info(path,info_class);
     response = info_class->get_family()+info_class->get_name();
     delete info_class;
   }

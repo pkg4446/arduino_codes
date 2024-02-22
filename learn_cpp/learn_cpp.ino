@@ -16,9 +16,8 @@
 
 #include "coresys.h"
 
-bool   dos_mode     = false;
-String path_current = path_slash();
-String trainee_path = "";
+bool   dos_mode = false;
+String path_current;
 /***** Model *****/
 /***** Hardware *****//*
 INFO      *info_class   = new INFO();
@@ -152,20 +151,20 @@ void command_progress(String recieve){
           else if(scene_command == COMMAND_WAYLAY)    playmap.rebuild(map_pos_x,map_pos_y,road);
           else if(scene_command == COMMAND_AMENITY)   display_amenity(&scene_number);
           else if(scene_command == COMMAND_MANAGEMENT){
-            if(!exisits_check(trainee_path+file_hard())){
+            if(!exisits_check(path_current+file_hard())){
               uint8_t model_max_num = dir_list(path_captive(),true,false);
               if(model_max_num == 0){
                 display_no_victim();
               }else if(model_max_num == 1){
-                trainee_path = path_captive() + path_slash() + dir_index(path_captive(),true,model_max_num);
-                display_management(&scene_number,get_model_name(trainee_path));
+                path_current = path_captive() + path_slash() + dir_index(path_captive(),true,model_max_num);
+                display_management(&scene_number,get_model_name(path_current));
               }else{
                 display_victim(&scene_number);
                 for(uint8_t index=1; index<=model_max_num; index++){
                   space_option(true,index,get_model_name(path_captive()+path_slash()+dir_index(path_captive(),true,index)));
                 }
               }
-            }else display_management(&scene_number,get_model_name(trainee_path));
+            }else display_management(&scene_number,get_model_name(path_current));
           }
           if(scene_command!=COMMAND_AMENITY && scene_command!=COMMAND_MANAGEMENT)playmap.view(map_pos_x,map_pos_y);
           play_main(&scene_number,scene_number);
@@ -180,11 +179,12 @@ void command_progress(String recieve){
             display_victim(&scene_number);
             for(uint8_t index=1; index<=dir_list(path_captive(),true,false); index++){
               space_option(true,index,get_model_name(path_captive()+path_slash()+dir_index(path_captive(),true,index)));
+              if(index%3 == 0)Serial.println();
             }
           }else if(scene_command == COMMAND_EDUCATION){ ;
           }else if(scene_command == COMMAND_TRANSFER){  ;
           }else if(scene_command == COMMAND_MENU1 || scene_command == COMMAND_MENU2){
-            Serial.print(get_model_name(trainee_path));
+            Serial.print(get_model_name(path_current));
             if(scene_command == COMMAND_MENU1){
               display_release();
               uint8_t reduce_aggro = random(10);
@@ -193,27 +193,27 @@ void command_progress(String recieve){
             }else{
               display_execute();
             }
-            dir_remove(trainee_path);
-            trainee_path = "";
+            dir_remove(path_current);
+            path_current = path_slash();
             play_main(&scene_number,COMMAND_DUNGEON);
           }
         }
       }else if(scene_number == COMMAND_VICTIM){
-        if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(trainee_path));
+        if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(path_current));
         else{
           uint8_t model_max_num = dir_list(path_captive(),true,false);
           if(model_max_num != 0){
-            if(scene_command>0 && scene_command<=model_max_num) trainee_path = path_captive() + path_slash() + dir_index(path_captive(),true,scene_command);
-            else trainee_path = path_captive() + path_slash() + dir_index(path_captive(),true,model_max_num);
-            display_management(&scene_number,get_model_name(trainee_path));
+            if(scene_command>0 && scene_command<=model_max_num) path_current = path_captive() + path_slash() + dir_index(path_captive(),true,scene_command);
+            else path_current = path_captive() + path_slash() + dir_index(path_captive(),true,model_max_num);
+            display_management(&scene_number,get_model_name(path_current));
           }else play_main(&scene_number,COMMAND_DUNGEON);
         }
       }else if(scene_number == COMMAND_EDUCATION){
-        if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(trainee_path));
+        if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(path_current));
         else{
         }
       }else if(scene_number == COMMAND_TRANSFER){
-        if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(trainee_path));
+        if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(path_current));
         else{
         }
       }else if(scene_number == COMMAND_AMENITY){
@@ -236,6 +236,7 @@ void command_progress(String recieve){
       }else if(scene_number == COMMAND_INVASION){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
         else{
+          villager();
           if(scene_command == COMMAND_MENU1){;
             get_recon();
           }else if(scene_command==COMMAND_MENU2 || scene_command==COMMAND_MENU3){
@@ -243,12 +244,12 @@ void command_progress(String recieve){
             if(aggro_point+grown_aggro<255) aggro_point+=grown_aggro;
             else aggro_point = 255;
             if(scene_command == COMMAND_MENU2){
-              dir_move(path_town(),path_captive()+path_slash()+read_hash_text(path_town())+file_csv());
+              dir_move(path_town(),path_captive()+path_slash()+read_hash_text(path_town()));
             }else{
               dir_remove(path_town());
             }
-            villager();
           }
+          villager();
         }
       }else if(scene_number == COMMAND_TRAINING){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
@@ -313,6 +314,8 @@ void villager(void){
   if(!exisits_check(path_town())){
     dir_make(path_town());
     new_model(path_town(),random(2));
+  }else if(dir_list(path_town(),false,false) < FILE_AMOUNT){
+    new_model(path_town(),random(2));
   }
 }
 /***** funtions ************/
@@ -320,6 +323,7 @@ void villager(void){
 /***** setup ***************/
 void setup(void) {
   Serial.begin(115200);
+  path_current = path_slash();
   #if defined(ESP32)
     randomSeed(analogRead(39));
     Serial.println("ESP32 ver");
@@ -379,7 +383,6 @@ void setup(void) {
   if(!exisits_check(path_config()))   dir_make(path_config());
   if(!exisits_check(path_troop()))    dir_make(path_troop());
   if(!exisits_check(path_captive()))  dir_make(path_captive());
-  villager();
   playmap.init();
   load_time_csv(&year_count,&month_count,&day_count,&hour_count);
   time_clock = millis();

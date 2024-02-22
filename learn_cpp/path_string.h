@@ -14,7 +14,6 @@ String path_captive(void);
 String path_raider(void);
 String path_town(void);
 
-String file_csv(void);
 String file_time(void);
 String file_map(void);
 String file_mother(void);

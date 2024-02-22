@@ -1,6 +1,6 @@
 #pragma once
 
-#define FILE_AMOUNT         8
+#define FILE_AMOUNT         9
 #define COMMAND_LENGTH      32
 #define ONE_HOUR            60000
 
