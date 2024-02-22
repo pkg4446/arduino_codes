@@ -238,22 +238,24 @@ void command_progress(String recieve){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
         else{
           villager();
-          if(scene_command == COMMAND_MENU1){
-            get_recon();
-          }else if(scene_command==COMMAND_MENU2 || scene_command==COMMAND_MENU3){
-            uint8_t grown_aggro  = random(10);
-            String villager_name = get_model_name(path_town());
-            Serial.print(villager_name);
-            if(aggro_point+grown_aggro<255) aggro_point+=grown_aggro;
-            else aggro_point = 255;
-            if(scene_command == COMMAND_MENU2){
-              dir_move(path_town(),path_captive()+path_slash()+read_hash_text(path_town()));
-              display_villager_kidnap();
-            }else{
-              dir_remove(path_town());
-              display_villager_attack();
+          if(dir_list(path_town(),false,false) == FILE_AMOUNT){
+            if(scene_command == COMMAND_MENU1){
+              get_recon();
+            }else if(scene_command==COMMAND_MENU2 || scene_command==COMMAND_MENU3){
+              uint8_t grown_aggro  = random(10);
+              String villager_name = get_model_name(path_town());
+              Serial.print(villager_name);
+              if(aggro_point+grown_aggro<255) aggro_point+=grown_aggro;
+              else aggro_point = 255;
+              if(scene_command == COMMAND_MENU2){
+                dir_move(path_town(),path_captive()+path_slash()+read_hash_text(path_town()));
+                display_villager_kidnap();
+              }else{
+                dir_remove(path_town());
+                display_villager_attack();
+              }
             }
-          }
+          }else display_invasion_empt();
           play_main(&scene_number,COMMAND_INVASION);
         }
       }else if(scene_number == COMMAND_TRAINING){

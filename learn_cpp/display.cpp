@@ -251,6 +251,10 @@ void display_invasion(void){
     cancle_cmd(true);
 };
 /*******************************************************/
+void display_invasion_empt(void){
+    Serial.println(get_progmem(scene_invasion_empt));
+};
+/*******************************************************/
 void display_villager_kidnap(void){
     Serial.print(get_progmem(gramma_ul_1));
     spacebar();

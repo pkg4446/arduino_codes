@@ -43,6 +43,8 @@ const PROGMEM char scene_main_opt5[]    = "기술훈련";
 const PROGMEM char scene_main_opt6[]    = "휴식하기";
 /*************** Display ***************/
 const PROGMEM char scene_invasion_opt1[]= "정찰";
+const PROGMEM char scene_invasion_empt[]= "마을이 비어있다. 다음에 다시 오자.";
+/*************** Display ***************/
 /*************** Display ***************/
 const PROGMEM char scene_dungeon_opt1[] = "→  변경";
 const PROGMEM char scene_dungeon_opt2[] = "길막기";

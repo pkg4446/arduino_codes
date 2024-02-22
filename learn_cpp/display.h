@@ -59,6 +59,7 @@ void display_release();
 void display_execute();
 /*************** Display ***************/
 void display_invasion(void);
+void display_invasion_empt(void);
 /*************** Display ***************/
 void display_villager_kidnap(void);
 /*************** Display ***************/
