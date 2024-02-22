@@ -107,7 +107,7 @@ void command_fn_dos(void){
     path_current = "";
   }else if(command_buf[0]=='l' && command_buf[1]=='s'){
     if(command_buf[2] != 0x00) dir_list(path_current+path_slash()+temp_text,true,true);
-    else if(path_current=="") dir_list("/",true,true);
+    else if(path_current=="")  dir_list("/",true,true);
     else dir_list(path_current,true,true);
   }else if(command_buf[0]=='m' && command_buf[1]=='d'){
     dir_make(path_current+path_slash()+temp_text);

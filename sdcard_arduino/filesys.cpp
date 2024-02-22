@@ -136,6 +136,7 @@ uint16_t dir_list(String path, bool type, bool show) {
     }
     file = root.openNextFile();
   }
+  root.close();
   return type_index;
 }
 
@@ -156,6 +157,7 @@ String dir_index(String path, bool type, uint16_t dir_index) {
       }
       file = root.openNextFile();
     }
+    root.close();
   }
   return response;
 }
