@@ -2,7 +2,7 @@
 #include <arduino.h>
 #include "heredity.h"
 #include "utility.h"
-#include "database.h"
+#include "./progmem/data_name.h"
 
 class INFO
 {

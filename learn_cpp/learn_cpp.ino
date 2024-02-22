@@ -1,20 +1,22 @@
 #include "filesys.h"
 
+#include "coresys.h"
+#include "funtions.h"
+#include "dungeon.h"
+
 #include "model_hard.h"
 #include "model_soft.h"
 #include "model_status.h"
+
 #include "enum.h"
 #include "define.h"
 #include "utility.h"
-#include "funtions.h"
 
-#include "dungeon.h"
-
-#include "database.h"
 #include "display.h"
 #include "path_string.h"
 
-#include "coresys.h"
+#include "command.h"
+
 
 #define  MEMORYCHECK
 
@@ -93,46 +95,11 @@ void get_command(char ch) {
     command_num %= COMMAND_LENGTH;
   }
 }
-/***** inner funtion command progress****/
-void command_fn_dos(void){
-  String temp_text = "";
-  for(uint8_t index_check=3; index_check<COMMAND_LENGTH; index_check++){
-    if(command_buf[index_check] == 0x00) break;
-    temp_text += command_buf[index_check];
-  }
-  if(command_buf[0]=='h' && command_buf[1]=='e' && command_buf[2]=='l' && command_buf[3]=='p'){
-    display_help_cmd();
-  }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]==0x20){
-    if(exisits_check(path_current+path_slash()+temp_text)){
-      path_current += path_slash()+temp_text;
-    }
-  }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]=='/'){
-    path_current = "";
-  }else if(command_buf[0]=='l' && command_buf[1]=='s'){
-    if(command_buf[2] != 0x00) dir_list(path_current+path_slash()+temp_text,true,true);
-    else if(path_current=="")  dir_list("/",true,true);
-    else dir_list(path_current,true,true);
-  }else if(command_buf[0]=='m' && command_buf[1]=='d'){
-    dir_make(path_current+path_slash()+temp_text);
-  }else if(command_buf[0]=='r' && command_buf[1]=='d'){
-    dir_remove(path_current+path_slash()+temp_text);
-  }else if(command_buf[0]=='r' && command_buf[1]=='f'){
-    file_remove(path_current+path_slash()+temp_text);
-  }else if(command_buf[0]=='o' && command_buf[1]=='p'){
-    Serial.println(file_read(path_current+path_slash()+temp_text));
-  }else if(command_buf[0]=='r' && command_buf[1]=='f'){
-    file_remove(path_current+path_slash()+temp_text);
-  }else if(command_buf[0]=='e' && command_buf[1]=='x' && command_buf[2]=='i' && command_buf[3]=='t'){
-    dos_mode = false;
-    display_boot();
-  }
-}
-/***** inner funtion command progress****/
 void command_progress(String recieve){
   display_cmd();
   Serial.println(recieve);
   if(dos_mode){
-    command_fn_dos();
+    command_dos(command_buf,&path_current,&dos_mode);
   }else{
     uint16_t scene_command = recieve.toInt();
     if(scene_number == 0){
@@ -142,6 +109,7 @@ void command_progress(String recieve){
         display_help_cmd();
       }
     }else{
+      /******************************************************************************/
       if(scene_number == COMMAND_MAIN){
         if(scene_command == COMMAND_DUNGEON){
           playmap.view(map_pos_x,map_pos_y);
@@ -152,7 +120,9 @@ void command_progress(String recieve){
           back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
         };
         play_main(&scene_number,scene_command);
-      }else if(scene_number == COMMAND_DUNGEON){
+      }
+      /******************************************************************************/
+      else if(scene_number == COMMAND_DUNGEON){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
         else{
           if(scene_command == COMMAND_COORDINATE)     display_coordinate(&scene_number);
@@ -239,11 +209,17 @@ void command_progress(String recieve){
           else if(scene_command == COMMAND_MENU8) playmap.put_exit(map_pos_y);
           playmap.view(map_pos_x,map_pos_y);
         }
-      }else if(scene_number == COMMAND_INFOMATION){
+      }
+      /******************************************************************************/
+      else if(scene_number == COMMAND_INFOMATION){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
-      }else if(scene_number == COMMAND_STORE){
+      }
+      /******************************************************************************/
+      else if(scene_number == COMMAND_STORE){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
-      }else if(scene_number == COMMAND_INVASION){
+      }
+      /******************************************************************************/
+      else if(scene_number == COMMAND_INVASION){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
         else{
           villager();
@@ -271,6 +247,7 @@ void command_progress(String recieve){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
       }
     }
+    /******************************************************************************/
   }
   #ifdef MEMORYCHECK
     Serial.print("freeMemory()=");

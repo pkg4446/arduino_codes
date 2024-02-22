@@ -1,0 +1,35 @@
+#include "command.h"
+
+void command_dos(char *command_buf, String *path, bool *exit){
+  String temp_text = "";
+  for(uint8_t index_check=3; index_check<COMMAND_LENGTH; index_check++){
+    if(command_buf[index_check] == 0x00) break;
+    temp_text += command_buf[index_check];
+  }
+  if(command_buf[0]=='h' && command_buf[1]=='e' && command_buf[2]=='l' && command_buf[3]=='p'){
+    display_help_cmd();
+  }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]==0x20){
+    if(exisits_check(*path+path_slash()+temp_text)){
+      *path += path_slash()+temp_text;
+    }
+  }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]=='/'){
+    *path = "";
+  }else if(command_buf[0]=='l' && command_buf[1]=='s'){
+    if(command_buf[2] != 0x00) dir_list(*path+path_slash()+temp_text,true,true);
+    else if(*path=="")  dir_list("/",true,true);
+    else dir_list(*path,true,true);
+  }else if(command_buf[0]=='m' && command_buf[1]=='d'){
+    dir_make(*path+path_slash()+temp_text);
+  }else if(command_buf[0]=='r' && command_buf[1]=='d'){
+    dir_remove(*path+path_slash()+temp_text);
+  }else if(command_buf[0]=='r' && command_buf[1]=='f'){
+    file_remove(*path+path_slash()+temp_text);
+  }else if(command_buf[0]=='o' && command_buf[1]=='p'){
+    Serial.println(file_read(*path+path_slash()+temp_text));
+  }else if(command_buf[0]=='r' && command_buf[1]=='f'){
+    file_remove(*path+path_slash()+temp_text);
+  }else if(command_buf[0]=='e' && command_buf[1]=='x' && command_buf[2]=='i' && command_buf[3]=='t'){
+    *exit = false;
+    display_boot();
+  }
+};
