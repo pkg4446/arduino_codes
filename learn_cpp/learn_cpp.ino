@@ -238,7 +238,6 @@ void command_progress(String recieve){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
         else{
           villager();
-          villager();
           if(scene_command == COMMAND_MENU1){
             get_recon();
           }else if(scene_command==COMMAND_MENU2 || scene_command==COMMAND_MENU3){
@@ -371,6 +370,7 @@ void setup(void) {
   }
   if(!exisits_check(path_config()))   dir_make(path_config());
   if(exisits_check(path_troop())){
+    display_troop();
     for(uint8_t index=1; index<=dir_list(path_troop(),true,false); index++){
       String troop_path = path_troop()+path_slash()+dir_index(path_troop(),true,index);
       if(dir_list(troop_path,false,false) < FILE_AMOUNT) dir_remove(troop_path);
@@ -383,6 +383,7 @@ void setup(void) {
     }
   }else{dir_make(path_troop());}
   if(exisits_check(path_captive())){
+    display_captive();
     for(uint8_t index=1; index<=dir_list(path_captive(),true,false); index++){
       String capitive_path = path_captive()+path_slash()+dir_index(path_captive(),true,index);
       if(dir_list(capitive_path,false,false) < FILE_AMOUNT) dir_remove(capitive_path);

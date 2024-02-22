@@ -15,6 +15,10 @@ void display_model_err(void);
 /*************** Display ***************/
 void display_boot(void);
 /*************** Display ***************/
+void display_troop(void);
+/*************** Display ***************/
+void display_captive(void);
+/*************** Display ***************/
 void display_hash_check(void);
 /*************** Display ***************/
 void display_help_cmd(void);

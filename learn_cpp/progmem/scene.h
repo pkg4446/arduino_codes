@@ -12,7 +12,12 @@ const PROGMEM char scene_time_h[]       = "시";
 const PROGMEM char scene_boot[]         = "새롭게 시작 하시겠습니까?";
 const PROGMEM char scene_boot_cmd[]     = "Command Prompt";
 /*************** Display ***************/
-const PROGMEM char scene_hash_check[]   = "이계의 침식을 확인 중 입니다.";
+const PROGMEM char scene_troop[]        = "던전 내부";
+const PROGMEM char scene_captive[]      = "포로들";
+/*************** Display ***************/
+const PROGMEM char scene_hash[]         = "이계의 침식";
+/*************** Display ***************/
+const PROGMEM char scene_check[]        = "확인 중 입니다.";
 /*************** Display ***************/
 const PROGMEM char scene_make_assist[]  = "새로운 마왕 소환자가 탄생했습니다.";
 /*************** Display ***************/

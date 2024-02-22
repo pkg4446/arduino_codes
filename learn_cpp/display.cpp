@@ -31,9 +31,28 @@ void display_boot(void){
     Serial.println();
 };
 /*******************************************************/
+void display_troop(void){
+    paging();
+    Serial.print(get_progmem(scene_troop));
+    Serial.print(get_progmem(gramma_ul_2));
+    spacebar();
+    Serial.println(get_progmem(scene_check));
+};
+/*******************************************************/
+void display_captive(void){
+    paging();
+    Serial.print(get_progmem(scene_captive));
+    Serial.print(get_progmem(gramma_ul));
+    spacebar();
+    Serial.println(get_progmem(scene_check));
+};
+/*******************************************************/
 void display_hash_check(void){
     paging();
-    Serial.println(get_progmem(scene_hash_check));
+    Serial.print(get_progmem(scene_hash));
+    Serial.print(get_progmem(gramma_ul));
+    spacebar();
+    Serial.println(get_progmem(scene_check));
 };
 /*******************************************************/
 void display_help_cmd(void){

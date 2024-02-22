@@ -10,8 +10,8 @@ const PROGMEM char check_sdcard3[]  = "시스템을 시작합니다.";
 void     sd_init(void);
 bool     exisits_check(String path);
 
-String   dir_index(String path, bool type, uint16_t dir_index);
-uint16_t dir_list(String path, bool type, bool show);
+String   dir_index(String path, bool type, uint8_t dir_index);
+uint8_t  dir_list(String path, bool type, bool show);
 void     dir_make(String path);
 void     dir_remove(String path);
 void     dir_move(String path, String target);
