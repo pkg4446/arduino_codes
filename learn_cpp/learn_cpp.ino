@@ -19,7 +19,10 @@
 #define  MEMORYCHECK
 
 #ifdef MEMORYCHECK
-  #include "MemoryFree.h"
+  #if defined(ESP32)
+  #else
+      #include "MemoryFree.h"
+  #endif
 #endif
 
 bool   dos_mode = false;
@@ -271,7 +274,11 @@ void command_progress(String recieve){
   }
   #ifdef MEMORYCHECK
     Serial.print("freeMemory()=");
-    Serial.println(freeMemory());
+    #if defined(ESP32)
+      Serial.println(ESP.getFreeHeap());
+    #else
+      Serial.println(freeMemory());
+    #endif
   #endif
 }
 /***** funtion routine ****/
