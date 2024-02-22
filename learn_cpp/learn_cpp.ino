@@ -16,6 +16,12 @@
 
 #include "coresys.h"
 
+#define  MEMORYCHECK
+
+#ifdef MEMORYCHECK
+  #include "MemoryFree.h"
+#endif
+
 bool   dos_mode = false;
 String path_current;
 /***** Model *****/
@@ -263,6 +269,10 @@ void command_progress(String recieve){
       }
     }
   }
+  #ifdef MEMORYCHECK
+    Serial.print("freeMemory()=");
+    Serial.println(freeMemory());
+  #endif
 }
 /***** funtion routine ****/
 bool routine_hour(void){
