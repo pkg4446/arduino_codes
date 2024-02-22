@@ -129,24 +129,8 @@ void command_progress(String recieve){
           else if(scene_command == COMMAND_OBSTRUCT)  playmap.rebuild(map_pos_x,map_pos_y,wall);
           else if(scene_command == COMMAND_WAYLAY)    playmap.rebuild(map_pos_x,map_pos_y,road);
           else if(scene_command == COMMAND_AMENITY)   display_amenity(&scene_number);
-          else if(scene_command == COMMAND_MANAGEMENT){
-            if(!exisits_check(path_current+file_hard())){
-              uint8_t model_max_num = dir_list(path_captive(),true,false);
-              if(model_max_num == 0){
-                display_no_victim();
-              }else if(model_max_num == 1){
-                path_current = path_captive() + path_slash() + dir_index(path_captive(),true,model_max_num);
-                display_management(&scene_number,get_model_name(path_current));
-              }else{
-                display_victim(&scene_number);
-                for(uint8_t index=1; index<=model_max_num; index++){
-                  space_option(true,index,get_model_name(path_captive()+path_slash()+dir_index(path_captive(),true,index)));
-                  if(index%3 == 0)Serial.println();
-                }
-              }
-            }else display_management(&scene_number,get_model_name(path_current));
-          }
-          if(scene_command!=COMMAND_AMENITY && scene_command!=COMMAND_MANAGEMENT)playmap.view(map_pos_x,map_pos_y);
+          else if(scene_command == COMMAND_MANAGEMENT)cmd_dng_manage(&scene_number,&path_current);
+          if(scene_command!=COMMAND_AMENITY && scene_command!=COMMAND_MANAGEMENT) playmap.view(map_pos_x,map_pos_y);
           play_main(&scene_number,scene_number);
         }
       }else if(scene_number == COMMAND_COORDINATE){

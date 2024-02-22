@@ -33,3 +33,21 @@ void command_dos(char *command_buf, String *path, bool *exit){
     display_boot();
   }
 };
+/*************************************************************/
+void cmd_dng_manage(uint16_t *scene_number, String *path){
+  if(!exisits_check(*path+file_hard())){
+    uint8_t model_max_num = dir_list(path_captive(),true,false);
+    if(model_max_num == 0){
+      display_no_victim();
+    }else if(model_max_num == 1){
+      *path = path_captive() + path_slash() + dir_index(path_captive(),true,model_max_num);
+      display_management(scene_number,get_model_name(*path));
+    }else{
+      display_victim(scene_number);
+      for(uint8_t index=1; index<=model_max_num; index++){
+        space_option(true,index,get_model_name(path_captive()+path_slash()+dir_index(path_captive(),true,index)));
+        if(index%3 == 0)Serial.println();
+      }
+    }
+  }else display_management(scene_number,get_model_name(*path));
+};
