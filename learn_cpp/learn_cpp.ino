@@ -194,7 +194,7 @@ void command_progress(String recieve){
             }else{
               display_execute();
             }
-            if(path_current != path_slash()) dir_remove(path_current);
+            if(path_current.length()>1) dir_remove(path_current);
             path_current = "";
             play_main(&scene_number,COMMAND_DUNGEON);
           }

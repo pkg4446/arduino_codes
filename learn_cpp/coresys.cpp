@@ -249,10 +249,6 @@ String read_hash_text(String model_path){
 }
 
 bool check_model_hash(String model_path, uint8_t hash_num){
-    return true;
-}
-/*
-bool check_model_hash(String model_path, uint8_t hash_num){
     bool response = false;
     if(exisits_check(model_path+file_hash()) && exisits_check(model_path+file_hard()) && exisits_check(model_path+file_soft()) && exisits_check(model_path+file_mother()) && exisits_check(model_path+file_father())){
         String csv_file_str = file_read(model_path+file_hash());
@@ -279,7 +275,7 @@ bool check_model_hash(String model_path, uint8_t hash_num){
     }
     return response;
 }
-*/
+
 void read_model_hard(String model_path,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts){
     String csv_file_str = file_read(model_path+file_hard());
     char *csv_file  = const_cast<char*>(csv_file_str.c_str());
