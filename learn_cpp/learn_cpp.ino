@@ -195,7 +195,7 @@ void command_progress(String recieve){
             }else{
               display_execute();
             }
-            dir_remove(path_current);
+            if(path_current != path_slash()) dir_remove(path_current);
             path_current = path_slash();
             play_main(&scene_number,COMMAND_DUNGEON);
           }
@@ -239,7 +239,8 @@ void command_progress(String recieve){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
         else{
           villager();
-          if(scene_command == COMMAND_MENU1){;
+          villager();
+          if(scene_command == COMMAND_MENU1){
             get_recon();
           }else if(scene_command==COMMAND_MENU2 || scene_command==COMMAND_MENU3){
             uint8_t grown_aggro  = random(10);
@@ -255,7 +256,7 @@ void command_progress(String recieve){
               display_villager_attack();
             }
           }
-          villager();
+          play_main(&scene_number,COMMAND_INVASION);
         }
       }else if(scene_number == COMMAND_TRAINING){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
