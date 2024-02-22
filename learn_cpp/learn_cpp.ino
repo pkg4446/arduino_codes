@@ -324,6 +324,9 @@ void villager(void){
   }else if(dir_list(path_town(),false,false) < FILE_AMOUNT){
     new_model(path_town(),random(2));
   }
+  check_model_hash(path_town(),0);
+  check_model_hash(path_town(),1);
+  check_model_hash(path_town(),2);
 }
 /***** funtions ************/
 /***** CORE ****************/
