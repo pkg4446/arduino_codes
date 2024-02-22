@@ -12,7 +12,7 @@
   }
 #endif
 
-void sd_init() {
+void sd_init(void) {
   // Open serial communications and wait for port to open:
   uint8_t chipSelect = 53;
   #if defined(ESP32)
@@ -67,14 +67,14 @@ void dir_make(String path){
 
 void dir_remove(String path){
   if(exisits_check(path)){
-    uint16_t dir_last = dir_list(path,true,false);
+    uint8_t dir_last = dir_list(path,true,false);
     if(dir_last>0){
-      for(uint16_t index_d=dir_last; index_d>0; index_d--){
+      for(uint8_t index_d=dir_last; index_d>0; index_d--){
         dir_remove(path+"/"+ dir_index(path,true,index_d));
       }
     }
-    uint16_t file_last = dir_list(path,false,false);
-    for(uint16_t index=file_last; index>0; index--){
+    uint8_t file_last = dir_list(path,false,false);
+    for(uint8_t index=file_last; index>0; index--){
       file_remove(path +"/"+ dir_index(path,false,index));
     }
     #if defined(ESP32)
@@ -88,15 +88,15 @@ void dir_remove(String path){
 void dir_move(String path, String target){
   if(exisits_check(path)){
     dir_make(target);
-    uint16_t dir_last = dir_list(path,true,false);
+    uint8_t dir_last = dir_list(path,true,false);
     if(dir_last>0){
-      for(uint16_t index_d=dir_last; index_d>0; index_d--){
+      for(uint8_t index_d=dir_last; index_d>0; index_d--){
         String inner_dir  = "/"+ dir_index(path,true,index_d);
         dir_move(path+inner_dir, target+inner_dir);
       }
     }
-    uint16_t file_last = dir_list(path,false,false);
-    for(uint16_t index=file_last; index>0; index--){
+    uint8_t file_last = dir_list(path,false,false);
+    for(uint8_t index=file_last; index>0; index--){
       String file_name      = "/"+ dir_index(path,false,index);
       String file_contents  = file_read(path+file_name);
       file_write(target+file_name, file_contents);
@@ -110,14 +110,16 @@ void dir_move(String path, String target){
   }
 }
 
-uint16_t dir_list(String path, bool type, bool show) {
-  uint16_t type_index = 0;
+uint8_t dir_list(String path, bool type, bool show) {
+  uint8_t type_index = 0;
   File root = SD.open(path);
-  if(!root){return 0;}
-  if(!root.isDirectory()){return 0;}
-
+  if(!root || !root.isDirectory()){
+    root.close();
+    return 0;
+  }
   File file = root.openNextFile();
   if(show) Serial.println(path);
+  
   while(file){
     if(show) Serial.print("\t");
     if(file.isDirectory()){
@@ -134,13 +136,15 @@ uint16_t dir_list(String path, bool type, bool show) {
         Serial.println(file.size());
       }
     }
+    file.close();
     file = root.openNextFile();
   }
+  file.close();
   root.close();
   return type_index;
 }
 
-String dir_index(String path, bool type, uint16_t dir_index) {
+String dir_index(String path, bool type, uint8_t dir_index) {
   String response = "";
   if(dir_index != 0){
     File root = SD.open(path);
@@ -155,8 +159,10 @@ String dir_index(String path, bool type, uint16_t dir_index) {
         response = file.name();
         break;
       }
+      file.close();
       file = root.openNextFile();
     }
+    file.close();
     root.close();
   }
   return response;

@@ -113,16 +113,13 @@ void dir_move(String path, String target){
 uint8_t dir_list(String path, bool type, bool show) {
   uint8_t type_index = 0;
   File root = SD.open(path);
-  if(!root){
+  if(!root || !root.isDirectory()){
     root.close();
-    return 0;
-  }
-  if(!root.isDirectory()){
-    root.close(); 
     return 0;
   }
   File file = root.openNextFile();
   if(show) Serial.println(path);
+  
   while(file){
     if(show) Serial.print("\t");
     if(file.isDirectory()){
@@ -139,6 +136,7 @@ uint8_t dir_list(String path, bool type, bool show) {
         Serial.println(file.size());
       }
     }
+    file.close();
     file = root.openNextFile();
   }
   file.close();
@@ -161,6 +159,7 @@ String dir_index(String path, bool type, uint8_t dir_index) {
         response = file.name();
         break;
       }
+      file.close();
       file = root.openNextFile();
     }
     file.close();
