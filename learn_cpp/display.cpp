@@ -183,17 +183,18 @@ void display_management(uint16_t *scene_number, String name){
     *scene_number = COMMAND_MANAGEMENT;
     paging();
     Serial.print(get_progmem(scene_training1));
+    spacebar();
     Serial.print(name);
     Serial.print(get_progmem(gramma_ul_1));
     Serial.print(get_progmem(gramma_ul_2));
     spacebar();
     Serial.println(get_progmem(scene_training2));
     space_option(true,COMMAND_VICTIM,get_progmem(scene_train_opt1));
-    space_option(true,COMMAND_EDUCATION,get_progmem(scene_train_opt2));
-    space_option(true,COMMAND_TRANSFER,get_progmem(scene_train_opt3));
+    space_option(true,COMMAND_EDUCATION,get_progmem(word_edu));
+    space_option(true,COMMAND_TRANSFER,get_progmem(scene_train_opt2));
     Serial.println();
-    space_option(true,COMMAND_MENU1,get_progmem(scene_train_opt4));
-    space_option(true,COMMAND_MENU2,get_progmem(scene_train_opt5));
+    space_option(true,COMMAND_MENU1,get_progmem(scene_train_opt3));
+    space_option(true,COMMAND_MENU2,get_progmem(scene_train_opt4));
     cancle_cmd(false);
 };
 /*******************************************************/
@@ -222,13 +223,27 @@ void display_execute(){
     Serial.println(get_progmem(scene_execute));
 };
 /*******************************************************/
-void display_cmd_invasion(void){
+void display_invasion(void){
     paging();
     Serial.println(get_progmem(scene_main_cmd));
     space_option(true,COMMAND_MENU1,get_progmem(scene_invasion_opt1));
-    space_option(true,COMMAND_MENU2,get_progmem(scene_invasion_opt2));
-    space_option(true,COMMAND_MENU3,get_progmem(scene_invasion_opt3));
+    space_option(true,COMMAND_MENU2,get_progmem(word_kidnap));
+    space_option(true,COMMAND_MENU3,get_progmem(word_attack));
     cancle_cmd(true);
+};
+/*******************************************************/
+void display_villager_kidnap(void){
+    Serial.println(get_progmem(gramma_ul_1));
+    spacebar();
+    Serial.println(get_progmem(word_kidnap));
+    Serial.println(get_progmem(gramma_da));
+};
+/*******************************************************/
+void display_villager_attack(void){
+    Serial.println(get_progmem(gramma_ul_1));
+    spacebar();
+    Serial.println(get_progmem(word_attack));
+    Serial.println(get_progmem(gramma_da));
 };
 /*******************************************************/
 void display_info(void){

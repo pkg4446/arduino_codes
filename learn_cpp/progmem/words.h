@@ -15,6 +15,8 @@ const PROGMEM char gramma_ip[]      = "(이)";
 const PROGMEM char gramma_la[]      = "라";
 const PROGMEM char gramma_ga[]      = "가";
 
+const PROGMEM char gramma_da[]      = "했다.";
+
 /*************** Word ***************/
 const PROGMEM char word_name[]      = "이름";
 /*************** Word ***************/
@@ -29,6 +31,15 @@ const PROGMEM char word_yes[]       = "예";
 const PROGMEM char word_no[]        = "아니오";
 /*************** Word ***************/
 const PROGMEM char word_cancle[]    = "취소";
+
+/*************** Word ***************/
+const PROGMEM char word_attack[]    = "공격";
+/*************** Word ***************/
+const PROGMEM char word_kidnap[]    = "납치";
+/*************** Word ***************/
+const PROGMEM char word_dead[]      = "사망";
+/*************** Word ***************/
+const PROGMEM char word_edu[]       = "교육";
 
 /*************** Word ***************/
 const PROGMEM char word_now[]       = "→";

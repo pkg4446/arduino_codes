@@ -242,13 +242,16 @@ void command_progress(String recieve){
           if(scene_command == COMMAND_MENU1){;
             get_recon();
           }else if(scene_command==COMMAND_MENU2 || scene_command==COMMAND_MENU3){
-            uint8_t grown_aggro = random(10);
+            uint8_t grown_aggro   = random(10);
+            Serial.print(get_model_name(path_town()));
             if(aggro_point+grown_aggro<255) aggro_point+=grown_aggro;
             else aggro_point = 255;
             if(scene_command == COMMAND_MENU2){
               dir_move(path_town(),path_captive()+path_slash()+read_hash_text(path_town()));
+              display_villager_kidnap();
             }else{
               dir_remove(path_town());
+              display_villager_attack();
             }
           }
           villager();

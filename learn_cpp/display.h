@@ -54,6 +54,10 @@ void display_release();
 /*************** Display ***************/
 void display_execute();
 /*************** Display ***************/
-void display_cmd_invasion(void);
+void display_invasion(void);
+/*************** Display ***************/
+void display_villager_kidnap(void);
+/*************** Display ***************/
+void display_villager_attack(void);
 /*************** Display ***************/
 void display_info(void);
