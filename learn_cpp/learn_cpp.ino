@@ -349,6 +349,12 @@ void setup(void) {
     check_model_hash(path_town(),1);
     check_model_hash(path_town(),2);
   }
+  if(exisits_check(path_raider())){
+    display_hash_check();
+    check_model_hash(path_raider(),0);
+    check_model_hash(path_raider(),1);
+    check_model_hash(path_raider(),2);
+  }
   if(!exisits_check(path_config()))   dir_make(path_config());
   if(exisits_check(path_troop())){
     display_troop();
