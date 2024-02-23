@@ -297,9 +297,6 @@ void villager(void){
   }else if(dir_list(path_town(),false,false) < FILE_AMOUNT){
     new_model(path_town(),random(2));
   }
-  check_model_hash(path_town(),0);
-  check_model_hash(path_town(),1);
-  check_model_hash(path_town(),2);
 }
 /***** funtions ************/
 /***** CORE ****************/
@@ -345,6 +342,12 @@ void setup(void) {
     new_model(path_avatar(),gender);
     display_make_user();
     scene_number = COMMAND_YES;
+  }
+  if(exisits_check(path_town())){
+    display_hash_check();
+    check_model_hash(path_town(),0);
+    check_model_hash(path_town(),1);
+    check_model_hash(path_town(),2);
   }
   if(!exisits_check(path_config()))   dir_make(path_config());
   if(exisits_check(path_troop())){
