@@ -32,25 +32,23 @@ String merge_soft_csv(STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATUR
 }
 /***** Inner funtion *****/
 void read_model_gene(String model_path,bool parent,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
-    if(check_model_hash(model_path,0)){
-        String csv_file_str = "";
-        if(parent) csv_file_str = file_read(model_path+file_father());
-        else       csv_file_str = file_read(model_path+file_mother());
-        char *csv_file  = const_cast<char*>(csv_file_str.c_str());
-        char *class_text[9];
-        class_text[0]   = strtok(csv_file, "\n");
-        for(uint8_t index=1; index<9; index++){
-            class_text[index] = strtok(0x00, "\n");
-        }
-        class_head  ->set_csv(class_text[1]);
-        class_body  ->set_csv(class_text[2]);
-        class_parts ->set_csv(class_text[3]);
-        class_stat  ->set_csv(class_text[4]);
-        class_hole  ->set_csv(class_text[5]);
-        class_sense ->set_csv(class_text[6]);
-        class_nature->set_csv(class_text[7]);
-        class_eros  ->set_csv(class_text[8]);
+    String csv_file_str = "";
+    if(parent) csv_file_str = file_read(model_path+file_father());
+    else       csv_file_str = file_read(model_path+file_mother());
+    char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+    char *class_text[9];
+    class_text[0]   = strtok(csv_file, "\n");
+    for(uint8_t index=1; index<9; index++){
+        class_text[index] = strtok(0x00, "\n");
     }
+    class_head  ->set_csv(class_text[1]);
+    class_body  ->set_csv(class_text[2]);
+    class_parts ->set_csv(class_text[3]);
+    class_stat  ->set_csv(class_text[4]);
+    class_hole  ->set_csv(class_text[5]);
+    class_sense ->set_csv(class_text[6]);
+    class_nature->set_csv(class_text[7]);
+    class_eros  ->set_csv(class_text[8]);
 }
 void gene_meiosis(String model_path,INFO *class_info,HEAD *class_head,BODY *class_body,EROGENOUS *class_parts,STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
     /***** HARDWARE *****/
@@ -77,12 +75,12 @@ void gene_meiosis(String model_path,INFO *class_info,HEAD *class_head,BODY *clas
 
     read_model_gene(model_path,false,head_class[0],body_class[0],parts_class[0],stat_class[0],hole_class[0],sense_class[0],nature_class[0],eros_class[0]);
     read_model_gene(model_path,true,head_class[1],body_class[1],parts_class[1],stat_class[1],hole_class[1],sense_class[1],nature_class[1],eros_class[1]);
-    if(check_model_hash(model_path,0)){
-        String csv_file_str = file_read(model_path+file_hard());
-        char *csv_file      = const_cast<char*>(csv_file_str.c_str());
-        char *class_info_csv = strtok(csv_file, "\n");
-        class_info->set_csv(class_info_csv);
-    }
+
+    String csv_file_str = file_read(model_path+file_hard());
+    char *csv_file      = const_cast<char*>(csv_file_str.c_str());
+    char *class_info_csv = strtok(csv_file, "\n");
+    class_info->   set_csv(class_info_csv);
+    
     class_head->   meiosis(head_class[0],  head_class[1]);
     class_body->   meiosis(body_class[0],  body_class[1]);
     class_parts->  meiosis(parts_class[0], parts_class[1]);
