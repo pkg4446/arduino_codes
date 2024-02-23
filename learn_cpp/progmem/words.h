@@ -33,6 +33,17 @@ const PROGMEM char word_no[]        = "아니오";
 const PROGMEM char word_cancle[]    = "취소";
 
 /*************** Word ***************/
+const PROGMEM char word_dungeon[]   = "던전";
+/*************** Word ***************/
+const PROGMEM char word_player[]    = "플레이어";
+/*************** Word ***************/
+const PROGMEM char word_assist[]    = "조수";
+/*************** Word ***************/
+const PROGMEM char word_captive[]   = "포로";
+/*************** Word ***************/
+const PROGMEM char word_troop[]     = "부하";
+
+/*************** Word ***************/
 const PROGMEM char word_attack[]    = "공격";
 /*************** Word ***************/
 const PROGMEM char word_kidnap[]    = "납치";

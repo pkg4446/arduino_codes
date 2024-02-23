@@ -54,7 +54,7 @@ read_model_feel(path_assist(),feel_class);
 read_model_breed(path_assist(),breed_class);
 */
 /***** Variable *****/
-uint8_t   aggro_point = 0;
+uint8_t   aggro_point = 1;
 uint32_t  play_time   = 0;
 uint8_t   maps[7][3]  = {{0,},};
 uint8_t   map_pos_x   = 0;
@@ -113,7 +113,6 @@ void command_progress(String recieve){
       if(scene_number == COMMAND_MAIN){
         if(scene_command == COMMAND_DUNGEON){
           playmap.view(map_pos_x,map_pos_y);
-          //path_current = "";
         }else if(scene_command == COMMAND_REST){
           time_clock -= one_hour_sec;
           display_rest();

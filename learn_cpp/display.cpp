@@ -201,18 +201,18 @@ void display_amenity(uint16_t *scene_number){
 void display_management(uint16_t *scene_number, String name){
     *scene_number = COMMAND_MANAGEMENT;
     paging();
-    Serial.print(get_progmem(scene_training1));
+    Serial.print(get_progmem(word_captive));
     spacebar();
     Serial.print(name);
     Serial.print(get_progmem(gramma_ul_1));
     Serial.print(get_progmem(gramma_ul_2));
     spacebar();
-    Serial.println(get_progmem(scene_training2));
+    Serial.println(get_progmem(scene_training));
     space_option(true,COMMAND_VICTIM,get_progmem(scene_train_opt1));
     space_option(true,COMMAND_EDUCATION,get_progmem(word_edu));
     space_option(true,COMMAND_TRANSFER,get_progmem(scene_train_opt2));
     Serial.println();
-    space_option(true,COMMAND_MENU1,get_progmem(scene_train_opt3));
+    space_option(true,COMMAND_MENU1,get_progmem(scene_captive));
     space_option(true,COMMAND_MENU2,get_progmem(scene_train_opt4));
     cancle_cmd(false);
 };
@@ -272,5 +272,12 @@ void display_villager_attack(void){
 void display_info(void){
     paging();
     Serial.println(get_progmem(scene_info));
+    space_option(true,COMMAND_MENU1,get_progmem(word_dungeon));
+    space_option(true,COMMAND_MENU2,get_progmem(word_player));
+    space_option(true,COMMAND_MENU3,get_progmem(word_assist));
+    Serial.println();
+    space_option(true,COMMAND_MENU4,get_progmem(word_captive));
+    space_option(true,COMMAND_MENU5,get_progmem(word_troop));
+    cancle_cmd(false);
 };
 /*******************************************************/

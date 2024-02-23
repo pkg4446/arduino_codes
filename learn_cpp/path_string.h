@@ -3,8 +3,10 @@
 #include "utility.h"
 #include "./progmem/path.h"
 
-String path_config(void);
 String path_slash(void);
+String check_captive(void);
+
+String path_config(void);
 String path_cryobank(void);
 String path_avatar(void);
 String path_assist(void);

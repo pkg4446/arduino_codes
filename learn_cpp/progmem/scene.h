@@ -60,8 +60,7 @@ const PROGMEM char scene_pos_opt8[]     = "위";
 /*************** Display ***************/
 const PROGMEM char scene_amenity[]      = "무엇으로 변경할까?";
 /*************** Display ***************/
-const PROGMEM char scene_training1[]    = "포로";
-const PROGMEM char scene_training2[]    = "어떻게 할까?";
+const PROGMEM char scene_training[]     = "어떻게 할까?";
 const PROGMEM char scene_train_opt1[]   = "대상변경";
 const PROGMEM char scene_train_opt2[]   = "빙의";
 const PROGMEM char scene_train_opt3[]   = "석방";

@@ -42,7 +42,13 @@ void cmd_chs_victim(uint16_t *scene_number, uint8_t model_max_num){
   }
 }
 void cmd_dng_manage(uint16_t *scene_number, String *path){
-  if(!exisits_check(*path+file_hard())){
+  String test_path = *path;
+  char *path_check = const_cast<char*>(test_path.c_str());
+  strtok(path_check, "/");
+  String check_path = strtok(0x00, "/");
+  if(check_path == check_captive()){
+    display_management(scene_number, get_model_name(*path));
+  }else{
     uint8_t model_max_num = dir_list(path_captive(),true,false);
     if(model_max_num == 0){
       display_no_victim();
@@ -50,5 +56,5 @@ void cmd_dng_manage(uint16_t *scene_number, String *path){
       *path = path_captive() + path_slash() + dir_index(path_captive(),true,model_max_num);
       display_management(scene_number, get_model_name(*path));
     }else cmd_chs_victim(scene_number, model_max_num);
-  }else display_management(scene_number, get_model_name(*path));
+  }
 };
