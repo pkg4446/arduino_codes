@@ -136,8 +136,10 @@ void command_progress(String recieve){
         if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
         else playmap.pos_move(&map_pos_x,&map_pos_y,scene_command);
       }else if(scene_number == COMMAND_MANAGEMENT){
-        if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
-        else{
+        if(scene_command == COMMAND_CANCLE){
+          playmap.view(map_pos_x,map_pos_y);
+          play_main(&scene_number,COMMAND_DUNGEON);
+        }else{
           if(scene_command == COMMAND_VICTIM)cmd_chs_victim(&scene_number, dir_list(path_captive(),true,false));
           else if(scene_command == COMMAND_EDUCATION){ ;
           }else if(scene_command == COMMAND_TRANSFER){  ;
