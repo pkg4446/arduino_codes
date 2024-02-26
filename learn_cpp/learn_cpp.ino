@@ -140,7 +140,7 @@ void command_progress(String recieve){
           playmap.view(map_pos_x,map_pos_y);
           play_main(&scene_number,COMMAND_DUNGEON);
         }else{
-          if(scene_command == COMMAND_VICTIM)cmd_chs_victim(&scene_number, dir_list(path_captive(),true,false));
+          if(scene_command == COMMAND_VICTIM) cmd_chs_victim(&scene_number, dir_list(path_captive(),true,false));
           else if(scene_command == COMMAND_EDUCATION){ ;
           }else if(scene_command == COMMAND_TRANSFER){  ;
           }else if(scene_command == COMMAND_MENU1 || scene_command == COMMAND_MENU2){
@@ -159,8 +159,13 @@ void command_progress(String recieve){
           }
         }
       }else if(scene_number == COMMAND_VICTIM){
-        if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(path_current));
-        else{
+        if(scene_command == COMMAND_CANCLE){
+          if(path_victim_chk(path_current)) display_management(&scene_number,get_model_name(path_current));
+          else{
+            playmap.view(map_pos_x,map_pos_y);
+            play_main(&scene_number,COMMAND_DUNGEON);
+          }
+        }else{
           uint8_t model_max_num = dir_list(path_captive(),true,false);
           if(model_max_num != 0){
             if(scene_command>0 && scene_command<=model_max_num) path_current = path_captive() + path_slash() + dir_index(path_captive(),true,scene_command);

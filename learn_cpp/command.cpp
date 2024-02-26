@@ -41,12 +41,14 @@ void cmd_chs_victim(uint16_t *scene_number, uint8_t model_max_num){
     if(index%3 == 0)Serial.println();
   }
 }
-void cmd_dng_manage(uint16_t *scene_number, String *path){
-  String test_path = *path;
-  char *path_check = const_cast<char*>(test_path.c_str());
+bool path_victim_chk(String path){
+  char *path_check = const_cast<char*>(path.c_str());
   strtok(path_check, "/");
   String check_path = strtok(0x00, "/");
-  if(check_path == check_captive()){
+  return check_path == check_captive();
+}
+void cmd_dng_manage(uint16_t *scene_number, String *path){
+  if(path_victim_chk(*path)){
     display_management(scene_number, get_model_name(*path));
   }else{
     uint8_t model_max_num = dir_list(path_captive(),true,false);
