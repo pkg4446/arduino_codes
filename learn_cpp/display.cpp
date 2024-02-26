@@ -274,8 +274,8 @@ void display_info(void){
     Serial.println(get_progmem(scene_info));
     space_option(true,COMMAND_MENU1,get_progmem(word_player));
     space_option(true,COMMAND_MENU2,get_progmem(word_assist));
-    space_option(true,COMMAND_MENU3,get_progmem(word_captive));
     Serial.println();
+    space_option(true,COMMAND_MENU3,get_progmem(word_captive));
     space_option(true,COMMAND_MENU4,get_progmem(word_troop));
     cancle_cmd(false);
 };
