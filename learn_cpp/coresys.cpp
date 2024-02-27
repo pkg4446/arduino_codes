@@ -101,8 +101,17 @@ void gene_meiosis(String model_path,INFO *class_info,HEAD *class_head,BODY *clas
         delete eros_class[index];
     }
 }
+String change_hash(String model_path, String hash_source){
+    hash.init();
+    hash.print(hash_source);
+    String csv_file_str = file_read(model_path+file_hash());
+    char *csv_file      = const_cast<char*>(csv_file_str.c_str());
+    String response     = strtok(csv_file, ",");
+    make_csv(&response, strtok(0x00, ","));
+    make_csv(&response, hash.result());
+    return response;
+}
 /***** Inner funtion *****/
-
 void save_time_csv(uint16_t *time_year, uint8_t *time_month, uint8_t *time_day, uint8_t *time_hour){
     String time_csv = "";
     make_csv(&time_csv,String(*time_year));
@@ -122,6 +131,12 @@ void load_time_csv(uint16_t *time_year, uint8_t *time_month, uint8_t *time_day, 
         *time_hour  = atoi(strtok(0x00, ","));
     }
 };
+void change_soft_csv(String model_path, STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
+    String save_file    = merge_soft_csv(class_stat, class_hole, class_sense, class_nature, class_eros);
+    String hashs        = change_hash(model_path,save_file);
+    file_write(model_path+file_hash(), hashs);
+    file_write(model_path+file_soft(), save_file);
+}
 
 void new_model(String model_path, bool gender){
     /***** GENE *****/
@@ -337,6 +352,18 @@ void read_model_soft_stat(String model_path, STAT *class_stat){
     char *csv_file  = const_cast<char*>(csv_file_str.c_str());
     char *class_text= strtok(csv_file, "\n");
     class_stat  ->set_csv(class_text);
+}
+void read_model_soft_body(String model_path,STAT *class_stat,HOLE *class_hole,SENSE *class_sense){
+    String csv_file_str = file_read(model_path+file_soft());
+    char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+    char *class_text[3];
+    class_text[0] = strtok(csv_file, "\n");
+    for(uint8_t index=1; index<3; index++){
+        class_text[index] = strtok(0x00, "\n");
+    }
+    class_stat  ->set_csv(class_text[0]);
+    class_hole  ->set_csv(class_text[1]);
+    class_sense ->set_csv(class_text[2]);
 }
 void read_model_soft_ego(String model_path,NATURE *class_nature,EROS *class_eros){
     String csv_file_str = file_read(model_path+file_soft());

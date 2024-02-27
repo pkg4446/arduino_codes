@@ -178,12 +178,26 @@ void command_progress(String recieve){
         else{
         }
       }else if(scene_number == COMMAND_TRANSFER){
+        ////240227 여기 하는중
         if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(path_current));
         else if(scene_command == COMMAND_MENU1 || scene_command == COMMAND_MENU2){
+          STAT    *stat_class   = new STAT();
+          HOLE    *hole_class   = new HOLE();
+          SENSE   *sense_class  = new SENSE();
+          NATURE  *nature_class = new NATURE();
+          EROS    *eros_class   = new EROS();
           String target_path = "";
           if(scene_command == COMMAND_MENU1) target_path = path_avatar();
           else target_path = path_assist();
-          
+          read_model_soft_body(path_current ,stat_class, hole_class, sense_class);
+          read_model_soft_ego(target_path, nature_class, eros_class);
+          change_soft_csv(path_current,stat_class,hole_class,sense_class,nature_class,eros_class);
+          delete stat_class;
+          delete hole_class;
+          delete sense_class;
+          delete nature_class;
+          delete eros_class;
+          //여기서 dir_move();
         }
       }else if(scene_number == COMMAND_AMENITY){
         if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);

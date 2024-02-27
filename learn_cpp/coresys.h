@@ -16,6 +16,8 @@
 void save_time_csv(uint16_t *time_year, uint8_t *time_month, uint8_t *time_day, uint8_t *time_hour);
 void load_time_csv(uint16_t *time_year, uint8_t *time_month, uint8_t *time_day, uint8_t *time_hour);
 
+void change_soft_csv(String model_path, STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros);
+
 void new_model(String model_path, bool gender);
 
 String read_hash_text(String model_path);
@@ -25,8 +27,10 @@ void read_model_hard_info(String model_path, INFO *class_info);
 void read_model_hard_head(String model_path, HEAD *class_head);
 void read_model_hard_body(String model_path, BODY *class_body);
 void read_model_hard_parts(String model_path,EROGENOUS *class_parts);
+
 void read_model_soft(String model_path, STAT *class_stat, HOLE *class_hole, SENSE *class_sense, NATURE *class_nature, EROS *class_eros);
 void read_model_soft_stat(String model_path, STAT *class_stat);
+void read_model_soft_body(String model_path,STAT *class_stat,HOLE *class_hole,SENSE *class_sense);
 void read_model_soft_ego(String model_path, NATURE *class_nature, EROS *class_eros);
 
 void read_model_mens(String model_path, MENS *mens_class);
