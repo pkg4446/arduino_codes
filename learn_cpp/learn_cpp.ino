@@ -171,7 +171,7 @@ void command_progress(String recieve){
             if(scene_command>0 && scene_command<=model_max_num) path_current = path_captive() + path_slash() + dir_index(path_captive(),true,scene_command);
             else path_current = path_captive() + path_slash() + dir_index(path_captive(),true,model_max_num);
             display_management(&scene_number,get_model_name(path_current));
-          }else play_main(&scene_number,COMMAND_DUNGEON);
+          }else play_main(&scene_number,  COMMAND_DUNGEON);
         }
       }else if(scene_number == COMMAND_EDUCATION){
         if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(path_current));
@@ -186,11 +186,13 @@ void command_progress(String recieve){
           NATURE  *nature_class = new NATURE();
           EROS    *eros_class   = new EROS();
           String target_path = "";
-          if(scene_command == COMMAND_MENU1) target_path = path_avatar();
+          bool   type_model  = false;
+          if(scene_command == COMMAND_MENU1){target_path = path_avatar(); type_model = true;}
           else target_path = path_assist();
           read_model_soft_body(path_current ,stat_class, hole_class, sense_class);
           read_model_soft_ego(target_path, nature_class, eros_class);
           change_soft_csv(path_current,stat_class,hole_class,sense_class,nature_class,eros_class);
+          display_screaming(type_model,get_model_name(path_current));
           ////240227 여기서 대사 출력.
           delete stat_class;
           delete hole_class;
@@ -199,6 +201,8 @@ void command_progress(String recieve){
           delete eros_class;
           dir_move(path_current,target_path);
           path_current = "";
+          playmap.view(map_pos_x,map_pos_y);
+          play_main(&scene_number,COMMAND_DUNGEON);
         }
       }else if(scene_number == COMMAND_AMENITY){
         if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);

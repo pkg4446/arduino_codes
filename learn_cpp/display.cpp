@@ -225,6 +225,21 @@ void display_transfer(uint16_t *scene_number){
     space_option(true,COMMAND_MENU2,get_progmem(word_assist));
     cancle_cmd(false);
 };
+void display_screaming(bool type, String name){
+    paging();
+    Serial.println(get_progmem(scene_screaming_1));
+    if(type)   Serial.print(get_progmem(word_player));
+    else       Serial.print(get_progmem(word_assist));
+    Serial.print(get_progmem(gramma_ui));
+    spacebar();
+    Serial.print(get_progmem(word_soul));
+    Serial.print(get_progmem(gramma_i));
+    spacebar();
+    Serial.print(name);
+    Serial.print(get_progmem(gramma_ege));
+    spacebar();
+    Serial.println(get_progmem(scene_screaming_2));
+};
 /*******************************************************/
 void display_victim(uint16_t *scene_number){
     *scene_number = COMMAND_VICTIM;

@@ -24,12 +24,12 @@ const PROGMEM char scene_make_assist[]  = "새로운 마왕 소환자가 탄생�
 const PROGMEM char scene_make_user[]    = "대륙을 공포로 물들일 마왕의 육체가 새로이 탄생합니다.";
 /*************** Display ***************/
 const PROGMEM char scene_prologue1[]    = "\"처음 뵙사옵니다.\"\n\n\"?!\"\n\n낯선 목소리에 화들짝 놀라 몸을 일으키니,\n선명한 어둠속에서 누군가 나를 바라보고 있다.\n\n소녀, 마왕님을 소환한 ";
-const PROGMEM char scene_prologue2[]    = "하옵니다.\n\n\"...\"\n\n당황스러움으로 굳어있는 나에게,\n그녀는 나를 소환한 경위를 설명하기 시작했다.\n\n그녀를 도와 이곳 던전의 중심부,\n거울처럼 생긴 던전의 핵을 지키는 것.\n\n나아가, 대륙을 공포로 물들이는 것.\n\n그것이 그녀가 나를 소환한 이유였다.\n\n던전의 핵을 바라보자,\n그곳에는 처음보는 ";
+const PROGMEM char scene_prologue2[]    = "하옵니다.\n\n\"…\"\n\n당황스러움으로 굳어있는 나에게,\n그녀는 나를 소환한 경위를 설명하기 시작했다.\n\n그녀를 도와 이곳 던전의 중심부,\n거울처럼 생긴 던전의 핵을 지키는 것.\n\n나아가, 대륙을 공포로 물들이는 것.\n\n그것이 그녀가 나를 소환한 이유였다.\n\n던전의 핵을 바라보자,\n그곳에는 처음보는 ";
 const PROGMEM char scene_prologue3[]    = "가 비친다.\n\n그것은 마왕으로 소환된 나의 모습이었다.";
 /*************** Display ***************/
 const PROGMEM char scene_help_game[]    = "게임 설명을 듣습니까?";
 /*************** Display ***************/
-const PROGMEM char scene_continue[]     = "소녀, 마왕님을 뵙사옵니다.\n\n\"...그래.\"";
+const PROGMEM char scene_continue[]     = "소녀, 마왕님을 뵙사옵니다.\n\n\"…그래.\"";
 /*************** Display ***************/
 const PROGMEM char scene_sun_rise[]     = "캄캄한 밤이다.새벽이 밝아온다.해가 떠오른다.아침이 밝았다.";
 const PROGMEM char scene_sun_fall[]     = "해가 중천에 떳다.해가 저문다.노을이 진다.어둠이 내렸다.";
@@ -66,7 +66,9 @@ const PROGMEM char scene_train_opt2[]   = "빙의";
 const PROGMEM char scene_train_opt3[]   = "석방";
 const PROGMEM char scene_train_opt4[]   = "처형";
 /*************** Display ***************/
-const PROGMEM char scene_transfer[]     = "누구의 정신을 옮길까?";
+const PROGMEM char scene_transfer[]     = "누구의 영혼을 옮길까?";
+const PROGMEM char scene_screaming_1[]  = "머리가 깨질 것 같아…";
+const PROGMEM char scene_screaming_2[]  = "깃들었다";
 /*************** Display ***************/
 const PROGMEM char scene_victim[]       = "누구를 교육할까?";
 const PROGMEM char scene_no_victim[]    = "포로가 없다.";

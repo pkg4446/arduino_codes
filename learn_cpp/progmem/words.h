@@ -17,6 +17,8 @@ const PROGMEM char gramma_ga[]      = "가";
 
 const PROGMEM char gramma_da[]      = "했다.";
 
+const PROGMEM char gramma_ege[]     = "에게";
+
 /*************** Word ***************/
 const PROGMEM char word_name[]      = "이름";
 /*************** Word ***************/
@@ -32,6 +34,8 @@ const PROGMEM char word_no[]        = "아니오";
 /*************** Word ***************/
 const PROGMEM char word_cancle[]    = "취소";
 
+/*************** Word ***************/
+const PROGMEM char word_soul[]      = "영혼";
 /*************** Word ***************/
 const PROGMEM char word_dungeon[]   = "던전";
 /*************** Word ***************/
