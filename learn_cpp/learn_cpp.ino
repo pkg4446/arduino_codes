@@ -178,7 +178,6 @@ void command_progress(String recieve){
         else{
         }
       }else if(scene_number == COMMAND_TRANSFER){
-        ////240227 여기 하는중
         if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(path_current));
         else if(scene_command == COMMAND_MENU1 || scene_command == COMMAND_MENU2){
           STAT    *stat_class   = new STAT();
@@ -192,12 +191,14 @@ void command_progress(String recieve){
           read_model_soft_body(path_current ,stat_class, hole_class, sense_class);
           read_model_soft_ego(target_path, nature_class, eros_class);
           change_soft_csv(path_current,stat_class,hole_class,sense_class,nature_class,eros_class);
+          ////240227 여기서 대사 출력.
           delete stat_class;
           delete hole_class;
           delete sense_class;
           delete nature_class;
           delete eros_class;
-          //여기서 dir_move();
+          dir_move(path_current,target_path);
+          path_current = "";
         }
       }else if(scene_number == COMMAND_AMENITY){
         if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);

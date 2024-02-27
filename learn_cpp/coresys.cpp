@@ -101,14 +101,19 @@ void gene_meiosis(String model_path,INFO *class_info,HEAD *class_head,BODY *clas
         delete eros_class[index];
     }
 }
-String change_hash(String model_path, String hash_source){
+String change_hash(String model_path, String hash_source, bool type_hardware){
     hash.init();
     hash.print(hash_source);
     String csv_file_str = file_read(model_path+file_hash());
     char *csv_file      = const_cast<char*>(csv_file_str.c_str());
-    String response     = strtok(csv_file, ",");
+    String response     = "";
+    make_csv(&response, strtok(csv_file, ","));
+    if(type_hardware){
+        strtok(0x00, ",");
+        make_csv(&response, hash.result());
+    }
     make_csv(&response, strtok(0x00, ","));
-    make_csv(&response, hash.result());
+    if(!type_hardware) make_csv(&response, hash.result());
     return response;
 }
 /***** Inner funtion *****/
@@ -133,7 +138,7 @@ void load_time_csv(uint16_t *time_year, uint8_t *time_month, uint8_t *time_day, 
 };
 void change_soft_csv(String model_path, STAT *class_stat,HOLE *class_hole,SENSE *class_sense,NATURE *class_nature,EROS *class_eros){
     String save_file    = merge_soft_csv(class_stat, class_hole, class_sense, class_nature, class_eros);
-    String hashs        = change_hash(model_path,save_file);
+    String hashs        = change_hash(model_path,save_file,false);
     file_write(model_path+file_hash(), hashs);
     file_write(model_path+file_soft(), save_file);
 }
