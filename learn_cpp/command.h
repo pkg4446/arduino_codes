@@ -8,5 +8,5 @@
 void command_dos(char *command_buf, String *path, bool *exit);
 /*************************************************************/
 void cmd_chs_victim(uint16_t *scene_number, uint8_t model_max_num);
-bool path_victim_chk(String path);
+bool path_equal_chk(String path);
 void cmd_dng_manage(uint16_t *scene_number, String *path);

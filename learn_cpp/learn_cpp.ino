@@ -160,7 +160,7 @@ void command_progress(String recieve){
         }
       }else if(scene_number == COMMAND_VICTIM){
         if(scene_command == COMMAND_CANCLE){
-          if(path_victim_chk(path_current)) display_management(&scene_number,get_model_name(path_current));
+          if(path_equal_chk(path_current)) display_management(&scene_number,get_model_name(path_current));
           else{
             playmap.view(map_pos_x,map_pos_y);
             play_main(&scene_number,COMMAND_DUNGEON);
