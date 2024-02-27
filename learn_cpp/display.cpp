@@ -217,30 +217,40 @@ void display_management(uint16_t *scene_number, String name){
     cancle_cmd(false);
 };
 /*******************************************************/
+void display_transfer(uint16_t *scene_number){
+    *scene_number = COMMAND_TRANSFER;
+    paging();
+    Serial.println(get_progmem(scene_transfer));
+    space_option(true,COMMAND_MENU1,get_progmem(word_player));
+    space_option(true,COMMAND_MENU2,get_progmem(word_assist));
+    cancle_cmd(false);
+};
+/*******************************************************/
 void display_victim(uint16_t *scene_number){
     *scene_number = COMMAND_VICTIM;
     paging();
     Serial.println(get_progmem(scene_victim));
     cancle_cmd(false);
 };
-void display_no_victim(){
+void display_no_victim(void){
     paging();
     Serial.println(get_progmem(scene_no_victim));
 };
 /*******************************************************/
-void display_release(){
+void display_release(void){
     Serial.print(get_progmem(gramma_ul_1));
     Serial.print(get_progmem(gramma_ul_2));
     spacebar();
     Serial.println(get_progmem(scene_release));
 };
 /*******************************************************/
-void display_execute(){
+void display_execute(void){
     Serial.print(get_progmem(gramma_ul_1));
     Serial.print(get_progmem(gramma_ul_2));
     spacebar();
     Serial.println(get_progmem(scene_execute));
 };
+/*******************************************************/
 /*******************************************************/
 void display_invasion(void){
     paging();

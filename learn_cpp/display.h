@@ -49,14 +49,14 @@ void display_amenity(uint16_t *scene_number);
 /*************** Display ***************/
 void display_management(uint16_t *scene_number, String name);
 /*************** Display ***************/
-void display_training(uint16_t *scene_number, String name);
+void display_transfer(uint16_t *scene_number);
 /*************** Display ***************/
 void display_victim(uint16_t *scene_number);
-void display_no_victim();
+void display_no_victim(void);
 /*************** Display ***************/
-void display_release();
+void display_release(void);
 /*************** Display ***************/
-void display_execute();
+void display_execute(void);
 /*************** Display ***************/
 void display_invasion(void);
 void display_invasion_empt(void);

@@ -142,7 +142,7 @@ void command_progress(String recieve){
         }else{
           if(scene_command == COMMAND_VICTIM) cmd_chs_victim(&scene_number, dir_list(path_captive(),true,false));
           else if(scene_command == COMMAND_EDUCATION){ ;
-          }else if(scene_command == COMMAND_TRANSFER){  ;
+          }else if(scene_command == COMMAND_TRANSFER){display_transfer(&scene_number);;
           }else if(scene_command == COMMAND_MENU1 || scene_command == COMMAND_MENU2){
             Serial.print(get_model_name(path_current));
             if(scene_command == COMMAND_MENU1){
@@ -179,7 +179,11 @@ void command_progress(String recieve){
         }
       }else if(scene_number == COMMAND_TRANSFER){
         if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(path_current));
-        else{
+        else if(scene_command == COMMAND_MENU1 || scene_command == COMMAND_MENU2){
+          String target_path = "";
+          if(scene_command == COMMAND_MENU1) target_path = path_avatar();
+          else target_path = path_assist();
+          
         }
       }else if(scene_number == COMMAND_AMENITY){
         if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);

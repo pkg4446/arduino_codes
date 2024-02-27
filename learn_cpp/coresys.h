@@ -27,6 +27,7 @@ void read_model_hard_body(String model_path, BODY *class_body);
 void read_model_hard_parts(String model_path,EROGENOUS *class_parts);
 void read_model_soft(String model_path, STAT *class_stat, HOLE *class_hole, SENSE *class_sense, NATURE *class_nature, EROS *class_eros);
 void read_model_soft_stat(String model_path, STAT *class_stat);
+void read_model_soft_ego(String model_path, NATURE *class_nature, EROS *class_eros);
 
 void read_model_mens(String model_path, MENS *mens_class);
 void read_model_feel(String model_path, CURRENT *feel_class);

@@ -338,6 +338,17 @@ void read_model_soft_stat(String model_path, STAT *class_stat){
     char *class_text= strtok(csv_file, "\n");
     class_stat  ->set_csv(class_text);
 }
+void read_model_soft_ego(String model_path,NATURE *class_nature,EROS *class_eros){
+    String csv_file_str = file_read(model_path+file_soft());
+    char *csv_file  = const_cast<char*>(csv_file_str.c_str());
+    strtok(csv_file, "\n");
+    strtok(0x00, "\n");
+    strtok(0x00, "\n");
+    char *nature_text = strtok(0x00, "\n");
+    char *eros_text   = strtok(0x00, "\n");
+    class_nature->set_csv(nature_text);
+    class_eros  ->set_csv(eros_text);
+}
 
 void read_model_mens(String model_path, MENS *mens_class){
     String csv_file_str = file_read(model_path+file_mens());
