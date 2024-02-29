@@ -54,8 +54,8 @@ read_model_feel(path_assist(),feel_class);
 read_model_breed(path_assist(),breed_class);
 */
 /***** Variable *****/
+uint32_t  resourse    = 0;
 uint8_t   aggro_point = 1;
-uint32_t  play_time   = 0;
 uint8_t   maps[7][3]  = {{0,},};
 uint8_t   map_pos_x   = 0;
 uint8_t   map_pos_y   = 0;
@@ -280,7 +280,6 @@ bool routine_hour(void){
   if(time_stream(millis())){
     save_time_csv(&year_count,&month_count,&day_count,&hour_count);
     raider_new();
-    play_time++;
     if(++hour_count > 23){
       hour_count = 0;
       response = true;
