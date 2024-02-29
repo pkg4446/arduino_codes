@@ -56,7 +56,7 @@ void display_screaming(bool type, String name);
 void display_victim(uint16_t *scene_number);
 void display_no_victim(void);
 /*************** Display ***************/
-void display_release(void);
+void display_gelation(void);
 /*************** Display ***************/
 void display_execute(void);
 /*************** Display ***************/
@@ -70,3 +70,4 @@ void display_villager_attack(void);
 void display_info(void);
 /*************** Display ***************/
 void display_info_dungeon(uint8_t *aggro_point,uint32_t *resourse);
+void display_info_model(String name, bool gender);

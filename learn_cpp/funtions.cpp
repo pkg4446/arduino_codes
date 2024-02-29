@@ -20,6 +20,15 @@ bool get_model_gender(String path){
   }
   return response;
 }
+void get_model_name_gender(String path, String *name, bool *gender){
+  if(exisits_check(path+file_hard())){
+    INFO      *info_class   = new INFO();
+    read_model_hard_info(path,info_class);
+    *name   = info_class->get_family()+info_class->get_name();
+    *gender = info_class->get_gender();
+    delete info_class;
+  }
+}
 /*************** play funtion ***************/
 void get_recon(void){
   if(!exisits_check(path_town())) return;

@@ -212,7 +212,7 @@ void display_management(uint16_t *scene_number, String name){
     space_option(true,COMMAND_EDUCATION,get_progmem(word_edu));
     space_option(true,COMMAND_TRANSFER,get_progmem(scene_train_opt2));
     Serial.println();
-    space_option(true,COMMAND_MENU1,get_progmem(scene_captive));
+    space_option(true,COMMAND_MENU1,get_progmem(scene_train_opt3));
     space_option(true,COMMAND_MENU2,get_progmem(scene_train_opt4));
     cancle_cmd(false);
 };
@@ -262,11 +262,11 @@ void display_no_victim(void){
     Serial.println(get_progmem(scene_no_victim));
 };
 /*******************************************************/
-void display_release(void){
-    Serial.print(get_progmem(gramma_ul_1));
-    Serial.print(get_progmem(gramma_ul_2));
+void display_gelation(void){
+    Serial.print(get_progmem(gramma_un_1));
+    Serial.print(get_progmem(gramma_un_2));
     spacebar();
-    Serial.println(get_progmem(scene_release));
+    Serial.println(get_progmem(scene_gelation));
 };
 /*******************************************************/
 void display_execute(void){
@@ -323,6 +323,7 @@ void display_info_dungeon(uint8_t *aggro_point,uint32_t *resourse){
     spacebar();
     Serial.print(get_progmem(word_info));
     Serial.println(get_progmem(word_confirm));
+    Serial.println();
 
     space(true,get_progmem(word_fear));
     Serial.println(*aggro_point);
@@ -330,3 +331,9 @@ void display_info_dungeon(uint8_t *aggro_point,uint32_t *resourse){
     Serial.println(*resourse);
 };
 /*******************************************************/
+void display_info_model(String name, bool gender){
+    space(true,get_progmem(word_name));
+    Serial.print(name);
+    if(gender)  Serial.println(get_progmem(word_male_icon));
+    else        Serial.println(get_progmem(word_female_ic));
+};

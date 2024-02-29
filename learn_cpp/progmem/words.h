@@ -22,9 +22,11 @@ const PROGMEM char gramma_ege[]     = "에게";
 /*************** Word ***************/
 const PROGMEM char word_name[]      = "이름";
 /*************** Word ***************/
+const PROGMEM char word_male_icon[] = "♂";
 const PROGMEM char word_male[]      = "남자";
 const PROGMEM char word_he[]        = "그";
 /*************** Word ***************/
+const PROGMEM char word_female_ic[] = "♀";
 const PROGMEM char word_female[]    = "여자";
 const PROGMEM char word_she[]       = "녀";
 /*************** Word ***************/

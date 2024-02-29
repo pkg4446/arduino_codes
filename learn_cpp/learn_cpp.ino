@@ -149,21 +149,19 @@ void command_progress(String recieve){
           }else if(scene_command == COMMAND_MENU1 || scene_command == COMMAND_MENU2){
             Serial.print(get_model_name(path_current));
             if(scene_command == COMMAND_MENU1){
-              display_release();
-              uint8_t reduce_aggro = random(10);
-              if(aggro_point>reduce_aggro) aggro_point-=reduce_aggro;
-              else  aggro_point = 1;
+              dir_move(path_current,path_troop()+path_slash()+read_hash_text(path_current));
+              display_gelation();
             }else{
+              dir_remove(path_current);
               display_execute();
             }
-            if(path_current.length()>1) dir_remove(path_current);
             path_current = "";
             play_main(&scene_number,COMMAND_DUNGEON);
           }
         }
       }else if(scene_number == COMMAND_VICTIM){
         if(scene_command == COMMAND_CANCLE){
-          if(path_equal_chk(path_current)) display_management(&scene_number,get_model_name(path_current));
+          if(path_equal_chk(path_current,check_captive())) display_management(&scene_number,get_model_name(path_current));
           else{
             playmap.view(map_pos_x,map_pos_y);
             play_main(&scene_number,COMMAND_DUNGEON);
@@ -231,16 +229,36 @@ void command_progress(String recieve){
       else if(scene_number == COMMAND_INFOMATION){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
         else{
-          ////240229
           if(scene_command == COMMAND_MENU1){
             display_info_dungeon(&aggro_point,&resourse);
-          }else if(scene_command == COMMAND_MENU2){
+          }else{
+            ////240229
+            bool model_flage  = false;
+            String model_path = "";
+            if(scene_command == COMMAND_MENU2){
+              model_flage = true;
+              model_path  = path_avatar();
+            }else if(scene_command == COMMAND_MENU3){
+              model_flage = true;
+              model_path  = path_assist();
+            }else if(scene_command == COMMAND_MENU4){
+              if(path_equal_chk(path_current,check_captive())){
+                model_flage = true;
+                model_path  = path_current;
+              }else cmd_dng_manage(&scene_number,&path_current);
+            }else if(scene_command == COMMAND_MENU5){
+              if(path_equal_chk(path_current,check_troop())){
+                model_flage = true;
+                model_path  = path_current;
+              }else ;//cmd_dng_manage(&scene_number,&path_current);
+            }
 
-          }else if(scene_command == COMMAND_MENU3){
-
-          }else if(scene_command == COMMAND_MENU4){
-
-          }else if(scene_command == COMMAND_MENU5){
+            if(model_flage){
+              bool   model_gender = false;
+              String model_name   = "";
+              get_model_name_gender(model_path,&model_name,&model_gender);
+              display_info_model(model_name,model_gender);
+            }
 
           }
         }
@@ -314,6 +332,7 @@ void routine_day(void){
       }
     }
     //day routine is here
+    if(aggro_point>1) aggro_point-=random(2);
     routine_day_mens();
     //display_newday(&month_count,info_class[e_player],stat_class[e_player],mens_class[e_player],current_class[e_player]);
   }
@@ -339,7 +358,7 @@ void raider_move(void){
     if(event == COMMAND_MAIN){
       break;
     }
-    Serial.println(event);
+    //Serial.println(event);
   }
   delete raider;
 }

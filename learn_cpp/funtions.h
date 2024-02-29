@@ -12,6 +12,7 @@
 
 String  get_model_name(String path);
 bool    get_model_gender(String path);
+void    get_model_name_gender(String path, String *name, bool *gender);
 void get_recon(void);
 /**************************/
 void villager(void);

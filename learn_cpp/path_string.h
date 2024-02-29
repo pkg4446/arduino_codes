@@ -5,6 +5,7 @@
 
 String path_slash(void);
 String check_captive(void);
+String check_troop(void);
 
 String path_config(void);
 String path_cryobank(void);

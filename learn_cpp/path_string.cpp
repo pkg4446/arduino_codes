@@ -9,6 +9,9 @@ String path_slash(void){
 String check_captive(void){
     return get_progmem(path_captive_str);
 };
+String check_troop(void){
+    return get_progmem(path_troop_str);
+};
 /*******************************************************/
 /*******************************************************/
 /*******************************************************/

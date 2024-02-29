@@ -61,7 +61,7 @@ const PROGMEM char scene_amenity[]      = "무엇으로 변경할까?";
 const PROGMEM char scene_training[]     = "어떻게 할까?";
 const PROGMEM char scene_train_opt1[]   = "대상변경";
 const PROGMEM char scene_train_opt2[]   = "빙의";
-const PROGMEM char scene_train_opt3[]   = "석방";
+const PROGMEM char scene_train_opt3[]   = "교화";
 const PROGMEM char scene_train_opt4[]   = "처형";
 /*************** Display ***************/
 const PROGMEM char scene_transfer[]     = "누구의 영혼을 옮길까?";
@@ -72,7 +72,7 @@ const PROGMEM char scene_screaming_2[]  = "깃들었다";
 const PROGMEM char scene_victim[]       = "누구를 교육할까?";
 const PROGMEM char scene_no_victim[]    = "포로가 없다.";
 /*************** Display ***************/
-const PROGMEM char scene_release[]      = "풀어주었다.";
+const PROGMEM char scene_gelation[]     = "마왕군에 투항했다.";
 /*************** Display ***************/
 const PROGMEM char scene_execute[]      = "처형했다.";
 /*************** Display ***************/
