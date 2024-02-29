@@ -68,3 +68,5 @@ void display_villager_kidnap(void);
 void display_villager_attack(void);
 /*************** Display ***************/
 void display_info(void);
+/*************** Display ***************/
+void display_info_dungeon(uint8_t *aggro_point,uint32_t *resourse);

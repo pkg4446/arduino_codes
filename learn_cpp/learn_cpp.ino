@@ -54,10 +54,11 @@ read_model_feel(path_assist(),feel_class);
 read_model_breed(path_assist(),breed_class);
 */
 /***** Variable *****/
+uint8_t   aggro_point = 1;
 uint32_t  resourse    = 0;
+
 uint8_t   raider_turn = 0;
 
-uint8_t   aggro_point = 1;
 uint8_t   maps[7][3]  = {{0,},};
 uint8_t   map_pos_x   = 0;
 uint8_t   map_pos_y   = 0;
@@ -198,12 +199,10 @@ void command_progress(String recieve){
               type_model = false;
             }
           }
-
           read_model_soft_body(path_current ,stat_class, hole_class, sense_class);
           read_model_soft_ego(target_path, nature_class, eros_class);
           change_soft_csv(path_current,stat_class,hole_class,sense_class,nature_class,eros_class);
           display_screaming(type_model,get_model_name(path_current));
-          ////240229
           delete stat_class;
           delete hole_class;
           delete sense_class;
@@ -231,6 +230,20 @@ void command_progress(String recieve){
       /******************************************************************************/
       else if(scene_number == COMMAND_INFOMATION){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
+        else{
+          ////240229
+          if(scene_command == COMMAND_MENU1){
+            display_info_dungeon(&aggro_point,&resourse);
+          }else if(scene_command == COMMAND_MENU2){
+
+          }else if(scene_command == COMMAND_MENU3){
+
+          }else if(scene_command == COMMAND_MENU4){
+
+          }else if(scene_command == COMMAND_MENU5){
+
+          }
+        }
       }
       /******************************************************************************/
       else if(scene_number == COMMAND_STORE){
@@ -330,14 +343,6 @@ void raider_move(void){
   }
   delete raider;
 }
-void villager(void){
-  if(!exisits_check(path_town())){
-    dir_make(path_town());
-    new_model(path_town(),random(2));
-  }else if(dir_list(path_town(),false,false) < FILE_AMOUNT){
-    new_model(path_town(),random(2));
-  }
-}
 /***** funtions ************/
 /***** CORE ****************/
 /***** setup ***************/
@@ -373,6 +378,7 @@ void setup(void) {
     check_model_hash(path_avatar(),1);
     check_model_hash(path_avatar(),2);
   }
+  if(!exisits_check(path_cryobank())) dir_make(path_cryobank());
   if(dir_list(path_assist(),false,false) < FILE_AMOUNT){
     new_model(path_assist(),false);
     display_make_assist();

@@ -35,12 +35,10 @@ const PROGMEM char scene_sun_rise[]     = "캄캄한 밤이다.새벽이 밝아�
 const PROGMEM char scene_sun_fall[]     = "해가 중천에 떳다.해가 저문다.노을이 진다.어둠이 내렸다.";
 /*************** Display ***************/
 const PROGMEM char scene_main_cmd[]     = "무엇을 하는게 좋을까?";
-const PROGMEM char scene_main_opt1[]    = "던전관리";
-const PROGMEM char scene_main_opt2[]    = "정보확인";
-const PROGMEM char scene_main_opt3[]    = "지옥상회";
-const PROGMEM char scene_main_opt4[]    = "마을침략";
-const PROGMEM char scene_main_opt5[]    = "기술훈련";
-const PROGMEM char scene_main_opt6[]    = "휴식하기";
+const PROGMEM char scene_main_opt1[]    = "지옥상회";
+const PROGMEM char scene_main_opt2[]    = "마을침략";
+const PROGMEM char scene_main_opt3[]    = "기술훈련";
+const PROGMEM char scene_main_opt4[]    = "휴식하기";
 /*************** Display ***************/
 const PROGMEM char scene_invasion_opt1[]= "정찰";
 const PROGMEM char scene_invasion_empt[]= "마을이 비어있다. 다음에 다시 오자.";

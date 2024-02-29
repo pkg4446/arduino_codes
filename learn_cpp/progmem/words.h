@@ -48,6 +48,13 @@ const PROGMEM char word_captive[]   = "포로";
 const PROGMEM char word_troop[]     = "부하";
 
 /*************** Word ***************/
+const PROGMEM char word_info[]      = "정보";
+/*************** Word ***************/
+const PROGMEM char word_care[]      = "관리";
+/*************** Word ***************/
+const PROGMEM char word_confirm[]   = "확인";
+
+/*************** Word ***************/
 const PROGMEM char word_attack[]    = "공격";
 /*************** Word ***************/
 const PROGMEM char word_kidnap[]    = "납치";
@@ -55,6 +62,11 @@ const PROGMEM char word_kidnap[]    = "납치";
 const PROGMEM char word_dead[]      = "사망";
 /*************** Word ***************/
 const PROGMEM char word_edu[]       = "교육";
+
+/*************** Word ***************/
+const PROGMEM char word_fear[]      = "공포";
+/*************** Word ***************/
+const PROGMEM char word_resourse[]  = "마력";
 
 /*************** Word ***************/
 const PROGMEM char word_now[]       = "→";

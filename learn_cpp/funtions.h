@@ -14,6 +14,8 @@ String  get_model_name(String path);
 bool    get_model_gender(String path);
 void get_recon(void);
 /**************************/
+void villager(void);
+/**************************/
 void prologue_txt(void);
 void routine_day_mens(void);
 /**************************/

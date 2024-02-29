@@ -48,6 +48,17 @@ void get_recon(void){
   delete info_class;
 }
 /*************** funtion ***************/
+/*************** funtion ***************/
+void villager(void){
+  if(!exisits_check(path_town())){
+    dir_make(path_town());
+    new_model(path_town(),random(2));
+  }else if(dir_list(path_town(),false,false) < FILE_AMOUNT){
+    new_model(path_town(),random(2));
+  }
+}
+/*************** funtion ***************/
+/*************** funtion ***************/
 void prologue_txt(void){
     /***** Model *****/
     /***** Hardware *****/

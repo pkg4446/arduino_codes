@@ -147,13 +147,13 @@ void display_hour(uint8_t *clock_hours){
 void display_cmd_main(void){
     paging();
     Serial.println(get_progmem(scene_main_cmd));
-    space_option(true,COMMAND_DUNGEON,get_progmem(scene_main_opt1));
-    space_option(true,COMMAND_INFOMATION,get_progmem(scene_main_opt2));
-    space_option(true,COMMAND_STORE,get_progmem(scene_main_opt3));
+    space_option(true,COMMAND_DUNGEON,get_progmem(word_dungeon)+get_progmem(word_care));
+    space_option(true,COMMAND_INFOMATION,get_progmem(word_info)+get_progmem(word_confirm));
+    space_option(true,COMMAND_STORE,get_progmem(scene_main_opt1));
     Serial.println();
-    space_option(true,COMMAND_INVASION,get_progmem(scene_main_opt4));
-    space_option(true,COMMAND_TRAINING,get_progmem(scene_main_opt5));
-    space_option(true,COMMAND_REST,get_progmem(scene_main_opt6));
+    space_option(true,COMMAND_INVASION,get_progmem(scene_main_opt2));
+    space_option(true,COMMAND_TRAINING,get_progmem(scene_main_opt3));
+    space_option(true,COMMAND_REST,get_progmem(scene_main_opt4));
     Serial.println();
 };
 /*******************************************************/
@@ -314,5 +314,19 @@ void display_info(void){
     space_option(true,COMMAND_MENU4,get_progmem(word_captive));
     space_option(true,COMMAND_MENU5,get_progmem(word_troop));
     cancle_cmd(false);
+};
+/*******************************************************/
+void display_info_dungeon(uint8_t *aggro_point,uint32_t *resourse){
+    paging();
+    Serial.print(get_progmem(word_dungeon));
+    Serial.print(get_progmem(gramma_ui));
+    spacebar();
+    Serial.print(get_progmem(word_info));
+    Serial.println(get_progmem(word_confirm));
+
+    space(true,get_progmem(word_fear));
+    Serial.println(*aggro_point);
+    space(true,get_progmem(word_resourse));
+    Serial.println(*resourse);
 };
 /*******************************************************/
