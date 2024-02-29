@@ -55,6 +55,8 @@ read_model_breed(path_assist(),breed_class);
 */
 /***** Variable *****/
 uint32_t  resourse    = 0;
+uint8_t   raider_turn = 0;
+
 uint8_t   aggro_point = 1;
 uint8_t   maps[7][3]  = {{0,},};
 uint8_t   map_pos_x   = 0;
@@ -307,8 +309,10 @@ void routine_day(void){
 void raider_new(void){
   if(aggro_point==0) aggro_point = 1;
   if(exisits_check(path_raider())){
+    if(raider_turn<255) raider_turn+=1;
     raider_move();
   }else if(random(255/aggro_point) == 0){
+    raider_turn = 0;
     if(!exisits_check(path_raider())) dir_make(path_raider());
     new_model(path_raider(),random(2));
     raider_move();

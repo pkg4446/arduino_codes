@@ -154,7 +154,7 @@ uint8_t mapClass::get_exit(void) {
 /**************************************************************************************/
 uint8_t moveClass::init(uint8_t enter) {
   memset(visited, false, sizeof(visited));
-  act_point = random(MAP_Y*MAP_X,MAP_Y*MAP_X*2);
+  act_point = random(MAP_X,MAP_X*MAP_Y);
   back_move = false;
   gps_x = 0;
   gps_y = enter;
