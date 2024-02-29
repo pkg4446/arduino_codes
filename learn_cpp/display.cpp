@@ -225,6 +225,16 @@ void display_transfer(uint16_t *scene_number){
     space_option(true,COMMAND_MENU2,get_progmem(word_assist));
     cancle_cmd(false);
 };
+void display_trans_fail(void){
+    paging();
+    Serial.print(get_progmem(word_assist));
+    Serial.print(get_progmem(gramma_ui));
+    spacebar();
+    Serial.print(get_progmem(word_soul));
+    Serial.print(get_progmem(gramma_i));
+    spacebar();
+    Serial.println(get_progmem(scene_assist_fail));
+};
 void display_screaming(bool type, String name){
     paging();
     Serial.println(get_progmem(scene_screaming_1));

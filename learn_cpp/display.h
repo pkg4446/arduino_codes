@@ -50,6 +50,7 @@ void display_amenity(uint16_t *scene_number);
 void display_management(uint16_t *scene_number, String name);
 /*************** Display ***************/
 void display_transfer(uint16_t *scene_number);
+void display_trans_fail(void);
 void display_screaming(bool type, String name);
 /*************** Display ***************/
 void display_victim(uint16_t *scene_number);

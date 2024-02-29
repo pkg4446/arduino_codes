@@ -10,7 +10,8 @@
 #include "display.h"
 #include "path_string.h"
 
-String get_model_name(String path);
+String  get_model_name(String path);
+bool    get_model_gender(String path);
 void get_recon(void);
 /**************************/
 void prologue_txt(void);

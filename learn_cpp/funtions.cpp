@@ -1,12 +1,21 @@
 #include "funtions.h"
 /*************** play funtion ***************/
 String get_model_name(String path){
-  /***** Hardware *****/
   String response = "";
   if(exisits_check(path+file_hard())){
     INFO      *info_class   = new INFO();
     read_model_hard_info(path,info_class);
     response = info_class->get_family()+info_class->get_name();
+    delete info_class;
+  }
+  return response;
+}
+bool get_model_gender(String path){
+  bool response = false;
+  if(exisits_check(path+file_hard())){
+    INFO      *info_class   = new INFO();
+    read_model_hard_info(path,info_class);
+    response = info_class->get_gender();
     delete info_class;
   }
   return response;

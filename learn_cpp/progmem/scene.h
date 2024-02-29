@@ -67,6 +67,7 @@ const PROGMEM char scene_train_opt3[]   = "석방";
 const PROGMEM char scene_train_opt4[]   = "처형";
 /*************** Display ***************/
 const PROGMEM char scene_transfer[]     = "누구의 영혼을 옮길까?";
+const PROGMEM char scene_assist_fail[]  = "수컷의 몸을 거부하며 이상반응을 보였다.\n그러나 한번 시작된 의식은 멈출 수 없었다.";
 const PROGMEM char scene_screaming_1[]  = "머리가 깨질 것 같아…";
 const PROGMEM char scene_screaming_2[]  = "깃들었다";
 /*************** Display ***************/
