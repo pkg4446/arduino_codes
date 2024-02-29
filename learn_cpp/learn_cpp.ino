@@ -200,13 +200,13 @@ void command_progress(String recieve){
           read_model_soft_body(path_current ,stat_class, hole_class, sense_class);
           read_model_soft_ego(target_path, nature_class, eros_class);
           change_soft_csv(path_current,stat_class,hole_class,sense_class,nature_class,eros_class);
+          dir_move(path_current,target_path);
           display_screaming(type_model,get_model_name(path_current));
           delete stat_class;
           delete hole_class;
           delete sense_class;
           delete nature_class;
           delete eros_class;
-          dir_move(path_current,target_path);
           path_current = "";
           playmap.view(map_pos_x,map_pos_y);
           play_main(&scene_number,COMMAND_DUNGEON);
