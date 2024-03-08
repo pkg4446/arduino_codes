@@ -37,8 +37,7 @@ const PROGMEM char scene_sun_fall[]     = "해가 중천에 떳다.해가 저문
 const PROGMEM char scene_main_cmd[]     = "무엇을 하는게 좋을까?";
 const PROGMEM char scene_main_opt1[]    = "지옥상회";
 const PROGMEM char scene_main_opt2[]    = "마을침략";
-const PROGMEM char scene_main_opt3[]    = "기술훈련";
-const PROGMEM char scene_main_opt4[]    = "휴식하기";
+const PROGMEM char scene_main_opt3[]    = "휴식하기";
 /*************** Display ***************/
 const PROGMEM char scene_invasion_opt1[]= "정찰";
 const PROGMEM char scene_invasion_empt[]= "마을이 비어있다. 다음에 다시 오자.";

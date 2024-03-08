@@ -47,7 +47,9 @@ const PROGMEM char word_assist[]    = "조수";
 /*************** Word ***************/
 const PROGMEM char word_captive[]   = "포로";
 /*************** Word ***************/
-const PROGMEM char word_troop[]     = "부하";
+const PROGMEM char word_troop1[]     = "부대";
+/*************** Word ***************/
+const PROGMEM char word_troop2[]     = "부하";
 
 /*************** Word ***************/
 const PROGMEM char word_info[]      = "정보";

@@ -152,8 +152,8 @@ void display_cmd_main(void){
     space_option(true,COMMAND_STORE,get_progmem(scene_main_opt1));
     Serial.println();
     space_option(true,COMMAND_INVASION,get_progmem(scene_main_opt2));
-    space_option(true,COMMAND_TRAINING,get_progmem(scene_main_opt3));
-    space_option(true,COMMAND_REST,get_progmem(scene_main_opt4));
+    space_option(true,COMMAND_TROOP,get_progmem(word_troop2)+get_progmem(word_care));
+    space_option(true,COMMAND_REST,get_progmem(scene_main_opt3));
     Serial.println();
 };
 /*******************************************************/
@@ -312,7 +312,7 @@ void display_info(void){
     space_option(true,COMMAND_MENU3,get_progmem(word_assist));
     Serial.println();
     space_option(true,COMMAND_MENU4,get_progmem(word_captive));
-    space_option(true,COMMAND_MENU5,get_progmem(word_troop));
+    space_option(true,COMMAND_MENU5,get_progmem(word_troop2));
     cancle_cmd(false);
 };
 /*******************************************************/

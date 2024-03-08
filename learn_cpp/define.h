@@ -39,5 +39,5 @@
 
 #define COMMAND_INVASION    500
 
-#define COMMAND_TRAINING    600
+#define COMMAND_TROOP       600
 #define COMMAND_REST        999

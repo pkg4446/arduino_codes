@@ -104,7 +104,7 @@ void play_main(uint16_t *scene_number,uint16_t scene_command){
   }else if(scene_command == COMMAND_INVASION){
     *scene_number = scene_command;
     display_invasion();
-  }else if(scene_command == COMMAND_TRAINING){
+  }else if(scene_command == COMMAND_TROOP){
     *scene_number = scene_command;
   }
 }
