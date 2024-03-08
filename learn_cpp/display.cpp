@@ -148,11 +148,11 @@ void display_cmd_main(void){
     paging();
     Serial.println(get_progmem(scene_main_cmd));
     space_option(true,COMMAND_DUNGEON,get_progmem(word_dungeon)+get_progmem(word_care));
-    space_option(true,COMMAND_INFOMATION,get_progmem(word_info)+get_progmem(word_confirm));
+    space_option(true,COMMAND_TROOP,get_progmem(word_troop1)+get_progmem(word_care));
     space_option(true,COMMAND_STORE,get_progmem(scene_main_opt1));
     Serial.println();
     space_option(true,COMMAND_INVASION,get_progmem(scene_main_opt2));
-    space_option(true,COMMAND_TROOP,get_progmem(word_troop1)+get_progmem(word_care));
+    space_option(true,COMMAND_INFOMATION,get_progmem(word_info)+get_progmem(word_confirm));
     space_option(true,COMMAND_REST,get_progmem(scene_main_opt3));
     Serial.println();
 };
