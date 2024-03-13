@@ -226,6 +226,10 @@ void command_progress(String recieve){
         }
       }
       /******************************************************************************/
+      else if(scene_number == COMMAND_TROOP){
+        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
+      }
+      /******************************************************************************/
       else if(scene_number == COMMAND_STORE){
         if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
       }
@@ -254,10 +258,6 @@ void command_progress(String recieve){
           }else display_invasion_empt();
           play_main(&scene_number,COMMAND_INVASION);
         }
-      }
-      /******************************************************************************/
-      else if(scene_number == COMMAND_TROOP){
-        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
       }
       /******************************************************************************/
       else if(scene_number == COMMAND_INFOMATION){
