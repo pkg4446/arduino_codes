@@ -54,6 +54,7 @@ read_model_feel(path_assist(),feel_class);
 read_model_breed(path_assist(),breed_class);
 */
 /***** Variable *****/
+void  (*ptr_cmd_fun)(String recieve);
 uint8_t   aggro_point = 1;
 uint32_t  resourse    = 0;
 
@@ -92,222 +93,235 @@ void get_command(char ch) {
   if(ch=='\n'){
     command_buf[ command_num ] = 0x00;
     command_num = 0;
-    command_progress(command_buf);
+
+    display_cmd();
+    Serial.println(command_buf);
+
+    ptr_cmd_fun(command_buf);
+
+    #ifdef MEMORYCHECK
+      Serial.print("freeMemory()=");
+      #if defined(ESP32)
+        Serial.println(ESP.getFreeHeap());
+      #else
+        Serial.println(freeMemory());
+      #endif
+    #endif
+
   }else if(ch!='\r'){
     command_buf[ command_num++ ] = ch;
     command_num %= COMMAND_LENGTH;
   }
 }
+void command_init(String recieve){
+  uint16_t scene_command = recieve.toInt();
+  if(scene_command == COMMAND_YES || scene_command == COMMAND_NO){
+    scene_number  = scene_command;
+    ptr_cmd_fun   = command_progress;
+  }else if(scene_command == COMMAND_CANCLE){
+    dos_mode      = true;
+    ptr_cmd_fun   = command_dos_mode;
+    display_help_cmd();
+  }
+}
+
+void command_dos_mode(String recieve){
+  command_dos(command_buf,&path_current,&dos_mode);
+}
+
 void command_progress(String recieve){
-  display_cmd();
-  Serial.println(recieve);
-  if(dos_mode){
-    command_dos(command_buf,&path_current,&dos_mode);
-  }else{
-    uint16_t scene_command = recieve.toInt();
-    if(scene_number == 0){
-      if(scene_command == COMMAND_YES || scene_command == COMMAND_NO) scene_number = scene_command;
-      else if(scene_command == COMMAND_CANCLE){
-        dos_mode = true;
-        display_help_cmd();
+  uint16_t scene_command = recieve.toInt();
+  if(scene_number == COMMAND_MAIN){
+    if(scene_command == COMMAND_DUNGEON){
+      playmap.view(map_pos_x,map_pos_y);
+    }else if(scene_command == COMMAND_REST){
+      time_clock -= one_hour_sec;
+      display_rest();
+      back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
+    };
+    play_main(&scene_number,scene_command);
+  }
+  /******************************************************************************/
+  else if(scene_number == COMMAND_DUNGEON){
+    if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
+    else{
+      if(scene_command == COMMAND_COORDINATE)     display_coordinate(&scene_number);
+      else if(scene_command == COMMAND_OBSTRUCT)  playmap.rebuild(map_pos_x,map_pos_y,wall);
+      else if(scene_command == COMMAND_WAYLAY)    playmap.rebuild(map_pos_x,map_pos_y,road);
+      else if(scene_command == COMMAND_AMENITY)   display_amenity(&scene_number);
+      else if(scene_command == COMMAND_MANAGEMENT)cmd_dng_manage(&scene_number,&path_current);
+      if(scene_command!=COMMAND_AMENITY && scene_command!=COMMAND_MANAGEMENT) playmap.view(map_pos_x,map_pos_y);
+      play_main(&scene_number,scene_number);
+    }
+  }else if(scene_number == COMMAND_COORDINATE){
+    if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
+    else playmap.pos_move(&map_pos_x,&map_pos_y,scene_command);
+  }else if(scene_number == COMMAND_MANAGEMENT){
+    if(scene_command == COMMAND_CANCLE){
+      playmap.view(map_pos_x,map_pos_y);
+      play_main(&scene_number,COMMAND_DUNGEON);
+    }else{
+      if(scene_command == COMMAND_VICTIM) cmd_chs_victim(&scene_number, dir_list(path_captive(),true,false));
+      else if(scene_command == COMMAND_EDUCATION){ ;
+      }else if(scene_command == COMMAND_TRANSFER){display_transfer(&scene_number);;
+      }else if(scene_command == COMMAND_MENU1 || scene_command == COMMAND_MENU2){
+        Serial.print(get_model_name(path_current));
+        if(scene_command == COMMAND_MENU1){
+          dir_move(path_current,path_troop()+path_slash()+read_hash_text(path_current));
+          display_gelation();
+        }else{
+          dir_remove(path_current);
+          display_execute();
+        }
+        path_current = "";
+        play_main(&scene_number,COMMAND_DUNGEON);
+      }
+    }
+  }else if(scene_number == COMMAND_VICTIM){
+    if(scene_command == COMMAND_CANCLE){
+      if(path_equal_chk(path_current,check_captive())) display_management(&scene_number,get_model_name(path_current));
+      else{
+        playmap.view(map_pos_x,map_pos_y);
+        play_main(&scene_number,COMMAND_DUNGEON);
       }
     }else{
-      /******************************************************************************/
-      if(scene_number == COMMAND_MAIN){
-        if(scene_command == COMMAND_DUNGEON){
-          playmap.view(map_pos_x,map_pos_y);
-        }else if(scene_command == COMMAND_REST){
-          time_clock -= one_hour_sec;
-          display_rest();
-          back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
-        };
-        play_main(&scene_number,scene_command);
-      }
-      /******************************************************************************/
-      else if(scene_number == COMMAND_DUNGEON){
-        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
-        else{
-          if(scene_command == COMMAND_COORDINATE)     display_coordinate(&scene_number);
-          else if(scene_command == COMMAND_OBSTRUCT)  playmap.rebuild(map_pos_x,map_pos_y,wall);
-          else if(scene_command == COMMAND_WAYLAY)    playmap.rebuild(map_pos_x,map_pos_y,road);
-          else if(scene_command == COMMAND_AMENITY)   display_amenity(&scene_number);
-          else if(scene_command == COMMAND_MANAGEMENT)cmd_dng_manage(&scene_number,&path_current);
-          if(scene_command!=COMMAND_AMENITY && scene_command!=COMMAND_MANAGEMENT) playmap.view(map_pos_x,map_pos_y);
-          play_main(&scene_number,scene_number);
-        }
-      }else if(scene_number == COMMAND_COORDINATE){
-        if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
-        else playmap.pos_move(&map_pos_x,&map_pos_y,scene_command);
-      }else if(scene_number == COMMAND_MANAGEMENT){
-        if(scene_command == COMMAND_CANCLE){
-          playmap.view(map_pos_x,map_pos_y);
-          play_main(&scene_number,COMMAND_DUNGEON);
+      uint8_t model_max_num = dir_list(path_captive(),true,false);
+      if(model_max_num != 0){
+        if(scene_command>0 && scene_command<=model_max_num) path_current = path_captive() + path_slash() + dir_index(path_captive(),true,scene_command);
+        else path_current = path_captive() + path_slash() + dir_index(path_captive(),true,model_max_num);
+        display_management(&scene_number,get_model_name(path_current));
+      }else play_main(&scene_number,  COMMAND_DUNGEON);
+    }
+  }else if(scene_number == COMMAND_EDUCATION){
+    if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(path_current));
+    else{
+    }
+  }else if(scene_number == COMMAND_TRANSFER){
+    if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(path_current));
+    else if(scene_command == COMMAND_MENU1 || scene_command == COMMAND_MENU2){
+      STAT    *stat_class   = new STAT();
+      HOLE    *hole_class   = new HOLE();
+      SENSE   *sense_class  = new SENSE();
+      NATURE  *nature_class = new NATURE();
+      EROS    *eros_class   = new EROS();
+      String target_path = path_avatar();
+      bool   type_model  = true;
+
+      if(scene_command == COMMAND_MENU2){
+        if(get_model_gender(path_current)){
+          display_trans_fail();
         }else{
-          if(scene_command == COMMAND_VICTIM) cmd_chs_victim(&scene_number, dir_list(path_captive(),true,false));
-          else if(scene_command == COMMAND_EDUCATION){ ;
-          }else if(scene_command == COMMAND_TRANSFER){display_transfer(&scene_number);;
-          }else if(scene_command == COMMAND_MENU1 || scene_command == COMMAND_MENU2){
-            Serial.print(get_model_name(path_current));
-            if(scene_command == COMMAND_MENU1){
-              dir_move(path_current,path_troop()+path_slash()+read_hash_text(path_current));
-              display_gelation();
-            }else{
-              dir_remove(path_current);
-              display_execute();
-            }
-            path_current = "";
-            play_main(&scene_number,COMMAND_DUNGEON);
-          }
-        }
-      }else if(scene_number == COMMAND_VICTIM){
-        if(scene_command == COMMAND_CANCLE){
-          if(path_equal_chk(path_current,check_captive())) display_management(&scene_number,get_model_name(path_current));
-          else{
-            playmap.view(map_pos_x,map_pos_y);
-            play_main(&scene_number,COMMAND_DUNGEON);
-          }
-        }else{
-          uint8_t model_max_num = dir_list(path_captive(),true,false);
-          if(model_max_num != 0){
-            if(scene_command>0 && scene_command<=model_max_num) path_current = path_captive() + path_slash() + dir_index(path_captive(),true,scene_command);
-            else path_current = path_captive() + path_slash() + dir_index(path_captive(),true,model_max_num);
-            display_management(&scene_number,get_model_name(path_current));
-          }else play_main(&scene_number,  COMMAND_DUNGEON);
-        }
-      }else if(scene_number == COMMAND_EDUCATION){
-        if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(path_current));
-        else{
-        }
-      }else if(scene_number == COMMAND_TRANSFER){
-        if(scene_command == COMMAND_CANCLE) display_management(&scene_number,get_model_name(path_current));
-        else if(scene_command == COMMAND_MENU1 || scene_command == COMMAND_MENU2){
-          STAT    *stat_class   = new STAT();
-          HOLE    *hole_class   = new HOLE();
-          SENSE   *sense_class  = new SENSE();
-          NATURE  *nature_class = new NATURE();
-          EROS    *eros_class   = new EROS();
-          String target_path = path_avatar();
-          bool   type_model  = true;
-
-          if(scene_command == COMMAND_MENU2){
-            if(get_model_gender(path_current)){
-              display_trans_fail();
-            }else{
-              target_path = path_assist();
-              type_model = false;
-            }
-          }
-          read_model_soft_body(path_current ,stat_class, hole_class, sense_class);
-          read_model_soft_ego(target_path, nature_class, eros_class);
-          change_soft_csv(path_current,stat_class,hole_class,sense_class,nature_class,eros_class);
-          dir_move(path_current,target_path);
-          display_screaming(type_model,get_model_name(path_current));
-          delete stat_class;
-          delete hole_class;
-          delete sense_class;
-          delete nature_class;
-          delete eros_class;
-          path_current = "";
-          playmap.view(map_pos_x,map_pos_y);
-          play_main(&scene_number,COMMAND_DUNGEON);
-        }
-      }else if(scene_number == COMMAND_AMENITY){
-        if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
-        else{
-          if(scene_command == COMMAND_MENU1)      playmap.rebuild(map_pos_x,map_pos_y,trap);
-          else if(scene_command == COMMAND_MENU2) playmap.rebuild(map_pos_x,map_pos_y,prison);
-          else if(scene_command == COMMAND_MENU3) playmap.rebuild(map_pos_x,map_pos_y,spa);
-          else if(scene_command == COMMAND_MENU4) playmap.rebuild(map_pos_x,map_pos_y,inn);
-          else if(scene_command == COMMAND_MENU5) playmap.rebuild(map_pos_x,map_pos_y,farm);
-          else if(scene_command == COMMAND_MENU6) playmap.rebuild(map_pos_x,map_pos_y,cage);
-          else if(scene_command == COMMAND_MENU7) playmap.put_enter(map_pos_y);
-          else if(scene_command == COMMAND_MENU8) playmap.put_exit(map_pos_y);
-          playmap.view(map_pos_x,map_pos_y);
+          target_path = path_assist();
+          type_model = false;
         }
       }
-      /******************************************************************************/
-      else if(scene_number == COMMAND_TROOP){
-        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
-      }
-      /******************************************************************************/
-      else if(scene_number == COMMAND_STORE){
-        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
-      }
-      /******************************************************************************/
-      else if(scene_number == COMMAND_INVASION){
-        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
-        else{
-          villager();
-          if(dir_list(path_town(),false,false) == FILE_AMOUNT){
-            if(scene_command == COMMAND_MENU1){
-              get_recon();
-            }else if(scene_command==COMMAND_MENU2 || scene_command==COMMAND_MENU3){
-              uint8_t grown_aggro  = random(10);
-              String villager_name = get_model_name(path_town());
-              Serial.print(villager_name);
-              if(aggro_point+grown_aggro<255) aggro_point+=grown_aggro;
-              else aggro_point = 255;
-              if(scene_command == COMMAND_MENU2){
-                dir_move(path_town(),path_captive()+path_slash()+read_hash_text(path_town()));
-                display_villager_kidnap();
-              }else{
-                dir_remove(path_town());
-                display_villager_attack();
-              }
-            }
-          }else display_invasion_empt();
-          play_main(&scene_number,COMMAND_INVASION);
-        }
-      }
-      /******************************************************************************/
-      else if(scene_number == COMMAND_INFOMATION){
-        if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
-        else{
-          if(scene_command == COMMAND_MENU1){
-            display_info_dungeon(&aggro_point,&resourse);
-          }else{
-            ////240229
-            bool model_flage  = false;
-            String model_path = "";
-            if(scene_command == COMMAND_MENU2){
-              model_flage = true;
-              model_path  = path_avatar();
-            }else if(scene_command == COMMAND_MENU3){
-              model_flage = true;
-              model_path  = path_assist();
-            }else if(scene_command == COMMAND_MENU4){
-              if(path_equal_chk(path_current,check_captive())){
-                model_flage = true;
-                model_path  = path_current;
-              }else cmd_dng_manage(&scene_number,&path_current);
-            }else if(scene_command == COMMAND_MENU5){
-              if(path_equal_chk(path_current,check_troop())){
-                model_flage = true;
-                model_path  = path_current;
-              }else ;//cmd_dng_manage(&scene_number,&path_current);
-            }
-
-            if(model_flage){
-              bool   model_gender = false;
-              String model_name   = "";
-              get_model_name_gender(model_path,&model_name,&model_gender);
-              display_info_model(model_name,model_gender);
-            }
-
-          }
-        }
-      }
-      /******************************************************************************/
+      read_model_soft_body(path_current ,stat_class, hole_class, sense_class);
+      read_model_soft_ego(target_path, nature_class, eros_class);
+      change_soft_csv(path_current,stat_class,hole_class,sense_class,nature_class,eros_class);
+      dir_move(path_current,target_path);
+      display_screaming(type_model,get_model_name(path_current));
+      delete stat_class;
+      delete hole_class;
+      delete sense_class;
+      delete nature_class;
+      delete eros_class;
+      path_current = "";
+      playmap.view(map_pos_x,map_pos_y);
+      play_main(&scene_number,COMMAND_DUNGEON);
+    }
+  }else if(scene_number == COMMAND_AMENITY){
+    if(scene_command == COMMAND_CANCLE) play_main(&scene_number,COMMAND_DUNGEON);
+    else{
+      if(scene_command == COMMAND_MENU1)      playmap.rebuild(map_pos_x,map_pos_y,trap);
+      else if(scene_command == COMMAND_MENU2) playmap.rebuild(map_pos_x,map_pos_y,prison);
+      else if(scene_command == COMMAND_MENU3) playmap.rebuild(map_pos_x,map_pos_y,spa);
+      else if(scene_command == COMMAND_MENU4) playmap.rebuild(map_pos_x,map_pos_y,inn);
+      else if(scene_command == COMMAND_MENU5) playmap.rebuild(map_pos_x,map_pos_y,farm);
+      else if(scene_command == COMMAND_MENU6) playmap.rebuild(map_pos_x,map_pos_y,cage);
+      else if(scene_command == COMMAND_MENU7) playmap.put_enter(map_pos_y);
+      else if(scene_command == COMMAND_MENU8) playmap.put_exit(map_pos_y);
+      playmap.view(map_pos_x,map_pos_y);
     }
   }
-  #ifdef MEMORYCHECK
-    Serial.print("freeMemory()=");
-    #if defined(ESP32)
-      Serial.println(ESP.getFreeHeap());
-    #else
-      Serial.println(freeMemory());
-    #endif
-  #endif
+  /******************************************************************************/
+  else if(scene_number == COMMAND_TROOP){
+    if(scene_command == COMMAND_CANCLE){back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);}
+    else{
+
+    }
+  }
+  /******************************************************************************/
+  else if(scene_number == COMMAND_STORE){
+    if(scene_command == COMMAND_CANCLE){back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);}
+    else{
+
+    }
+  }
+  /******************************************************************************/
+  else if(scene_number == COMMAND_INVASION){
+    if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
+    else{
+      villager();
+      if(dir_list(path_town(),false,false) == FILE_AMOUNT){
+        if(scene_command == COMMAND_MENU1){
+          get_recon();
+        }else if(scene_command==COMMAND_MENU2 || scene_command==COMMAND_MENU3){
+          uint8_t grown_aggro  = random(10);
+          String villager_name = get_model_name(path_town());
+          Serial.print(villager_name);
+          if(aggro_point+grown_aggro<255) aggro_point+=grown_aggro;
+          else aggro_point = 255;
+          if(scene_command == COMMAND_MENU2){
+            dir_move(path_town(),path_captive()+path_slash()+read_hash_text(path_town()));
+            display_villager_kidnap();
+          }else{
+            dir_remove(path_town());
+            display_villager_attack();
+          }
+        }
+      }else display_invasion_empt();
+      play_main(&scene_number,COMMAND_INVASION);
+    }
+  }
+  /******************************************************************************/
+  else if(scene_number == COMMAND_INFOMATION){
+    if(scene_command == COMMAND_CANCLE) back_to_main(&scene_number,&year_count,&month_count,&day_count,&hour_count);
+    else{
+      if(scene_command == COMMAND_MENU1){
+        display_info_dungeon(&aggro_point,&resourse);
+      }else{
+
+        bool model_flage  = false;
+        String model_path = "";
+        if(scene_command == COMMAND_MENU2){
+          model_flage = true;
+          model_path  = path_avatar();
+        }else if(scene_command == COMMAND_MENU3){
+          model_flage = true;
+          model_path  = path_assist();
+        }else if(scene_command == COMMAND_MENU4){
+          if(path_equal_chk(path_current,check_captive())){
+            model_flage = true;
+            model_path  = path_current;
+          }else cmd_dng_manage(&scene_number,&path_current);
+        }else if(scene_command == COMMAND_MENU5){
+          if(path_equal_chk(path_current,check_troop())){
+            model_flage = true;
+            model_path  = path_current;
+          }else ;//cmd_dng_manage(&scene_number,&path_current);
+        }
+
+        if(model_flage){
+          bool   model_gender = false;
+          String model_name   = "";
+          get_model_name_gender(model_path,&model_name,&model_gender);
+          display_info_model(model_name,model_gender);
+        }
+
+      }
+    }
+  }
+  /******************************************************************************/
 }
 /***** funtion routine ****/
 bool routine_hour(void){
@@ -369,6 +383,7 @@ void raider_move(void){
 /***** setup ***************/
 void setup(void) {
   Serial.begin(115200);
+  ptr_cmd_fun  = command_init;
   path_current = "";
   #if defined(ESP32)
     randomSeed(analogRead(39));
