@@ -19,10 +19,12 @@ void setup() {
 }
 
 void loop() {
+  //lib
   Serial.print("Temperature = ");
   Serial.print(temperature.readTemperatureC());
   Serial.print(" C");
 
+  //no lib
   I2Ctwo.requestFrom(0x48,1);
   uint16_t raw_value = I2Ctwo.read() << 8;
   Serial.print(", rawData = ");
@@ -30,5 +32,6 @@ void loop() {
   Serial.print(" / 256 = ");
   Serial.println(raw_value/256);
   I2Ctwo.endTransmission();
+  //
   delay(1000);
 }
