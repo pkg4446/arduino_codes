@@ -470,7 +470,7 @@ void EROGENOUS::generate(){
     hood_shape      = random(RAND_NUM);
     hood_start      = random(RAND_NUM);
     hood_texture    = random(RAND_NUM);
-    hood_width      = gaussian_range(1400,30);
+    hood_width      = gaussian_range(1400,250);
     hood_length     = gaussian_range(2600,400);
 
     lip_i_shape     = random(RAND_NUM);
