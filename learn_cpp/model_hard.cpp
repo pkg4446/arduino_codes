@@ -478,8 +478,7 @@ void EROGENOUS::generate(){
     lip_i_width     = gaussian_range(500,100);
     lip_i_length    = gaussian_range(5200,800);
     lip_i_length_r  = gaussian_range(1900,450);
-    if(random(2))   lip_i_length_l = lip_i_length_r;
-    else            lip_i_length_l = gaussian_range(1900,450);
+    lip_i_length_l  = gaussian_range(1900,450);
     
     lip_o_shape     = random(RAND_NUM);
     lip_o_texture   = random(RAND_NUM);
