@@ -469,6 +469,7 @@ void setup(void) {
     prologue_txt();
     scene_number = 0;
     display_game_help();
+    ptr_cmd_fun  = command_init;
     while (scene_number==0)
     {
       if (Serial.available()) get_command(Serial.read());
