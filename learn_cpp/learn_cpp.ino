@@ -467,8 +467,8 @@ void setup(void) {
   if(scene_number == COMMAND_YES){
     dir_remove(path_config());
     prologue_txt();
-    scene_number = 0;
     display_game_help();
+    scene_number = 0;
     ptr_cmd_fun  = command_init;
     while (scene_number==0)
     {
