@@ -101,8 +101,12 @@ uint8_t control_humidity    = 50;
 //// ------------- PIN --------------
 const uint8_t RELAY_HEATER  = 12;
 const uint8_t RELAY_FAN     = 16;
-const uint8_t RELAY_VALVE_H = 13;
-const uint8_t RELAY_VALVE_W = 14;
+const uint8_t RELAY_VALVE_W = 13;
+const uint8_t RELAY_VALVE_H = 14;
+const uint8_t SEN_WATER_L   = 35;
+const uint8_t SEN_WATER_H   = 34;
+const uint8_t SEN_HONEY_L   = 17;
+const uint8_t SEN_HONEY_H   = 36;
 //// ----------- Variable -----------
 uint8_t count_sensor_err_w = 0;
 uint8_t count_sensor_err_h = 0;
@@ -189,6 +193,8 @@ void command_Service(String command, String value) {
     }
   } else if (command == "AT+LOG") {
     run_log  = (value.toInt() > 0) ? true : false;
+  } else if (command == "AT+RESTART") {
+    ESP.restart();
   }
   mesh.update();
   Serial.print("AT command:");
@@ -196,22 +202,24 @@ void command_Service(String command, String value) {
   Serial.print("=");
   Serial.println(value);
   EEPROM.commit();
+  config();
 }//Command_service() END
 
 //// ----------- TEST  -----------
-void AT_commandHelp() {
+void AT_commandHelp(void) {
   Serial.println("------------ AT command help ------------");
-  Serial.println(";AT+HELP=   int;      Tish menual.");
-  Serial.println(";AT+TEMP=   int;      Temperature Change.");
-  Serial.println(";AT+HUMI=   int;      Humidity Change.");
-  Serial.println(";AT+USE=    bool;     Useable Change.");
-  Serial.println(";AT+USEH=   bool;     Useable Heat Change.");
-  Serial.println(";AT+USEF=   bool;     Useable Fan  Change.");
-  Serial.println(";AT+WATER=  bool;     Useable Water Change.");
-  Serial.println(";AT+HONEY=  bool;     Useable Honey Change.");
-  Serial.println(";AT+LIQUID= bool;     Water&Honey Alarm Reset.");
-  Serial.println(";AT+RELAY=  int;      relay(int) on, if int=0 all relay off.");
-  Serial.println(";AT+LOG=    bool;     Serial log view");
+  Serial.println("AT+HELP=   int;      Tish menual");
+  Serial.println("AT+TEMP=   int;      Temperature Change");
+  Serial.println("AT+HUMI=   int;      Humidity Change");
+  Serial.println("AT+USE=    bool;     Useable Change");
+  Serial.println("AT+USEH=   bool;     Useable Heat Change");
+  Serial.println("AT+USEF=   bool;     Useable Fan  Change");
+  Serial.println("AT+WATER=  bool;     Useable Water Change");
+  Serial.println("AT+HONEY=  bool;     Useable Honey Change");
+  Serial.println("AT+LIQUID= bool;     Water&Honey Alarm Reset");
+  Serial.println("AT+RELAY=  int;      relay(int) on, if int=0 all relay off.");
+  Serial.println("AT+LOG=    bool;     Serial log view");
+  Serial.println("AT+RESTART=bool;     System reboot");
   Serial.println("-----------------------------------------");
 }
 char Serial_buf[SERIAL_MAX];
@@ -221,7 +229,7 @@ void Serial_service() {
   String str2 = strtok(0x00, " ");
   command_Service(str1, str2);
 }
-void Serial_process() {
+void Serial_process(void) {
   char ch;
   ch = Serial.read();
   mesh.update();
@@ -235,14 +243,16 @@ void Serial_process() {
       Serial_num = 0;
       break;
     default :
-      Serial_buf[ Serial_num ++ ] = ch;
-      Serial_num %= SERIAL_MAX;
+      if(ch!='\r' && ch!='\n'){
+        Serial_buf[ Serial_num ++ ] = ch;
+        Serial_num %= SERIAL_MAX;
+      }
       break;
   }
 }
 //// ----------- TEST  -----------
 
-uint8_t mesh_node_list(){
+uint8_t mesh_node_list(void){
   nodes = mesh.getNodeList();
   SimpleList<uint32_t>::iterator node = nodes.begin();
   uint8_t node_number = 0;
@@ -258,7 +268,7 @@ uint8_t mesh_node_list(){
 //taskSendMessage funtion
 void sendMessage(); // Prototype so PlatformIO doesn't complain
 Task sensorLog( TASK_SECOND*60*5, TASK_FOREVER, &sensorValue );
-void sensorValue() {
+void sensorValue(void) {
   mesh_send = true;
 }
 
@@ -294,7 +304,7 @@ void receivedCallback( uint32_t from, String &msg ) {
   }
 }
 
-void setup() {
+void setup(void) {
   // put your setup code here, to run once:
   Serial.begin(115200);
   I2Cone.begin(SDA1,SCL1,400000);
@@ -308,6 +318,11 @@ void setup() {
   digitalWrite(RELAY_VALVE_H, pin_off);
   pinMode(RELAY_VALVE_W, OUTPUT);
   digitalWrite(RELAY_VALVE_W, pin_off);
+  
+  pinMode(SEN_WATER_L, INPUT);
+  pinMode(SEN_WATER_H, INPUT);
+  pinMode(SEN_HONEY_L, INPUT);
+  pinMode(SEN_HONEY_H, INPUT);
   //// ------------ PIN OUT ------------
   if (!EEPROM.begin(EEPROM_SIZE)) Serial.println("failed to initialise EEPROM");
   //// ------------ EEPROM ------------
@@ -327,7 +342,16 @@ void setup() {
   taskScheduler.addTask( sensorLog );
   sensorLog.enable();
 
-  Serial.print("System online, Set temperature is ");
+  Serial.print("System online, ");
+  config();
+  AT_commandHelp();
+  Serial.print("Device nodeID = ");
+  Serial.println(nodeID);
+  Serial.println("ver 1.1.1");
+}
+
+void config(void){
+  Serial.print("Set temperature is ");
   Serial.print(control_temperature);
   Serial.print(", Set humidity is ");
   Serial.print(control_humidity);  
@@ -339,13 +363,9 @@ void setup() {
   Serial.print(use_water_f);
   Serial.print(", Honey: ");
   Serial.println(use_honey_f);
-  AT_commandHelp();
-  Serial.print("Device nodeID = ");
-  Serial.println(nodeID);
-  Serial.println("ver 1.1.1");
 }
 
-void loop() {
+void loop(void) {
   unsigned long now = millis();
   if (Serial.available()) Serial_process();
   mesh.update();
@@ -371,6 +391,11 @@ void sensor_level(unsigned long millisec) {
   if ((millisec - time_water) > 1000 * 1) {
     time_water = millisec;
     
+    water_level[0] = digitalRead(SEN_WATER_L);
+    water_level[1] = digitalRead(SEN_WATER_H);
+    honey_level[0] = digitalRead(SEN_HONEY_L);
+    honey_level[1] = digitalRead(SEN_HONEY_H);
+
     if(use_water_f){
       if(water_level[0] && water_level[1]){
         use_water = false; //full
@@ -412,7 +437,8 @@ void sensor_level(unsigned long millisec) {
       }else if(sensor_state_w){
         //솔레노이드 벨브 정지(센서에러)
         digitalWrite(RELAY_VALVE_W, pin_off);
-        run_water  = false;
+        run_water   = false;
+        use_water_f = false;
         Serial.println("water_relay_stop_err");
       }else{
         if(run_water && !water_level[1]){
@@ -420,8 +446,7 @@ void sensor_level(unsigned long millisec) {
           if(full_water > 30){
             //솔레노이드 벨브 정지(비었음)
             digitalWrite(RELAY_VALVE_W, pin_off);
-            run_water      = false;
-            sensor_state_w = true;
+            use_water_f = false;
             mesh.sendBroadcast("SENSOR=ERR=EMPTY=WATER=0=0;");
             Serial.println("water_relay_stop_timeout");
           }
@@ -429,42 +454,42 @@ void sensor_level(unsigned long millisec) {
       }//밸브가 열려있을때 수위가 올라가지 않을경우
     }else{
       //솔레노이드 벨브 정지
-      run_water  = false;
+      run_water = false;
+      use_water = false;
       digitalWrite(RELAY_VALVE_W, pin_off);
     }//use_water
     mesh.update();
 
     if(use_honey_f && use_honey){
       mesh.update();
-      if(run_honey && sensor_state_h){
-        if(!run_honey){
-          digitalWrite(RELAY_VALVE_H, pin_on);     //솔레노이드 밸브 켜기
-          run_honey  = true;
-          full_honey = 0;
-          mesh.sendBroadcast("SENSOR=RELAY=ON=HONEY=1=1;");
-          Serial.println("honey_relay_run");  
-        }else if(sensor_state_w){
-          //솔레노이드 벨브 정지(센서에러)
-          digitalWrite(RELAY_VALVE_H, pin_off);
-          run_honey  = false;
-          Serial.println("honey_relay_stop_err");
-        }else{
-          if(!honey_level[1]){
-            full_honey++;
-            if (full_honey > 30){
-            //솔레노이드 벨브 정지(비었음)
-              digitalWrite(RELAY_VALVE_H, pin_off);
-              run_honey      = false;
-              sensor_state_h = true;
-              mesh.sendBroadcast("SENSOR=ERR=EMPTY=HONEY=0=0;");
-              Serial.println("honey_relay_stop_timeout");
-            }
+      if(!run_honey){
+        digitalWrite(RELAY_VALVE_H, pin_on);     //솔레노이드 밸브 켜기
+        run_honey  = true;
+        full_honey = 0;
+        mesh.sendBroadcast("SENSOR=RELAY=ON=HONEY=1=1;");
+        Serial.println("honey_relay_run");  
+      }else if(sensor_state_h){
+        //솔레노이드 벨브 정지(센서에러)
+        digitalWrite(RELAY_VALVE_H, pin_off);
+        run_honey   = false;
+        use_honey_f = false;
+        Serial.println("honey_relay_stop_err");
+      }else{
+        if(!honey_level[1]){
+          full_honey++;
+          if (full_honey > 30){
+          //솔레노이드 벨브 정지(비었음)
+            digitalWrite(RELAY_VALVE_H, pin_off);
+            use_honey_f = false;
+            mesh.sendBroadcast("SENSOR=ERR=EMPTY=HONEY=0=0;");
+            Serial.println("honey_relay_stop_timeout");
           }
-        }//밸브가 열려있을때 수위가 올라가지 않을경우
-      }
+        }
+      }//밸브가 열려있을때 수위가 올라가지 않을경우
     }else{
       //솔레노이드 벨브 정지
-      run_honey  = false;
+      run_honey = false;
+      use_honey = false;
       digitalWrite(RELAY_VALVE_H, pin_off);
     }//use_honey
     mesh.update();
@@ -539,11 +564,11 @@ void stable(unsigned long millisec) {
 }//stable() END
 
 void get_bord_temp(unsigned long millisec) {
-  if ((millisec - timer_sht31) > 1000) {
+  if ((millisec - timer_board) > 1000) {
     timer_board = millisec;
     I2Ctwo.requestFrom(0x48,1);
-    temp_boad   = I2Ctwo.read() << 8;
-    temp_boad  /= 256;
+    temp_boad   = uint16_t(I2Ctwo.read() << 8)/256;
+    //temp_boad  /= 256;
     I2Ctwo.endTransmission();
     mesh.update();
   }//if
@@ -617,7 +642,7 @@ void serial_monit(unsigned long millisec){
     Serial.print("-honey_level: ");
     Serial.print(honey_level[0]);
     Serial.print(honey_level[1]);   
-    Serial.println(";");
+    Serial.println(";\n");
     mesh.update();
   }
 }
