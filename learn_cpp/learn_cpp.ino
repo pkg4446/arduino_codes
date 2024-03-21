@@ -162,8 +162,8 @@ void command_progress(String recieve){
       play_main(&scene_number,COMMAND_DUNGEON);
     }else{
       if(scene_command == COMMAND_VICTIM) cmd_chs_victim(&scene_number, dir_list(path_captive(),true,false));
-      else if(scene_command == COMMAND_EDUCATION){ ;
-      }else if(scene_command == COMMAND_TRANSFER){display_transfer(&scene_number);;
+      else if(scene_command == COMMAND_EDUCATION){display_education(&scene_number, get_model_gender(path_current));
+      }else if(scene_command == COMMAND_TRANSFER){display_transfer(&scene_number);
       }else if(scene_command == COMMAND_MENU1 || scene_command == COMMAND_MENU2){
         Serial.print(get_model_name(path_current));
         if(scene_command == COMMAND_MENU1){
@@ -328,7 +328,7 @@ bool routine_hour(void){
   bool response = false;
   if(time_stream(millis())){
     save_time_csv(&year_count,&month_count,&day_count,&hour_count);
-    raider_new();
+    //raider_new();
     if(++hour_count > 23){
       hour_count = 0;
       response = true;

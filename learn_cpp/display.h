@@ -49,6 +49,7 @@ void display_amenity(uint16_t *scene_number);
 /*************** Display ***************/
 void display_management(uint16_t *scene_number, String name);
 /*************** Display ***************/
+void display_education(uint16_t *scene_number, bool gender);
 void display_transfer(uint16_t *scene_number);
 void display_trans_fail(void);
 void display_screaming(bool type, String name);

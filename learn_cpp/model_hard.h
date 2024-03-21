@@ -44,9 +44,9 @@ class HEAD
         void change(HEAD *gene);
         void meiosis(HEAD *mother, HEAD *father);
         void blend(HEAD *mother, HEAD *father);
-        String  get_hair_color(void);
+        uint8_t get_hair_color(void);
         uint8_t get_hair_curl(void);
-        String  get_eye_color(void);
+        uint8_t get_eye_color(void);
         bool    get_eyelid(void);
         bool    get_dimple(void);
         bool    get_bald(void);
@@ -78,7 +78,7 @@ class BODY {
         String   get_blood(void);
         uint16_t get_weight(void);
         uint16_t get_BMI(uint16_t weight);
-        String   get_body_color(void);
+        uint8_t  get_body_color(void);
         String   get_cup(void);
         uint16_t get_breast(void);
         uint16_t get_height(void);
@@ -149,8 +149,19 @@ class EROGENOUS {
         void blend(EROGENOUS *mother, EROGENOUS *father);
         uint16_t get_hood_width(void);
         uint16_t get_hood_length(void);
-        String   get_hood(void);
-        String   get_lips(void);
+        /*******************************/
+        uint8_t  get_hood_start(void);
+        uint8_t  get_hood_texture(void);
+        uint8_t  get_hood_shape(void);
+        //String   get_hood(void);
+        /*******************************/
+        uint8_t  get_lip_o_texture(void);
+        uint8_t  get_lip_o_shape(void);
+        uint8_t  get_lip_i_shape(void);
+        uint8_t  get_lip_i_texture(void);
+        uint8_t  get_fork(void);
+        //String   get_lips(void);
+        /*******************************/
         uint16_t get_wing(uint8_t item);
         uint16_t get_clit(uint8_t item);
         uint16_t get_glans(uint8_t item);
@@ -158,7 +169,10 @@ class EROGENOUS {
         uint8_t  get_balls(bool item);
         bool     get_prepuce(void);
         bool     get_invert(void);
-        String   get_perineum(void);
+        /*******************************/
+        uint8_t  get_perineum(void);
+        //String   get_perineum(void);
+        /*******************************/
         uint8_t  get_wrinkle(void);
         uint16_t get_areola(void);
         uint16_t get_nipple(uint8_t item);

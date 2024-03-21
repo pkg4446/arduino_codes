@@ -47,9 +47,9 @@ const PROGMEM char word_assist[]    = "조수";
 /*************** Word ***************/
 const PROGMEM char word_captive[]   = "포로";
 /*************** Word ***************/
-const PROGMEM char word_troop1[]     = "부대";
+const PROGMEM char word_troop1[]    = "부대";
 /*************** Word ***************/
-const PROGMEM char word_troop2[]     = "부하";
+const PROGMEM char word_troop2[]    = "부하";
 
 /*************** Word ***************/
 const PROGMEM char word_info[]      = "정보";
@@ -90,3 +90,13 @@ const PROGMEM char word_obstruct[]  = "벽";
 /*************** Word ***************/
 const PROGMEM char word_waylay[]    = "길";
 /*************** Word ***************/
+
+/*************** Word ***************/
+const PROGMEM char word_body[]      = "신체";
+const PROGMEM char word_pussy[]     = "보지";
+const PROGMEM char word_dick[]      = "자지";
+const PROGMEM char word_anal[]      = "항문";
+
+/*************** Word ***************/
+const PROGMEM char word_doing[]     = "실시";
+const PROGMEM char word_check[]     = "검사";

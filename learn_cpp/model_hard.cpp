@@ -122,6 +122,8 @@ void HEAD::blend(HEAD *mother, HEAD *father){
     if(!gen_xy) bald = false;
 }
 /*********************************** HEAD CLASS FUNCTION ***********************************/
+unit8_t  HEAD::get_hair_color(void){return hair_color;}
+/*
 String  HEAD::get_hair_color(void){
     String color_hair;
     if(hair_color<22){color_hair = "Black";}
@@ -132,9 +134,12 @@ String  HEAD::get_hair_color(void){
     else{color_hair = "Silver";}
     return color_hair;
 }
+*/
 /*******************************************************************************************/
 uint8_t HEAD::get_hair_curl(void){return hair_curl;}
 /*******************************************************************************************/
+unit8_t HEAD::get_eye_color(void){return eye_color;}
+/*
 String  HEAD::get_eye_color(void){
     String color_eye;
     if(eye_color<8){color_eye = "Gold";}
@@ -145,6 +150,7 @@ String  HEAD::get_eye_color(void){
     else{color_eye = "Ruby";}
     return color_eye;
 }
+*/
 /*******************************************************************************************/
 bool    HEAD::get_eyelid(void){return eyelid;}
 /*******************************************************************************************/
@@ -373,7 +379,9 @@ uint16_t BODY::get_BMI(uint16_t weight){
     return BMI;
 }
 /*******************************************************************************************/
-String   BODY::get_body_color(void){
+uint8_t BODY::get_body_color(void){return body_color;}
+/*
+String  BODY::get_body_color(void){
     String color_body;
     if(body_color<20){color_body = "Black";}
     else if(body_color<40){color_body = "brown";}
@@ -382,8 +390,9 @@ String   BODY::get_body_color(void){
     else{color_body = "light";}
     return color_body;
 }
+*/
 /*******************************************************************************************/
-String   BODY::get_cup(void){
+String  BODY::get_cup(void){
     String   cup     = "NULL";
     if(!gen_xy){
         uint16_t cupsize = breast - chest;
@@ -724,6 +733,10 @@ uint16_t EROGENOUS::get_hood_width(void){return hood_width;}
 /*******************************************************************************************/
 uint16_t EROGENOUS::get_hood_length(void){return hood_length;}
 /*******************************************************************************************/
+uint16_t EROGENOUS::get_hood_start(void){return hood_start;}
+uint16_t EROGENOUS::get_hood_texture(void){return hood_texture;}
+uint16_t EROGENOUS::get_hood_shape(void){return hood_shape;}
+/*
 String   EROGENOUS::get_hood(void){
     String hood = "";
     if(hood_start < 15){hood+="둥근 모양의 시작점에서";}
@@ -746,7 +759,14 @@ String   EROGENOUS::get_hood(void){
     Serial.println(hood);
     return hood;
 }
+*/
 /*******************************************************************************************/
+uint8_t EROGENOUS::get_lip_o_texture(void){return lip_o_texture;}
+uint8_t EROGENOUS::get_lip_o_shape(void){return lip_o_shape;}
+uint8_t EROGENOUS::get_lip_i_shape(void){return lip_i_shape;}
+uint8_t EROGENOUS::get_lip_i_texture(void){return lip_i_texture;}
+uint8_t EROGENOUS::get_fork(void){return fork;}
+/*
 String   EROGENOUS::get_lips(void){
     String lip = "";
     if(lip_o_texture < 7){lip+="반들거리고";}
@@ -778,6 +798,7 @@ String   EROGENOUS::get_lips(void){
     Serial.println(lip);
     return lip;
 }
+*/
 /*******************************************************************************************/
 uint16_t EROGENOUS::get_wing(uint8_t item){
     if(item == 1) return lip_i_width;
@@ -816,10 +837,12 @@ uint8_t  EROGENOUS::get_balls(bool item){
     return ball_l;
 }
 /*******************************************************************************************/
-bool     EROGENOUS::get_prepuce(void){return prepuce;}
+bool    EROGENOUS::get_prepuce(void){return prepuce;}
 /*******************************************************************************************/
-bool     EROGENOUS::get_invert(void){return invert;}
+bool    EROGENOUS::get_invert(void){return invert;}
 /*******************************************************************************************/
+uint8_t EROGENOUS::get_perineum(void){return perineum;}
+/*
 String   EROGENOUS::get_perineum(void){
     String perineum_txt = "회음부는 ";
     if(perineum < 66){perineum_txt+="매끄럽다.";}
@@ -828,6 +851,7 @@ String   EROGENOUS::get_perineum(void){
     else{perineum_txt+="도드라지는 회음봉선이 항문까지 이어진다.";}
     return perineum_txt ;
 }
+*/
 /*******************************************************************************************/
 uint8_t EROGENOUS::get_wrinkle(void){return wrinkle;}
 /*******************************************************************************************/

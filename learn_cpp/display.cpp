@@ -217,6 +217,19 @@ void display_management(uint16_t *scene_number, String name){
     cancle_cmd(false);
 };
 /*******************************************************/
+void display_education(uint16_t *scene_number, bool gender){
+    *scene_number = COMMAND_EDUCATION;
+    paging();
+    Serial.println(get_progmem(scene_main_cmd));
+    space_option(true,COMMAND_MENU1,get_progmem(word_body)+get_progmem(word_check));
+    if(gender)  space_option(true,COMMAND_MENU2,get_progmem(word_dick)+get_progmem(word_check));
+    else        space_option(true,COMMAND_MENU2,get_progmem(word_pussy)+get_progmem(word_check));
+    space_option(true,COMMAND_MENU3,get_progmem(word_anal)+get_progmem(word_check));
+    Serial.println();
+
+    cancle_cmd(false);
+};
+/*******************************************************/
 void display_transfer(uint16_t *scene_number){
     *scene_number = COMMAND_TRANSFER;
     paging();
