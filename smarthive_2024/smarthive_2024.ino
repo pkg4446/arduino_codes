@@ -212,7 +212,6 @@ void AT_commandHelp() {
   Serial.println(";AT+LIQUID= bool;     Water&Honey Alarm Reset.");
   Serial.println(";AT+RELAY=  int;      relay(int) on, if int=0 all relay off.");
   Serial.println(";AT+LOG=    bool;     Serial log view");
-  Serial.println(";AT+SHOW=   bool;     Builtin led on off");
   Serial.println("-----------------------------------------");
 }
 char Serial_buf[SERIAL_MAX];
@@ -337,7 +336,7 @@ void setup() {
   Serial.print(", Fan: ");
   Serial.print(use_stable_f);
   Serial.print(", Set Water: ");
-  Serial.println(use_water_f);
+  Serial.print(use_water_f);
   Serial.print(", Honey: ");
   Serial.println(use_honey_f);
   AT_commandHelp();
