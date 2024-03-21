@@ -557,8 +557,8 @@ void get_sensor(unsigned long millisec) {
       I2Cone.beginTransmission(68); //0x44
       mesh.update();
       if (!I2Cone.endTransmission() && sht31.begin()) {
-        temperature[index] = sht31.readTemperature();
-        humidity[index]    = sht31.readHumidity();
+        temperature[index] = sht31.readTemperature()*100;
+        humidity[index]    = sht31.readHumidity()*100;
       } else {
         temperature[index] = 14040;
         humidity[index]    = 14040;
