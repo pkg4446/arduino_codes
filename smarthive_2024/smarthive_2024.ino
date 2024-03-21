@@ -39,7 +39,7 @@ bool mesh_send = false;
 uint8_t liquid_sensor = 0;
 
 #include "Adafruit_SHT31.h"
-Adafruit_SHT31 sht31 = Adafruit_SHT31();
+Adafruit_SHT31 sht31 = Adafruit_SHT31(&I2Cone);
 void tca_select(uint8_t index) {
   if (index > 7) return;
   I2Cone.beginTransmission(TCAADDR);
@@ -541,7 +541,10 @@ void stable(unsigned long millisec) {
 void get_bord_temp(unsigned long millisec) {
   if ((millisec - timer_sht31) > 1000) {
     timer_board = millisec;
-    temp_boad = uint16_t(I2Ctwo.read() << 8)/256;
+    I2Ctwo.requestFrom(0x48,1);
+    temp_boad   = I2Ctwo.read() << 8;
+    temp_boad  /= 256;
+    I2Ctwo.endTransmission();
     mesh.update();
   }//if
 }
@@ -553,7 +556,7 @@ void get_sensor(unsigned long millisec) {
       tca_select(index);
       I2Cone.beginTransmission(68); //0x44
       mesh.update();
-      if (!I2Cone.endTransmission() && sht31.begin(0x44)) {
+      if (!I2Cone.endTransmission() && sht31.begin()) {
         temperature[index] = sht31.readTemperature();
         humidity[index]    = sht31.readHumidity();
       } else {
