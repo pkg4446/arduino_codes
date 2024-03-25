@@ -74,13 +74,14 @@ boolean run_log    = false;
 uint8_t led_show   = 60;
 //// ----------- Variable -----------
 //// ----------- Sensor -----------
-int16_t temp_boad      = {14040,};
-int16_t temperature[4] = {14040,};
-int16_t humidity[4]    = {14040,};
+int16_t temp_boad       = {14040,};
+int16_t temperature[4]  = {14040,};
+int16_t humidity[4]     = {14040,};
+int16_t temp_avg    = 14040;
 int8_t  send_water  = 0;
 int8_t  send_honey  = 0;
-boolean water_level[2] = {false,};
-boolean honey_level[2] = {false,};
+boolean water_level[2]  = {false,};
+boolean honey_level[2]  = {false,};
 ////for millis() func//
 unsigned long time_led_show = 0UL;
 unsigned long timer_board   = 0UL;
@@ -278,7 +279,7 @@ void sensor_values(unsigned long millisec){
     time_send = millisec;
     if(mesh_node_list() > 0){
       mesh_info = true;
-      String msg = "SENSOR=LOG=" + (String)temperature[0] + "=" + (String)humidity[0] + "=" + (String)send_water + "=" + (String)send_honey + ';';
+      String msg = "SENSOR=LOG=" + (String)temp_avg + "=" + (String)humidity[0] + "=" + (String)send_water + "=" + (String)send_honey + ';';
       mesh.sendBroadcast( msg );
     }
   }
@@ -531,25 +532,25 @@ void stable(unsigned long millisec) {
   if ((millisec - time_stalbe) > 1000 * 1) {
     time_stalbe = millisec;
     mesh.update();
-    if(temperature[0] != 14040 && temperature[0] > 0) {
+    if(temp_avg != 14040 && temp_avg > 0) {
       ////온도 유지 팬
       if (use_stable_h || use_stable_f) {
         if (use_stable_h) {
-          if (temperature[0]/100 < control_temperature - tempGap) {
+          if (temp_avg/100 < control_temperature - tempGap) {
             if (temp_flage(true, false)) { //히터, 팬
               digitalWrite(RELAY_HEATER, pin_on);
             }
-          }else if (temperature[0]/100 > control_temperature) {
+          }else if (temp_avg/100 > control_temperature) {
             if (temp_flage(false, false)) { //히터, 팬
               digitalWrite(RELAY_HEATER, pin_off);
             }
           }
         }else if (use_stable_f) {
-          if (temperature[0]/100 > control_temperature + tempGap) {
+          if (temp_avg/100 > control_temperature + tempGap) {
             if (temp_flage(false, true)) { //히터, 팬
               digitalWrite(RELAY_FAN,    !pin_on);
             }
-          }else if (temperature[0]/100 < control_temperature) {
+          }else if (temp_avg/100 < control_temperature) {
             if (temp_flage(false, false)) { //히터, 팬
               digitalWrite(RELAY_FAN,    !pin_off);
             }
@@ -577,6 +578,8 @@ void get_bord_temp(unsigned long millisec) {
 void get_sensor(unsigned long millisec) {
   if ((millisec - timer_sht31) > 300) {
     timer_sht31 = millisec;
+    uint16_t sensor_mount = 0;
+    int16_t sensor_values = 0;
     for(uint8_t index=0; index<4; index++){
       tca_select(index);
       I2Cone.beginTransmission(68); //0x44
@@ -584,12 +587,16 @@ void get_sensor(unsigned long millisec) {
       if (!I2Cone.endTransmission() && sht31.begin()) {
         temperature[index] = sht31.readTemperature()*100;
         humidity[index]    = sht31.readHumidity()*100;
+        sensor_mount += 1;
+        sensor_values = temperature[index];
       } else {
         temperature[index] = 14040;
         humidity[index]    = 14040;
       }
       mesh.update();
     }
+    if(sensor_mount>0) temp_avg = sensor_values/sensor_mount;
+    else temp_avg = 14040;
   }//if
 }
 
@@ -597,6 +604,9 @@ unsigned long timer_serial_monit = 0;
 void serial_monit(unsigned long millisec){
   if (run_log && ((millisec - timer_serial_monit) > 1000)) {
     timer_serial_monit = millisec;
+    Serial.print("T avge: ");
+    Serial.print(temp_avg);
+    Serial.println("°C");
     for(uint8_t index=0; index<4; index++){
       Serial.print("TCA Port");
       Serial.print(index);
