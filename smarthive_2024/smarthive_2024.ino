@@ -3,6 +3,8 @@
 #define   EEPROM_SIZE 7
 #define   SERIAL_MAX  128
 
+#define   ERROR_VALUE   14040
+
 #define   MESH_PREFIX   "smartHiveMesh"
 #define   MESH_PASSWORD "smarthive123"
 #define   MESH_PORT     3333
@@ -74,10 +76,11 @@ boolean run_log    = false;
 uint8_t led_show   = 60;
 //// ----------- Variable -----------
 //// ----------- Sensor -----------
-int16_t temp_boad       = {14040,};
-int16_t temperature[4]  = {14040,};
-int16_t humidity[4]     = {14040,};
-int16_t temp_avg    = 14040;
+int16_t temp_boad       = {ERROR_VALUE,};
+int16_t temperature[4]  = {ERROR_VALUE,};
+int16_t humidity[4]     = {ERROR_VALUE,};
+int16_t temp_high   = ERROR_VALUE;
+int16_t temp_avg    = ERROR_VALUE;
 int8_t  send_water  = 0;
 int8_t  send_honey  = 0;
 boolean water_level[2]  = {false,};
@@ -279,7 +282,7 @@ void sensor_values(unsigned long millisec){
     time_send = millisec;
     if(mesh_node_list() > 0){
       mesh_info = true;
-      String msg = "SENSOR=LOG=" + (String)temp_avg + "=" + (String)humidity[0] + "=" + (String)send_water + "=" + (String)send_honey + ';';
+      String msg = "SENSOR=LOG=" + (String)temp_high + "=" + (String)humidity[0] + "=" + (String)send_water + "=" + (String)send_honey + ';';
       mesh.sendBroadcast( msg );
     }
   }
@@ -532,25 +535,25 @@ void stable(unsigned long millisec) {
   if ((millisec - time_stalbe) > 1000 * 1) {
     time_stalbe = millisec;
     mesh.update();
-    if(temp_avg != 14040 && temp_avg > 0) {
+    if(temp_high != ERROR_VALUE && temp_high > 0) {
       ////온도 유지 팬
       if (use_stable_h || use_stable_f) {
         if (use_stable_h) {
-          if (temp_avg/100 < control_temperature - tempGap) {
+          if (temp_high/100 < control_temperature - tempGap) {
             if (temp_flage(true, false)) { //히터, 팬
               digitalWrite(RELAY_HEATER, pin_on);
             }
-          }else if (temp_avg/100 > control_temperature) {
+          }else if (temp_high/100 > control_temperature) {
             if (temp_flage(false, false)) { //히터, 팬
               digitalWrite(RELAY_HEATER, pin_off);
             }
           }
         }else if (use_stable_f) {
-          if (temp_avg/100 > control_temperature + tempGap) {
+          if (temp_high/100 > control_temperature + tempGap) {
             if (temp_flage(false, true)) { //히터, 팬
               digitalWrite(RELAY_FAN,    !pin_on);
             }
-          }else if (temp_avg/100 < control_temperature) {
+          }else if (temp_high/100 < control_temperature) {
             if (temp_flage(false, false)) { //히터, 팬
               digitalWrite(RELAY_FAN,    !pin_off);
             }
@@ -589,14 +592,18 @@ void get_sensor(unsigned long millisec) {
         humidity[index]    = sht31.readHumidity()*100;
         sensor_mount  += 1;
         sensor_values += temperature[index];
+        if(temp_high == ERROR_VALUE || temp_high < temperature[index]) temp_high = temperature[index];
       } else {
-        temperature[index] = 14040;
-        humidity[index]    = 14040;
+        temperature[index] = ERROR_VALUE;
+        humidity[index]    = ERROR_VALUE;
       }
       mesh.update();
     }
     if(sensor_mount>0) temp_avg = sensor_values/sensor_mount;
-    else temp_avg = 14040;
+    else{
+      temp_high = ERROR_VALUE;
+      temp_avg  = ERROR_VALUE;
+    }
   }//if
 }
 
@@ -604,7 +611,9 @@ unsigned long timer_serial_monit = 0;
 void serial_monit(unsigned long millisec){
   if (run_log && ((millisec - timer_serial_monit) > 1000)) {
     timer_serial_monit = millisec;
-    Serial.print("T avge: ");
+    Serial.print("T high: ");
+    Serial.print(temp_high);
+    Serial.print("°C ,T avg: ");
     Serial.print(temp_avg);
     Serial.println("°C");
     for(uint8_t index=0; index<4; index++){
