@@ -116,10 +116,10 @@ STEP_CTR_ts sync_ctr[STEP_NUM] = {
 };
 
 typedef struct STEP_CAL_ts {
-  bool    PUL;  //Pulse flage
-  bool    RUN;  //Axis run flage
-  float   SPD;  //Move speed
-  float   POS;  //Position
+  bool    PUL;      //Pulse flage
+  bool    RUN;      //Axis run flage
+  float   CONST[2]; //funstion constant
+  uint8_t XYZ[2];   //Axis for constant
 } STEP_CAL_ts;
 STEP_CAL_ts upper_cal[STEP_NUM] = {
   { 0, false, {0,0}, {0,0} },
@@ -175,7 +175,6 @@ unsigned long Update_sync  = 0UL;
 uint8_t interval_queue[3][3] = {{0,},};
 uint8_t queue_index[3]       = {0,};
 
-//이거 대신, 직선길이 xyz에 대해서 삼각함수로 구해서, 초기 시작할때 픽스하기.
 void interval_linear_cal(uint8_t *queue_interval, uint8_t *index_queue, uint32_t *Interval_val, uint32_t *Interval_cal, uint8_t *count_Interval, uint8_t *Axis_index){
   float Interval_float = *Interval_val;
   if(*count_Interval == 1){
@@ -355,7 +354,7 @@ void linear_run() {
   for (uint8_t index = 0; index < STEP_NUM; index++){
     upper_ctr[index].START = upper_ctr[index].POS;
     under_ctr[index].START = under_ctr[index].POS;
-    //////////////////max step
+
     if(stepmoter_sync){
       under_ctr[index].DEST = upper_ctr[index].DEST;
 
@@ -381,7 +380,7 @@ void linear_run() {
         sync_cal[index].RUN = false;
       }
     }
-    
+
     if(upper_ctr[index].DEST != upper_ctr[index].START){
       upper_cal[index].RUN = true;
       if(upper_ctr[index].DEST >= upper_ctr[index].START){
@@ -415,6 +414,44 @@ void linear_run() {
   Display("nBX_T", under_ctr[0].DEST);
   Display("nBY_T", under_ctr[1].DEST);
   Display("nBZ_T", under_ctr[2].DEST);
+
+  for (uint8_t index = 0; index < STEP_NUM; index++) {
+    uint8_t first_const  = 0;
+    uint8_t second_const = 1;
+    if(index == 0){
+      first_const  = 1;
+      second_const = 2;
+    }else if(index == 1){
+      second_const = 2;
+    }
+
+    upper_cal[index].XYZ[0] = first_const;
+    upper_cal[index].XYZ[1] = second_const;
+    upper_cal[index].CONST[0] = 0;
+    upper_cal[index].CONST[1] = 0;
+    if(distance_upper[first_const] != 0)  upper_cal[index].CONST[0] = float(distance_upper[index])/float(distance_upper[first_const]);
+    if(distance_upper[second_const] != 0) upper_cal[index].CONST[1] = float(distance_upper[index])/float(distance_upper[second_const]);
+
+    under_cal[index].XYZ[0] = first_const;
+    under_cal[index].XYZ[1] = second_const;
+    under_cal[index].CONST[0] = 0;
+    under_cal[index].CONST[1] = 0;
+    if(distance_under[first_const] != 0)  under_cal[index].CONST[0] = float(distance_under[index])/float(distance_under[first_const]);
+    if(distance_under[second_const] != 0) under_cal[index].CONST[1] = float(distance_under[index])/float(distance_under[second_const]);
+
+    sync_cal[index].XYZ[0] = first_const;
+    sync_cal[index].XYZ[1] = second_const;
+    sync_cal[index].CONST[0] = 0;
+    sync_cal[index].CONST[1] = 0;
+    if(distance_sync[first_const] != 0)  sync_cal[index].CONST[0] = float(distance_sync[index])/float(distance_sync[first_const]);
+    if(distance_sync[second_const] != 0) sync_cal[index].CONST[1] = float(distance_sync[index])/float(distance_sync[second_const]);
+  }
+
+  /*************
+    2*x = distance_x/distance_y*y + distance_x/distance_z*z;
+    2*y = distance_y/distance_x*x + distance_y/distance_z*z;
+    2*z = distance_z/distance_x*x + distance_z/distance_y*y;
+  ***************/
 
   //remain time calculte
   for (uint8_t index = 1; index < STEP_NUM; index++){
@@ -459,15 +496,6 @@ void linear_run() {
     }
   }
 
-  for (uint8_t index = 0; index < STEP_NUM; index++) {
-    upper_cal[index].SPD = distance_upper[index]/max_upper;
-    upper_cal[index].POS = upper_ctr[index].POS;
-    under_cal[index].SPD = distance_under[index]/max_under;
-    under_cal[index].POS = under_ctr[index].POS;
-    sync_cal[index].SPD  = distance_sync[index]/max_sync;
-    sync_cal[index].POS  = sync_ctr[index].POS;
-  }
-  
   stepmoter_work = true;
   NextStep_upper = false;
   NextStep_under = false;
@@ -477,6 +505,7 @@ void linear_run() {
   time_remain_under = max_under + max_sync;
   if(max_upper!=1) Display("nTTR", (time_remain_upper--)*Interval_upper/TIME_UNIT);
   if(max_under!=1 || max_sync!=1) Display("nBTR", (time_remain_under--)*Interval_under/TIME_UNIT);
+
 }
 /******************************************* Linear movement ****************************************/
 void moter_run(unsigned long *microsec) {
@@ -579,6 +608,7 @@ void moter_run(unsigned long *microsec) {
           }
         }
       }
+
     }
 
     if(postions_sync  && !sync_cal[0].RUN && !sync_cal[1].RUN && !sync_cal[2].RUN){
