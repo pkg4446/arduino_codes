@@ -676,7 +676,7 @@ void mesh_restart(unsigned long millisec){
 }
 
 
-/* 루프로 1시간에 한번 리셋?
+/* 루프로 1시간에 한번 리셋? mesh_restart에서 리셋하니 필요 없음. 고려해서 mesh_restart 시간 변경 필요.
   if(EEPROM.read(EEP_water) != 0)   {use_water_f = true;}
   if(EEPROM.read(EEP_honey) != 0)   {use_honey_f = true;}
 */
