@@ -213,36 +213,28 @@ void linear_upper() {
     uint8_t Axis_num = 0;
     for (uint8_t index = 0; index < STEP_NUM; index++){
       uint8_t Axis_run = 0;
-      if(upper_cal[index].RUN && (upper_ctr[index].DEST != upper_ctr[index].POS)){
-        bool pulse_on_flage = false;
-        if(upper_cal[index].CONST[0] != 0) Axis_run++;
-        if(upper_cal[index].CONST[1] != 0) Axis_run++;
-        if(Axis_run == 0 ){ pulse_on_flage = true;}
-        else{
-          float coordinate = (upper_cal[index].CONST[0]*float(upper_ctr[upper_cal[index].XYZ[0]].POS+1)+upper_cal[index].CONST[1]*float(upper_ctr[upper_cal[index].XYZ[1]].POS+1))/Axis_run;
-          if(uint32_t(coordinate) != upper_ctr[index].POS) pulse_on_flage = true;
+      if(upper_ctr[index].DEST == upper_ctr[index].POS){
+        upper_cal[index].RUN = false;
+      }else if(upper_cal[index].RUN && (upper_ctr[index].DEST != upper_ctr[index].POS)){
+        upper_cal[index].POS += upper_ctr[index].SPD;
+        if(upper_ctr[index].POS != uint32_t(upper_cal[index].POS)){
+          upper_cal[index].PUL  = true;
+          Interval_count++;
+          Axis_num = index;
         }
 
         if(time_remain_upper_index++ > 3){
           time_remain_upper_index = 0;
           if(time_remain_upper_check != time_remain_upper){
             time_remain_upper_check = time_remain_upper;
-          }else{
-            pulse_on_flage = true;
           }
         }
 
-        if(pulse_on_flage){
-          upper_cal[index].PUL  = true;
-          Interval_count++;
-          Axis_num = index;
-        }
         if(index == max_upper_index){
           if(time_remain_upper > 0) time_remain_upper--;
-          Display("nTTR", time_remain_upper*Interval_upper/TIME_UNIT);
+          Display("nBTR", (time_remain_upper)*Interval_upper/TIME_UNIT);
         }
       }
-      if(upper_ctr[index].DEST == upper_ctr[index].POS) upper_cal[index].RUN = false;
     }
     if(Interval_count != 0) interval_linear_cal(&interval_queue[0][0], &queue_index[0], &Interval_upper, &Interval_upper_cal, &Interval_count, &Axis_num);
   }
@@ -255,36 +247,28 @@ void linear_under() {
     uint8_t Axis_num = 0;
     for (uint8_t index = 0; index < STEP_NUM; index++){
       uint8_t Axis_run = 0;
-      if(under_cal[index].RUN && (under_ctr[index].DEST != under_ctr[index].POS)){
-        bool pulse_on_flage = false;
-        if(under_cal[index].CONST[0] != 0) Axis_run++;
-        if(under_cal[index].CONST[1] != 0) Axis_run++;
-        if(Axis_run == 0 ){ pulse_on_flage = true;}
-        else{
-          float coordinate = (under_cal[index].CONST[0]*float(under_ctr[under_cal[index].XYZ[0]].POS+1)+under_cal[index].CONST[1]*float(under_ctr[under_cal[index].XYZ[1]].POS+1))/Axis_run;
-          if(uint32_t(coordinate) != under_ctr[index].POS) pulse_on_flage = true;
+      if(under_ctr[index].DEST == under_ctr[index].POS){
+        under_cal[index].RUN = false;
+      }else if(under_cal[index].RUN && (under_ctr[index].DEST != under_ctr[index].POS)){
+        under_cal[index].POS += under_ctr[index].SPD;
+        if(under_ctr[index].POS != uint32_t(under_cal[index].POS)){
+          under_cal[index].PUL  = true;
+          Interval_count++;
+          Axis_num = index;
         }
 
         if(time_remain_under_index++ > 3){
           time_remain_under_index = 0;
           if(time_remain_under_check != time_remain_under){
             time_remain_under_check = time_remain_under;
-          }else{
-            pulse_on_flage = true;
           }
         }
 
-        if(pulse_on_flage){
-          under_cal[index].PUL  = true;
-          Interval_count++;
-          Axis_num = index;
-        }
         if(index == max_under_index){
           if(time_remain_under > 0) time_remain_under--;
           Display("nBTR", (time_remain_under)*Interval_under/TIME_UNIT);
         }
       }
-      if(under_ctr[index].DEST == under_ctr[index].POS) under_cal[index].RUN = false;
     }
     if(Interval_count != 0) interval_linear_cal(&interval_queue[1][0], &queue_index[1], &Interval_under, &Interval_under_cal, &Interval_count, &Axis_num);
   }
@@ -296,38 +280,30 @@ void linear_sync() {
     uint8_t Interval_count = 0;
     uint8_t Axis_num = 0;
     for (uint8_t index = 0; index < STEP_NUM; index++){
-      uint8_t Axis_run = 0;
-      if(sync_cal[index].RUN && (sync_ctr[index].DEST != sync_ctr[index].POS)){
-        bool pulse_on_flage = false;
-        if(sync_cal[index].CONST[0] != 0) Axis_run++;
-        if(sync_cal[index].CONST[1] != 0) Axis_run++;
-        if(Axis_run == 0 ){ pulse_on_flage = true;}
-        else{
-          float coordinate = (sync_cal[index].CONST[0]*float(sync_ctr[sync_cal[index].XYZ[0]].POS+1)+sync_cal[index].CONST[1]*float(sync_ctr[sync_cal[index].XYZ[1]].POS+1))/Axis_run;
-          if(uint32_t(coordinate) != sync_ctr[index].POS) pulse_on_flage = true;
+      if(sync_ctr[index].DEST == sync_ctr[index].POS){
+        sync_cal[index].RUN = false;
+      }else if(sync_cal[index].RUN && (sync_ctr[index].DEST != sync_ctr[index].POS)){
+        sync_ctr[index].POS += sync_ctr[index].SPD;
+        if(sync_ctr[index].POS != uint32_t(sync_cal[index].POS)){
+          sync_cal[index].PUL  = true;
+          Interval_count++;
+          Axis_num = index;
         }
 
         if(time_remain_under_index++ > 3){
           time_remain_under_index = 0;
           if(time_remain_under_check != time_remain_under){
             time_remain_under_check = time_remain_under;
-          }else{
-            pulse_on_flage = true;
           }
         }
 
-        if(pulse_on_flage){
-          sync_cal[index].PUL  = true;
-          Interval_count++;
-          Axis_num = index;
-        }
         if(index == max_sync_index){
           if(time_remain_under > 0) time_remain_under--;
           Display("nTTR", time_remain_upper*Interval_upper/TIME_UNIT);
           Display("nBTR", (time_remain_under)*Interval_under/TIME_UNIT);
         }
+
       }
-      if(sync_ctr[index].DEST == sync_ctr[index].POS) sync_cal[index].RUN = false;
     }
     if(Interval_count != 0) interval_linear_cal(&interval_queue[2][0], &queue_index[2], &Interval_upper, &Interval_sync_cal, &Interval_count, &Axis_num);
   }
