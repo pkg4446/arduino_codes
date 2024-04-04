@@ -501,7 +501,11 @@ void sensor_level(unsigned long millisec) {
 }//sensor_Water() END
 
 uint8_t err_stable = 0;
-boolean temp_flage(boolean onoff_Heater, boolean onoff_Fan) {
+void temp_flage(boolean onoff_Heater, boolean onoff_Fan) {
+  digitalWrite(RELAY_HEATER, !onoff_Heater);
+  digitalWrite(RELAY_FAN,    onoff_Fan);
+  mesh.update();
+
   if (run_heater == onoff_Heater && run_fan == onoff_Fan) {
     return false;
   }
@@ -540,23 +544,15 @@ void stable(unsigned long millisec) {
       if (use_stable_h || use_stable_f) {
         if (use_stable_h) {
           if (temp_high/100 < control_temperature - tempGap) {
-            if (temp_flage(true, false)) { //히터, 팬
-              digitalWrite(RELAY_HEATER, pin_on);
-            }
+            temp_flage(true, false);
           }else if (temp_high/100 > control_temperature) {
-            if (temp_flage(false, false)) { //히터, 팬
-              digitalWrite(RELAY_HEATER, pin_off);
-            }
+            temp_flage(false, false);
           }
         }else if (use_stable_f) {
           if (temp_high/100 > control_temperature + tempGap) {
-            if (temp_flage(false, true)) { //히터, 팬
-              digitalWrite(RELAY_FAN,    !pin_on);
-            }
+            temp_flage(false, true);
           }else if (temp_high/100 < control_temperature) {
-            if (temp_flage(false, false)) { //히터, 팬
-              digitalWrite(RELAY_FAN,    !pin_off);
-            }
+            temp_flage(false, false);
           }
         }
       }else{//온도 조절 종료
