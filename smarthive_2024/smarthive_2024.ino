@@ -600,7 +600,7 @@ void get_sensor(unsigned long millisec) {
       temp_high = ERROR_VALUE;
       temp_avg  = ERROR_VALUE;
     }
-    if(temp_high == ERROR_VALUE) temp_flage(true, false);
+    if(temp_high == ERROR_VALUE) temp_flage(false, false);
   }//if
 }
 
