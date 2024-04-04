@@ -507,7 +507,7 @@ void temp_flage(boolean onoff_Heater, boolean onoff_Fan) {
   mesh.update();
 
   if (run_heater == onoff_Heater && run_fan == onoff_Fan) {
-    return false;
+    return;
   }
   mesh.update();
   if (run_heater != onoff_Heater) {
@@ -532,7 +532,6 @@ void temp_flage(boolean onoff_Heater, boolean onoff_Fan) {
       mesh.sendBroadcast("SENSOR=RELAY=OFF=FAN=0=0;");
     }
   }
-  return true;
 }
 
 void stable(unsigned long millisec) {
