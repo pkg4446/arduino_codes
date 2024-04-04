@@ -578,6 +578,7 @@ void get_sensor(unsigned long millisec) {
     timer_sht31 = millisec;
     uint16_t sensor_mount = 0;
     int16_t sensor_values = 0;
+    temp_high = ERROR_VALUE;
     for(uint8_t index=0; index<4; index++){
       tca_select(index);
       I2Cone.beginTransmission(68); //0x44
