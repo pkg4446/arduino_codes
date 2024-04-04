@@ -544,7 +544,7 @@ void stable(unsigned long millisec) {
               digitalWrite(RELAY_HEATER, pin_on);
             }
           }else if (temp_high/100 > control_temperature) {
-            if (temp_flage(true, false)) { //히터, 팬
+            if (temp_flage(false, false)) { //히터, 팬
               digitalWrite(RELAY_HEATER, pin_off);
             }
           }
