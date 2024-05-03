@@ -5,6 +5,7 @@ const int8_t Button[4] = {13, 12, 14, 27};
 unsigned long prevUpdateTime = 0L;
 
 void setup() {
+  Serial.begin(115200);
   // initialize digital pin LED_BUILTIN as an output.
   pinMode(Relay[0], OUTPUT);
   pinMode(Relay[1], OUTPUT);
@@ -24,6 +25,8 @@ void setup() {
   relayOnOff(3);
   relayOnOff(4);
   relayOnOff(5);
+
+  Serial.println("Custom Board Test");
 }
 
 // the loop function runs over and over again forever
