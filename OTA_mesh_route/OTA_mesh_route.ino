@@ -26,6 +26,7 @@ void command_helf() {
   Serial.println("rd    remove dir");
   Serial.println("op    open file");
   Serial.println("rf    remove file");
+  Serial.println("sw    file divide");
   Serial.println("up    upload file");
   Serial.println("sd    send command");
   Serial.println("***** help *****");
@@ -61,7 +62,7 @@ void command_progress(){
     path_current = "/";
     Serial.println(path_current);
   }else if(command_buf[0]=='l' && command_buf[1]=='s'){
-    dir_list(path_current,true,true);
+    dir_list(path_current + temp_text,true,true);
   }else if(command_buf[0]=='m' && command_buf[1]=='d'){
     dir_make(path_current+temp_text);
   }else if(command_buf[0]=='r' && command_buf[1]=='d'){
@@ -72,6 +73,40 @@ void command_progress(){
     Serial.println(file_read(path_current+temp_text));
   }else if(command_buf[0]=='r' && command_buf[1]=='f'){
     file_remove(path_current+temp_text);
+  }else if(command_buf[0]=='s' && command_buf[1]=='w'){
+
+    String software_path = "/firmware";
+    dir_remove(software_path);
+    dir_make(software_path);
+    software_path += "/";
+
+    File file;
+    fs::FS &fs = SD;
+    file = fs.open(path_current+temp_text);
+    Serial.print("file_name : ");
+    Serial.print(temp_text);
+    Serial.print(" , size : ");
+    Serial.println(file.size());
+
+    #define   CMD_UNIT_SIZE   1436
+    char      cmd_buf[CMD_UNIT_SIZE];
+    uint16_t  cmd_currentSize = 0;
+    uint16_t  file_name_index = 0;
+
+    while (file.available()) {
+      file.read();
+      cmd_buf[cmd_currentSize++] = file.read();
+      if(cmd_currentSize >= CMD_UNIT_SIZE){
+        cmd_currentSize = 0;
+        Serial.print("file index:");
+        Serial.println(file_name_index);
+        file_write(software_path + String(file_name_index++),cmd_buf);
+      }
+    }
+    file_write(software_path + String(file_name_index),cmd_buf);
+    file.close();
+    Serial.println("done.");
+
   }else if(command_buf[0]=='u' && command_buf[1]=='p'){
 
     #define   CMD_UNIT_SIZE   1436
@@ -82,27 +117,38 @@ void command_progress(){
     fs::FS &fs = SD;
     mesh.update();
     file = fs.open(path_current+temp_text);
+    mesh.update();
     Serial.print("file_name : ");
     Serial.print(temp_text);
     Serial.print(" , size : ");
     Serial.println(file.size());
     mesh.sendBroadcast("FIRMWARE");
-    mesh.sendBroadcast(String(file.size()%CMD_UNIT_SIZE));
+    mesh.update();
+    mesh.sendBroadcast(String(file.size()));
 
     while (file.available()) {
       uint8_t file_contents = file.read();
       mesh.update();
       if(file_contents == 0){
-        mesh.sendBroadcast(cmd_buf);
-        cmd_currentSize = 0;
-        Serial.println("0x00");
-        mesh.sendBroadcast("0X00");
+        if(cmd_currentSize != 0){
+          cmd_buf[cmd_currentSize] = 0;
+          Serial.println(cmd_currentSize);
+          mesh.sendBroadcast(cmd_buf);
+          cmd_currentSize = 0;
+        }
+        mesh.sendBroadcast("00");
       }else if(cmd_currentSize >= CMD_UNIT_SIZE){
         cmd_currentSize = 0;
         mesh.sendBroadcast(cmd_buf);
       }else{
         cmd_buf[cmd_currentSize++] = file_contents;
       }
+    }
+    if(cmd_currentSize != 0){
+      cmd_buf[cmd_currentSize] = 0;
+      Serial.println(cmd_currentSize);
+      mesh.sendBroadcast(cmd_buf);
+      cmd_currentSize = 0;
     }
 
     file.close();

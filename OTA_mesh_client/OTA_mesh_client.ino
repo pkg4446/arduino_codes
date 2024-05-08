@@ -5,16 +5,19 @@
 #define   MESH_PASSWORD   "smarthive123"
 #define   MESH_PORT       3333
 
+#define   FILE_SIZE       256
 #define   CMD_UNIT_SIZE   1436
 
 Scheduler     taskScheduler; // to control upload task
 painlessMesh  mesh;
 String        nodeID    = "";
 
-#define   CMC_MAX   16
-bool      cmd_mode  = true;
-bool      check_len = true;
-uint32_t  file_size = 0;
+#define   CMC_MAX     16
+bool      cmd_mode    = true;
+bool      check_len   = true;
+uint32_t  file_size   = 0;
+uint32_t  file_index  = 0;
+
 uint8_t   cmd_buf[CMD_UNIT_SIZE];
 uint16_t  cmd_currentSize = 0;
   
@@ -50,35 +53,42 @@ void receivedCallback( uint32_t from, String &msg ) {
   }else{
 
     if(check_len){
-
+      Serial.print("file_low :");
       String totlaSize = "";
       for (int index = 0; index < msg.length(); index++) {
         totlaSize += msg[index];
       }
       file_size = totlaSize.toInt();
+      Serial.println(file_size);
       check_len = false;
 
     }else{
 
       uint16_t current_len = msg.length();
       mesh.update();
-      if(msg.length() == 4 && msg[0] == 30 && msg[1] == 88 && msg[2] == 30 && msg[3] == 30)
+      if(msg.length() == 2 && msg[0] == 30 && msg[2] == 30)
       {
-        Serial.println("0x00");
-        cmd_buf[cmd_currentSize++] += 0;
+        cmd_buf[cmd_currentSize++] = 0;
+      }else{
+        for (int index = 0; index < current_len; index++) {
+          mesh.update();
+          cmd_buf[cmd_currentSize++] = msg[index];
+        }
       }
-      for (int index = 0; index < current_len; index++) {
-        cmd_buf[cmd_currentSize++] += msg[index];
-      }
-      
-      
+      mesh.update();
       if(cmd_currentSize >= CMD_UNIT_SIZE){
+        mesh.update();
+        /*
+        Serial.println(file_size--);
         if (Update.write(cmd_buf, cmd_currentSize) != cmd_currentSize) Update.printError(Serial); //flashing firmware to ESP
+        mesh.update();
+        */
         cmd_currentSize = 0;
-        file_size--;
       }
-      
-      if(file_size == 0){
+      mesh.update();
+      if(++file_index >= file_size){
+        Serial.println("done.");
+        /*
         if (Update.write(cmd_buf, cmd_currentSize) != cmd_currentSize) Update.printError(Serial); //flashing firmware to ESP
         Serial.println("firmware update finish");
         if (Update.end(true)) { //true to set the size to the current progress
@@ -89,6 +99,7 @@ void receivedCallback( uint32_t from, String &msg ) {
         } else {
           mesh.sendBroadcast("FIRM_ERR;");
         }
+        */
         cmd_mode = true;
       }
 
