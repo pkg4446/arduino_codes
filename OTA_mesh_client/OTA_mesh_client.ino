@@ -75,9 +75,10 @@ void receivedCallback( uint32_t from, String &msg ) {
       if(cmd_currentSize >= CMD_UNIT_SIZE){
         if (Update.write(cmd_buf, cmd_currentSize) != cmd_currentSize) Update.printError(Serial); //flashing firmware to ESP
         cmd_currentSize = 0;
+        file_size--;
       }
       
-      if(--file_size == 0){
+      if(file_size == 0){
         if (Update.write(cmd_buf, cmd_currentSize) != cmd_currentSize) Update.printError(Serial); //flashing firmware to ESP
         Serial.println("firmware update finish");
         if (Update.end(true)) { //true to set the size to the current progress
