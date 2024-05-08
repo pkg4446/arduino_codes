@@ -69,7 +69,7 @@ void command_progress(){
   }else if(command_buf[0]=='r' && command_buf[1]=='f'){
     file_remove(path_current+temp_text);
   }else if(command_buf[0]=='u' && command_buf[1]=='p'){
-    //#if defined(ESP32)
+    #if defined(ESP32)
       if (!Update.begin(UPDATE_SIZE_UNKNOWN)) Update.printError(Serial);
       File file;
       fs::FS &fs = SD;

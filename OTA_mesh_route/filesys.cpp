@@ -203,6 +203,21 @@ void file_write(String path, String contents){
   file.close();
 }
 
+void file_writest(String path, uint8_t contents[], uint16_t f_index){
+
+  for(uint16_t index=0; index<f_index; index++){
+    Serial.println(contents[index]);
+  }
+  
+  /*
+  File file;
+  fs::FS &fs = SD;
+  file = fs.open(path, FILE_WRITE);
+  file.print(contents);
+  file.close();
+  */
+}
+
 void file_append(String path, String contents){
   File file;
   #if defined(ESP32)

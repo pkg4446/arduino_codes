@@ -78,7 +78,7 @@ void command_progress(){
     String software_path = "/firmware";
     dir_remove(software_path);
     dir_make(software_path);
-    software_path += "/";
+    software_path += "/sw";
 
     File file;
     fs::FS &fs = SD;
@@ -89,7 +89,7 @@ void command_progress(){
     Serial.println(file.size());
 
     #define   CMD_UNIT_SIZE   1436
-    char      cmd_buf[CMD_UNIT_SIZE];
+    uint8_t   cmd_buf[CMD_UNIT_SIZE];
     uint16_t  cmd_currentSize = 0;
     uint16_t  file_name_index = 0;
 
@@ -97,13 +97,14 @@ void command_progress(){
       file.read();
       cmd_buf[cmd_currentSize++] = file.read();
       if(cmd_currentSize >= CMD_UNIT_SIZE){
-        cmd_currentSize = 0;
         Serial.print("file index:");
         Serial.println(file_name_index);
-        file_write(software_path + String(file_name_index++),cmd_buf);
+        file_writest(software_path + String(file_name_index++) + ".bin", cmd_buf, cmd_currentSize);
+        cmd_currentSize = 0;
       }
+      if(file_name_index>3) break;
     }
-    file_write(software_path + String(file_name_index),cmd_buf);
+    //file_write(software_path + String(file_name_index) + ".bin",cmd_buf);
     file.close();
     Serial.println("done.");
 
