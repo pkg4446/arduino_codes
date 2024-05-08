@@ -9,22 +9,26 @@
 
 Scheduler     taskScheduler; // to control upload task
 painlessMesh  mesh;
-String        nodeID   = "";
-bool          cmd_mode = true;
+String        nodeID    = "";
 
-#define   CMC_MAX         16
-uint32_t  cmd_totalSize   = 0;
+#define   CMC_MAX   16
+bool      cmd_mode  = true;
+bool      check_len = true;
+uint32_t  file_size = 0;
+uint8_t   cmd_buf[CMD_UNIT_SIZE];
+uint16_t  cmd_currentSize = 0;
   
 //taskSendMessage funtion
 void sendMessage() ; // Prototype so PlatformIO doesn't complain
 Task firmware_check( TASK_SECOND*60*1, TASK_FOREVER, &sendMessage );
 void sendMessage() {
-  mesh.sendBroadcast("VER_0001");
+  //mesh.sendBroadcast("VER_0001");
 }
 
 void receivedCallback( uint32_t from, String &msg ) {
-  Serial.print("receivedCallback ");
   if(cmd_mode){
+
+    Serial.print("receivedCallback ");
     String msg_buf;
     for (int index = 0; index < msg.length(); index++) {
       msg_buf += msg[index];
@@ -36,46 +40,70 @@ void receivedCallback( uint32_t from, String &msg ) {
       }else{
         cmd_mode = false;
       }
+    }else if(msg_buf == "ROOTRECV"){
+      Serial.println("route ack");
+    }else{
+      Serial.println("cmd_null");
+      mesh.sendBroadcast("cmd_null");
     }
+
   }else{
-    if(msg.length() == 8){
-      String msg_buf;
+
+    if(check_len){
+
+      String totlaSize = "";
       for (int index = 0; index < msg.length(); index++) {
-        msg_buf += msg[index];
+        totlaSize += msg[index];
       }
-      Serial.println(msg_buf);
-      if(msg_buf == "FIRMWARE"){
-        cmd_mode = true;
+      file_size = totlaSize.toInt();
+      check_len = false;
+
+    }else{
+
+      uint16_t current_len = msg.length();
+      mesh.update();
+      if(msg.length() == 4 && msg[0] == 30 && msg[1] == 88 && msg[2] == 30 && msg[3] == 30)
+      {
+        Serial.println("0x00");
+        cmd_buf[cmd_currentSize++] += 0;
+      }
+      for (int index = 0; index < current_len; index++) {
+        cmd_buf[cmd_currentSize++] += msg[index];
+      }
+      
+      
+      if(cmd_currentSize >= CMD_UNIT_SIZE){
+        if (Update.write(cmd_buf, cmd_currentSize) != cmd_currentSize) Update.printError(Serial); //flashing firmware to ESP
+        cmd_currentSize = 0;
+      }
+      
+      if(--file_size == 0){
+        if (Update.write(cmd_buf, cmd_currentSize) != cmd_currentSize) Update.printError(Serial); //flashing firmware to ESP
         Serial.println("firmware update finish");
         if (Update.end(true)) { //true to set the size to the current progress
-          Serial.print("Update Success:");Serial.println(cmd_totalSize);
+          Serial.print("Update Success");
           mesh.sendBroadcast("FIRM_TRU;");
           delay(100);
           ESP.restart();
         } else {
           mesh.sendBroadcast("FIRM_ERR;");
         }
+        cmd_mode = true;
       }
+
     }
-    uint8_t cmd_buf[msg.length()];
-    Serial.println("cmd_currentSize:");
-    Serial.println(msg.length());
-    uint16_t  cmd_currentSize = 0; // size of data currently in buf
-    for (int index = 0; index < msg.length(); index++) {
-      cmd_buf[cmd_currentSize++] = msg[index];
-    }
-    cmd_totalSize += cmd_currentSize;
-    if (Update.write(cmd_buf, cmd_currentSize) != cmd_currentSize) Update.printError(Serial);
+
   }
+  mesh.update();
 }
 
 void setup(void) {
   Serial.begin(115200);
-  
 
   mesh.init( MESH_PREFIX, MESH_PASSWORD, &taskScheduler, MESH_PORT );
-  mesh.onReceive(&receivedCallback);
+  mesh.setContainsRoot( true );
 
+  mesh.onReceive(&receivedCallback);
   nodeID = mesh.getNodeId();
 
   taskScheduler.addTask(firmware_check);

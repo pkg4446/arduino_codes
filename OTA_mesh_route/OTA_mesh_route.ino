@@ -8,9 +8,6 @@
 #define   MESH_PASSWORD   "smarthive123"
 #define   MESH_PORT       3333
 
-#define   CMD_UNIT_SIZE   1436
-
-
 painlessMesh   mesh;
 String routeID = "";
 SimpleList<uint32_t> nodes;
@@ -77,9 +74,9 @@ void command_progress(){
     file_remove(path_current+temp_text);
   }else if(command_buf[0]=='u' && command_buf[1]=='p'){
 
-    uint32_t  cmd_totalSize   = 0;
-    uint16_t  cmd_currentSize = 0;  // size of data currently in buf
+    #define   CMD_UNIT_SIZE   1436
     char      cmd_buf[CMD_UNIT_SIZE];
+    uint16_t  cmd_currentSize = 0;
 
     File file;
     fs::FS &fs = SD;
@@ -89,20 +86,27 @@ void command_progress(){
     Serial.print(temp_text);
     Serial.print(" , size : ");
     Serial.println(file.size());
-
     mesh.sendBroadcast("FIRMWARE");
+    mesh.sendBroadcast(String(file.size()%CMD_UNIT_SIZE));
+
     while (file.available()) {
-      cmd_buf[cmd_currentSize++] = file.read();
+      uint8_t file_contents = file.read();
       mesh.update();
-      if(cmd_currentSize >= CMD_UNIT_SIZE){
+      if(file_contents == 0){
         mesh.sendBroadcast(cmd_buf);
-        cmd_totalSize += cmd_currentSize;
         cmd_currentSize = 0;
+        Serial.println("0x00");
+        mesh.sendBroadcast("0X00");
+      }else if(cmd_currentSize >= CMD_UNIT_SIZE){
+        cmd_currentSize = 0;
+        mesh.sendBroadcast(cmd_buf);
+      }else{
+        cmd_buf[cmd_currentSize++] = file_contents;
       }
     }
+
     file.close();
-    mesh.sendBroadcast(cmd_buf);
-    mesh.sendBroadcast("FIRMWARE");
+    Serial.println("done.");
 
   }else if(command_buf[0]=='s' && command_buf[1]=='d'){
     mesh.sendBroadcast(temp_text);
@@ -125,7 +129,6 @@ void setup() {
   mesh.onReceive( &receivedCallback );
   mesh.onChangedConnections(&changedConnectionCallback);
   mesh.setRoot( true );
-  mesh.setContainsRoot( true );
   routeID = mesh.getNodeId();
   
   command_helf();
