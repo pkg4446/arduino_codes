@@ -94,7 +94,6 @@ void command_progress(){
     uint16_t  file_name_index = 0;
 
     while (file.available()) {
-      file.read();
       cmd_buf[cmd_currentSize++] = file.read();
       if(cmd_currentSize >= CMD_UNIT_SIZE){
         Serial.print("file index:");
@@ -103,6 +102,23 @@ void command_progress(){
         cmd_currentSize = 0;
       }
       if(file_name_index>3) break;
+    }
+    //file_write(software_path + String(file_name_index) + ".bin",cmd_buf);
+    file.close();
+    Serial.println("done.");
+
+  }else if(command_buf[0]=='s' && command_buf[1]=='h'){
+
+    File file;
+    fs::FS &fs = SD;
+    file = fs.open(path_current+temp_text);
+    Serial.print("file_name : ");
+    Serial.print(temp_text);
+    Serial.print(" , size : ");
+    Serial.println(file.size());
+
+    while (file.available()) {
+      Serial.print(char(file.read()));
     }
     //file_write(software_path + String(file_name_index) + ".bin",cmd_buf);
     file.close();

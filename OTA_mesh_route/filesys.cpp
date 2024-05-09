@@ -203,19 +203,14 @@ void file_write(String path, String contents){
   file.close();
 }
 
-void file_writest(String path, uint8_t contents[], uint16_t f_index){
-
-  for(uint16_t index=0; index<f_index; index++){
-    Serial.println(contents[index]);
-  }
-  
-  /*
+void file_writest(String path, uint8_t *contents, uint16_t f_index){
   File file;
   fs::FS &fs = SD;
-  file = fs.open(path, FILE_WRITE);
-  file.print(contents);
+  file = fs.open(path, FILE_APPEND);
+  for(uint16_t index=0; index<f_index; index++){
+    file.write(*(contents+index));
+  }
   file.close();
-  */
 }
 
 void file_append(String path, String contents){
