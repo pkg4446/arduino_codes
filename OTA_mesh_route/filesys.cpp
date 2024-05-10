@@ -45,7 +45,14 @@ void sd_init(void) {
 }
 
 bool exisits_check(String path){
-  return SD.exists(path);
+  fs::FS &fs = SD;
+  bool response;
+  #if defined(ESP32)
+    response = fs.exists(path);
+  #else
+    response = SD.exists(path);
+  #endif
+  return response;
 }
 
 void dir_make(String path){
