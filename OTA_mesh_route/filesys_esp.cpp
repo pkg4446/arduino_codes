@@ -1,23 +1,12 @@
-#include "filesys.h"
-#if defined(ESP32)
-  #include "FS.h"
-  void createDir(fs::FS &fs, String path){
-    fs.mkdir(path);
-  }
-  void removeDir(fs::FS &fs, String path){
-    fs.rmdir(path);
-  }
+#include "filesys_esp.h"
+
   void removeFile(fs::FS &fs, String path){
-    fs.remove(path);
+    
   }
-#endif
 
 void sd_init(void) {
   // Open serial communications and wait for port to open:
-  uint8_t chipSelect = 53;
-  #if defined(ESP32)
-    chipSelect = 5;
-  #endif
+  uint8_t chipSelect = 5;
   bool sd_flage = SD.begin(chipSelect);
   
   String check_sd = "";
@@ -46,34 +35,26 @@ void sd_init(void) {
 
 bool exisits_check(String path){
   fs::FS &fs = SD;
-  bool response;
-  #if defined(ESP32)
-    response = fs.exists(path);
-  #else
-    response = SD.exists(path);
-  #endif
-  return response;
+  return fs.exists(path);
 }
 
 void dir_make(String path){
   if(!exisits_check(path)){
-    #if defined(ESP32)
-      char *path_root  = const_cast<char*>(path.c_str());
-      String make_dir  = "";
-      String dir_path  = strtok(path_root, "/");
-      while(dir_path != ""){
-        make_dir += "/" + dir_path;
-        dir_path = strtok(0x00, "/");
-        createDir(SD,make_dir);
-      }
-    #else
-      SD.mkdir(path);
-    #endif
+    fs::FS &fs = SD;
+    char *path_root  = const_cast<char*>(path.c_str());
+    String make_dir  = "";
+    String dir_path  = strtok(path_root, "/");
+    while(dir_path != ""){
+      make_dir += "/" + dir_path;
+      dir_path = strtok(0x00, "/");
+      fs.mkdir(make_dir);
+    }
   }
 }
 
 void dir_remove(String path){
   if(exisits_check(path)){
+    fs::FS &fs = SD;
     uint8_t dir_last = dir_list(path,true,false);
     if(dir_last>0){
       for(uint8_t index_d=dir_last; index_d>0; index_d--){
@@ -84,43 +65,18 @@ void dir_remove(String path){
     for(uint8_t index=file_last; index>0; index--){
       file_remove(path +"/"+ dir_index(path,false,index));
     }
-    #if defined(ESP32)
-      removeDir(SD,path);
-    #else
-      SD.rmdir(path);
-    #endif
+    fs.rmdir(path);
+    Serial.println(path);
+    Serial.println(" removed");
   }
 }
 
-void dir_move(String path, String target){
-  if(exisits_check(path)){
-    dir_make(target);
-    uint8_t dir_last = dir_list(path,true,false);
-    if(dir_last>0){
-      for(uint8_t index_d=dir_last; index_d>0; index_d--){
-        String inner_dir  = "/"+ dir_index(path,true,index_d);
-        dir_move(path+inner_dir, target+inner_dir);
-      }
-    }
-    uint8_t file_last = dir_list(path,false,false);
-    for(uint8_t index=file_last; index>0; index--){
-      String file_name      = "/"+ dir_index(path,false,index);
-      String file_contents  = file_read(path+file_name);
-      file_write(target+file_name, file_contents);
-      file_remove(path+file_name);
-    }
-    #if defined(ESP32)
-      removeDir(SD,path);
-    #else
-      SD.rmdir(path);
-    #endif
-  }
-}
-
-uint8_t dir_list(String path, bool type, bool show) {
-  uint8_t type_index = 0;
+uint16_t dir_list(String path, bool type, bool show) {
+  uint16_t type_index = 0;
   File root = SD.open(path);
   if(!root || !root.isDirectory()){
+    Serial.print(path);
+    Serial.println(" not exist");
     root.close();
     return 0;
   }
@@ -151,7 +107,7 @@ uint8_t dir_list(String path, bool type, bool show) {
   return type_index;
 }
 
-String dir_index(String path, bool type, uint8_t dir_index) {
+String dir_index(String path, bool type, uint16_t dir_index) {
   String response = "";
   if(dir_index != 0){
     File root = SD.open(path);
@@ -175,16 +131,14 @@ String dir_index(String path, bool type, uint8_t dir_index) {
   return response;
 }
 
+/******************************************************************/
+
 String file_read(String path){
   String response = "";
   if(exisits_check(path)){
     File file;
-    #if defined(ESP32)
-      fs::FS &fs = SD;
-      file = fs.open(path);
-    #else
-      file = SD.open(path);
-    #endif
+    fs::FS &fs = SD;
+    file = fs.open(path);
     while (file.available()) {
       response += char(file.read());
     }
@@ -195,22 +149,13 @@ String file_read(String path){
 
 void file_write(String path, String contents){
   File file;
-  #if defined(ESP32)
-    fs::FS &fs = SD;
-    file = fs.open(path, FILE_WRITE);
-  #else
-    /*
-    file = SD.open(path, O_CREAT|O_RDWR);
-    file.seek (0);
-    */
-    SD.remove(path);
-    file = SD.open(path, FILE_WRITE);
-  #endif
+  fs::FS &fs = SD;
+  file = fs.open(path, FILE_WRITE);
   file.print(contents);
   file.close();
 }
 
-void file_writest(String path, uint8_t *contents, uint16_t f_index){
+void file_append(String path, uint8_t *contents, uint16_t f_index){
   File file;
   fs::FS &fs = SD;
   file = fs.open(path, FILE_APPEND);
@@ -220,33 +165,42 @@ void file_writest(String path, uint8_t *contents, uint16_t f_index){
   file.close();
 }
 
-void file_append(String path, String contents){
-  File file;
-  #if defined(ESP32)
-    fs::FS &fs = SD;
-    file = fs.open(path, FILE_APPEND);
-  #else
-    file = SD.open(path, FILE_WRITE);
-  #endif
-  file.print(contents);
-  file.close();
-}
-
 void file_remove(String path){
-  if(exisits_check(path)){
-    #if defined(ESP32)
-      removeFile(SD,path);
-    #else
-      SD.remove(path);
-    #endif
-  }
+  fs::FS &fs = SD;
+  fs.remove(path);
 }
 
-void file_move(String dir, String file, String target){
-  String file_path = dir+"/"+file;
-  if(exisits_check(file_path) && exisits_check(target)){
-    String file_contents  = file_read(file_path);
-    file_write(target+"/"+file, file_contents);
-    file_remove(file_path);
+/******************************************************************/
+
+void  firmware_slice(String path){
+  File file;
+  fs::FS &fs = SD;
+
+  String software_path = "/firmware";
+  dir_remove(software_path);
+  dir_make(software_path);
+  software_path += "/sw";
+
+  file = fs.open(path);
+  Serial.println(path);
+  
+  uint8_t   cmd_buf[CMD_UNIT_SIZE];
+  uint16_t  cmd_currentSize = 0;
+  uint16_t  file_name_index = 0;
+
+  while (file.available()) {
+    cmd_buf[cmd_currentSize++] = file.read();
+    if(cmd_currentSize >= CMD_UNIT_SIZE){
+      Serial.print("file index:");
+      Serial.println(file_name_index);
+      file_append(software_path + String(file_name_index++) + ".bin", cmd_buf, cmd_currentSize);
+      cmd_currentSize = 0;
+    }
+    if(file_name_index>3) break;
   }
+
+  Serial.print("totla size : ");
+  Serial.println(file.size());
+
+  file.close();
 }
