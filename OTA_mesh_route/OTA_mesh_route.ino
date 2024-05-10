@@ -26,9 +26,11 @@ void command_helf() {
   Serial.println("md    make dir");
   Serial.println("rd    remove dir");
   Serial.println("op    open file");
+  Serial.println("st    open file");
   Serial.println("rf    remove file");
-  Serial.println("sw    file divide");
+  Serial.println("sw    file slice");
   Serial.println("up    upload file");
+  Serial.println("fu    firmware update");
   Serial.println("sd    send command");
   Serial.println("******* help *******");
 }
@@ -67,43 +69,30 @@ void command_progress(){
   }else if(command_buf[0]=='r' && command_buf[1]=='d'){
     dir_remove(path_current+temp_text);
   }else if(command_buf[0]=='r' && command_buf[1]=='f'){
-    file_remove(path_current+"/"+temp_text);
+    if(temp_text == "*") files_all_remove(path_current);
+    else file_remove(path_current+"/"+temp_text);
   }else if(command_buf[0]=='o' && command_buf[1]=='p'){
     Serial.println(file_read(path_current+"/"+temp_text));
+  }else if(command_buf[0]=='s' && command_buf[1]=='t'){
+    file_stream(path_current+"/"+temp_text);
   }else if(command_buf[0]=='s' && command_buf[1]=='w'){
     firmware_slice(path_current+"/"+temp_text);
-  }else if(command_buf[0]=='s' && command_buf[1]=='h'){
-
-    File file;
-    fs::FS &fs = SD;
-    file = fs.open(path_current+temp_text);
-    Serial.print("file_name : ");
-    Serial.print(temp_text);
-    Serial.print(" , size : ");
-    Serial.println(file.size());
-
-    while (file.available()) {
-      Serial.print(char(file.read()));
-    }
-    //file_write(software_path + String(file_name_index) + ".bin",cmd_buf);
-    file.close();
-    Serial.println("done.");
-
   }else if(command_buf[0]=='u' && command_buf[1]=='p'){
 
-    #define   CMD_UNIT_SIZE   1436
-    char      cmd_buf[CMD_UNIT_SIZE];
-    uint16_t  cmd_currentSize = 0;
-
     File file;
     fs::FS &fs = SD;
     mesh.update();
     file = fs.open(path_current+temp_text);
+    uint16_t  cmd_size = file.size();
+    char      cmd_buf[cmd_size];
+    uint16_t  cmd_currentSize = 0;
     mesh.update();
+
     Serial.print("file_name : ");
     Serial.print(temp_text);
     Serial.print(" , size : ");
     Serial.println(file.size());
+
     mesh.sendBroadcast("FIRMWARE");
     mesh.update();
     mesh.sendBroadcast(String(file.size()));
@@ -119,7 +108,7 @@ void command_progress(){
           cmd_currentSize = 0;
         }
         mesh.sendBroadcast("00");
-      }else if(cmd_currentSize >= CMD_UNIT_SIZE){
+      }else if(cmd_currentSize >= cmd_size){
         cmd_currentSize = 0;
         mesh.sendBroadcast(cmd_buf);
       }else{
@@ -137,34 +126,50 @@ void command_progress(){
     Serial.println("done.");
 
   }else if(command_buf[0]=='f' && command_buf[1]=='u'){
-    
     #include <Update.h>
-
-    if (!Update.begin(UPDATE_SIZE_UNKNOWN)) Update.printError(Serial);
-    File file;
-    fs::FS &fs = SD;
-    file = fs.open(path_current+temp_text);
-
-    #define   CMD_UNIT_SIZE 1436
+    #define  CMD_UNIT_SIZE 1436
+    uint8_t  cmd_buf[CMD_UNIT_SIZE];
     uint16_t cmd_currentSize = 0;
     uint32_t cmd_totalSize   = 0;
-    uint8_t   cmd_buf[CMD_UNIT_SIZE];
 
-    Serial.println("file_open");
+    if(!Update.begin(UPDATE_SIZE_UNKNOWN)) Update.printError(Serial);
+    if(temp_text == "auto"){
 
-    while (file.available()) {
+      String path = "/firmware/sw";
+      uint16_t total_file = file_read(path+"_file.num").toInt();
+
+      for(uint8_t index=0; index<total_file; index++){
+        String slice_file = path + String(index) + ".bin";
+        cmd_currentSize = file_size(slice_file);
+        String file_buf = file_read(slice_file);
+        cmd_totalSize  += cmd_currentSize;
+        for(uint file_index=0; file_index<cmd_currentSize; file_index++){
+          cmd_buf[file_index] = file_buf[file_index];
+        }
+        if (Update.write(cmd_buf, cmd_currentSize) != cmd_currentSize) Update.printError(Serial); //flashing firmware to ESP
+        else Serial.println(total_file-index);
+      }
+
+    }else{
+      File file;
+      fs::FS &fs = SD;
+      file = fs.open(path_current+temp_text);
+
+      Serial.println("file_open");
+
+      while (file.available()) {
       cmd_buf[cmd_currentSize++] = file.read();
       if(cmd_currentSize >= CMD_UNIT_SIZE){
         cmd_totalSize += cmd_currentSize;
         if (Update.write(cmd_buf, cmd_currentSize) != cmd_currentSize) Update.printError(Serial); //flashing firmware to ESP
         else Serial.println(cmd_totalSize);
         cmd_currentSize = 0;
+        }
       }
+      file.close();
+      cmd_totalSize += cmd_currentSize;
+      if (Update.write(cmd_buf, cmd_currentSize) != cmd_currentSize) Update.printError(Serial); //flashing firmware to ESP
     }
-    file.close();
-
-    cmd_totalSize += cmd_currentSize;
-    if (Update.write(cmd_buf, cmd_currentSize) != cmd_currentSize) Update.printError(Serial); //flashing firmware to ESP
 
     if (Update.end(true)) { //true to set the size to the current progress
       Serial.printf("Update Success: %u\nRebooting...\n", cmd_totalSize);
@@ -173,7 +178,6 @@ void command_progress(){
     } else {
       Update.printError(Serial);
     }
-    
   }else if(command_buf[0]=='s' && command_buf[1]=='d'){
     mesh.sendBroadcast(temp_text);
   }else{

@@ -39,10 +39,8 @@ void command_progress(){
   if(command_buf[0]=='h' && command_buf[1]=='e' && command_buf[2]=='l' && command_buf[3]=='p'){
     command_helf();
   }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]==0x20){
-    uint8_t command_index_check = 3;
-    if(exisits_check(path_current+temp_text+"/")){
+    if(exisits_check(path_current+temp_text)){
       path_current += temp_text;
-      path_current += "/";
     }
     Serial.println(path_current);
   }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]=='/'){
@@ -55,11 +53,9 @@ void command_progress(){
   }else if(command_buf[0]=='r' && command_buf[1]=='d'){
     dir_remove(path_current+temp_text);
   }else if(command_buf[0]=='r' && command_buf[1]=='f'){
-    file_remove(path_current+temp_text);
+    file_remove(path_current+"/"+temp_text);
   }else if(command_buf[0]=='o' && command_buf[1]=='p'){
-    Serial.println(file_read(path_current+temp_text));
-  }else if(command_buf[0]=='r' && command_buf[1]=='f'){
-    file_remove(path_current+temp_text);
+    Serial.println(file_read(path_current+"/"+temp_text));
   }else{
     Serial.println("wrong command!");
   }

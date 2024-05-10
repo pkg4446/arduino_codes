@@ -1,9 +1,5 @@
 #include "filesys_esp.h"
 
-  void removeFile(fs::FS &fs, String path){
-    
-  }
-
 void sd_init(void) {
   // Open serial communications and wait for port to open:
   uint8_t chipSelect = 5;
@@ -61,10 +57,7 @@ void dir_remove(String path){
         dir_remove(path+"/"+ dir_index(path,true,index_d));
       }
     }
-    uint8_t file_last = dir_list(path,false,false);
-    for(uint8_t index=file_last; index>0; index--){
-      file_remove(path +"/"+ dir_index(path,false,index));
-    }
+    files_all_remove(path);
     fs.rmdir(path);
     Serial.println(path);
     Serial.println(" removed");
@@ -170,6 +163,28 @@ void file_remove(String path){
   fs.remove(path);
 }
 
+void files_all_remove(String path) {
+  fs::FS &fs = SD;
+  File root  = SD.open(path);
+  if(!root || !root.isDirectory()){
+    Serial.print(path);
+    Serial.println(" not exist");
+    root.close();
+    return;
+  }
+  File file = root.openNextFile();
+  while(file){
+    String file_name = file.name();
+    bool   isFile    = false;
+    if(!file.isDirectory()) isFile = true;
+    file.close();
+    if(isFile) fs.remove(path + "/" + file_name);
+    file = root.openNextFile();
+  }
+  file.close();
+  root.close();
+}
+
 /******************************************************************/
 
 void  firmware_slice(String path){
@@ -177,7 +192,7 @@ void  firmware_slice(String path){
   fs::FS &fs = SD;
 
   String software_path = "/firmware";
-  dir_remove(software_path);
+  files_all_remove(software_path);
   dir_make(software_path);
   software_path += "/sw";
 
@@ -188,6 +203,11 @@ void  firmware_slice(String path){
   uint16_t  cmd_currentSize = 0;
   uint16_t  file_name_index = 0;
 
+  uint16_t  total_file = file.size()/CMD_UNIT_SIZE;
+  if(file.size()%CMD_UNIT_SIZE != 0) total_file+=1;
+
+  file_write(software_path + "_file.num", String(total_file));
+
   while (file.available()) {
     cmd_buf[cmd_currentSize++] = file.read();
     if(cmd_currentSize >= CMD_UNIT_SIZE){
@@ -196,11 +216,55 @@ void  firmware_slice(String path){
       file_append(software_path + String(file_name_index++) + ".bin", cmd_buf, cmd_currentSize);
       cmd_currentSize = 0;
     }
-    if(file_name_index>3) break;
   }
+  file_append(software_path + String(file_name_index) + ".bin", cmd_buf, cmd_currentSize);
 
-  Serial.print("totla size : ");
-  Serial.println(file.size());
+  Serial.print("totla file : ");
+  Serial.println(total_file);
 
   file.close();
+}
+
+void  file_stream(String path){
+  File file;
+  fs::FS &fs = SD;
+  file = fs.open(path);
+  Serial.print(path);
+  Serial.print(" , size : ");
+  Serial.println(file.size());
+
+  while (file.available()) {
+    Serial.print(char(file.read()));
+  }
+  file.close();
+}
+
+void  remove_firmware(String  root_path){
+  fs::FS &fs = SD;
+  uint16_t  total_file = 0;
+  if(exisits_check(root_path + "/sw_file.num")){
+    Serial.println("file check");    
+    total_file = file_read(root_path + "_file.num").toInt();
+    fs.remove(root_path + "_file.num");
+  }else{
+    total_file = dir_list("/firmware",false,false);
+  }
+  Serial.print("total:");
+  Serial.println(total_file);
+  String path = root_path + "/sw";
+  for(uint16_t index=1; index<=total_file; index++){
+    String file_path = path + String(total_file-index) + ".bin";
+    fs.remove(file_path);
+    Serial.println(file_path);
+  }
+  fs.rmdir(root_path);
+}
+
+size_t file_size(String path){
+  size_t response = 0;
+  File file;
+  fs::FS &fs = SD;
+  file = fs.open(path);
+  response = file.size();
+  return response;
 }
