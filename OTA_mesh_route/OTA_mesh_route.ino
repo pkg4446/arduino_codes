@@ -13,7 +13,8 @@ painlessMesh   mesh;
 String routeID = "";
 SimpleList<uint32_t> nodes;
 
-String path_current = "/";
+uint8_t path_depth   = 0;
+String  path_current = "/";
 
 #define COMMAND_LENGTH 128
 /***** funtion command ****/
@@ -22,7 +23,6 @@ void command_helf() {
   Serial.println("help  this text");
   Serial.println("ls    show list");
   Serial.println("cd    move path");
-  Serial.println("cd/   move root");
   Serial.println("md    make dir");
   Serial.println("rd    remove dir");
   Serial.println("op    open file");
@@ -55,19 +55,32 @@ void command_progress(){
   if(command_buf[0]=='h' && command_buf[1]=='e' && command_buf[2]=='l' && command_buf[3]=='p'){
     command_helf();
   }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]==0x20){
-    if(exisits_check(path_current+temp_text)){
-      path_current += temp_text;
+    if(temp_text == "/"){
+      path_depth   = 0;
+      path_current = "/";
+    }else if(temp_text == ".." && path_depth != 0){
+      String temp_path = path_current;
+      char *upper_path = const_cast<char*>(temp_path.c_str());
+      String dir_path  = strtok(upper_path, "/");
+      if(path_depth == 1) path_current = "/";
+      else path_current = "";
+      for(uint8_t index=1; index<path_depth; index++){
+        path_current += "/" + dir_path;
+        dir_path = strtok(0x00, "/");
+      }
+      path_depth -= 1;
+    }else if(exisits_check(path_current+"/"+temp_text)){
+      path_depth += 1;
+      if(path_current == "/") path_current += temp_text;
+      else path_current += "/"+temp_text;
     }
-    Serial.println(path_current);
-  }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]=='/'){
-    path_current = "/";
     Serial.println(path_current);
   }else if(command_buf[0]=='l' && command_buf[1]=='s'){
     dir_list(path_current,true,true);
   }else if(command_buf[0]=='m' && command_buf[1]=='d'){
-    dir_make(path_current+temp_text);
+    dir_make(path_current+"/"+temp_text);
   }else if(command_buf[0]=='r' && command_buf[1]=='d'){
-    dir_remove(path_current+temp_text);
+    dir_remove(path_current+"/"+temp_text);
   }else if(command_buf[0]=='r' && command_buf[1]=='f'){
     if(temp_text == "*") files_all_remove(path_current);
     else file_remove(path_current+"/"+temp_text);
