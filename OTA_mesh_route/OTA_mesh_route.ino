@@ -17,6 +17,44 @@ uint8_t path_depth   = 0;
 String  path_current = "/";
 
 #define COMMAND_LENGTH 128
+
+/****** base64_encode******/
+const char* base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+String base64_encode(const uint8_t* data, size_t length) {
+  
+  String encoded = "";
+  size_t i = 0;
+  
+  while (i < length) {
+    uint32_t octet_a = i < length ? (unsigned char)data[i++] : 0;
+    uint32_t octet_b = i < length ? (unsigned char)data[i++] : 0;
+    uint32_t octet_c = i < length ? (unsigned char)data[i++] : 0;
+
+    uint32_t triple = (octet_a << 0x10) + (octet_b << 0x08) + octet_c;
+
+    encoded += base64_chars[(triple >> 3 * 6) & 0x3F];
+    encoded += base64_chars[(triple >> 2 * 6) & 0x3F];
+    encoded += base64_chars[(triple >> 1 * 6) & 0x3F];
+    encoded += base64_chars[(triple >> 0 * 6) & 0x3F];
+  }
+
+  switch (length % 3) {
+    case 1:
+      encoded[encoded.length() - 2] = '=';
+      encoded[encoded.length() - 1] = '=';
+      break;
+    case 2:
+      encoded[encoded.length() - 1] = '=';
+      break;
+  }
+
+  return encoded;
+}
+
+String base64_encode(const String& str, size_t length) {
+  return base64_encode((const uint8_t*)str.c_str(), length);
+}
+/****** base64_encode******/
 /***** funtion command ****/
 void command_helf() {
   Serial.println("******* help *******");
@@ -25,9 +63,9 @@ void command_helf() {
   Serial.println("cd    move path");
   Serial.println("md    make dir");
   Serial.println("rd    remove dir");
+  Serial.println("rf    remove file");
   Serial.println("op    open file");
   Serial.println("st    open file");
-  Serial.println("rf    remove file");
   Serial.println("sw    file slice");
   Serial.println("up    upload file");
   Serial.println("fu    firmware update");
@@ -108,33 +146,20 @@ void command_progress(){
 
     mesh.sendBroadcast("FIRMWARE");
     mesh.update();
+    mesh.sendBroadcast(temp_text);
+    mesh.update();
     mesh.sendBroadcast(String(file.size()));
+    mesh.update();
 
     while (file.available()) {
-      uint8_t file_contents = file.read();
+      cmd_buf[cmd_currentSize++] = file.read();
       mesh.update();
-      if(file_contents == 0){
-        if(cmd_currentSize != 0){
-          cmd_buf[cmd_currentSize] = 0;
-          Serial.println(cmd_currentSize);
-          mesh.sendBroadcast(cmd_buf);
-          cmd_currentSize = 0;
-        }
-        mesh.sendBroadcast("00");
-      }else if(cmd_currentSize >= cmd_size){
-        cmd_currentSize = 0;
-        mesh.sendBroadcast(cmd_buf);
-      }else{
-        cmd_buf[cmd_currentSize++] = file_contents;
-      }
-    }
-    if(cmd_currentSize != 0){
-      cmd_buf[cmd_currentSize] = 0;
-      Serial.println(cmd_currentSize);
-      mesh.sendBroadcast(cmd_buf);
-      cmd_currentSize = 0;
     }
 
+    file.close();
+    auto base64Data = base64_encode(cmd_buf, cmd_size);
+    Serial.println(base64Data);
+    mesh.sendBroadcast(base64Data);
     file.close();
     Serial.println("done.");
 
@@ -212,6 +237,7 @@ void setup() {
   mesh.onReceive( &receivedCallback );
   mesh.onChangedConnections(&changedConnectionCallback);
   mesh.setRoot( true );
+  mesh.setContainsRoot(true);
   routeID = mesh.getNodeId();
   
   command_helf();
