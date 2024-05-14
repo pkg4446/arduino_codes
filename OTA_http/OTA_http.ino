@@ -85,8 +85,9 @@ char    Serial_buf[SERIAL_LENGTH];
 int8_t  Serial_num;
 
 void wifi_config_change() {
-  String cmd_text  = "";
-  String temp_text = "";
+  String cmd_text   = "";
+  String temp_text  = "";
+  bool   eep_change = false;
   for(uint8_t index_check=0; index_check<4; index_check++){
     if(command_buf[index_check] == 0x32) break;
     cmd_text += command_buf[index_check];
@@ -95,34 +96,47 @@ void wifi_config_change() {
     if(command_buf[index_check] == 0x00) break;
     temp_text += command_buf[index_check];
   }
-
+  
   if(cmd_text=="SSID"){
+    
+  }else if(cmd_text=="SSID"){
+
     Serial.print("ssid=");
-    for (int index = 0; index < EEPROM_SIZE; index++) {
-      if(index < temp_text.length()){
-        Serial.print(ssid_value[index]);
-        EEPROM.write(eep_ssid[index], byte(ssid_value[index]));
-      }else{
-        EEPROM.write(eep_ssid[index], byte(0x00));
-      }      
+    if(temp_text.length() > 0){
+      for (int index = 0; index < EEPROM_SIZE; index++) {
+        if(index < temp_text.length()){
+          Serial.print(temp_text[index]);
+          EEPROM.write(eep_ssid[index], byte(temp_text[index]));
+        }else{
+          EEPROM.write(eep_ssid[index], byte(0x00));
+        }
+      }
+      eep_change = true;
     }
     Serial.println("");
-    Serial.print("pass_value=");
-    for (int index = 0; index < EEPROM_SIZE; index++) {
-      if(index < pass_value.length()){
-        Serial.print(pass_value[index]);
-        EEPROM.write(eep_pass[index], byte(pass_value[index]));
-      }else{
-        EEPROM.write(eep_pass[index], byte(0x00));
-      }    
+
+  }else if(cmd_text=="PASS"){
+
+    Serial.print("pass=");
+    if(temp_text.length() > 0){
+      for (int index = 0; index < EEPROM_SIZE; index++) {
+        if(index < temp_text.length()){
+          Serial.print(temp_text[index]);
+          EEPROM.write(eep_pass[index], byte(temp_text[index]));
+        }else{
+          EEPROM.write(eep_pass[index], byte(0x00));
+        }
+      }
+      eep_change = true;
     }
     Serial.println("");
-    EEPROM.commit();
-    ESP.restart();
-  }else if{
-    Serial.println(Serial_buf);
+
   }else{
     Serial.println(Serial_buf);
+  }
+  if(eep_change){
+    EEPROM.commit();
+    ESP.restart();
   }
 }//Command_service() END
 
@@ -179,12 +193,14 @@ void setup() {
   unsigned long wifi_config_update = 0UL;
   while (WiFi.status() != WL_CONNECTED) {
     if (Serial.available()) serail_Process(Serial.read());
+    /*
     unsigned long update_time = millis();
     if(update_time - wifi_config_update > 3000){
       digitalWrite(led_pin[6], false);
       wifi_config_update = update_time;
       Serial.println("Connecting to WiFi..");
     }
+    */
   }
   digitalWrite(led_pin[6], true);
   Serial.println("Connected to the WiFi network");
