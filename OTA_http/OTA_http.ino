@@ -54,7 +54,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 }
 
 //// ----------- Command  -----------
-void command_helf() {
+void command_helf_wifi() {
   Serial.println("********** help **********");
   Serial.println("HELP  this text");
   Serial.println("SHOW  wifi scan");
@@ -62,7 +62,16 @@ void command_helf() {
   Serial.println("PASS  ex>PASS your password");
   Serial.println("********** help **********");
 }
-
+void command_helf() {
+  Serial.println("********** help **********");
+  Serial.println("HELP  this text");
+  Serial.println("REST  reboot");
+  Serial.println("SHOW  wifi scan");
+  Serial.println("UPDT  firmware update check");
+  Serial.println("********** help **********");
+}
+/**********************************************/
+/**********************************************/
 char    command_buf[COMMAND_LENGTH];
 int8_t  command_num;
 
@@ -78,7 +87,7 @@ void command_Service() {
   if (dataSend.TYPE != "P") {
     httpPOSTRequest(&dataSend);
   }
-}//Command_service() END
+}//command_service() END
 
 void command_Process(char ch) {
   if(ch=='\n'){
@@ -91,7 +100,71 @@ void command_Process(char ch) {
     command_num %= COMMAND_LENGTH;
   }
 }
-
+/**********************************************/
+/**********************************************/
+void WIFI_scan(){
+  WiFi.disconnect(true);
+    Serial.println("WIFI Scanning…");
+    uint8_t networks = WiFi.scanNetworks();
+    if (networks == 0) {
+        Serial.println("no networks found");
+    } else {
+      Serial.print(networks);
+      Serial.println(" networks found");
+      Serial.println("Nr | SSID                             | RSSI | CH | Encryption");
+      for (int index = 0; index < networks; ++index) {
+        // Print SSID and RSSI for each network found
+        Serial.printf("%2d",index + 1);
+        Serial.print(" | ");
+        Serial.printf("%-32.32s", WiFi.SSID(index).c_str());
+        Serial.print(" | ");
+        Serial.printf("%4d", WiFi.RSSI(index));
+        Serial.print(" | ");
+        Serial.printf("%2d", WiFi.channel(index));
+        Serial.print(" | ");
+        switch (WiFi.encryptionType(index))
+        {
+        case WIFI_AUTH_OPEN:
+            Serial.print("open");
+            break;
+        case WIFI_AUTH_WEP:
+            Serial.print("WEP");
+            break;
+        case WIFI_AUTH_WPA_PSK:
+            Serial.print("WPA");
+            break;
+        case WIFI_AUTH_WPA2_PSK:
+            Serial.print("WPA2");
+            break;
+        case WIFI_AUTH_WPA_WPA2_PSK:
+            Serial.print("WPA+WPA2");
+            break;
+        case WIFI_AUTH_WPA2_ENTERPRISE:
+            Serial.print("WPA2-EAP");
+            break;
+        case WIFI_AUTH_WPA3_PSK:
+            Serial.print("WPA3");
+            break;
+        case WIFI_AUTH_WPA2_WPA3_PSK:
+            Serial.print("WPA2+WPA3");
+            break;
+        case WIFI_AUTH_WAPI_PSK:
+            Serial.print("WAPI");
+            break;
+        default:
+            Serial.print("unknown");
+        }
+        Serial.println();
+        delay(10);
+      }
+    }
+    Serial.println("");
+    // Delete the scan result to free memory for code below.
+    WiFi.scanDelete();
+    WiFi.begin(ssid, password);
+}
+/**********************************************/
+/**********************************************/
 char    Serial_buf[SERIAL_LENGTH];
 int8_t  Serial_num;
 
@@ -109,68 +182,9 @@ void wifi_config_change() {
   }
   
   if(cmd_text=="HELP"){
-    command_helf();
+    command_helf_wifi();
   }else if(cmd_text=="SHOW"){
-    WiFi.disconnect(true);
-    Serial.println("WIFI Scanning…");
-    uint8_t networks = WiFi.scanNetworks();
-    if (networks == 0) {
-        Serial.println("no networks found");
-    } else {
-        Serial.print(networks);
-        Serial.println(" networks found");
-        Serial.println("Nr | SSID                             | RSSI | CH | Encryption");
-        for (int index = 0; index < networks; ++index) {
-            // Print SSID and RSSI for each network found
-            Serial.printf("%2d",index + 1);
-            Serial.print(" | ");
-            Serial.printf("%-32.32s", WiFi.SSID(index).c_str());
-            Serial.print(" | ");
-            Serial.printf("%4d", WiFi.RSSI(index));
-            Serial.print(" | ");
-            Serial.printf("%2d", WiFi.channel(index));
-            Serial.print(" | ");
-            switch (WiFi.encryptionType(index))
-            {
-            case WIFI_AUTH_OPEN:
-                Serial.print("open");
-                break;
-            case WIFI_AUTH_WEP:
-                Serial.print("WEP");
-                break;
-            case WIFI_AUTH_WPA_PSK:
-                Serial.print("WPA");
-                break;
-            case WIFI_AUTH_WPA2_PSK:
-                Serial.print("WPA2");
-                break;
-            case WIFI_AUTH_WPA_WPA2_PSK:
-                Serial.print("WPA+WPA2");
-                break;
-            case WIFI_AUTH_WPA2_ENTERPRISE:
-                Serial.print("WPA2-EAP");
-                break;
-            case WIFI_AUTH_WPA3_PSK:
-                Serial.print("WPA3");
-                break;
-            case WIFI_AUTH_WPA2_WPA3_PSK:
-                Serial.print("WPA2+WPA3");
-                break;
-            case WIFI_AUTH_WAPI_PSK:
-                Serial.print("WAPI");
-                break;
-            default:
-                Serial.print("unknown");
-            }
-            Serial.println();
-            delay(10);
-        }
-    }
-    Serial.println("");
-
-    // Delete the scan result to free memory for code below.
-    WiFi.scanDelete();
-    WiFi.begin(ssid, password);
+    WIFI_scan();
   }else if(cmd_text=="SSID"){
     WiFi.disconnect(true);
     Serial.print("ssid=");
@@ -213,13 +227,49 @@ void wifi_config_change() {
     WiFi.begin(ssid, password);
     if(WiFi.status() == WL_CONNECTED) ESP.restart();
   }
-}//Command_service() END
+}//wifi_config_change() END
+void serail_Process_wifi(char ch) {
+  if(ch=='\n'){
+    Serial_buf[Serial_num] = 0x00;
+    Serial_num = 0;
+    wifi_config_change();
+    //memset(Serial_buf, 0x00, SERIAL_LENGTH);
+  }else if(ch!='\r'){
+    Serial_buf[Serial_num++] = ch;
+    Serial_num %= SERIAL_LENGTH;
+  }
+}
+/**********************************************/
+/**********************************************/
+void serial_service() {
+  String cmd_text   = "";
+  String temp_text  = "";
+  bool   eep_change = false;
+  for(uint8_t index_check=0; index_check<4; index_check++){
+    if(Serial_buf[index_check] == 0x32) break;
+    cmd_text += Serial_buf[index_check];
+  }
+  for(uint8_t index_check=5; index_check<COMMAND_LENGTH; index_check++){
+    if(Serial_buf[index_check] == 0x00) break;
+    temp_text += Serial_buf[index_check];
+  }
+  
+  if(cmd_text=="HELP"){
+    command_helf();
+  }else if(cmd_text=="REST"){
+    ESP.restart();
+  }else if(cmd_text=="SHOW"){
+    WIFI_scan();
+  }else{
+    Serial.println(Serial_buf);
+  }
+}//serial_service() END
 
 void serail_Process(char ch) {
   if(ch=='\n'){
     Serial_buf[Serial_num] = 0x00;
     Serial_num = 0;
-    wifi_config_change();
+    serial_service();
     //memset(Serial_buf, 0x00, SERIAL_LENGTH);
   }else if(ch!='\r'){
     Serial_buf[Serial_num++] = ch;
@@ -259,8 +309,7 @@ void setup() {
   Serial.print("ssid: "); Serial.println(ssid);
   Serial.print("pass: "); Serial.println(password);
   Serial.println("---------------------------");
-  command_helf();
-
+  command_helf_wifi();
 
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
@@ -268,7 +317,7 @@ void setup() {
 
   unsigned long wifi_config_update = 0UL;
   while (WiFi.status() != WL_CONNECTED) {
-    if (Serial.available()) serail_Process(Serial.read());
+    if (Serial.available()) serail_Process_wifi(Serial.read());
     /*
     unsigned long update_time = millis();
     if(update_time - wifi_config_update > 3000){
@@ -313,6 +362,8 @@ void setup() {
   Serial.print(topic_sub);
   Serial.println(" - MQTT Connected");
   Serial.println("ver 1.0.0");
+
+  command_helf();
 }//End Of Setup()
 
 void reconnect(){
