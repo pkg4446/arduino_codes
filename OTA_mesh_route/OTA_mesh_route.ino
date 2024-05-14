@@ -19,42 +19,66 @@ String  path_current = "/";
 #define COMMAND_LENGTH 128
 
 /****** base64_encode******/
-const char* base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-String base64_encode(const uint8_t* data, size_t length) {
-  
-  String encoded = "";
-  size_t i = 0;
-  
-  while (i < length) {
-    uint32_t octet_a = i < length ? (unsigned char)data[i++] : 0;
-    uint32_t octet_b = i < length ? (unsigned char)data[i++] : 0;
-    uint32_t octet_c = i < length ? (unsigned char)data[i++] : 0;
+static const char base64_chars[] =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "abcdefghijklmnopqrstuvwxyz"
+    "0123456789+/";
 
-    uint32_t triple = (octet_a << 0x10) + (octet_b << 0x08) + octet_c;
+String base64_encode(const unsigned char* bytes_to_encode, size_t in_len) {
+    String ret;
+    int i = 0;
+    int j = 0;
+    unsigned char char_array_3[3];
+    unsigned char char_array_4[4];
 
-    encoded += base64_chars[(triple >> 3 * 6) & 0x3F];
-    encoded += base64_chars[(triple >> 2 * 6) & 0x3F];
-    encoded += base64_chars[(triple >> 1 * 6) & 0x3F];
-    encoded += base64_chars[(triple >> 0 * 6) & 0x3F];
-  }
+    while (in_len--) {
+      mesh.update();
+      char_array_3[i++] = *(bytes_to_encode++);
+      if (i == 3) {
+        char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+        char_array_4[1] = ((char_array_3[0] & 0x03) << 4) +
+                          ((char_array_3[1] & 0xf0) >> 4);
+        char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) +
+                          ((char_array_3[2] & 0xc0) >> 6);
+        char_array_4[3] = char_array_3[2] & 0x3f;
 
-  switch (length % 3) {
-    case 1:
-      encoded[encoded.length() - 2] = '=';
-      encoded[encoded.length() - 1] = '=';
-      break;
-    case 2:
-      encoded[encoded.length() - 1] = '=';
-      break;
-  }
+        for (i = 0; i < 4; i++) {
+          mesh.update();
+          ret += base64_chars[char_array_4[i]];
+        }
+        i = 0;
+      }
+    }
 
-  return encoded;
+    if (i) {
+        for (j = i; j < 3; j++) {
+            char_array_3[j] = '\0';
+        }
+
+        char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+        char_array_4[1] =
+            ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+        char_array_4[2] =
+            ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+
+        for (j = 0; j < i + 1; j++) {
+            ret += base64_chars[char_array_4[j]];
+        }
+
+        while ((i++ < 3)) {
+            ret += '=';
+        }
+    }
+
+    return ret;
 }
 
-String base64_encode(const String& str, size_t length) {
-  return base64_encode((const uint8_t*)str.c_str(), length);
+String base64_encode(const String& str, size_t in_len) {
+    return base64_encode(reinterpret_cast<const unsigned char*>(str.c_str()), in_len);
 }
+
 /****** base64_encode******/
+
 /***** funtion command ****/
 void command_helf() {
   Serial.println("******* help *******");
@@ -135,8 +159,7 @@ void command_progress(){
     mesh.update();
     file = fs.open(path_current+temp_text);
     uint16_t  cmd_size = file.size();
-    char      cmd_buf[cmd_size];
-    uint16_t  cmd_currentSize = 0;
+    String    cmd_buf = "";
     mesh.update();
 
     Serial.print("file_name : ");
@@ -152,15 +175,14 @@ void command_progress(){
     mesh.update();
 
     while (file.available()) {
-      cmd_buf[cmd_currentSize++] = file.read();
+      cmd_buf += char(file.read());
       mesh.update();
     }
 
     file.close();
-    auto base64Data = base64_encode(cmd_buf, cmd_size);
-    Serial.println(base64Data);
+
+    String base64Data = base64_encode(cmd_buf, cmd_size);
     mesh.sendBroadcast(base64Data);
-    file.close();
     Serial.println("done.");
 
   }else if(command_buf[0]=='f' && command_buf[1]=='u'){

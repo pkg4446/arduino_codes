@@ -4,7 +4,6 @@
 #define   MESH_PREFIX     "smartHiveMesh"
 #define   MESH_PASSWORD   "smarthive123"
 #define   MESH_PORT       3333
-const char* base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 Scheduler     taskScheduler; // to control upload task
 painlessMesh  mesh;
@@ -20,38 +19,63 @@ uint16_t  file_index   = 0;
 uint16_t  cmd_currentSize = 0;
 
 /****** base64_decode******/
-String base64_decode(const String& encoded) {
-  const char* base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-  String decoded = "";
-
-  size_t in_len = encoded.length();
-  size_t i = 0;
-  size_t j = 0;
-  int32_t sextet_a = 0;
-  int32_t sextet_b = 0;
-  int32_t sextet_c = 0;
-  int32_t sextet_d = 0;
-  while (in_len-- && (encoded[j] != '=') && is_base64(encoded[j])) {
-    sextet_a = encoded[j++];
-    sextet_b = encoded[j++];
-    sextet_c = encoded[j++];
-    sextet_d = encoded[j++];
-
-    uint32_t triple = (sextet_a << 3 * 6)
-                    + (sextet_b << 2 * 6)
-                    + (sextet_c << 1 * 6)
-                    + (sextet_d << 0 * 6);
-
-    decoded += (triple >> 2 * 8) & 0xFF;
-    decoded += (triple >> 1 * 8) & 0xFF;
-    decoded += (triple >> 0 * 8) & 0xFF;
-  }
-
-  return decoded;
+static const char base64_chars[] =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "abcdefghijklmnopqrstuvwxyz"
+    "0123456789+/";
+   
+bool is_base64(unsigned char c) {
+    return (isalnum(c) || (c == '+') || (c == '/'));
 }
 
-bool is_base64(char c) {
-  return (isalnum(c) || (c == '+') || (c == '/'));
+String base64_decode(const String& encoded_string) {
+    size_t in_len = encoded_string.length();
+    size_t i = 0;
+    size_t j = 0;
+    int in_ = 0;
+    unsigned char char_array_4[4], char_array_3[3];
+    String ret;
+
+    while (in_len-- && (encoded_string[in_] != '=') && is_base64(encoded_string[in_])) {
+      mesh.update();
+      char_array_4[i++] = encoded_string[in_];
+      in_++;
+      if (i == 4) {
+        for (i = 0; i < 4; i++) {
+          mesh.update();
+          char_array_4[i] = static_cast<unsigned char>(strchr(base64_chars, char_array_4[i]) - base64_chars);
+        }
+
+        char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+        char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+        char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+        for (i = 0; i < 3; i++) {
+          mesh.update();
+          ret += char(char_array_3[i]);
+        }
+        i = 0;
+      }
+    }
+
+    if (i) {
+        for (j = i; j < 4; j++) {
+            char_array_4[j] = 0;
+        }
+
+        for (j = 0; j < 4; j++) {
+            char_array_4[j] = static_cast<unsigned char>(strchr(base64_chars, char_array_4[j]) - base64_chars);
+        }
+
+        char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+        char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+
+        for (j = 0; j < i - 1; j++) {
+            ret += char(char_array_3[j]);
+        }
+    }
+
+    return ret;
 }
 /****** base64_decode******/
 
@@ -113,7 +137,6 @@ void receivedCallback( uint32_t from, String &msg ) {
         check_len       = false;
       }
     }else{
-
       uint16_t current_len = msg.length();
       mesh.update();
       String firmware_file = "";
@@ -123,8 +146,10 @@ void receivedCallback( uint32_t from, String &msg ) {
       }
       mesh.update();
       String base64Data = base64_decode(firmware_file);
-      Serial.println(base64Data);
-      Serial.println(base64Data.length());
+      if(file_size != base64Data.length()) Serial.print("file error!");
+      else{
+        Serial.print("file_receive");
+      }
     }
 
   }
