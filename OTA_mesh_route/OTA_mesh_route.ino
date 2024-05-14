@@ -46,6 +46,7 @@ void get_command(char ch) {
   }else if(ch!='\r'){
     command_buf[ command_num++ ] = ch;
     command_num %= COMMAND_LENGTH;
+    memset(command_buf, 0x00, COMMAND_LENGTH);
   }
 }
 void command_progress(){
@@ -54,6 +55,8 @@ void command_progress(){
     if(command_buf[index_check] == 0x00) break;
     temp_text += command_buf[index_check];
   }
+  mesh.update();
+  String file_path = path_current+"/"+temp_text;
   if(command_buf[0]=='h' && command_buf[1]=='e' && command_buf[2]=='l' && command_buf[3]=='p'){
     command_helf();
   }else if(command_buf[0]=='c' && command_buf[1]=='d' && command_buf[2]==0x20){
@@ -71,7 +74,7 @@ void command_progress(){
         dir_path = strtok(0x00, "/");
       }
       path_depth -= 1;
-    }else if(exisits_check(path_current+"/"+temp_text)){
+    }else if(exisits_check(file_path)){
       path_depth += 1;
       if(path_current == "/") path_current += temp_text;
       else path_current += "/"+temp_text;
@@ -80,47 +83,33 @@ void command_progress(){
   }else if(command_buf[0]=='l' && command_buf[1]=='s'){
     dir_list(path_current,true,true);
   }else if(command_buf[0]=='m' && command_buf[1]=='d'){
-    dir_make(path_current+"/"+temp_text);
+    dir_make(file_path);
   }else if(command_buf[0]=='r' && command_buf[1]=='d'){
-    dir_remove(path_current+"/"+temp_text);
+    dir_remove(file_path);
   }else if(command_buf[0]=='r' && command_buf[1]=='f'){
     if(temp_text == "*") files_all_remove(path_current);
-    else file_remove(path_current+"/"+temp_text);
+    else file_remove(file_path);
   }else if(command_buf[0]=='o' && command_buf[1]=='p'){
-    Serial.println(file_read(path_current+"/"+temp_text));
+    Serial.println(file_read(file_path));
   }else if(command_buf[0]=='s' && command_buf[1]=='t'){
-    file_stream(path_current+"/"+temp_text);
+    file_stream(file_path);
   }else if(command_buf[0]=='s' && command_buf[1]=='w'){
-    firmware_slice(path_current+"/"+temp_text);
+    firmware_slice(file_path);
   }else if(command_buf[0]=='u' && command_buf[1]=='p'){
-
-    File file;
-    fs::FS &fs = SD;
-    mesh.update();
-    file = fs.open(path_current+temp_text);
-    uint16_t  cmd_size = file.size();
-    String    cmd_buf = "";
+    uint16_t  cmd_size = file_size(file_path);
     mesh.update();
 
     Serial.print("file_name : ");
     Serial.print(temp_text);
     Serial.print(" , size : ");
-    Serial.println(file.size());
+    Serial.println(cmd_size);
 
+    String  cmd_buf = file_read(file_path);
+    mesh.update();
     mesh.sendBroadcast("FIRMWARE");
-    mesh.update();
     mesh.sendBroadcast(temp_text);
+    mesh.sendBroadcast(String(cmd_size));
     mesh.update();
-    mesh.sendBroadcast(String(file.size()));
-    mesh.update();
-
-    while (file.available()) {
-      cmd_buf += char(file.read());
-      //mesh.update();
-    }
-
-    file.close();
-
     String base64Data = base64_encode(cmd_buf, cmd_size);
     mesh.sendBroadcast(base64Data);
     Serial.println("done.");
