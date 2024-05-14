@@ -3,6 +3,7 @@
 #include <FS.h>
 #include <painlessMesh.h>
 
+#include "base64.h"
 #include "filesys_esp.h"
 
 #define   MESH_PREFIX     "smartHiveMesh"
@@ -17,67 +18,6 @@ uint8_t path_depth   = 0;
 String  path_current = "/";
 
 #define COMMAND_LENGTH 128
-
-/****** base64_encode******/
-static const char base64_chars[] =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    "abcdefghijklmnopqrstuvwxyz"
-    "0123456789+/";
-
-String base64_encode(const unsigned char* bytes_to_encode, size_t in_len) {
-    String ret;
-    int i = 0;
-    int j = 0;
-    unsigned char char_array_3[3];
-    unsigned char char_array_4[4];
-
-    while (in_len--) {
-      mesh.update();
-      char_array_3[i++] = *(bytes_to_encode++);
-      if (i == 3) {
-        char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-        char_array_4[1] = ((char_array_3[0] & 0x03) << 4) +
-                          ((char_array_3[1] & 0xf0) >> 4);
-        char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) +
-                          ((char_array_3[2] & 0xc0) >> 6);
-        char_array_4[3] = char_array_3[2] & 0x3f;
-
-        for (i = 0; i < 4; i++) {
-          mesh.update();
-          ret += base64_chars[char_array_4[i]];
-        }
-        i = 0;
-      }
-    }
-
-    if (i) {
-        for (j = i; j < 3; j++) {
-            char_array_3[j] = '\0';
-        }
-
-        char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-        char_array_4[1] =
-            ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-        char_array_4[2] =
-            ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
-
-        for (j = 0; j < i + 1; j++) {
-            ret += base64_chars[char_array_4[j]];
-        }
-
-        while ((i++ < 3)) {
-            ret += '=';
-        }
-    }
-
-    return ret;
-}
-
-String base64_encode(const String& str, size_t in_len) {
-    return base64_encode(reinterpret_cast<const unsigned char*>(str.c_str()), in_len);
-}
-
-/****** base64_encode******/
 
 /***** funtion command ****/
 void command_helf() {
@@ -176,7 +116,7 @@ void command_progress(){
 
     while (file.available()) {
       cmd_buf += char(file.read());
-      mesh.update();
+      //mesh.update();
     }
 
     file.close();
@@ -279,7 +219,6 @@ void mesh_node_list(){
   Serial.print("[");
   while (node != nodes.end()) 
   {
-    mesh.update();
     Serial.printf("%u,", *node);
     node++;
   }
@@ -288,7 +227,7 @@ void mesh_node_list(){
 
 // Needed for painless library
 void receivedCallback( uint32_t from, String &msg ) {
-  Serial.println( String(from) + "=" + msg.c_str());
+  Serial.println( String(from) + "=" + msg);
   mesh.sendBroadcast("ROOTRECV");  
 }
 // Needed for painless library end
