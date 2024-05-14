@@ -52,12 +52,21 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 }
 
 //// ----------- Command  -----------
-char    command_Buf[COMMAND_LENGTH];
-int8_t  command_Num;
+void command_helf() {
+  Serial.println("********** help **********");
+  Serial.println("HELP  this text");
+  Serial.println("SHOW  wifi scan");
+  Serial.println("SSID  ex>SSID your ssid");
+  Serial.println("PASS  ex>PASS your password");
+  Serial.println("********** help **********");
+}
+
+char    command_buf[COMMAND_LENGTH];
+int8_t  command_num;
 
 void command_Service() {
   struct dataSet dataSend;
-  dataSend.MODULE  = strtok(command_Buf, "=");
+  dataSend.MODULE  = strtok(command_buf, "=");
   dataSend.TYPE    = strtok(NULL, "=");
   dataSend.COMMEND = strtok(NULL, "=");
   dataSend.VALUE1  = strtok(NULL, "=");
@@ -71,13 +80,13 @@ void command_Service() {
 
 void command_Process(char ch) {
   if(ch=='\n'){
-    command_Buf[command_Num] = 0x00;
-    command_Num = 0;
+    command_buf[command_num] = 0x00;
+    command_num = 0;
     command_Service();
+    memset(command_buf, 0x00, COMMAND_LENGTH);
   }else if(ch!='\r'){
-    command_Buf[command_Num++] = ch;
-    command_Num %= COMMAND_LENGTH;
-    memset(command_Num, 0x00, COMMAND_LENGTH);
+    command_buf[command_num++] = ch;
+    command_num %= COMMAND_LENGTH;
   }
 }
 
@@ -89,16 +98,80 @@ void wifi_config_change() {
   String temp_text  = "";
   bool   eep_change = false;
   for(uint8_t index_check=0; index_check<4; index_check++){
-    if(command_buf[index_check] == 0x32) break;
-    cmd_text += command_buf[index_check];
+    if(Serial_buf[index_check] == 0x32) break;
+    cmd_text += Serial_buf[index_check];
   }
   for(uint8_t index_check=5; index_check<COMMAND_LENGTH; index_check++){
-    if(command_buf[index_check] == 0x00) break;
-    temp_text += command_buf[index_check];
+    if(Serial_buf[index_check] == 0x00) break;
+    temp_text += Serial_buf[index_check];
   }
+  Serial.println(Serial_buf);
+  Serial.println(cmd_text);
+  Serial.println(temp_text);
   
-  if(cmd_text=="SSID"){
-    
+  if(cmd_text=="HELP"){
+    command_helf();
+  }else if(cmd_text=="SHOW"){
+
+    int n = WiFi.scanNetworks();
+    Serial.println("Scan done");
+    if (n == 0) {
+        Serial.println("no networks found");
+    } else {
+        Serial.print(n);
+        Serial.println(" networks found");
+        Serial.println("Nr | SSID                             | RSSI | CH | Encryption");
+        for (int i = 0; i < n; ++i) {
+            // Print SSID and RSSI for each network found
+            Serial.printf("%2d",i + 1);
+            Serial.print(" | ");
+            Serial.printf("%-32.32s", WiFi.SSID(i).c_str());
+            Serial.print(" | ");
+            Serial.printf("%4d", WiFi.RSSI(i));
+            Serial.print(" | ");
+            Serial.printf("%2d", WiFi.channel(i));
+            Serial.print(" | ");
+            switch (WiFi.encryptionType(i))
+            {
+            case WIFI_AUTH_OPEN:
+                Serial.print("open");
+                break;
+            case WIFI_AUTH_WEP:
+                Serial.print("WEP");
+                break;
+            case WIFI_AUTH_WPA_PSK:
+                Serial.print("WPA");
+                break;
+            case WIFI_AUTH_WPA2_PSK:
+                Serial.print("WPA2");
+                break;
+            case WIFI_AUTH_WPA_WPA2_PSK:
+                Serial.print("WPA+WPA2");
+                break;
+            case WIFI_AUTH_WPA2_ENTERPRISE:
+                Serial.print("WPA2-EAP");
+                break;
+            case WIFI_AUTH_WPA3_PSK:
+                Serial.print("WPA3");
+                break;
+            case WIFI_AUTH_WPA2_WPA3_PSK:
+                Serial.print("WPA2+WPA3");
+                break;
+            case WIFI_AUTH_WAPI_PSK:
+                Serial.print("WAPI");
+                break;
+            default:
+                Serial.print("unknown");
+            }
+            Serial.println();
+            delay(10);
+        }
+    }
+    Serial.println("");
+
+    // Delete the scan result to free memory for code below.
+    WiFi.scanDelete();
+
   }else if(cmd_text=="SSID"){
 
     Serial.print("ssid=");
@@ -142,13 +215,13 @@ void wifi_config_change() {
 
 void serail_Process(char ch) {
   if(ch=='\n'){
-    command_buf[ command_num ] = 0x00;
-    command_num = 0;
+    Serial_buf[Serial_num] = 0x00;
+    Serial_num = 0;
     wifi_config_change();
+    memset(Serial_buf, 0x00, SERIAL_LENGTH);
   }else if(ch!='\r'){
-    command_buf[ command_num++ ] = ch;
-    command_num %= SERIAL_LENGTH;
-    memset(command_buf, 0x00, SERIAL_LENGTH);
+    Serial_buf[Serial_num++] = ch;
+    Serial_num %= SERIAL_LENGTH;
   }
 }
 
@@ -181,10 +254,11 @@ void setup() {
   }
 
   Serial.println("------- wifi config -------");
-  Serial.println("AT+WIFI=SSID=PASS;");
   Serial.print("ssid: "); Serial.println(ssid);
   Serial.print("pass: "); Serial.println(password);
   Serial.println("---------------------------");
+  command_helf();
+
 
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
