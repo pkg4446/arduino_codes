@@ -56,18 +56,21 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 //// ----------- Command  -----------
 void command_helf_wifi() {
   Serial.println("********** help **********");
-  Serial.println("HELP  this text");
-  Serial.println("SHOW  wifi scan");
-  Serial.println("SSID  ex>SSID your ssid");
-  Serial.println("PASS  ex>PASS your password");
+  Serial.println("help  this text");
+  Serial.println("show  wifi scan");
+  Serial.println("ssid  ex)ssid your ssid");
+  Serial.println("pass  ex)pass your password");
   Serial.println("********** help **********");
+  Serial.print("your ssid: "); Serial.println(ssid);
+  Serial.print("your pass: "); Serial.println(password);
+  Serial.println("------- wifi config -------");
 }
 void command_helf() {
   Serial.println("********** help **********");
-  Serial.println("HELP  this text");
-  Serial.println("REST  reboot");
-  Serial.println("SHOW  wifi scan");
-  Serial.println("UPDT  firmware update check");
+  Serial.println("help  this text");
+  Serial.println("show  wifi scan");
+  Serial.println("rest  reboot");
+  Serial.println("updt  firmware update check");
   Serial.println("********** help **********");
 }
 /**********************************************/
@@ -181,11 +184,11 @@ void wifi_config_change() {
     temp_text += Serial_buf[index_check];
   }
   
-  if(cmd_text=="HELP"){
+  if(cmd_text=="help"){
     command_helf_wifi();
-  }else if(cmd_text=="SHOW"){
+  }else if(cmd_text=="show"){
     WIFI_scan();
-  }else if(cmd_text=="SSID"){
+  }else if(cmd_text=="ssid"){
     WiFi.disconnect(true);
     Serial.print("ssid=");
     if(temp_text.length() > 0){
@@ -202,7 +205,7 @@ void wifi_config_change() {
     }
     Serial.println("");
 
-  }else if(cmd_text=="PASS"){
+  }else if(cmd_text=="pass"){
     WiFi.disconnect(true);
     Serial.print("pass=");
     if(temp_text.length() > 0){
@@ -254,12 +257,12 @@ void serial_service() {
     temp_text += Serial_buf[index_check];
   }
   
-  if(cmd_text=="HELP"){
+  if(cmd_text=="help"){
     command_helf();
-  }else if(cmd_text=="REST"){
-    ESP.restart();
-  }else if(cmd_text=="SHOW"){
+  }else if(cmd_text=="show"){
     WIFI_scan();
+  }else if(cmd_text=="rest"){
+    ESP.restart();
   }else{
     Serial.println(Serial_buf);
   }
@@ -304,11 +307,7 @@ void setup() {
     ssid[index]     = EEPROM.read(eep_ssid[index]);
     password[index] = EEPROM.read(eep_pass[index]);
   }
-
-  Serial.println("------- wifi config -------");
-  Serial.print("ssid: "); Serial.println(ssid);
-  Serial.print("pass: "); Serial.println(password);
-  Serial.println("---------------------------");
+  
   command_helf_wifi();
 
   WiFi.disconnect(true);
