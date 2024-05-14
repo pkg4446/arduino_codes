@@ -23,6 +23,8 @@ const char* topic_pub     = "SHS";
 char        deviceID[18];
 char        sendID[21]    = "ID=";
 
+uint8_t mqtt_count = 0;
+
 WiFiClient mqtt_client;
 PubSubClient mqttClient(mqtt_client);
 
@@ -83,7 +85,7 @@ void command_Process(char ch) {
     command_buf[command_num] = 0x00;
     command_num = 0;
     command_Service();
-    memset(command_buf, 0x00, COMMAND_LENGTH);
+    //memset(command_buf, 0x00, COMMAND_LENGTH);
   }else if(ch!='\r'){
     command_buf[command_num++] = ch;
     command_num %= COMMAND_LENGTH;
@@ -105,33 +107,30 @@ void wifi_config_change() {
     if(Serial_buf[index_check] == 0x00) break;
     temp_text += Serial_buf[index_check];
   }
-  Serial.println(Serial_buf);
-  Serial.println(cmd_text);
-  Serial.println(temp_text);
   
   if(cmd_text=="HELP"){
     command_helf();
   }else if(cmd_text=="SHOW"){
-
-    int n = WiFi.scanNetworks();
-    Serial.println("Scan done");
-    if (n == 0) {
+    WiFi.disconnect(true);
+    Serial.println("WIFI Scanning…");
+    uint8_t networks = WiFi.scanNetworks();
+    if (networks == 0) {
         Serial.println("no networks found");
     } else {
-        Serial.print(n);
+        Serial.print(networks);
         Serial.println(" networks found");
         Serial.println("Nr | SSID                             | RSSI | CH | Encryption");
-        for (int i = 0; i < n; ++i) {
+        for (int index = 0; index < networks; ++index) {
             // Print SSID and RSSI for each network found
-            Serial.printf("%2d",i + 1);
+            Serial.printf("%2d",index + 1);
             Serial.print(" | ");
-            Serial.printf("%-32.32s", WiFi.SSID(i).c_str());
+            Serial.printf("%-32.32s", WiFi.SSID(index).c_str());
             Serial.print(" | ");
-            Serial.printf("%4d", WiFi.RSSI(i));
+            Serial.printf("%4d", WiFi.RSSI(index));
             Serial.print(" | ");
-            Serial.printf("%2d", WiFi.channel(i));
+            Serial.printf("%2d", WiFi.channel(index));
             Serial.print(" | ");
-            switch (WiFi.encryptionType(i))
+            switch (WiFi.encryptionType(index))
             {
             case WIFI_AUTH_OPEN:
                 Serial.print("open");
@@ -171,14 +170,15 @@ void wifi_config_change() {
 
     // Delete the scan result to free memory for code below.
     WiFi.scanDelete();
-
+    WiFi.begin(ssid, password);
   }else if(cmd_text=="SSID"){
-
+    WiFi.disconnect(true);
     Serial.print("ssid=");
     if(temp_text.length() > 0){
       for (int index = 0; index < EEPROM_SIZE; index++) {
         if(index < temp_text.length()){
           Serial.print(temp_text[index]);
+          ssid[index] = temp_text[index];
           EEPROM.write(eep_ssid[index], byte(temp_text[index]));
         }else{
           EEPROM.write(eep_ssid[index], byte(0x00));
@@ -189,12 +189,13 @@ void wifi_config_change() {
     Serial.println("");
 
   }else if(cmd_text=="PASS"){
-
+    WiFi.disconnect(true);
     Serial.print("pass=");
     if(temp_text.length() > 0){
       for (int index = 0; index < EEPROM_SIZE; index++) {
         if(index < temp_text.length()){
           Serial.print(temp_text[index]);
+          password[index] = temp_text[index];
           EEPROM.write(eep_pass[index], byte(temp_text[index]));
         }else{
           EEPROM.write(eep_pass[index], byte(0x00));
@@ -209,7 +210,8 @@ void wifi_config_change() {
   }
   if(eep_change){
     EEPROM.commit();
-    ESP.restart();
+    WiFi.begin(ssid, password);
+    if(WiFi.status() == WL_CONNECTED) ESP.restart();
   }
 }//Command_service() END
 
@@ -218,7 +220,7 @@ void serail_Process(char ch) {
     Serial_buf[Serial_num] = 0x00;
     Serial_num = 0;
     wifi_config_change();
-    memset(Serial_buf, 0x00, SERIAL_LENGTH);
+    //memset(Serial_buf, 0x00, SERIAL_LENGTH);
   }else if(ch!='\r'){
     Serial_buf[Serial_num++] = ch;
     Serial_num %= SERIAL_LENGTH;
@@ -294,11 +296,13 @@ void setup() {
     if (mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
       Serial.println("connected");
       digitalWrite(led_pin[3], true);
+      mqtt_count = 0;
     } else {
       digitalWrite(led_pin[3], false);
       Serial.print("failed with state ");
       Serial.print(mqttClient.state());
       delay(2000);
+      if(mqtt_count++ > 240) ESP.restart();
     }
   }
 
@@ -319,12 +323,13 @@ void reconnect(){
     if (mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
       Serial.println("connected");
       digitalWrite(led_pin[3], true);
-      ESP.restart();
+      mqtt_count = 0;
     } else {
       digitalWrite(led_pin[3], false);
       Serial.print("failed with state ");
-      Serial.print(mqttClient.state());
-      delay(2000);
+      Serial.println(mqttClient.state());
+      delay(1000);
+      if(mqtt_count++ > 240) ESP.restart();
     }
   }
 }

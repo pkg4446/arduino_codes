@@ -43,7 +43,7 @@ void get_command(char ch) {
     command_buf[ command_num ] = 0x00;
     command_num = 0;
     command_progress();
-    memset(command_buf, 0x00, COMMAND_LENGTH);
+    //memset(command_buf, 0x00, COMMAND_LENGTH);
   }else if(ch!='\r'){
     command_buf[ command_num++ ] = ch;
     command_num %= COMMAND_LENGTH;
