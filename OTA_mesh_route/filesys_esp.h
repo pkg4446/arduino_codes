@@ -26,5 +26,4 @@ void     files_all_remove(String  root_path);
 
 void     firmware_slice(String path);
 void     file_stream(String path);
-void     remove_firmware(String  root_path);
 size_t   file_size(String path);

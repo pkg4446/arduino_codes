@@ -20,4 +20,5 @@ String   file_read(String path);
 void     file_write(String path, String contents);
 void     file_append(String path, String contents);
 void     file_remove(String path);
+void     files_all_remove(String  root_path);
 void     file_move(String dir, String file, String target);

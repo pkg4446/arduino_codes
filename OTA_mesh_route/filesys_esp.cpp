@@ -239,27 +239,6 @@ void  file_stream(String path){
   file.close();
 }
 
-void  remove_firmware(String  root_path){
-  fs::FS &fs = SD;
-  uint16_t  total_file = 0;
-  if(exisits_check(root_path + "/sw_file.num")){
-    Serial.println("file check");    
-    total_file = file_read(root_path + "_file.num").toInt();
-    fs.remove(root_path + "_file.num");
-  }else{
-    total_file = dir_list("/firmware",false,false);
-  }
-  Serial.print("total:");
-  Serial.println(total_file);
-  String path = root_path + "/sw";
-  for(uint16_t index=1; index<=total_file; index++){
-    String file_path = path + String(total_file-index) + ".bin";
-    fs.remove(file_path);
-    Serial.println(file_path);
-  }
-  fs.rmdir(root_path);
-}
-
 size_t file_size(String path){
   size_t response = 0;
   File file;

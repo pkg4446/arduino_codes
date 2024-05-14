@@ -80,10 +80,7 @@ void dir_remove(String path){
         dir_remove(path+"/"+ dir_index(path,true,index_d));
       }
     }
-    uint8_t file_last = dir_list(path,false,false);
-    for(uint8_t index=file_last; index>0; index--){
-      file_remove(path +"/"+ dir_index(path,false,index));
-    }
+    files_all_remove(path);
     #if defined(ESP32)
       removeDir(SD,path);
     #else
@@ -230,6 +227,28 @@ void file_remove(String path){
       SD.remove(path);
     #endif
   }
+}
+
+void files_all_remove(String path) {
+  fs::FS &fs = SD;
+  File root  = SD.open(path);
+  if(!root || !root.isDirectory()){
+    Serial.print(path);
+    Serial.println(" not exist");
+    root.close();
+    return;
+  }
+  File file = root.openNextFile();
+  while(file){
+    String file_name = file.name();
+    bool   isFile    = false;
+    if(!file.isDirectory()) isFile = true;
+    file.close();
+    if(isFile) file_remove(path + "/" + file_name);
+    file = root.openNextFile();
+  }
+  file.close();
+  root.close();
 }
 
 void file_move(String dir, String file, String target){
