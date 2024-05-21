@@ -160,17 +160,6 @@ void WIFI_scan(){
   Serial.println("");
   // Delete the scan result to free memory for code below.
   WiFi.scanDelete();
-  WiFi.begin(ssid, password);
-  
-  unsigned long wifi_config_update  = 0UL;
-  while (WiFi.status() != WL_CONNECTED) {
-    unsigned long update_time = millis();
-    if(update_time - wifi_config_update > 3000){
-      wifi_able = false;
-      WiFi.disconnect(true);
-      break;;
-    }
-  }
 }
 /******************************************/
 void command_service(bool command_type){
@@ -178,9 +167,10 @@ void command_service(bool command_type){
   String temp_text    = "";
   bool   eep_change   = false;
   uint8_t check_index = 0;
-  for(uint8_t index_check=0; index_check<4; index_check++){
-    if(command_buf[index_check] == 0x32){
-      check_index = index_check;
+  
+  for(uint8_t index_check=0; index_check<COMMAND_LENGTH; index_check++){
+    if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
+      check_index = index_check+1;
       break;
     }
     cmd_text += command_buf[index_check];
@@ -228,8 +218,12 @@ void command_service(bool command_type){
     }
     Serial.println("");
 
-  }else if(command_buf[0]=='r' && command_buf[1]=='d'){
-
+  }else if(cmd_text=="wifi"){
+    wifi_connect();
+  }else if(cmd_text=="scan"){
+    WIFI_scan();
+  }else if(cmd_text=="reboot"){
+    ESP.restart();WIFI_scan();
   }else{
     Serial.println("wrong command!");
   }
@@ -256,11 +250,10 @@ void command_process(char ch) {
 }
 /******************************************/
 void mqtt_connect() {
+  mqttClient.disconnect();
   if(wifi_able){
-
     //send2Nextion("MAC.txt=\"Try to connect WIFI\"");
     //send2Nextion("btWIFI.val=0");
-
     mqttClient.setServer(mqttServer, mqttPort);
     mqttClient.setCallback(mqtt_callback);
 
@@ -276,7 +269,7 @@ void mqtt_connect() {
     char* sub_ID    = sendID;
 
     unsigned long WIFI_wait  = 0UL;
-    uint8_t       WIFI_count = 0;
+    bool mqtt_connected = true;
     while (!mqttClient.connected()) {
       if (millis() > WIFI_wait + 1000) {
         WIFI_wait = millis();
@@ -287,12 +280,19 @@ void mqtt_connect() {
         } else {
           Serial.print("failed with state ");
           Serial.print(mqttClient.state());
+          mqtt_connected = false;
+          break;
         }
       }
     }
-    mqttClient.subscribe(topic_sub);
-    mqttClient.publish(topic_pub, sub_ID);
-    Serial.println("MQTT Connected");
+    Serial.print("MQTT Connected ");
+    if(mqtt_connected){
+      mqttClient.subscribe(topic_sub);
+      mqttClient.publish(topic_pub, sub_ID);
+      Serial.println(sub_ID);
+    }else{
+      Serial.println("fail");
+    }
   }
 }
 
@@ -304,42 +304,11 @@ void wifi_connect() {
   unsigned long wifi_config_update  = 0UL;
   while (WiFi.status() != WL_CONNECTED) {
     unsigned long update_time = millis();
-    if(update_time - wifi_config_update > 3000){
+    if(update_time - wifi_config_update > 5000){
       wifi_able = false;
-      WIFI_scan();
-      return;
+      Serial.println("wifi fail");
+      break;
     }
-  }
-  mqtt_connect();
-}
-
-void reconnect(){
-
-  char  deviceID[18];
-  char  sendID[21]  = "ID=";
-  for (int i = 0; i < 17; i++) {
-    sendID[i + 3] = WiFi.macAddress()[i];
-    deviceID[i]   = sendID[i + 3];
-  }
-  char* topic_sub = deviceID;
-  char* sub_ID    = sendID;
-
-  unsigned long WIFI_wait  = 0UL;
-  while (!mqttClient.connected()) {
-
-    if (millis() > WIFI_wait + 1000) {
-      WIFI_wait = millis();
-      if (!wifi_able){
-        mqttClient.disconnect();
-      }else if(mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
-        Serial.println("connected");
-        ESP.restart();
-      } else {
-        Serial.print("failed with state ");
-        Serial.print(mqttClient.state());
-      }
-    }
-
   }
 }
 /***************Functions******************/
@@ -365,7 +334,7 @@ void setup() {
     password[index] = EEPROM.read(eep_pass[index]);
   }
   wifi_connect();
-  
+  command_help();
   Serial.println("System online");
   send2Nextion("page 0");
 }
@@ -374,7 +343,7 @@ void setup() {
 void loop() {
   if(wifi_able){
     if (mqttClient.connected()){mqttClient.loop();}
-    else{reconnect();}
+    else{mqtt_connect();}
   }
   if (Serial.available()) command_process(Serial.read());
   if (nxSerial.available()) command_process(nxSerial.read());
