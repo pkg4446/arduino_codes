@@ -179,19 +179,19 @@ void command_service(bool command_type){
   bool   eep_change   = false;
   uint8_t check_index = 0;
   for(uint8_t index_check=0; index_check<4; index_check++){
-    if(Serial_buf[index_check] == 0x32){
+    if(command_buf[index_check] == 0x32){
       check_index = index_check;
       break;
     }
-    cmd_text += Serial_buf[index_check];
+    cmd_text += command_buf[index_check];
   }
   for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
-    if(Serial_buf[index_check] == 0x00) break;
-    temp_text += Serial_buf[index_check];
+    if(command_buf[index_check] == 0x00) break;
+    temp_text += command_buf[index_check];
   }
 
   if(cmd_text=="help"){
-    command_help_wifi();
+    command_help();
   }else if(cmd_text=="show"){
     WIFI_scan();
   }else if(cmd_text=="ssid"){
