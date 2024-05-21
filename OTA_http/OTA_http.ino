@@ -54,7 +54,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 }
 
 //// ----------- Command  -----------
-void command_helf_wifi() {
+void command_help_wifi() {
   Serial.println("********** help **********");
   Serial.println("help  this text");
   Serial.println("show  wifi scan");
@@ -65,7 +65,7 @@ void command_helf_wifi() {
   Serial.print("your pass: "); Serial.println(password);
   Serial.println("------- wifi config -------");
 }
-void command_helf() {
+void command_help() {
   Serial.println("********** help **********");
   Serial.println("help  this text");
   Serial.println("show  wifi scan");
@@ -175,17 +175,21 @@ void wifi_config_change() {
   String cmd_text   = "";
   String temp_text  = "";
   bool   eep_change = false;
+  uint8_t check_index = 0;
   for(uint8_t index_check=0; index_check<4; index_check++){
-    if(Serial_buf[index_check] == 0x32) break;
+    if(Serial_buf[index_check] == 0x32){
+      check_index = index_check;
+      break;
+    }
     cmd_text += Serial_buf[index_check];
   }
-  for(uint8_t index_check=5; index_check<COMMAND_LENGTH; index_check++){
+  for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
     if(Serial_buf[index_check] == 0x00) break;
     temp_text += Serial_buf[index_check];
   }
   
   if(cmd_text=="help"){
-    command_helf_wifi();
+    command_help_wifi();
   }else if(cmd_text=="show"){
     WIFI_scan();
   }else if(cmd_text=="ssid"){
@@ -258,7 +262,7 @@ void serial_service() {
   }
   
   if(cmd_text=="help"){
-    command_helf();
+    command_help();
   }else if(cmd_text=="show"){
     WIFI_scan();
   }else if(cmd_text=="rest"){
@@ -308,7 +312,7 @@ void setup() {
     password[index] = EEPROM.read(eep_pass[index]);
   }
   
-  command_helf_wifi();
+  command_help_wifi();
 
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
@@ -362,7 +366,7 @@ void setup() {
   Serial.println(" - MQTT Connected");
   Serial.println("ver 1.0.0");
 
-  command_helf();
+  command_help();
 }//End Of Setup()
 
 void reconnect(){
