@@ -124,40 +124,19 @@ void WIFI_scan(){
       Serial.print(" | ");
       Serial.printf("%2d", WiFi.channel(index));
       Serial.print(" | ");
-      switch (WiFi.encryptionType(index))
-      {
-      case WIFI_AUTH_OPEN:
-          Serial.print("open");
-          break;
-      case WIFI_AUTH_WEP:
-          Serial.print("WEP");
-          break;
-      case WIFI_AUTH_WPA_PSK:
-          Serial.print("WPA");
-          break;
-      case WIFI_AUTH_WPA2_PSK:
-          Serial.print("WPA2");
-          break;
-      case WIFI_AUTH_WPA_WPA2_PSK:
-          Serial.print("WPA+WPA2");
-          break;
-      case WIFI_AUTH_WPA2_ENTERPRISE:
-          Serial.print("WPA2-EAP");
-          break;
-      case WIFI_AUTH_WPA3_PSK:
-          Serial.print("WPA3");
-          break;
-      case WIFI_AUTH_WPA2_WPA3_PSK:
-          Serial.print("WPA2+WPA3");
-          break;
-      case WIFI_AUTH_WAPI_PSK:
-          Serial.print("WAPI");
-          break;
-      default:
-          Serial.print("unknown");
-      }
-      Serial.println();
-      delay(10);
+      byte wifi_type = WiFi.encryptionType(index);
+      String wifi_encryptionType;
+      if(wifi_type == WIFI_AUTH_OPEN){wifi_encryptionType = "open";}
+      else if(wifi_type == WIFI_AUTH_WEP){wifi_encryptionType = "WEP";}
+      else if(wifi_type == WIFI_AUTH_WPA_PSK){wifi_encryptionType = "WPA";}
+      else if(wifi_type == WIFI_AUTH_WPA2_PSK){wifi_encryptionType = "WPA2";}
+      else if(wifi_type == WIFI_AUTH_WPA_WPA2_PSK){wifi_encryptionType = "WPA2";}
+      else if(wifi_type == WIFI_AUTH_WPA2_ENTERPRISE){wifi_encryptionType = "WPA2-EAP";}
+      else if(wifi_type == WIFI_AUTH_WPA3_PSK){wifi_encryptionType = "WPA3";}
+      else if(wifi_type == WIFI_AUTH_WPA2_WPA3_PSK){wifi_encryptionType = "WPA2+WPA3";}
+      else if(wifi_type == WIFI_AUTH_WAPI_PSK){wifi_encryptionType = "WAPI";}
+      else{wifi_encryptionType = "unknown";}
+      Serial.println(wifi_encryptionType);
     }
   }
 
@@ -288,6 +267,8 @@ void mqtt_connect() {
         WIFI_wait = millis();
         if (!wifi_able){
           mqttClient.disconnect();
+          Serial.println("WIFI disconneted");
+          return;
         }else if(mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
           Serial.println("connected");
         } else {
