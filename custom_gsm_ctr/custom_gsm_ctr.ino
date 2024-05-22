@@ -88,18 +88,20 @@ void Display(String IDs, uint16_t values) {
 }
 /******************************************/
 void wifi_config() {
-  Serial.println("****** wifi config ******");
+  Serial.println("******** wifi config ********");
   Serial.print("your ssid: "); Serial.println(ssid);
   Serial.print("your pass: "); Serial.println(password);
-  Serial.println("****** wifi config ******");
+  Serial.println("******** wifi config ********");
 }
 void command_help() {
-  Serial.println("********** help **********");
-  Serial.println("help  this text");
-  Serial.println("show  wifi scan");
-  Serial.println("ssid  ex)ssid your ssid");
-  Serial.println("pass  ex)pass your password");
-  Serial.println("********** help **********");
+  Serial.println("************ help ************");
+  Serial.println("help   * this text");
+  Serial.println("show   * wifi scan");
+  Serial.println("ssid   * ex)ssid your ssid");
+  Serial.println("pass   * ex)pass your password");
+  Serial.println("wifi   * wifi connect");
+  Serial.println("reboot * wifi connect");
+  Serial.println("************ help ************");
 }
 /******************************************/
 void WIFI_scan(){
