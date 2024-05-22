@@ -1,12 +1,15 @@
 #include <EEPROM.h>
+#include <Wire.h>
 #include <WiFi.h>
 #include <PubSubClient.h> //https://github.com/knolleary/pubsubclient
+#include <DS3231.h>
 
 #define TOTAL_RELAY 10
 #define EEPROM_SIZE 16
 #define COMMAND_LENGTH  32
 #define UPDATE_INTERVAL 1000L
 
+DS3231 RTC_DS3231;
 HardwareSerial nxSerial(2);
 enum Func {
     Water_A = 0,
@@ -89,22 +92,26 @@ void Display(String IDs, uint16_t values) {
 /******************************************/
 void wifi_config() {
   if(uart_type){
-    Serial.println("******** wifi config ********");
+    Serial.println("********* wifi config *********");
     Serial.print("your ssid: ");Serial.println(ssid);
     Serial.print("your pass: "); Serial.println(password);
-    Serial.println("******** wifi config ********");
+    Serial.println("********* wifi config *********");
+  }else{
+
   }
 }
 void command_help() {
   if(uart_type){
-    Serial.println("************ help ************");
-    Serial.println("help   * this text");
-    Serial.println("show   * wifi scan");
-    Serial.println("ssid   * ex)ssid your ssid");
-    Serial.println("pass   * ex)pass your password");
-    Serial.println("wifi   * wifi connect");
-    Serial.println("reboot * wifi connect");
-    Serial.println("************ help ************");
+    Serial.println("************* help *************");
+    Serial.println("time    * show system time");
+    Serial.println("timeset * change system time");
+    Serial.println("show    * wifi scan");
+    Serial.println("ssid    * ex)ssid your ssid");
+    Serial.println("pass    * ex)pass your password");
+    Serial.println("wifi    * wifi connect");
+    Serial.println("reboot  * system reboot");
+    Serial.println("help    * this text");
+    Serial.println("************* help *************");
   }
 }
 /******************************************/
@@ -176,8 +183,10 @@ void command_service(bool command_type){
     temp_text += command_buf[index_check];
   }
   /**********/
-  if(cmd_text=="help"){
-    command_help();
+  if(cmd_text=="time"){
+    time_show();
+  }else if(cmd_text=="timeset"){
+    time_set();
   }
   /*****OFF_LINE_CMD*****/
   else if(command_type && cmd_text=="ssid"){
@@ -228,6 +237,8 @@ void command_service(bool command_type){
   /*****OFF_LINE_CMD*****/
   else if(cmd_text=="reboot"){
     ESP.restart();
+  }else if(cmd_text=="help"){
+    command_help();
   }else{
     Serial.print("err: ");
     Serial.println(command_buf);
@@ -316,11 +327,73 @@ void wifi_connect() {
     }
   }
 }
+
+void time_show(){
+  bool century = false;
+  bool h12Flag;
+  bool pmFlag;
+  if(uart_type){
+    Serial.print('2');
+    if(century)Serial.print('1');
+    else Serial.print('0');
+    uint8_t year = RTC_DS3231.getYear();
+    if(year<10) Serial.print('0');
+    Serial.print(year);
+    Serial.print('/');
+    Serial.print(RTC_DS3231.getMonth(century));
+    Serial.print('/');
+    Serial.print(RTC_DS3231.getDate());
+    Serial.print(' ');
+    uint8_t days = RTC_DS3231.getDoW();
+    Serial.print(' ');
+    Serial.print(RTC_DS3231.getHour(h12Flag, pmFlag));
+    Serial.print(':');
+    Serial.print(RTC_DS3231.getMinute());
+    Serial.print(':');
+    Serial.print(RTC_DS3231.getSecond());
+
+    Serial.print(" board temp:");
+    Serial.println(RTC_DS3231.getTemperature(), 2);
+  }
+}
+
+void time_set(){
+  /*
+  JS CODE
+  {
+    let now  = new Date();
+    let time = `time ${now.getFullYear()} ${now.getMonth()+1} ${now.getDate()} ${now.getUTCDay()} ${now.getHours()} ${now.getMinutes()} ${now.getSeconds()}`;
+  }
+  DATA
+    timeset 2024 5 22 3 15 48 39
+  */
+  uint8_t time_data[6];
+  uint8_t time_index = 0;
+  String time_text = "";
+  for(uint8_t index=8; index<COMMAND_LENGTH; index++){
+    if(command_buf[index] == 0x20 || command_buf[index] == 0x00){
+      time_data[time_index++] = (time_text.toInt())%100;
+      time_text = "";
+      index+=1; //passing to 0x20
+      if(time_index > 5) break;
+    };
+    time_text += command_buf[index];
+  }
+  if(time_data[3]==0) time_data[3] = 7;
+  RTC_DS3231.setYear(time_data[0]);
+  RTC_DS3231.setMonth(time_data[1]);
+  RTC_DS3231.setDate(time_data[2]);
+  RTC_DS3231.setDoW(time_data[3]);
+  RTC_DS3231.setHour(time_data[4]);
+  RTC_DS3231.setMinute(time_data[5]);
+  RTC_DS3231.setSecond(time_data[6]);
+}
 /***************Functions******************/
 
 void setup() {
   Serial.begin(115200);
   nxSerial.begin(115200, SERIAL_8N1, 18, 19);
+  Wire.begin();
 
   for (uint8_t index = 0; index < TOTAL_RELAY; index++)
   {
