@@ -167,56 +167,54 @@ void command_service(bool command_type){
   /**********/
   if(cmd_text=="help"){
     command_help();
-  }else if(command_type){
-    /*****OFF_LINE_CMD*****/
-    if(cmd_text=="ssid"){
-      wifi_able = false;
-      WiFi.disconnect(true);
-      Serial.print("ssid: ");
-      if(temp_text.length() > 0){
-        for (int index = 0; index < EEPROM_SIZE; index++) {
-          if(index < temp_text.length()){
-            Serial.print(temp_text[index]);
-            ssid[index] = temp_text[index];
-            EEPROM.write(eep_ssid[index], byte(temp_text[index]));
-          }else{
-            EEPROM.write(eep_ssid[index], byte(0x00));
-          }
+  }
+  /*****OFF_LINE_CMD*****/
+  else if(command_type && cmd_text=="ssid"){
+    wifi_able = false;
+    WiFi.disconnect(true);
+    Serial.print("ssid: ");
+    if(temp_text.length() > 0){
+      for (int index = 0; index < EEPROM_SIZE; index++) {
+        if(index < temp_text.length()){
+          Serial.print(temp_text[index]);
+          ssid[index] = temp_text[index];
+          EEPROM.write(eep_ssid[index], byte(temp_text[index]));
+        }else{
+          EEPROM.write(eep_ssid[index], byte(0x00));
         }
-        eep_change = true;
       }
-      Serial.println("");
-    }else if(cmd_text=="pass"){
-      wifi_able = false;
-      WiFi.disconnect(true);
-      Serial.print("pass: ");
-      if(temp_text.length() > 0){
-        for (int index = 0; index < EEPROM_SIZE; index++) {
-          if(index < temp_text.length()){
-            Serial.print(temp_text[index]);
-            password[index] = temp_text[index];
-            EEPROM.write(eep_pass[index], byte(temp_text[index]));
-          }else{
-            EEPROM.write(eep_pass[index], byte(0x00));
-          }
-        }
-        eep_change = true;
-      }
-      Serial.println("");
-    }else if(cmd_text=="wifi"){
-      if(temp_text=="stop"){
-        wifi_able = false;
-        WiFi.disconnect(true);
-      }else{
-        wifi_connect();
-      }
-    }else if(cmd_text=="scan"){
-      WIFI_scan();
-    }else{
-      Serial.println("err!");
+      eep_change = true;
     }
-    /*****OFF_LINE_CMD*****/
-  }else if(cmd_text=="reboot"){
+    Serial.println("");
+  }else if(command_type && cmd_text=="pass"){
+    wifi_able = false;
+    WiFi.disconnect(true);
+    Serial.print("pass: ");
+    if(temp_text.length() > 0){
+      for (int index = 0; index < EEPROM_SIZE; index++) {
+        if(index < temp_text.length()){
+          Serial.print(temp_text[index]);
+          password[index] = temp_text[index];
+          EEPROM.write(eep_pass[index], byte(temp_text[index]));
+        }else{
+          EEPROM.write(eep_pass[index], byte(0x00));
+        }
+      }
+      eep_change = true;
+    }
+    Serial.println("");
+  }else if(command_type && cmd_text=="wifi"){
+    if(temp_text=="stop"){
+      wifi_able = false;
+      WiFi.disconnect(true);
+    }else{
+      wifi_connect();
+    }
+  }else if(command_type && cmd_text=="scan"){
+    WIFI_scan();
+  }
+  /*****OFF_LINE_CMD*****/
+  else if(cmd_text=="reboot"){
     ESP.restart();
   }else{
     Serial.println("err!");
