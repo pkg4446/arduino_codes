@@ -6,27 +6,32 @@
 #include "text_print.h"
 
 #define TOTAL_RELAY 10
-#define EEPROM_SIZE 16
+#define EEPROM_SIZE_CONFIG  16
+#define EEPROM_SIZE_VALUE   3
+#define EEPROM_SIZE_CTR     7
 #define COMMAND_LENGTH  32
 #define UPDATE_INTERVAL 1000L
 
 DS3231 RTC_DS3231;
 HardwareSerial nxSerial(2);
-enum Func {
+enum RelayFunc {
     Water_A = 0,
     Water_B,
-    Cooler,
-    Heater,
     Lamp_A,
     Lamp_B,
     Lamp_C,
     Circulater,
+    Cooler,
+    Heater,
     Spare_A,
     Spare_B
 };
 /***************EEPROM*********************/
-const uint8_t eep_ssid[EEPROM_SIZE] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-const uint8_t eep_pass[EEPROM_SIZE] = {16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
+const uint8_t eep_ssid[EEPROM_SIZE_CONFIG] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+const uint8_t eep_pass[EEPROM_SIZE_CONFIG] = {16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
+const uint8_t eep_var[EEPROM_SIZE_VALUE*EEPROM_SIZE_CTR] = {32,33,34, 35,36,37, 38,39,40,
+                                                            41,42,43, 44,45,46, 47,48,49,
+                                                            50,51,52};
 /***************EEPROM*********************/
 /***************MQTT_CONFIG****************/
 const char*     mqttServer    = "smarthive.kr";
@@ -44,10 +49,11 @@ const int8_t Relay[TOTAL_RELAY] = {2,4,5,12,13,23,27,26,25,33};
 /***************PIN_CONFIG*****************/
 /***************Interval_timer*************/
 unsigned long prevUpdateTime = 0L;
+uint8_t       update_order   = 0;
 /***************Interval_timer*************/
 /***************Variable*******************/
-char    ssid[EEPROM_SIZE];
-char    password[EEPROM_SIZE];
+char    ssid[EEPROM_SIZE_CONFIG];
+char    password[EEPROM_SIZE_CONFIG];
 /***************Variable*******************/
 typedef struct ctr_var{
     bool    enable;
@@ -56,10 +62,13 @@ typedef struct ctr_var{
     uint8_t stop;
 }ctr_var;
 /***************Variable*******************/
+ctr_var iot_ctr[EEPROM_SIZE_CTR];
+/*
 ctr_var water[2];   // run:동작_초, stop:정지_분
+ctr_var lamp[3];    // run:시작시간,stop:정지시간
 ctr_var temp_ctr;   // run:목표값,  stop:허용치
 ctr_var circulate;  // run:동작_분, stop:정지_분
-ctr_var lamp[3];    // run:시작시간,stop:정지시간
+*/
 //이산화탄소 측정 추가
 bool    wifi_able;
 bool    uart_type = true;
@@ -163,7 +172,10 @@ void command_service(bool command_type){
     cmd_text += command_buf[index_check];
   }
   for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
-    if(command_buf[index_check] == 0x00) break;
+    if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
+      check_index = index_check+1;
+      break;
+    }
     temp_text += command_buf[index_check];
   }
   /**********/
@@ -173,6 +185,51 @@ void command_service(bool command_type){
     time_set();
   }else if(cmd_text=="reboot"){
     ESP.restart();
+  }else if(cmd_text=="set"){
+    eep_change = true;
+
+    uint8_t iot_ctr_type = 0;
+    if(temp_text=="water_a"){iot_ctr_type=Water_A;}
+    else if(temp_text=="water_b"){iot_ctr_type=Water_B;}
+    else if(temp_text=="lamp_a"){iot_ctr_type=Lamp_A;}
+    else if(temp_text=="lamp_b"){iot_ctr_type=Lamp_B;}
+    else if(temp_text=="lamp_c"){iot_ctr_type=Lamp_C;}
+    else if(temp_text=="circul"){iot_ctr_type=Circulater;}
+    else { iot_ctr_type=Cooler; }
+
+    String cmd_select = "";
+    for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
+      if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
+        check_index = index_check+1;
+        break;
+      }
+      cmd_select += command_buf[index_check];
+    }
+
+    String cmd_value = "";
+    for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
+      if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
+        check_index = index_check+1;
+        break;
+      }
+      cmd_value += command_buf[index_check];
+    }
+    
+    if(cmd_select=="ena"){
+      iot_ctr[iot_ctr_type].enable = cmd_value.toInt();
+      EEPROM.write(eep_var[iot_ctr_type*3], iot_ctr[iot_ctr_type].enable);
+    }else if(cmd_select=="run"){
+      iot_ctr[iot_ctr_type].run    = cmd_value.toInt();
+      EEPROM.write(eep_var[iot_ctr_type*3+1], iot_ctr[iot_ctr_type].run);
+    }else if(cmd_select=="stp"){
+      iot_ctr[iot_ctr_type].stop   = cmd_value.toInt();
+      EEPROM.write(eep_var[iot_ctr_type*3+2], iot_ctr[iot_ctr_type].stop);
+    }
+    if(uart_type){
+      Serial.print("enable");Serial.println(iot_ctr[iot_ctr_type].enable);
+      Serial.print("run");Serial.println(iot_ctr[iot_ctr_type].run);
+      Serial.print("stop");Serial.println(iot_ctr[iot_ctr_type].stop);
+    }
   }
   /*****OFF_LINE_CMD*****/
   else if(command_type){
@@ -181,7 +238,7 @@ void command_service(bool command_type){
       WiFi.disconnect(true);
       if(uart_type) Serial.print("ssid: ");
       if(temp_text.length() > 0){
-        for (int index = 0; index < EEPROM_SIZE; index++) {
+        for (int index = 0; index < EEPROM_SIZE_CONFIG; index++) {
           if(index < temp_text.length()){
             if(uart_type) Serial.print(temp_text[index]);
             ssid[index] = temp_text[index];
@@ -198,7 +255,7 @@ void command_service(bool command_type){
       WiFi.disconnect(true);
       if(uart_type) Serial.print("pass: ");
       if(temp_text.length() > 0){
-        for (int index = 0; index < EEPROM_SIZE; index++) {
+        for (int index = 0; index < EEPROM_SIZE_CONFIG; index++) {
           if(index < temp_text.length()){
             if(uart_type) Serial.print(temp_text[index]);
             password[index] = temp_text[index];
@@ -371,6 +428,7 @@ void time_set(){
   RTC_DS3231.setMinute(time_data[5]);
   RTC_DS3231.setSecond(time_data[6]);
 }
+/******************************************/
 /***************Functions******************/
 
 void setup() {
@@ -384,7 +442,7 @@ void setup() {
     digitalWrite(Relay[index], false);
   }
 
-  if (!EEPROM.begin(EEPROM_SIZE*2)){
+  if (!EEPROM.begin((EEPROM_SIZE_CONFIG*2) + (EEPROM_SIZE_VALUE*EEPROM_SIZE_CTR))){
     if(uart_type){
       Serial.println("Failed to initialise eeprom");
       Serial.println("Restarting...");
@@ -392,10 +450,17 @@ void setup() {
     delay(1000);
     ESP.restart();
   }
-  for (int index = 0; index < EEPROM_SIZE; index++) {
+  for (int index = 0; index < EEPROM_SIZE_CONFIG; index++) {
     ssid[index]     = EEPROM.read(eep_ssid[index]);
     password[index] = EEPROM.read(eep_pass[index]);
   }
+
+  for (int index = 0; index < EEPROM_SIZE_CTR; index++) {
+    iot_ctr[index].enable = EEPROM.read(eep_var[3*index]);
+    iot_ctr[index].run    = EEPROM.read(eep_var[3*index+1]);
+    iot_ctr[index].stop   = EEPROM.read(eep_var[3*index+2]);
+  }
+
   wifi_connect();
   command_help(&Serial);
   if(uart_type) Serial.println("System online");
@@ -410,4 +475,35 @@ void loop() {
   }
   if (Serial.available()) command_process(Serial.read(),true);
   if (nxSerial.available()) command_process(nxSerial.read(),false);
+  system_ctr(millis());
+}
+
+void system_ctr(unsigned long millisec){
+  if(millisec > prevUpdateTime + 250){
+    prevUpdateTime = millisec;
+    update_order += 1;
+    if(update_order == 1){
+      if(iot_ctr[Cooler].enable){
+        int8_t temp_now = 25;//온도
+        if(temp_now > iot_ctr[Cooler].run + iot_ctr[Cooler].stop){
+          digitalWrite(Relay[Cooler], true);
+          digitalWrite(Relay[Heater], false);
+          iot_ctr[Cooler].state = true;
+        }else if(temp_now < iot_ctr[Cooler].run - iot_ctr[Cooler].stop){
+          digitalWrite(Relay[Cooler], false);
+          digitalWrite(Relay[Heater], true);
+          iot_ctr[Cooler].state = false;
+        }else if((iot_ctr[Cooler].state && temp_now > iot_ctr[Cooler].run)||(!iot_ctr[Cooler].state && temp_now < iot_ctr[Cooler].run)){
+          digitalWrite(Relay[Cooler], false);
+          digitalWrite(Relay[Heater], false);
+        }
+      }
+    }else if(update_order == 2){
+
+    }else if(update_order == 3){
+
+    }else {
+      update_order = 0;
+    }
+  }
 }
