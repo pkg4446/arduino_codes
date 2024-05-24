@@ -62,7 +62,9 @@ typedef struct ctr_var{
     uint8_t stop;
 }ctr_var;
 /***************Variable*******************/
-ctr_var iot_ctr[EEPROM_SIZE_CTR];
+ctr_var   iot_ctr[EEPROM_SIZE_CTR];
+uint16_t  water_ctr_time[2]   = {0,};
+uint16_t  Circulater_ctr_time = 0;
 /*
 ctr_var water[2];   // run:동작_초, stop:정지_분
 ctr_var lamp[3];    // run:시작시간,stop:정지시간
@@ -456,6 +458,7 @@ void setup() {
   }
 
   for (int index = 0; index < EEPROM_SIZE_CTR; index++) {
+    iot_ctr[index].state  = true;
     iot_ctr[index].enable = EEPROM.read(eep_var[3*index]);
     iot_ctr[index].run    = EEPROM.read(eep_var[3*index+1]);
     iot_ctr[index].stop   = EEPROM.read(eep_var[3*index+2]);
@@ -485,7 +488,10 @@ void system_ctr(unsigned long millisec){
     if(update_order == 1){
       if(iot_ctr[Cooler].enable){
         int8_t temp_now = 25;//온도
-        if(temp_now > iot_ctr[Cooler].run + iot_ctr[Cooler].stop){
+        int8_t temp_rtc = int8_t(RTC_DS3231.getTemperature());
+        if(temp_now < temp_rtc-10 || temp_now > temp_rtc+10){
+          //온도센서 고장
+        }else if(temp_now > iot_ctr[Cooler].run + iot_ctr[Cooler].stop){
           digitalWrite(Relay[Cooler], true);
           digitalWrite(Relay[Heater], false);
           iot_ctr[Cooler].state = true;
@@ -499,11 +505,71 @@ void system_ctr(unsigned long millisec){
         }
       }
     }else if(update_order == 2){
-
+      for (uint8_t index = 0; index < 2; index++){
+        if(iot_ctr[Water_A+index].enable){
+          if(iot_ctr[Water_A+index].state){
+            if(--water_ctr_time[index] < 1){
+              iot_ctr[Water_A+index].state = false;
+              water_ctr_time[index] = iot_ctr[Water_A+index].stop*60;
+            }else if(water_ctr_time[index] > iot_ctr[Water_A+index].run) water_ctr_time[index] = iot_ctr[Water_A+index].run;
+          }else{
+            if(--water_ctr_time[index] < 1){
+              iot_ctr[Water_A+index].state = true;
+              water_ctr_time[index] = iot_ctr[Water_A+index].run;
+            }else if(water_ctr_time[index] > iot_ctr[Water_A+index].stop) water_ctr_time[index] = iot_ctr[Water_A+index].stop;
+          }
+        }
+      }
     }else if(update_order == 3){
-
+      if(iot_ctr[Circulater].enable){
+        if(iot_ctr[Circulater].state){
+          if(--Circulater_ctr_time < 1){
+            iot_ctr[Circulater].state = false;
+            Circulater_ctr_time = iot_ctr[Circulater].stop*60;
+          }else if(Circulater_ctr_time > iot_ctr[Circulater].run) Circulater_ctr_time = iot_ctr[Circulater].run;
+        }else{
+          if(--Circulater_ctr_time < 1){
+            iot_ctr[Circulater].state = true;
+            Circulater_ctr_time = iot_ctr[Circulater].run*60;
+          }else if(Circulater_ctr_time > iot_ctr[Circulater].stop) Circulater_ctr_time = iot_ctr[Circulater].stop;
+        }
+      }
     }else {
       update_order = 0;
+      bool h12Flag;
+      bool pmFlag;
+      uint8_t hour_now = RTC_DS3231.getHour(h12Flag, pmFlag);
+      for (uint8_t index = 0; index < 3; index++){
+        if(iot_ctr[Lamp_A+index].enable){
+          if(iot_ctr[Lamp_A+index].run < iot_ctr[Lamp_A+index].stop){
+            if(hour_now >= iot_ctr[Lamp_A+index].run && hour_now<iot_ctr[Lamp_A+index].stop){
+              iot_ctr[Lamp_A+index].state = true;
+            }else{
+              iot_ctr[Lamp_A+index].state = false;
+            }
+          }else if(iot_ctr[Lamp_A+index].run==iot_ctr[Lamp_A+index].stop){
+            if(hour_now == iot_ctr[Lamp_A+index].run){
+              iot_ctr[Lamp_A+index].state = true;
+            }else{
+              iot_ctr[Lamp_A+index].state = false;
+            }
+          }else{
+            if(hour_now >= iot_ctr[Lamp_A+index].stop && hour_now<iot_ctr[Lamp_A+index].run){
+              iot_ctr[Lamp_A+index].state = false;
+            }else{
+              iot_ctr[Lamp_A+index].state = true;
+            }
+          }
+          digitalWrite(Relay[index], iot_ctr[Lamp_A+index].state);
+          if(iot_ctr[Lamp_A+index].state){
+
+          }else{
+
+          }//nextion 표기
+        }
+      }
+
+
     }
   }
 }
