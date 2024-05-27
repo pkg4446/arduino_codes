@@ -437,7 +437,8 @@ void time_set(){
 
 void setup() {
   Serial.begin(115200);
-  nxSerial.begin(115200, SERIAL_8N1, 28, 27);
+  nxSerial.begin(115200);
+  //nxSerial.begin(115200, SERIAL_8N1, 17, 16);
   Wire.begin();
 
   for (uint8_t index = 0; index < TOTAL_RELAY; index++)
