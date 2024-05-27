@@ -217,9 +217,7 @@ void command_service(bool command_type){
       }
     }
   }else if(cmd_text=="set"){
-    eep_change = true;
-
-    uint8_t iot_ctr_type = 0;
+    uint8_t iot_ctr_type = 255;
     if(temp_text=="water_a"){iot_ctr_type=Water_A;}
     else if(temp_text=="water_b"){iot_ctr_type=Water_B;}
     else if(temp_text=="water_h"){iot_ctr_type=Water_H;}
@@ -227,41 +225,68 @@ void command_service(bool command_type){
     else if(temp_text=="lamp_b"){iot_ctr_type=Lamp_B;}
     else if(temp_text=="lamp_c"){iot_ctr_type=Lamp_C;}
     else if(temp_text=="circul"){iot_ctr_type=Circulater;}
-    else if(temp_text=="heater"){iot_ctr_type=Heater;}
-    else { iot_ctr_type=Cooler; }
-
-    String cmd_select = "";
-    for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
-      if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
-        check_index = index_check+1;
-        break;
+    else if(temp_text=="temp"){ iot_ctr_type=Cooler; }
+    if(iot_ctr_type != 255){
+      eep_change = true;
+      String cmd_select = "";
+      for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
+        if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
+          check_index = index_check+1;
+          break;
+        }
+        cmd_select += command_buf[index_check];
       }
-      cmd_select += command_buf[index_check];
-    }
 
-    String cmd_value = "";
-    for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
-      if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
-        check_index = index_check+1;
-        break;
+      String cmd_value = "";
+      for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
+        if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
+          check_index = index_check+1;
+          break;
+        }
+        cmd_value += command_buf[index_check];
       }
-      cmd_value += command_buf[index_check];
+      
+      if(cmd_select=="ena"){
+        iot_ctr[iot_ctr_type].enable = cmd_value.toInt();
+        EEPROM.write(eep_var[iot_ctr_type*3], iot_ctr[iot_ctr_type].enable);
+      }else if(cmd_select=="run"){
+        iot_ctr[iot_ctr_type].run    = cmd_value.toInt();
+        EEPROM.write(eep_var[iot_ctr_type*3+1], iot_ctr[iot_ctr_type].run);
+      }else if(cmd_select=="stp"){
+        iot_ctr[iot_ctr_type].stop   = cmd_value.toInt();
+        EEPROM.write(eep_var[iot_ctr_type*3+2], iot_ctr[iot_ctr_type].stop);
+      }
+      if(uart_type){
+        Serial.print("enable: ");Serial.print(iot_ctr[iot_ctr_type].enable);
+        Serial.print(", run :");Serial.print(iot_ctr[iot_ctr_type].run);
+        Serial.print(", stop :");Serial.println(iot_ctr[iot_ctr_type].stop);
+      }
     }
-    
-    if(cmd_select=="ena"){
-      iot_ctr[iot_ctr_type].enable = cmd_value.toInt();
-      EEPROM.write(eep_var[iot_ctr_type*3], iot_ctr[iot_ctr_type].enable);
-    }else if(cmd_select=="run"){
-      iot_ctr[iot_ctr_type].run    = cmd_value.toInt();
-      EEPROM.write(eep_var[iot_ctr_type*3+1], iot_ctr[iot_ctr_type].run);
-    }else if(cmd_select=="stp"){
-      iot_ctr[iot_ctr_type].stop   = cmd_value.toInt();
-      EEPROM.write(eep_var[iot_ctr_type*3+2], iot_ctr[iot_ctr_type].stop);
-    }
-    if(uart_type){
-      Serial.print("enable");Serial.println(iot_ctr[iot_ctr_type].enable);
-      Serial.print("run");Serial.println(iot_ctr[iot_ctr_type].run);
-      Serial.print("stop");Serial.println(iot_ctr[iot_ctr_type].stop);
+  }else if(cmd_text=="config"){
+    uint8_t iot_ctr_type = 255;
+    if(temp_text=="water_a"){iot_ctr_type=Water_A;}
+    else if(temp_text=="water_b"){iot_ctr_type=Water_B;}
+    else if(temp_text=="water_h"){iot_ctr_type=Water_H;}
+    else if(temp_text=="lamp_a"){iot_ctr_type=Lamp_A;}
+    else if(temp_text=="lamp_b"){iot_ctr_type=Lamp_B;}
+    else if(temp_text=="lamp_c"){iot_ctr_type=Lamp_C;}
+    else if(temp_text=="circul"){iot_ctr_type=Circulater;}
+    else if(temp_text=="temp"){iot_ctr_type=Cooler;}
+    if(iot_ctr_type != 255){
+      if(uart_type){
+        Serial.print("enable: ");Serial.print(iot_ctr[iot_ctr_type].enable);
+        Serial.print(", run :");Serial.print(iot_ctr[iot_ctr_type].run);
+        Serial.print(", stop :");Serial.println(iot_ctr[iot_ctr_type].stop);
+      }else{
+
+      }
+    }else if(uart_type){
+      for (int index = 0; index < EEPROM_SIZE_CTR; index++) {
+        Serial.print("config no.");Serial.print(index);
+        Serial.print(", enable: ");Serial.print(iot_ctr[index].enable);
+        Serial.print(", run :");Serial.print(iot_ctr[index].run);
+        Serial.print(", stop :");Serial.println(iot_ctr[index].stop);
+      }
     }
   }
   /*****OFF_LINE_CMD*****/

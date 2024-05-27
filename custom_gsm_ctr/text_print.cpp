@@ -9,12 +9,13 @@ void command_help(HardwareSerial *uart) {
   uart->println("time    * show system time");
   uart->println("timeset * change system time");
   uart->println("temp    * temperature show");
-  uart->println("set     * systme setup");
+  uart->println("set     * system setup");
   uart->println("   water_a * water a contole");
   uart->println("   water_b,h lamp_a,b,c, circul, temp");
   uart->println("     ena   * enable set");
   uart->println("     run   * run time");
   uart->println("     stp   * puase time");
+  uart->println("config  * read system setup");
   uart->println("ssid    * ex)ssid your ssid");
   uart->println("pass    * ex)pass your password");
   uart->println("wifi    * WIFI connet");
