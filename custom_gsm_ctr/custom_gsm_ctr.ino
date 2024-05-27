@@ -3,6 +3,8 @@
 #include <WiFi.h>
 #include <PubSubClient.h> //https://github.com/knolleary/pubsubclient
 #include <DS3231.h>
+#include <max6675.h>
+#include <Adafruit_SHT31.h>
 #include "text_print.h"
 
 #define TOTAL_RELAY 10
@@ -11,6 +13,14 @@
 #define EEPROM_SIZE_CTR     8
 #define COMMAND_LENGTH  32
 #define UPDATE_INTERVAL 1000L
+
+const uint8_t thermoDO[2] = {32,34};
+const uint8_t thermoCS    = 15;
+const uint8_t thermoCLK   = 14;
+
+MAX6675 thermocouple1(thermoCLK, thermoCS, thermoDO[0]);
+MAX6675 thermocouple2(thermoCLK, thermoCS, thermoDO[1]);
+Adafruit_SHT31 sht31 = Adafruit_SHT31();
 
 DS3231 RTC_DS3231;
 HardwareSerial nxSerial(2);
@@ -187,6 +197,25 @@ void command_service(bool command_type){
     time_set();
   }else if(cmd_text=="reboot"){
     ESP.restart();
+  }else if(cmd_text=="temp"){
+    //temp
+    if(uart_type){
+      Serial.print("CPU: ");Serial.print(RTC_DS3231.getTemperature(), 2);Serial.println("°C");
+      Serial.print("PT100 1: ");Serial.print(thermocouple1.readCelsius());Serial.println("°C");
+      Serial.print("PT100 2: ");Serial.print(thermocouple2.readCelsius());Serial.println("°C");
+      Serial.print("SHT30: ");
+      Wire.beginTransmission(0x44);
+      if(!Wire.endTransmission()){
+        uint8_t Temperature = sht31.readTemperature();
+        uint8_t Humidity    = sht31.readHumidity();
+        Serial.print(Temperature);
+        Serial.println("°C, ");
+        Serial.print(Humidity);
+        Serial.println("%");
+      }else{
+        Serial.println("No device");
+      }
+    }
   }else if(cmd_text=="set"){
     eep_change = true;
 
@@ -394,10 +423,7 @@ void time_show(){
     Serial.print(':');
     Serial.print(RTC_DS3231.getMinute());
     Serial.print(':');
-    Serial.print(RTC_DS3231.getSecond());
-
-    Serial.print(" board temp:");
-    Serial.println(RTC_DS3231.getTemperature(), 2);
+    Serial.println(RTC_DS3231.getSecond());
   }
 }
 
