@@ -8,7 +8,7 @@
 #define TOTAL_RELAY 10
 #define EEPROM_SIZE_CONFIG  16
 #define EEPROM_SIZE_VALUE   3
-#define EEPROM_SIZE_CTR     7
+#define EEPROM_SIZE_CTR     8
 #define COMMAND_LENGTH  32
 #define UPDATE_INTERVAL 1000L
 
@@ -17,21 +17,21 @@ HardwareSerial nxSerial(2);
 enum RelayFunc {
     Water_A = 0,
     Water_B,
+    Water_H,
     Lamp_A,
     Lamp_B,
     Lamp_C,
     Circulater,
     Cooler,
     Heater,
-    Spare_A,
-    Spare_B
+    Spare_A
 };
 /***************EEPROM*********************/
 const uint8_t eep_ssid[EEPROM_SIZE_CONFIG] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 const uint8_t eep_pass[EEPROM_SIZE_CONFIG] = {16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 const uint8_t eep_var[EEPROM_SIZE_VALUE*EEPROM_SIZE_CTR] = {32,33,34, 35,36,37, 38,39,40,
                                                             41,42,43, 44,45,46, 47,48,49,
-                                                            50,51,52};
+                                                            50,51,52, 53,54,55};
 /***************EEPROM*********************/
 /***************MQTT_CONFIG****************/
 const char*     mqttServer    = "smarthive.kr";
@@ -193,10 +193,12 @@ void command_service(bool command_type){
     uint8_t iot_ctr_type = 0;
     if(temp_text=="water_a"){iot_ctr_type=Water_A;}
     else if(temp_text=="water_b"){iot_ctr_type=Water_B;}
+    else if(temp_text=="water_h"){iot_ctr_type=Water_H;}
     else if(temp_text=="lamp_a"){iot_ctr_type=Lamp_A;}
     else if(temp_text=="lamp_b"){iot_ctr_type=Lamp_B;}
     else if(temp_text=="lamp_c"){iot_ctr_type=Lamp_C;}
     else if(temp_text=="circul"){iot_ctr_type=Circulater;}
+    else if(temp_text=="heater"){iot_ctr_type=Heater;}
     else { iot_ctr_type=Cooler; }
 
     String cmd_select = "";
@@ -435,7 +437,7 @@ void time_set(){
 
 void setup() {
   Serial.begin(115200);
-  nxSerial.begin(115200, SERIAL_8N1, 18, 19);
+  nxSerial.begin(115200, SERIAL_8N1, 28, 27);
   Wire.begin();
 
   for (uint8_t index = 0; index < TOTAL_RELAY; index++)
@@ -491,6 +493,8 @@ void system_ctr(unsigned long millisec){
         int8_t temp_rtc = int8_t(RTC_DS3231.getTemperature());
         if(temp_now < temp_rtc-10 || temp_now > temp_rtc+10){
           //온도센서 고장
+          digitalWrite(Relay[Cooler], false);
+          digitalWrite(Relay[Heater], false);
         }else if(temp_now > iot_ctr[Cooler].run + iot_ctr[Cooler].stop){
           digitalWrite(Relay[Cooler], true);
           digitalWrite(Relay[Heater], false);
@@ -502,6 +506,22 @@ void system_ctr(unsigned long millisec){
         }else if((iot_ctr[Cooler].state && temp_now > iot_ctr[Cooler].run)||(!iot_ctr[Cooler].state && temp_now < iot_ctr[Cooler].run)){
           digitalWrite(Relay[Cooler], false);
           digitalWrite(Relay[Heater], false);
+        }
+      }
+      if(iot_ctr[Water_H].enable){
+        int8_t temp_now = 25;//온도
+        int8_t temp_rtc = int8_t(RTC_DS3231.getTemperature());
+        if(temp_now < temp_rtc-20 || temp_now > temp_rtc+20){
+          //온도센서 고장
+          digitalWrite(Relay[Water_H], false);
+        }else if(temp_now > iot_ctr[Water_H].run + iot_ctr[Water_H].stop){
+          digitalWrite(Relay[Water_H], false);
+          iot_ctr[Water_H].state = false;
+        }else if(temp_now < iot_ctr[Water_H].run - iot_ctr[Water_H].stop){
+          digitalWrite(Relay[Water_H], true);
+          iot_ctr[Water_H].state = true;
+        }else if((iot_ctr[Water_H].state && temp_now > iot_ctr[Water_H].run)||(!iot_ctr[Water_H].state && temp_now < iot_ctr[Water_H].run)){
+          digitalWrite(Relay[Water_H], false);
         }
       }
     }else if(update_order == 2){

@@ -10,7 +10,7 @@ void command_help(HardwareSerial *uart) {
   uart->println("timeset * change system time");
   uart->println("set     * systme setup");
   uart->println("   water_a * water a contole");
-  uart->println("   water_b, lamp_a,b,c, circul, temp");
+  uart->println("   water_b,h lamp_a,b,c, circul, temp");
   uart->println("     ena   * enable set");
   uart->println("     run   * run time");
   uart->println("     stp   * puase time");
