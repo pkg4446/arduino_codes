@@ -5,7 +5,7 @@
 #include <DS3231.h>
 #include <max6675.h>
 #include <Adafruit_SHT31.h>
-#include "text_print.h"
+#include "uart_print.h"
 
 #define TOTAL_RELAY 10
 #define EEPROM_SIZE_CONFIG  16
@@ -24,6 +24,7 @@ Adafruit_SHT31 sht31 = Adafruit_SHT31();
 
 DS3231 RTC_DS3231;
 HardwareSerial nxSerial(2);
+uint8_t nextion_page = 0;
 enum RelayFunc {
     Water_A = 0,
     Water_B,
@@ -97,21 +98,6 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   command_service(false);
 }
 /******************************************/
-void nextion_print(String cmd) {
-  nxSerial.print(cmd);
-  nxSerial.write(0xFF);
-  nxSerial.write(0xFF);
-  nxSerial.write(0xFF);
-}
-void Display(String IDs, uint16_t values) {
-  String cmd;
-  char buf[8] = {0};
-  sprintf(buf, "%d", values);
-  cmd = IDs + ".val=";
-  cmd += buf;
-  nextion_print(cmd);
-}
-/******************************************/
 void wifi_config() {
   if(uart_type){
     serial_wifi_config(&Serial,ssid,password);
@@ -123,7 +109,7 @@ void wifi_config() {
 void WIFI_scan(bool wifi_state){
   wifi_able = wifi_state;
   WiFi.disconnect(true);
-  nextion_print("page 1");//nextion page 이동
+  nextion_print(&nxSerial,"page 1");//nextion page 이동
   if(uart_type) Serial.println("WIFI Scanning…");
   else{}
   uint8_t networks = WiFi.scanNetworks();
@@ -197,6 +183,8 @@ void command_service(bool command_type){
     time_set();
   }else if(cmd_text=="reboot"){
     ESP.restart();
+  }else if(cmd_text=="page"){
+    nextion_page = temp_text.toInt();
   }else if(cmd_text=="temp"){
     //temp
     if(uart_type){
@@ -206,14 +194,23 @@ void command_service(bool command_type){
       Serial.print("SHT30: ");
       Wire.beginTransmission(0x44);
       if(!Wire.endTransmission()){
-        uint8_t Temperature = sht31.readTemperature();
-        uint8_t Humidity    = sht31.readHumidity();
-        Serial.print(Temperature);
+        Serial.print(sht31.readTemperature());
         Serial.println("°C, ");
-        Serial.print(Humidity);
+        Serial.print(sht31.readHumidity());
         Serial.println("%");
       }else{
         Serial.println("No device");
+      }
+    }else{
+      nextion_display("temp1",thermocouple1.readCelsius()*10,&nxSerial);
+      nextion_display("temp2",thermocouple2.readCelsius()*10,&nxSerial);
+      nextion_display("temp3",RTC_DS3231.getTemperature()*10,&nxSerial);
+      Wire.beginTransmission(0x44);
+      if(!Wire.endTransmission()){
+        nextion_display("temp4",sht31.readTemperature()*10,&nxSerial);
+        nextion_display("humi",sht31.readHumidity()*10,&nxSerial);
+      }else{
+        nextion_display("temp4",999,&nxSerial);
       }
     }
   }else if(cmd_text=="set"){
@@ -336,11 +333,11 @@ void command_service(bool command_type){
         wifi_connect();
       }
     }else if(uart_type && cmd_text=="help"){
-      command_help(&Serial);
-    }else{ err_msg(&Serial, command_buf); }
+      serial_command_help(&Serial);
+    }else{ serial_err_msg(&Serial, command_buf); }
   }
   /*****OFF_LINE_CMD*****/
-  else{ err_msg(&Serial, command_buf); }
+  else{ serial_err_msg(&Serial, command_buf); }
   if(eep_change){
     EEPROM.commit();
   }
@@ -361,8 +358,8 @@ void command_process(char ch, bool type_uart) {
 void mqtt_connect() {
   mqttClient.disconnect();
   if(wifi_able){
-    //nextion_print("MAC.txt=\"Try to connect WIFI\"");
-    //nextion_print("btWIFI.val=0");
+    //nextion_print(&nxSerial,"MAC.txt=\"Try to connect WIFI\"");
+    //nextion_print(&nxSerial,"btWIFI.val=0");
     mqttClient.setServer(mqttServer, mqttPort);
     mqttClient.setCallback(mqtt_callback);
 
@@ -449,6 +446,14 @@ void time_show(){
     Serial.print(RTC_DS3231.getMinute());
     Serial.print(':');
     Serial.println(RTC_DS3231.getSecond());
+  }else{
+    nextion_print(&nxSerial,"rtc0=20"+String(RTC_DS3231.getYear()));
+    nextion_print(&nxSerial,"rtc1="+String(RTC_DS3231.getMonth(century)));
+    nextion_print(&nxSerial,"rtc2="+String(RTC_DS3231.getDate()));
+    nextion_print(&nxSerial,"rtc3="+String(RTC_DS3231.getHour(h12Flag, pmFlag)));
+    nextion_print(&nxSerial,"rtc4="+String(RTC_DS3231.getMinute()));
+    nextion_print(&nxSerial,"rtc5="+String(RTC_DS3231.getSecond()));
+    nextion_print(&nxSerial,"rtc6="+String(RTC_DS3231.getDoW()));
   }
 }
 
@@ -519,9 +524,9 @@ void setup() {
   }
 
   wifi_connect();
-  command_help(&Serial);
+  serial_command_help(&Serial);
   if(uart_type) Serial.println("System online");
-  nextion_print("page 0");
+  nextion_print(&nxSerial,"page 0");
 }
 
 // the loop function runs over and over again forever

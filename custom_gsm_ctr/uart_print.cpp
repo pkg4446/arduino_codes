@@ -1,10 +1,26 @@
-#include "text_print.h"
+#include "uart_print.h"
 
-void err_msg(HardwareSerial *uart, char *msg){
+void nextion_print(HardwareSerial *uart, String cmd) {
+  uart->print(cmd);
+  uart->write(0xFF);
+  uart->write(0xFF);
+  uart->write(0xFF);
+}
+
+void nextion_display(String IDs, uint16_t values, HardwareSerial *uart) {
+  String cmd;
+  char buf[8] = {0};
+  sprintf(buf, "%d", values);
+  cmd = IDs + ".val=";
+  cmd += buf;
+  nextion_print(uart,cmd);
+}
+
+void serial_err_msg(HardwareSerial *uart, char *msg){
   uart->print("wrong cmd: ");
   uart->println(msg);
 }
-void command_help(HardwareSerial *uart) {
+void serial_command_help(HardwareSerial *uart) {
   uart->println("************* help *************");
   uart->println("time    * show system time");
   uart->println("timeset * change system time");
