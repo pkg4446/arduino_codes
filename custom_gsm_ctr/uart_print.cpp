@@ -24,6 +24,7 @@ void serial_command_help(HardwareSerial *uart) {
   uart->println("************* help *************");
   uart->println("time    * show system time");
   uart->println("timeset * change system time");
+  uart->println("send    * command send to moniter");
   uart->println("temp    * temperature show");
   uart->println("set     * system setup");
   uart->println("   water_a * water a contole");

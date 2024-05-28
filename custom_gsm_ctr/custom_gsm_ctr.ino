@@ -177,6 +177,10 @@ void command_service(bool command_type){
     temp_text += command_buf[index_check];
   }
   /**********/
+  if(!command_type){
+    Serial.print("nextion: ");
+    Serial.print(command_buf);
+  }
   if(cmd_text=="time"){
     time_show();
   }else if(cmd_text=="timeset"){
@@ -185,6 +189,8 @@ void command_service(bool command_type){
     ESP.restart();
   }else if(cmd_text=="page"){
     nextion_page = temp_text.toInt();
+  }else if(cmd_text=="send"){
+    nextion_print(&nxSerial,temp_text);
   }else if(cmd_text=="temp"){
     //temp
     if(uart_type){
@@ -201,17 +207,16 @@ void command_service(bool command_type){
       }else{
         Serial.println("No device");
       }
+    }
+    nextion_display("temp1",thermocouple1.readCelsius()*10,&nxSerial);
+    nextion_display("temp2",thermocouple2.readCelsius()*10,&nxSerial);
+    nextion_display("temp3",RTC_DS3231.getTemperature()*10,&nxSerial);
+    Wire.beginTransmission(0x44);
+    if(!Wire.endTransmission()){
+      nextion_display("temp4",sht31.readTemperature()*10,&nxSerial);
+      nextion_display("humi",sht31.readHumidity()*10,&nxSerial);
     }else{
-      nextion_display("temp1",thermocouple1.readCelsius()*10,&nxSerial);
-      nextion_display("temp2",thermocouple2.readCelsius()*10,&nxSerial);
-      nextion_display("temp3",RTC_DS3231.getTemperature()*10,&nxSerial);
-      Wire.beginTransmission(0x44);
-      if(!Wire.endTransmission()){
-        nextion_display("temp4",sht31.readTemperature()*10,&nxSerial);
-        nextion_display("humi",sht31.readHumidity()*10,&nxSerial);
-      }else{
-        nextion_display("temp4",999,&nxSerial);
-      }
+      nextion_display("temp4",999,&nxSerial);
     }
   }else if(cmd_text=="set"){
     uint8_t iot_ctr_type = 255;
@@ -427,34 +432,29 @@ void time_show(){
   bool century = false;
   bool h12Flag;
   bool pmFlag;
+  uint8_t clock_year  = RTC_DS3231.getYear();
+  uint8_t clock_month = RTC_DS3231.getMonth(century);
+  uint8_t clock_day   = RTC_DS3231.getDate();
+  uint8_t clock_dow   = RTC_DS3231.getDoW();
+  uint8_t clock_hour  = RTC_DS3231.getHour(h12Flag, pmFlag);
+  uint8_t clock_min   = RTC_DS3231.getMinute();
+  uint8_t clock_sec   = RTC_DS3231.getSecond();
+
   if(uart_type){
     Serial.print('2');
     if(century)Serial.print('1');
     else Serial.print('0');
-    uint8_t year = RTC_DS3231.getYear();
-    if(year<10) Serial.print('0');
-    Serial.print(year);
-    Serial.print('/');
-    Serial.print(RTC_DS3231.getMonth(century));
-    Serial.print('/');
-    Serial.print(RTC_DS3231.getDate());
-    Serial.print(' ');
-    uint8_t days = RTC_DS3231.getDoW();
-    Serial.print(' ');
-    Serial.print(RTC_DS3231.getHour(h12Flag, pmFlag));
-    Serial.print(':');
-    Serial.print(RTC_DS3231.getMinute());
-    Serial.print(':');
-    Serial.println(RTC_DS3231.getSecond());
-  }else{
-    nextion_print(&nxSerial,"rtc0=20"+String(RTC_DS3231.getYear()));
-    nextion_print(&nxSerial,"rtc1="+String(RTC_DS3231.getMonth(century)));
-    nextion_print(&nxSerial,"rtc2="+String(RTC_DS3231.getDate()));
-    nextion_print(&nxSerial,"rtc3="+String(RTC_DS3231.getHour(h12Flag, pmFlag)));
-    nextion_print(&nxSerial,"rtc4="+String(RTC_DS3231.getMinute()));
-    nextion_print(&nxSerial,"rtc5="+String(RTC_DS3231.getSecond()));
-    nextion_print(&nxSerial,"rtc6="+String(RTC_DS3231.getDoW()));
+    if(clock_year<10) Serial.print('0');
+    Serial.print(clock_year);Serial.print('/');Serial.print(clock_month);Serial.print('/');Serial.print(clock_day);Serial.print(',');
+    Serial.print(clock_hour);Serial.print(':');Serial.print(clock_min);Serial.print(':');Serial.println(clock_sec);
   }
+  nextion_print(&nxSerial,"rtc0=20"+String(clock_year));
+  nextion_print(&nxSerial,"rtc1="+String(clock_month));
+  nextion_print(&nxSerial,"rtc2="+String(clock_day));
+  nextion_print(&nxSerial,"rtc3="+String(clock_dow));
+  nextion_print(&nxSerial,"rtc4="+String(clock_hour));
+  nextion_print(&nxSerial,"rtc5="+String(clock_min));
+  nextion_print(&nxSerial,"rtc6="+String(clock_sec));
 }
 
 void time_set(){
@@ -494,7 +494,6 @@ void time_set(){
 void setup() {
   Serial.begin(115200);
   nxSerial.begin(115200);
-  //nxSerial.begin(115200, SERIAL_8N1, 17, 16);
   Wire.begin();
 
   for (uint8_t index = 0; index < TOTAL_RELAY; index++)
@@ -527,6 +526,7 @@ void setup() {
   serial_command_help(&Serial);
   if(uart_type) Serial.println("System online");
   nextion_print(&nxSerial,"page 0");
+  nextion_display("wifi",wifi_able,&nxSerial);
 }
 
 // the loop function runs over and over again forever
