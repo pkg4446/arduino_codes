@@ -533,18 +533,27 @@ void page_change(){
     nextion_shift = false;
     Serial.print("page "); Serial.println(nextion_page);
     if(nextion_page == 0){
+      //nextion_print(&nxSerial,"page0.text.txt=\"Disable\"");
       time_show();
       nextion_display("page0.wifi",wifi_able,&nxSerial);
       for (uint8_t index = 1; index < 3; index++){
+        nextion_display("page0.sw_f"+String(index),iot_ctr[Water_A+index].enable,&nxSerial);
         nextion_display("page0.flow"+String(index)+"o",iot_ctr[Water_A+index].run,&nxSerial);
         nextion_display("page0.flow"+String(index)+"f",iot_ctr[Water_A+index].stop,&nxSerial);
+
+        nextion_display("page0.sw_l"+String(index),iot_ctr[Lamp_A+index].enable,&nxSerial);
         nextion_display("page0.led"+String(index)+"o",iot_ctr[Lamp_A+index].run,&nxSerial);
         nextion_display("page0.led"+String(index)+"f",iot_ctr[Lamp_A+index].stop,&nxSerial);
       }
+      nextion_display("page0.sw_l3",iot_ctr[Lamp_A+2].enable,&nxSerial);
       nextion_display("page0.led3o",iot_ctr[Lamp_A+2].run,&nxSerial);
       nextion_display("page0.led3f",iot_ctr[Lamp_A+2].stop,&nxSerial);
+
+      nextion_display("page0.sw_t",iot_ctr[Cooler].enable,&nxSerial);
       nextion_display("page0.tempt",iot_ctr[Cooler].run,&nxSerial);
       nextion_display("page0.tempg",iot_ctr[Cooler].stop,&nxSerial);
+
+      nextion_display("page0.sw_f",iot_ctr[Circulater].enable,&nxSerial);
       nextion_display("page0.fano",iot_ctr[Circulater].run,&nxSerial);
       nextion_display("page0.fanf",iot_ctr[Circulater].stop,&nxSerial);
     }else if(nextion_page == 2){
@@ -579,24 +588,22 @@ void system_ctr(unsigned long millisec){
           //온도센서 고장
           digitalWrite(Relay[Cooler], false);
           digitalWrite(Relay[Heater], false);
-          nextion_print(&nxSerial,"page0.t_temp.txt=\"ERROR\"");
         }else if(temp_air > iot_ctr[Cooler].run + iot_ctr[Cooler].stop){
           digitalWrite(Relay[Cooler], true);
           digitalWrite(Relay[Heater], false);
           iot_ctr[Cooler].state = true;
-          nextion_print(&nxSerial,"page0.t_temp.txt=\"Heater\"");
         }else if(temp_air < iot_ctr[Cooler].run - iot_ctr[Cooler].stop){
           digitalWrite(Relay[Cooler], false);
           digitalWrite(Relay[Heater], true);
           iot_ctr[Cooler].state = false;
-          nextion_print(&nxSerial,"page0.t_temp.txt=\"Heater\"");
         }else if((iot_ctr[Cooler].state && temp_air > iot_ctr[Cooler].run)||(!iot_ctr[Cooler].state && temp_air < iot_ctr[Cooler].run)){
           digitalWrite(Relay[Cooler], false);
           digitalWrite(Relay[Heater], false);
           iot_ctr[Cooler].state = false;
-          nextion_print(&nxSerial,"page0.t_temp.txt=\"Enable\"");
         }
-      }else{nextion_print(&nxSerial,"page0.t_temp.txt=\"Disable\"");}
+      }else{
+
+      }
       if(iot_ctr[Water_H].enable){
         int8_t temp_liq = 25;//온도
         if(temp_liq < temp_rtc-200 || temp_liq > temp_rtc+200){
@@ -635,14 +642,12 @@ void system_ctr(unsigned long millisec){
     }else if(update_order == 3){
       if(iot_ctr[Circulater].enable){
         if(iot_ctr[Circulater].state){
-          nextion_print(&nxSerial,"page0.t_fan.txt=\"run\"");
           if(--Circulater_ctr_time < 1){
             iot_ctr[Circulater].state = false;
             Circulater_ctr_time = iot_ctr[Circulater].stop*60;
           }else if(Circulater_ctr_time > iot_ctr[Circulater].run) Circulater_ctr_time = iot_ctr[Circulater].run;
           nextion_display("page0.fanom",Circulater_ctr_time/60,&nxSerial);
         }else{
-          nextion_print(&nxSerial,"page0.t_fan.txt=\"stop\"");
           if(--Circulater_ctr_time < 1){
             iot_ctr[Circulater].state = true;
             Circulater_ctr_time = iot_ctr[Circulater].run*60;
@@ -650,7 +655,6 @@ void system_ctr(unsigned long millisec){
           nextion_display("page0.fanfm",Circulater_ctr_time/60,&nxSerial);
         }
       }else{
-        nextion_print(&nxSerial,"page0.t_fan.txt=\"Disable\"");
       }
     }else {
       update_order = 0;
