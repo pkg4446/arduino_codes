@@ -24,7 +24,8 @@ Adafruit_SHT31 sht31 = Adafruit_SHT31();
 
 DS3231 RTC_DS3231;
 HardwareSerial nxSerial(2);
-uint8_t nextion_page = 0;
+bool    nextion_shift = false;
+uint8_t nextion_page  = 0;
 enum RelayFunc {
     Water_A = 0,
     Water_B,
@@ -188,7 +189,8 @@ void command_service(bool command_type){
   }else if(cmd_text=="reboot"){
     ESP.restart();
   }else if(cmd_text=="page"){
-    nextion_page = temp_text.toInt();
+    nextion_shift = true;
+    nextion_page  = temp_text.toInt();
     Serial.println("page "+temp_text);
   }else if(cmd_text=="send"){
     nextion_print(&nxSerial,temp_text);
