@@ -189,6 +189,7 @@ void command_service(bool command_type){
     ESP.restart();
   }else if(cmd_text=="page"){
     nextion_page = temp_text.toInt();
+    Serial.println("page "+temp_text);
   }else if(cmd_text=="send"){
     nextion_print(&nxSerial,temp_text);
   }else if(cmd_text=="temp"){
@@ -451,10 +452,10 @@ void time_show(){
   nextion_print(&nxSerial,"rtc0=20"+String(clock_year));
   nextion_print(&nxSerial,"rtc1="+String(clock_month));
   nextion_print(&nxSerial,"rtc2="+String(clock_day));
-  nextion_print(&nxSerial,"rtc3="+String(clock_dow));
-  nextion_print(&nxSerial,"rtc4="+String(clock_hour));
-  nextion_print(&nxSerial,"rtc5="+String(clock_min));
-  nextion_print(&nxSerial,"rtc6="+String(clock_sec));
+  nextion_print(&nxSerial,"rtc3="+String(clock_hour));
+  nextion_print(&nxSerial,"rtc4="+String(clock_min));
+  nextion_print(&nxSerial,"rtc5="+String(clock_sec));
+  nextion_print(&nxSerial,"rtc6="+String(clock_dow));
 }
 
 void time_set(){
@@ -527,6 +528,7 @@ void setup() {
   if(uart_type) Serial.println("System online");
   nextion_print(&nxSerial,"page 0");
   nextion_display("wifi",wifi_able,&nxSerial);
+  time_show();
 }
 
 // the loop function runs over and over again forever
