@@ -24,8 +24,8 @@ void serial_command_help(HardwareSerial *uart) {
   uart->println("************* help *************");
   uart->println("time    * show system time");
   uart->println("timeset * change system time");
+  uart->println("reboot  * system reboot");
   uart->println("send    * command send to moniter");
-  uart->println("temp    * temperature show");
   uart->println("set     * system setup");
   uart->println("   water_a * water a contole");
   uart->println("   water_b,h lamp_a,b,c, circul, temp");
@@ -38,7 +38,7 @@ void serial_command_help(HardwareSerial *uart) {
   uart->println("wifi    * WIFI connet");
   uart->println("   scan * WIFI scan");
   uart->println("   stop * WIFI disconnet");
-  uart->println("reboot  * system reboot");
+  uart->println("temp    * temperature show");
   uart->println("help    * this text");
   uart->println("************* help *************");
 }

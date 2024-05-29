@@ -191,36 +191,8 @@ void command_service(bool command_type){
   }else if(cmd_text=="page"){
     nextion_shift = true;
     nextion_page  = temp_text.toInt();
-    Serial.println("page "+temp_text);
   }else if(cmd_text=="send"){
     nextion_print(&nxSerial,temp_text);
-  }else if(cmd_text=="temp"){
-    //temp
-    if(uart_type){
-      Serial.print("CPU: ");Serial.print(RTC_DS3231.getTemperature(), 2);Serial.println("°C");
-      Serial.print("PT100 1: ");Serial.print(thermocouple1.readCelsius());Serial.println("°C");
-      Serial.print("PT100 2: ");Serial.print(thermocouple2.readCelsius());Serial.println("°C");
-      Serial.print("SHT30: ");
-      Wire.beginTransmission(0x44);
-      if(!Wire.endTransmission()){
-        Serial.print(sht31.readTemperature());
-        Serial.println("°C, ");
-        Serial.print(sht31.readHumidity());
-        Serial.println("%");
-      }else{
-        Serial.println("No device");
-      }
-    }
-    nextion_display("temp1",thermocouple1.readCelsius()*10,&nxSerial);
-    nextion_display("temp2",thermocouple2.readCelsius()*10,&nxSerial);
-    nextion_display("temp3",RTC_DS3231.getTemperature()*10,&nxSerial);
-    Wire.beginTransmission(0x44);
-    if(!Wire.endTransmission()){
-      nextion_display("temp4",sht31.readTemperature()*10,&nxSerial);
-      nextion_display("humi",sht31.readHumidity()*10,&nxSerial);
-    }else{
-      nextion_display("temp4",999,&nxSerial);
-    }
   }else if(cmd_text=="set"){
     uint8_t iot_ctr_type = 255;
     if(temp_text=="water_a"){iot_ctr_type=Water_A;}
@@ -339,6 +311,20 @@ void command_service(bool command_type){
         WIFI_scan(WiFi.status() == WL_CONNECTED);
       }else{
         wifi_connect();
+      }
+    }else if(cmd_text=="temp"){
+      Serial.print("CPU: ");Serial.print(RTC_DS3231.getTemperature(), 2);Serial.println("°C");
+      Serial.print("PT100 1: ");Serial.print(thermocouple1.readCelsius());Serial.println("°C");
+      Serial.print("PT100 2: ");Serial.print(thermocouple2.readCelsius());Serial.println("°C");
+      Serial.print("SHT30: ");
+      Wire.beginTransmission(0x44);
+      if(!Wire.endTransmission()){
+        Serial.print(sht31.readTemperature());
+        Serial.println("°C, ");
+        Serial.print(sht31.readHumidity());
+        Serial.println("%");
+      }else{
+        Serial.println("No device");
       }
     }else if(uart_type && cmd_text=="help"){
       serial_command_help(&Serial);
@@ -529,8 +515,6 @@ void setup() {
   serial_command_help(&Serial);
   if(uart_type) Serial.println("System online");
   nextion_print(&nxSerial,"page 0");
-  nextion_display("wifi",wifi_able,&nxSerial);
-  time_show();
 }
 
 // the loop function runs over and over again forever
@@ -542,6 +526,31 @@ void loop() {
   if (Serial.available()) command_process(Serial.read(),true);
   if (nxSerial.available()) command_process(nxSerial.read(),false);
   system_ctr(millis());
+  page_change();
+}
+void page_change(){
+  if(nextion_shift){
+    nextion_shift = false;
+    Serial.print("page "); Serial.println(nextion_page);
+    if(nextion_page == 0){
+      time_show();
+      nextion_display("page0.wifi",wifi_able,&nxSerial);
+      for (uint8_t index = 1; index < 3; index++){
+        nextion_display("page0.flow"+String(index)+"o",iot_ctr[Water_A+index].run,&nxSerial);
+        nextion_display("page0.flow"+String(index)+"f",iot_ctr[Water_A+index].stop,&nxSerial);
+        nextion_display("page0.led"+String(index)+"o",iot_ctr[Lamp_A+index].run,&nxSerial);
+        nextion_display("page0.led"+String(index)+"f",iot_ctr[Lamp_A+index].stop,&nxSerial);
+      }
+      nextion_display("page0.led3o",iot_ctr[Lamp_A+2].run,&nxSerial);
+      nextion_display("page0.led3f",iot_ctr[Lamp_A+2].stop,&nxSerial);
+      nextion_display("page0.tempt",iot_ctr[Cooler].run,&nxSerial);
+      nextion_display("page0.tempg",iot_ctr[Cooler].stop,&nxSerial);
+      nextion_display("page0.fano",iot_ctr[Circulater].run,&nxSerial);
+      nextion_display("page0.fanf",iot_ctr[Circulater].stop,&nxSerial);
+    }else if(nextion_page == 2){
+      
+    }
+  }
 }
 
 void system_ctr(unsigned long millisec){
@@ -549,41 +558,61 @@ void system_ctr(unsigned long millisec){
     prevUpdateTime = millisec;
     update_order += 1;
     if(update_order == 1){
+      int16_t humi_now = 0;
+      int16_t temp_air = 999;
+      int16_t temp_liq = thermocouple2.readCelsius()*10;
+      int16_t temp_rtc = RTC_DS3231.getTemperature()*10;
+      Wire.beginTransmission(0x44);
+      if(!Wire.endTransmission()){
+        temp_air = sht31.readTemperature()*10;
+        humi_now = sht31.readHumidity()*10;
+      }
+      nextion_display("page0.temp1",temp_air,&nxSerial);
+      nextion_display("page0.humi",humi_now,&nxSerial);
+      nextion_display("page0.temp3",temp_rtc,&nxSerial);
+      nextion_display("page0.temp2",thermocouple1.readCelsius()*10,&nxSerial);
+      nextion_display("page0.temp4",temp_liq,&nxSerial);
+      
+
       if(iot_ctr[Cooler].enable){
-        int8_t temp_now = 25;//온도
-        int8_t temp_rtc = int8_t(RTC_DS3231.getTemperature());
-        if(temp_now < temp_rtc-10 || temp_now > temp_rtc+10){
+        if(temp_air < temp_rtc-100 || temp_air > temp_rtc+100){
           //온도센서 고장
           digitalWrite(Relay[Cooler], false);
           digitalWrite(Relay[Heater], false);
-        }else if(temp_now > iot_ctr[Cooler].run + iot_ctr[Cooler].stop){
+          nextion_print(&nxSerial,"page0.t_temp.txt=\"ERROR\"");
+        }else if(temp_air > iot_ctr[Cooler].run + iot_ctr[Cooler].stop){
           digitalWrite(Relay[Cooler], true);
           digitalWrite(Relay[Heater], false);
           iot_ctr[Cooler].state = true;
-        }else if(temp_now < iot_ctr[Cooler].run - iot_ctr[Cooler].stop){
+          nextion_print(&nxSerial,"page0.t_temp.txt=\"Heater\"");
+        }else if(temp_air < iot_ctr[Cooler].run - iot_ctr[Cooler].stop){
           digitalWrite(Relay[Cooler], false);
           digitalWrite(Relay[Heater], true);
           iot_ctr[Cooler].state = false;
-        }else if((iot_ctr[Cooler].state && temp_now > iot_ctr[Cooler].run)||(!iot_ctr[Cooler].state && temp_now < iot_ctr[Cooler].run)){
+          nextion_print(&nxSerial,"page0.t_temp.txt=\"Heater\"");
+        }else if((iot_ctr[Cooler].state && temp_air > iot_ctr[Cooler].run)||(!iot_ctr[Cooler].state && temp_air < iot_ctr[Cooler].run)){
           digitalWrite(Relay[Cooler], false);
           digitalWrite(Relay[Heater], false);
+          iot_ctr[Cooler].state = false;
+          nextion_print(&nxSerial,"page0.t_temp.txt=\"Enable\"");
         }
-      }
+      }else{nextion_print(&nxSerial,"page0.t_temp.txt=\"Disable\"");}
       if(iot_ctr[Water_H].enable){
-        int8_t temp_now = 25;//온도
-        int8_t temp_rtc = int8_t(RTC_DS3231.getTemperature());
-        if(temp_now < temp_rtc-20 || temp_now > temp_rtc+20){
+        int8_t temp_liq = 25;//온도
+        if(temp_liq < temp_rtc-200 || temp_liq > temp_rtc+200){
           //온도센서 고장
           digitalWrite(Relay[Water_H], false);
-        }else if(temp_now > iot_ctr[Water_H].run + iot_ctr[Water_H].stop){
+        }else if(temp_liq > iot_ctr[Water_H].run + iot_ctr[Water_H].stop){
           digitalWrite(Relay[Water_H], false);
           iot_ctr[Water_H].state = false;
-        }else if(temp_now < iot_ctr[Water_H].run - iot_ctr[Water_H].stop){
+        }else if(temp_liq < iot_ctr[Water_H].run - iot_ctr[Water_H].stop){
           digitalWrite(Relay[Water_H], true);
           iot_ctr[Water_H].state = true;
-        }else if((iot_ctr[Water_H].state && temp_now > iot_ctr[Water_H].run)||(!iot_ctr[Water_H].state && temp_now < iot_ctr[Water_H].run)){
+        }else if((iot_ctr[Water_H].state && temp_liq > iot_ctr[Water_H].run)||(!iot_ctr[Water_H].state && temp_liq < iot_ctr[Water_H].run)){
           digitalWrite(Relay[Water_H], false);
         }
+      }else{
+       
       }
     }else if(update_order == 2){
       for (uint8_t index = 0; index < 2; index++){
@@ -593,27 +622,35 @@ void system_ctr(unsigned long millisec){
               iot_ctr[Water_A+index].state = false;
               water_ctr_time[index] = iot_ctr[Water_A+index].stop*60;
             }else if(water_ctr_time[index] > iot_ctr[Water_A+index].run) water_ctr_time[index] = iot_ctr[Water_A+index].run;
+            nextion_display("page0.flow"+String(index+1)+"s",water_ctr_time[index],&nxSerial);
           }else{
             if(--water_ctr_time[index] < 1){
               iot_ctr[Water_A+index].state = true;
               water_ctr_time[index] = iot_ctr[Water_A+index].run;
             }else if(water_ctr_time[index] > iot_ctr[Water_A+index].stop) water_ctr_time[index] = iot_ctr[Water_A+index].stop;
+            nextion_display("page0.flow"+String(index+1)+"m",water_ctr_time[index]/60,&nxSerial);
           }
         }
       }
     }else if(update_order == 3){
       if(iot_ctr[Circulater].enable){
         if(iot_ctr[Circulater].state){
+          nextion_print(&nxSerial,"page0.t_fan.txt=\"run\"");
           if(--Circulater_ctr_time < 1){
             iot_ctr[Circulater].state = false;
             Circulater_ctr_time = iot_ctr[Circulater].stop*60;
           }else if(Circulater_ctr_time > iot_ctr[Circulater].run) Circulater_ctr_time = iot_ctr[Circulater].run;
+          nextion_display("page0.fanom",Circulater_ctr_time/60,&nxSerial);
         }else{
+          nextion_print(&nxSerial,"page0.t_fan.txt=\"stop\"");
           if(--Circulater_ctr_time < 1){
             iot_ctr[Circulater].state = true;
             Circulater_ctr_time = iot_ctr[Circulater].run*60;
           }else if(Circulater_ctr_time > iot_ctr[Circulater].stop) Circulater_ctr_time = iot_ctr[Circulater].stop;
+          nextion_display("page0.fanfm",Circulater_ctr_time/60,&nxSerial);
         }
+      }else{
+        nextion_print(&nxSerial,"page0.t_fan.txt=\"Disable\"");
       }
     }else {
       update_order = 0;
