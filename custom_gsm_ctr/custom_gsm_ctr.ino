@@ -290,6 +290,7 @@ void command_service(bool command_type){
             ssid[index] = temp_text[index];
             EEPROM.write(eep_ssid[index], byte(temp_text[index]));
           }else{
+            ssid[index] = 0x00;
             EEPROM.write(eep_ssid[index], byte(0x00));
           }
         }
@@ -307,6 +308,7 @@ void command_service(bool command_type){
             password[index] = temp_text[index];
             EEPROM.write(eep_pass[index], byte(temp_text[index]));
           }else{
+            password[index] = 0x00;
             EEPROM.write(eep_pass[index], byte(0x00));
           }
         }
