@@ -111,17 +111,21 @@ void WIFI_scan(bool wifi_state){
   wifi_able = wifi_state;
   WiFi.disconnect(true);
   nextion_print(&nxSerial,"page 1");//nextion page 이동
+  nextion_page == 1;
+  nextion_print(&nxSerial,"page1.t_wifi.txt=\"WIFI scanning...\"");
   if(uart_type) Serial.println("WIFI Scanning…");
-  else{}
   uint8_t networks = WiFi.scanNetworks();
   if (networks == 0) {
-      if(uart_type) Serial.println("no networks found");
+    nextion_print(&nxSerial,"page1.t_wifi.txt=\"WIFI not found!\"");
+    if(uart_type) Serial.println("WIFI not found!");
   }else {
+    nextion_print(&nxSerial,"page1.t_wifi.txt=\"<= WIFI list are here!\\rscroll & select\"");
     if(uart_type){
       Serial.print(networks);
       Serial.println(" networks found");
       Serial.println("Nr | SSID                             | RSSI | CH | Encryption");
-    }else{}
+    }
+    String wifi_list ="";
     for (int index = 0; index < networks; ++index) {
       // Print SSID and RSSI for each network found
       if(uart_type){
@@ -133,23 +137,30 @@ void WIFI_scan(bool wifi_state){
         Serial.print(" | ");
         Serial.printf("%2d", WiFi.channel(index));
         Serial.print(" | ");
-      }else{}
-      byte wifi_type = WiFi.encryptionType(index);
-      String wifi_encryptionType;
-      if(wifi_type == WIFI_AUTH_OPEN){wifi_encryptionType = "open";}
-      else if(wifi_type == WIFI_AUTH_WEP){wifi_encryptionType = "WEP";}
-      else if(wifi_type == WIFI_AUTH_WPA_PSK){wifi_encryptionType = "WPA";}
-      else if(wifi_type == WIFI_AUTH_WPA2_PSK){wifi_encryptionType = "WPA2";}
-      else if(wifi_type == WIFI_AUTH_WPA_WPA2_PSK){wifi_encryptionType = "WPA2";}
-      else if(wifi_type == WIFI_AUTH_WPA2_ENTERPRISE){wifi_encryptionType = "WPA2-EAP";}
-      else if(wifi_type == WIFI_AUTH_WPA3_PSK){wifi_encryptionType = "WPA3";}
-      else if(wifi_type == WIFI_AUTH_WPA2_WPA3_PSK){wifi_encryptionType = "WPA2+WPA3";}
-      else if(wifi_type == WIFI_AUTH_WAPI_PSK){wifi_encryptionType = "WAPI";}
-      else{wifi_encryptionType = "unknown";}
-      if(uart_type) Serial.println(wifi_encryptionType);
+        byte wifi_type = WiFi.encryptionType(index);
+        String wifi_encryptionType;
+        if(wifi_type == WIFI_AUTH_OPEN){wifi_encryptionType = "open";}
+        else if(wifi_type == WIFI_AUTH_WEP){wifi_encryptionType = "WEP";}
+        else if(wifi_type == WIFI_AUTH_WPA_PSK){wifi_encryptionType = "WPA";}
+        else if(wifi_type == WIFI_AUTH_WPA2_PSK){wifi_encryptionType = "WPA2";}
+        else if(wifi_type == WIFI_AUTH_WPA_WPA2_PSK){wifi_encryptionType = "WPA2";}
+        else if(wifi_type == WIFI_AUTH_WPA2_ENTERPRISE){wifi_encryptionType = "WPA2-EAP";}
+        else if(wifi_type == WIFI_AUTH_WPA3_PSK){wifi_encryptionType = "WPA3";}
+        else if(wifi_type == WIFI_AUTH_WPA2_WPA3_PSK){wifi_encryptionType = "WPA2+WPA3";}
+        else if(wifi_type == WIFI_AUTH_WAPI_PSK){wifi_encryptionType = "WAPI";}
+        else{wifi_encryptionType = "unknown";}
+        if(uart_type) Serial.println(wifi_encryptionType);
+      }
+      if(nextion_page == 1){
+        wifi_list += WiFi.SSID(index);
+        if(index<networks-1)wifi_list += "\\r";
+        if(index<10) nextion_print(&nxSerial,"page1.wifi"+String(index)+".txt=\""+WiFi.SSID(index)+"\"");
+      }
     }
+    if(uart_type) Serial.println("");
+    if(nextion_page == 1) nextion_print(&nxSerial,"page1.list.path=\""+wifi_list+"\"");
   }
-  if(uart_type) Serial.println("");
+
   // Delete the scan result to free memory for code below.
   WiFi.scanDelete();
   if(wifi_able){
@@ -405,6 +416,7 @@ void wifi_connect() {
   wifi_config();
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
+  if(nextion_page==1) nextion_print(&nxSerial,"page1.t_wifi.txt=\"Try to WIFI connect...\"");
   WiFi.begin(ssid, password);
   unsigned long wifi_config_update  = millis();
   while (WiFi.status() != WL_CONNECTED) {
@@ -414,6 +426,11 @@ void wifi_connect() {
       if(uart_type) Serial.println("WIFI fail");
       break;
     }
+  }
+  if(nextion_page==0)  nextion_display("page0.wifi",wifi_able,&nxSerial);
+  else if(nextion_page==1){
+    if(wifi_able) nextion_print(&nxSerial,"page1.t_wifi.txt=\"WIFI connected!\"");
+    else          nextion_print(&nxSerial,"page1.t_wifi.txt=\"password wrong!\\rpw: "+String(password)+"\"");
   }
 }
 
@@ -482,7 +499,7 @@ void time_set(){
 
 void setup() {
   Serial.begin(115200);
-  nxSerial.begin(115200);
+  nxSerial.begin(115200, SERIAL_8N1, 16, 17);
   Wire.begin();
 
   for (uint8_t index = 0; index < TOTAL_RELAY; index++)
@@ -533,7 +550,6 @@ void page_change(){
     nextion_shift = false;
     Serial.print("page "); Serial.println(nextion_page);
     if(nextion_page == 0){
-      //nextion_print(&nxSerial,"page0.text.txt=\"Disable\"");
       time_show();
       nextion_display("page0.wifi",wifi_able,&nxSerial);
       for (uint8_t index = 1; index < 3; index++){
@@ -556,7 +572,7 @@ void page_change(){
       nextion_display("page0.sw_f",iot_ctr[Circulater].enable,&nxSerial);
       nextion_display("page0.fano",iot_ctr[Circulater].run,&nxSerial);
       nextion_display("page0.fanf",iot_ctr[Circulater].stop,&nxSerial);
-    }else if(nextion_page == 2){
+    }else if(nextion_page == 1){
       
     }
   }
