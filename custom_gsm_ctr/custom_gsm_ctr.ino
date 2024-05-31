@@ -112,14 +112,14 @@ void WIFI_scan(bool wifi_state){
   WiFi.disconnect(true);
   nextion_print(&nxSerial,"page 1");//nextion page 이동
   nextion_page == 1;
-  nextion_print(&nxSerial,"page1.t_wifi.txt=\"WIFI scanning...\"");
+  nextion_print(&nxSerial,"page_wifi.t_wifi.txt=\"WIFI scanning...\"");
   if(uart_type) Serial.println("WIFI Scanning…");
   uint8_t networks = WiFi.scanNetworks();
   if (networks == 0) {
-    nextion_print(&nxSerial,"page1.t_wifi.txt=\"WIFI not found!\"");
+    nextion_print(&nxSerial,"page_wifi.t_wifi.txt=\"WIFI not found!\"");
     if(uart_type) Serial.println("WIFI not found!");
   }else {
-    nextion_print(&nxSerial,"page1.t_wifi.txt=\"<= WIFI list are here!\\rscroll & select\"");
+    nextion_print(&nxSerial,"page_wifi.t_wifi.txt=\"<= WIFI list are here!\\rscroll & select\"");
     if(uart_type){
       Serial.print(networks);
       Serial.println(" networks found");
@@ -154,11 +154,11 @@ void WIFI_scan(bool wifi_state){
       if(nextion_page == 1){
         wifi_list += WiFi.SSID(index);
         if(index<networks-1)wifi_list += "\\r";
-        if(index<10) nextion_print(&nxSerial,"page1.wifi"+String(index)+".txt=\""+WiFi.SSID(index)+"\"");
+        if(index<10) nextion_print(&nxSerial,"page_wifi.wifi"+String(index)+".txt=\""+WiFi.SSID(index)+"\"");
       }
     }
     if(uart_type) Serial.println("");
-    if(nextion_page == 1) nextion_print(&nxSerial,"page1.list.path=\""+wifi_list+"\"");
+    if(nextion_page == 1) nextion_print(&nxSerial,"page_wifi.list.path=\""+wifi_list+"\"");
   }
 
   // Delete the scan result to free memory for code below.
@@ -418,7 +418,7 @@ void wifi_connect() {
   wifi_config();
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
-  if(nextion_page==1) nextion_print(&nxSerial,"page1.t_wifi.txt=\"Try to WIFI connect...\"");
+  if(nextion_page==1) nextion_print(&nxSerial,"page_wifi.t_wifi.txt=\"Try to WIFI connect...\"");
   WiFi.begin(ssid, password);
   unsigned long wifi_config_update  = millis();
   while (WiFi.status() != WL_CONNECTED) {
@@ -429,10 +429,10 @@ void wifi_connect() {
       break;
     }
   }
-  if(nextion_page==0)  nextion_display("page0.wifi",wifi_able,&nxSerial);
+  if(nextion_page==0)  nextion_display("page_main.wifi",wifi_able,&nxSerial);
   else if(nextion_page==1){
-    if(wifi_able) nextion_print(&nxSerial,"page1.t_wifi.txt=\"WIFI connected!\"");
-    else          nextion_print(&nxSerial,"page1.t_wifi.txt=\"password wrong!\\rpw: "+String(password)+"\"");
+    if(wifi_able) nextion_print(&nxSerial,"page_wifi.t_wifi.txt=\"WIFI connected!\"");
+    else          nextion_print(&nxSerial,"page_wifi.t_wifi.txt=\"password wrong!\\rpw: "+String(password)+"\"");
   }
 }
 
@@ -553,27 +553,27 @@ void page_change(){
     Serial.print("page "); Serial.println(nextion_page);
     if(nextion_page == 0){
       time_show();
-      nextion_display("page0.wifi",wifi_able,&nxSerial);
+      nextion_display("page_main.wifi",wifi_able,&nxSerial);
       for (uint8_t index = 1; index < 3; index++){
-        nextion_display("page0.sw_f"+String(index),iot_ctr[Water_A+index].enable,&nxSerial);
-        nextion_display("page0.flow"+String(index)+"o",iot_ctr[Water_A+index].run,&nxSerial);
-        nextion_display("page0.flow"+String(index)+"f",iot_ctr[Water_A+index].stop,&nxSerial);
+        nextion_display("page_main.sw_f"+String(index),iot_ctr[Water_A+index].enable,&nxSerial);
+        nextion_display("page_main.flow"+String(index)+"o",iot_ctr[Water_A+index].run,&nxSerial);
+        nextion_display("page_main.flow"+String(index)+"f",iot_ctr[Water_A+index].stop,&nxSerial);
 
-        nextion_display("page0.sw_l"+String(index),iot_ctr[Lamp_A+index].enable,&nxSerial);
-        nextion_display("page0.led"+String(index)+"o",iot_ctr[Lamp_A+index].run,&nxSerial);
-        nextion_display("page0.led"+String(index)+"f",iot_ctr[Lamp_A+index].stop,&nxSerial);
+        nextion_display("page_main.sw_l"+String(index),iot_ctr[Lamp_A+index].enable,&nxSerial);
+        nextion_display("page_main.led"+String(index)+"o",iot_ctr[Lamp_A+index].run,&nxSerial);
+        nextion_display("page_main.led"+String(index)+"f",iot_ctr[Lamp_A+index].stop,&nxSerial);
       }
-      nextion_display("page0.sw_l3",iot_ctr[Lamp_A+2].enable,&nxSerial);
-      nextion_display("page0.led3o",iot_ctr[Lamp_A+2].run,&nxSerial);
-      nextion_display("page0.led3f",iot_ctr[Lamp_A+2].stop,&nxSerial);
+      nextion_display("page_main.sw_l3",iot_ctr[Lamp_C].enable,&nxSerial);
+      nextion_display("page_main.led3o",iot_ctr[Lamp_C].run,&nxSerial);
+      nextion_display("page_main.led3f",iot_ctr[Lamp_C].stop,&nxSerial);
 
-      nextion_display("page0.sw_t",iot_ctr[Cooler].enable,&nxSerial);
-      nextion_display("page0.tempt",iot_ctr[Cooler].run,&nxSerial);
-      nextion_display("page0.tempg",iot_ctr[Cooler].stop,&nxSerial);
+      nextion_display("page_main.sw_t",iot_ctr[Cooler].enable,&nxSerial);
+      nextion_display("page_main.tempt",iot_ctr[Cooler].run,&nxSerial);
+      nextion_display("page_main.tempg",iot_ctr[Cooler].stop,&nxSerial);
 
-      nextion_display("page0.sw_f",iot_ctr[Circulater].enable,&nxSerial);
-      nextion_display("page0.fano",iot_ctr[Circulater].run,&nxSerial);
-      nextion_display("page0.fanf",iot_ctr[Circulater].stop,&nxSerial);
+      nextion_display("page_main.sw_f",iot_ctr[Circulater].enable,&nxSerial);
+      nextion_display("page_main.fano",iot_ctr[Circulater].run,&nxSerial);
+      nextion_display("page_main.fanf",iot_ctr[Circulater].stop,&nxSerial);
     }else if(nextion_page == 1){
       
     }
@@ -594,11 +594,11 @@ void system_ctr(unsigned long millisec){
         temp_air = sht31.readTemperature()*10;
         humi_now = sht31.readHumidity()*10;
       }
-      nextion_display("page0.temp1",temp_air,&nxSerial);
-      nextion_display("page0.humi",humi_now,&nxSerial);
-      nextion_display("page0.temp3",temp_rtc,&nxSerial);
-      nextion_display("page0.temp2",thermocouple1.readCelsius()*10,&nxSerial);
-      nextion_display("page0.temp4",temp_liq,&nxSerial);
+      nextion_display("page_main.temp1",temp_air,&nxSerial);
+      nextion_display("page_main.humi",humi_now,&nxSerial);
+      nextion_display("page_main.temp3",temp_rtc,&nxSerial);
+      nextion_display("page_main.temp2",thermocouple1.readCelsius()*10,&nxSerial);
+      nextion_display("page_main.temp4",temp_liq,&nxSerial);
       
 
       if(iot_ctr[Cooler].enable){
@@ -624,13 +624,15 @@ void system_ctr(unsigned long millisec){
       }
       if(iot_ctr[Water_H].enable){
         int8_t temp_liq = 25;//온도
+        if(iot_ctr[Water_H].run>250) iot_ctr[Water_H].run=250; //양액 온도 상한.
+
         if(temp_liq < temp_rtc-200 || temp_liq > temp_rtc+200){
           //온도센서 고장
           digitalWrite(Relay[Water_H], false);
-        }else if(temp_liq > iot_ctr[Water_H].run + iot_ctr[Water_H].stop){
+        }else if(temp_liq > iot_ctr[Water_H].run){
           digitalWrite(Relay[Water_H], false);
           iot_ctr[Water_H].state = false;
-        }else if(temp_liq < iot_ctr[Water_H].run - iot_ctr[Water_H].stop){
+        }else if(temp_liq < iot_ctr[Water_H].run - 5){ //양액 온도 갭 //iot_ctr[Water_H].stop){
           digitalWrite(Relay[Water_H], true);
           iot_ctr[Water_H].state = true;
         }else if((iot_ctr[Water_H].state && temp_liq > iot_ctr[Water_H].run)||(!iot_ctr[Water_H].state && temp_liq < iot_ctr[Water_H].run)){
@@ -647,13 +649,13 @@ void system_ctr(unsigned long millisec){
               iot_ctr[Water_A+index].state = false;
               water_ctr_time[index] = iot_ctr[Water_A+index].stop*60;
             }else if(water_ctr_time[index] > iot_ctr[Water_A+index].run) water_ctr_time[index] = iot_ctr[Water_A+index].run;
-            nextion_display("page0.flow"+String(index+1)+"s",water_ctr_time[index],&nxSerial);
+            nextion_display("page_main.flow"+String(index+1)+"s",water_ctr_time[index],&nxSerial);
           }else{
             if(--water_ctr_time[index] < 1){
               iot_ctr[Water_A+index].state = true;
               water_ctr_time[index] = iot_ctr[Water_A+index].run;
             }else if(water_ctr_time[index] > iot_ctr[Water_A+index].stop) water_ctr_time[index] = iot_ctr[Water_A+index].stop;
-            nextion_display("page0.flow"+String(index+1)+"m",water_ctr_time[index]/60,&nxSerial);
+            nextion_display("page_main.flow"+String(index+1)+"m",water_ctr_time[index]/60,&nxSerial);
           }
         }
       }
@@ -664,13 +666,13 @@ void system_ctr(unsigned long millisec){
             iot_ctr[Circulater].state = false;
             Circulater_ctr_time = iot_ctr[Circulater].stop*60;
           }else if(Circulater_ctr_time > iot_ctr[Circulater].run) Circulater_ctr_time = iot_ctr[Circulater].run;
-          nextion_display("page0.fanom",Circulater_ctr_time/60,&nxSerial);
+          nextion_display("page_main.fanom",Circulater_ctr_time/60,&nxSerial);
         }else{
           if(--Circulater_ctr_time < 1){
             iot_ctr[Circulater].state = true;
             Circulater_ctr_time = iot_ctr[Circulater].run*60;
           }else if(Circulater_ctr_time > iot_ctr[Circulater].stop) Circulater_ctr_time = iot_ctr[Circulater].stop;
-          nextion_display("page0.fanfm",Circulater_ctr_time/60,&nxSerial);
+          nextion_display("page_main.fanfm",Circulater_ctr_time/60,&nxSerial);
         }
       }else{
       }
