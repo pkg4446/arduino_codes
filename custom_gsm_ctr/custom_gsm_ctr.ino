@@ -189,14 +189,28 @@ void command_service(bool command_type){
     temp_text += command_buf[index_check];
   }
   /**********/
-  if(!command_type){
-    Serial.print("nextion: ");
-    Serial.print(command_buf);
-  }
+  if(command_type)Serial.print("cmd: ");
+  else Serial.print("mqtt: ");
+  Serial.print(cmd_text);
+
   if(cmd_text=="time"){
     time_show();
   }else if(cmd_text=="timeset"){
     time_set();
+  }else if(cmd_text=="manual"){
+    uint8_t relay_num = temp_text.toInt();
+    if(relay_num < TOTAL_RELAY){
+      String cmd_select = "";
+      for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
+        if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
+          check_index = index_check+1;
+          break;
+        }
+        cmd_select += command_buf[index_check];
+      }
+      if(cmd_select == "on")  digitalWrite(Relay[relay_num], true);
+      else  digitalWrite(Relay[relay_num], false);
+    }
   }else if(cmd_text=="reboot"){
     ESP.restart();
   }else if(cmd_text=="page"){
@@ -224,7 +238,6 @@ void command_service(bool command_type){
         }
         cmd_select += command_buf[index_check];
       }
-
       String cmd_value = "";
       for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
         if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
@@ -249,6 +262,10 @@ void command_service(bool command_type){
         Serial.print(", run :");Serial.print(iot_ctr[iot_ctr_type].run);
         Serial.print(", stop :");Serial.println(iot_ctr[iot_ctr_type].stop);
       }
+      if(iot_ctr_type<3)      nextion_print(&nxSerial,"page 4");
+      else if(iot_ctr_type<6) nextion_print(&nxSerial,"page 6");
+      else if(iot_ctr_type<7) nextion_print(&nxSerial,"page 7");
+      else if(iot_ctr_type<8) nextion_print(&nxSerial,"page 5");
     }
   }else if(cmd_text=="config"){
     uint8_t iot_ctr_type = 255;
@@ -365,8 +382,6 @@ void command_process(char ch, bool type_uart) {
 void mqtt_connect() {
   mqttClient.disconnect();
   if(wifi_able){
-    //nextion_print(&nxSerial,"MAC.txt=\"Try to connect WIFI\"");
-    //nextion_print(&nxSerial,"btWIFI.val=0");
     mqttClient.setServer(mqttServer, mqttPort);
     mqttClient.setCallback(mqtt_callback);
 
@@ -554,14 +569,14 @@ void page_change(){
     if(nextion_page == 0){
       time_show();
       nextion_display("page_main.wifi",wifi_able,&nxSerial);
-      for (uint8_t index = 1; index < 3; index++){
-        nextion_display("page_main.sw_f"+String(index),iot_ctr[Water_A+index].enable,&nxSerial);
-        nextion_display("page_main.flow"+String(index)+"o",iot_ctr[Water_A+index].run,&nxSerial);
-        nextion_display("page_main.flow"+String(index)+"f",iot_ctr[Water_A+index].stop,&nxSerial);
+      for (uint8_t index = 0; index < 2; index++){
+        nextion_display("page_main.sw_f"+String(index+1),iot_ctr[Water_A+index].enable,&nxSerial);
+        nextion_display("page_main.flow"+String(index+1)+"o",iot_ctr[Water_A+index].run,&nxSerial);
+        nextion_display("page_main.flow"+String(index+1)+"f",iot_ctr[Water_A+index].stop,&nxSerial);
 
-        nextion_display("page_main.sw_l"+String(index),iot_ctr[Lamp_A+index].enable,&nxSerial);
-        nextion_display("page_main.led"+String(index)+"o",iot_ctr[Lamp_A+index].run,&nxSerial);
-        nextion_display("page_main.led"+String(index)+"f",iot_ctr[Lamp_A+index].stop,&nxSerial);
+        nextion_display("page_main.sw_l"+String(index+1),iot_ctr[Lamp_A+index].enable,&nxSerial);
+        nextion_display("page_main.led"+String(index+1)+"o",iot_ctr[Lamp_A+index].run,&nxSerial);
+        nextion_display("page_main.led"+String(index+1)+"f",iot_ctr[Lamp_A+index].stop,&nxSerial);
       }
       nextion_display("page_main.sw_l3",iot_ctr[Lamp_C].enable,&nxSerial);
       nextion_display("page_main.led3o",iot_ctr[Lamp_C].run,&nxSerial);
@@ -574,7 +589,29 @@ void page_change(){
       nextion_display("page_main.sw_f",iot_ctr[Circulater].enable,&nxSerial);
       nextion_display("page_main.fano",iot_ctr[Circulater].run,&nxSerial);
       nextion_display("page_main.fanf",iot_ctr[Circulater].stop,&nxSerial);
-    }else if(nextion_page == 1){
+    }else if(nextion_page == 4){
+      for (uint8_t index = 0; index < 2; index++){
+        nextion_display("page_liq.sw_liq"+String(index+1),iot_ctr[Water_A+index].enable,&nxSerial);
+        nextion_display("page_liq.run"+String(index+1),iot_ctr[Water_A+index].run,&nxSerial);
+        nextion_display("page_liq.stp"+String(index+1),iot_ctr[Water_A+index].stop,&nxSerial);
+      }
+      nextion_display("page_liq.sw_liq_h",iot_ctr[Water_H].enable,&nxSerial);
+      nextion_display("page_liq.run_h",iot_ctr[Water_H].run,&nxSerial);
+    }else if(nextion_page == 5){
+      nextion_display("page_temp.sw_temp",iot_ctr[Cooler].enable,&nxSerial);
+      nextion_display("page_temp.run_t",iot_ctr[Cooler].run,&nxSerial);
+      nextion_display("page_temp.stp_t",iot_ctr[Cooler].stop,&nxSerial);
+    }else if(nextion_page == 6){
+      for (uint8_t index = 0; index < 3; index++){
+        nextion_display("page_led.sw_led.sw_l"+String(index+1),iot_ctr[Lamp_A+index].enable,&nxSerial);
+        nextion_display("page_led.sw_led.run"+String(index+1),iot_ctr[Lamp_A+index].run,&nxSerial);
+        nextion_display("page_led.sw_led.stp"+String(index+1),iot_ctr[Lamp_A+index].stop,&nxSerial);
+      }
+    }else if(nextion_page == 7){
+      nextion_display("page_fan.sw_fan",iot_ctr[Circulater].enable,&nxSerial);
+      nextion_display("page_fan.run_f",iot_ctr[Circulater].run,&nxSerial);
+      nextion_display("page_fan.stp_f",iot_ctr[Circulater].stop,&nxSerial);
+    }else if(nextion_page == 2){
       
     }
   }
@@ -594,12 +631,13 @@ void system_ctr(unsigned long millisec){
         temp_air = sht31.readTemperature()*10;
         humi_now = sht31.readHumidity()*10;
       }
-      nextion_display("page_main.temp1",temp_air,&nxSerial);
-      nextion_display("page_main.humi",humi_now,&nxSerial);
-      nextion_display("page_main.temp3",temp_rtc,&nxSerial);
-      nextion_display("page_main.temp2",thermocouple1.readCelsius()*10,&nxSerial);
-      nextion_display("page_main.temp4",temp_liq,&nxSerial);
-      
+      if(nextion_page == 0){
+        nextion_display("page_main.temp1",temp_air,&nxSerial);
+        nextion_display("page_main.humi",humi_now,&nxSerial);
+        nextion_display("page_main.temp3",temp_rtc,&nxSerial);
+        nextion_display("page_main.temp2",thermocouple1.readCelsius()*10,&nxSerial);
+        nextion_display("page_main.temp4",temp_liq,&nxSerial);
+      }
 
       if(iot_ctr[Cooler].enable){
         if(temp_air < temp_rtc-100 || temp_air > temp_rtc+100){
@@ -645,36 +683,37 @@ void system_ctr(unsigned long millisec){
       for (uint8_t index = 0; index < 2; index++){
         if(iot_ctr[Water_A+index].enable){
           if(iot_ctr[Water_A+index].state){
+            if(nextion_page == 0) nextion_display("page_main.flow"+String(index+1)+"s",water_ctr_time[index]-1,&nxSerial);
             if(--water_ctr_time[index] < 1){
               iot_ctr[Water_A+index].state = false;
               water_ctr_time[index] = iot_ctr[Water_A+index].stop*60;
             }else if(water_ctr_time[index] > iot_ctr[Water_A+index].run) water_ctr_time[index] = iot_ctr[Water_A+index].run;
-            nextion_display("page_main.flow"+String(index+1)+"s",water_ctr_time[index],&nxSerial);
           }else{
+            if(nextion_page == 0) nextion_display("page_main.flow"+String(index+1)+"m",(water_ctr_time[index]/60),&nxSerial);
             if(--water_ctr_time[index] < 1){
               iot_ctr[Water_A+index].state = true;
               water_ctr_time[index] = iot_ctr[Water_A+index].run;
-            }else if(water_ctr_time[index] > iot_ctr[Water_A+index].stop) water_ctr_time[index] = iot_ctr[Water_A+index].stop;
-            nextion_display("page_main.flow"+String(index+1)+"m",water_ctr_time[index]/60,&nxSerial);
+            }else if(water_ctr_time[index] > iot_ctr[Water_A+index].stop*60) water_ctr_time[index] = iot_ctr[Water_A+index].stop*60;
           }
+          digitalWrite(Relay[Water_A+index], iot_ctr[Water_A+index].state);
         }
       }
     }else if(update_order == 3){
       if(iot_ctr[Circulater].enable){
         if(iot_ctr[Circulater].state){
+          if(nextion_page == 0) nextion_display("page_main.fanom",(Circulater_ctr_time/60),&nxSerial);
           if(--Circulater_ctr_time < 1){
             iot_ctr[Circulater].state = false;
             Circulater_ctr_time = iot_ctr[Circulater].stop*60;
-          }else if(Circulater_ctr_time > iot_ctr[Circulater].run) Circulater_ctr_time = iot_ctr[Circulater].run;
-          nextion_display("page_main.fanom",Circulater_ctr_time/60,&nxSerial);
+          }else if(Circulater_ctr_time > iot_ctr[Circulater].run*60) Circulater_ctr_time = iot_ctr[Circulater].run*60;
         }else{
           if(--Circulater_ctr_time < 1){
+            if(nextion_page == 0) nextion_display("page_main.fanfm",(Circulater_ctr_time/60),&nxSerial);
             iot_ctr[Circulater].state = true;
             Circulater_ctr_time = iot_ctr[Circulater].run*60;
-          }else if(Circulater_ctr_time > iot_ctr[Circulater].stop) Circulater_ctr_time = iot_ctr[Circulater].stop;
-          nextion_display("page_main.fanfm",Circulater_ctr_time/60,&nxSerial);
+          }else if(Circulater_ctr_time > iot_ctr[Circulater].stop*60) Circulater_ctr_time = iot_ctr[Circulater].stop*60;
         }
-      }else{
+        digitalWrite(Relay[Circulater], iot_ctr[Circulater].state);
       }
     }else {
       update_order = 0;
