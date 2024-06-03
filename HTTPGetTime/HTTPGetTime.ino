@@ -100,6 +100,5 @@ void get_googletime() {
   }else{
     Serial.println("   err");
   }
-  
   http.end();           // Free resources
 }////httpPOSTRequest_End

@@ -196,7 +196,8 @@ void command_service(bool command_type){
   if(cmd_text=="time"){
     time_show();
   }else if(cmd_text=="timeset"){
-    time_set();
+    if(wifi_able) time_set();
+    else Serial.println("wifi not connected");
   }else if(cmd_text=="manual"){
     uint8_t relay_num = temp_text.toInt();
     if(relay_num < TOTAL_RELAY){
@@ -481,36 +482,81 @@ void time_show(){
 }
 
 void time_set(){
-  RTC_DS3231.setClockMode(false);
-  /*
-  JS CODE
-  {
-    let now  = new Date();
-    let time = `time ${now.getFullYear()} ${now.getMonth()+1} ${now.getDate()} ${now.getUTCDay()} ${now.getHours()} ${now.getMinutes()} ${now.getSeconds()}`;
+  HTTPClient http;
+  http.begin("http://www.google.com/");
+  const char *headerKeys[] = {"Date"};
+  const size_t headerKeysCount = sizeof(headerKeys) / sizeof(headerKeys[0]);
+  http.collectHeaders(headerKeys, headerKeysCount);
+  http.addHeader("Content-Type", "application/json");
+  uint16_t httpResponseCode = http.GET();
+  if(httpResponseCode==200){
+    String server_time = http.header("Date");
+    Serial.println(server_time);
+    //Mon, 03 Jun 2024 01:19:55 GMT
+    String  time_data[5];
+    uint8_t time_index = 0;
+    String  time_text = "";
+    for(uint8_t index=0; index<server_time.length(); index++){
+      if(server_time[index] == 0x20){
+        time_data[time_index++] = time_text;
+        time_text = "";
+        index+=1; //passing to 0x20
+        if(time_index > 4){
+          time_index  = 0;
+          break;
+        }
+      };
+      time_text += server_time[index];
+    }
+    uint8_t time_dow,time_day,time_month,time_year,time_time[3];
+    if(time_data[0]=="Mon,")      time_dow = 1;
+    else if(time_data[0]=="Tue,") time_dow = 2;
+    else if(time_data[0]=="Wed,") time_dow = 3;
+    else if(time_data[0]=="Thu,") time_dow = 4;
+    else if(time_data[0]=="Fri,") time_dow = 5;
+    else if(time_data[0]=="Sat,") time_dow = 6;
+    else time_dow = 7;
+    time_day = (time_data[1].toInt())%100;
+    if(time_data[2]=="Jan")      time_month = 1;
+    else if(time_data[2]=="Feb") time_month = 2;
+    else if(time_data[2]=="Mar") time_month = 3;
+    else if(time_data[2]=="Apr") time_month = 4;
+    else if(time_data[2]=="May") time_month = 5;
+    else if(time_data[2]=="Jun") time_month = 6;
+    else if(time_data[2]=="Jul") time_month = 7;
+    else if(time_data[2]=="Aug") time_month = 8;
+    else if(time_data[2]=="Sep") time_month = 9;
+    else if(time_data[2]=="Oct") time_month = 10;
+    else if(time_data[2]=="Nov") time_month = 11;
+    else time_month = 12;
+    time_year = (time_data[3].toInt())%100;
+    for(uint8_t index=0; index<time_data[4].length(); index++){
+      if(time_data[4][index] == 0x3A){
+        time_time[time_index++] = (time_text.toInt())%100;
+        time_text = "";
+        index+=1; //passing to 0x20
+      };
+      time_text += time_data[4][index];
+    }
+    time_time[time_index] = (time_text.toInt())%100;
+    time_time[0] += 9;
+    if(time_time[0] >= 23){
+      time_time[0] = 0;
+      time_day    += 1;
+      if(++time_dow > 7) time_dow = 1;
+    }
+    RTC_DS3231.setClockMode(false);
+    RTC_DS3231.setYear(time_year);
+    RTC_DS3231.setMonth(time_month);
+    RTC_DS3231.setDate(time_day);
+    RTC_DS3231.setDoW(time_dow);
+    RTC_DS3231.setHour(time_time[0]);
+    RTC_DS3231.setMinute(time_time[1]);
+    RTC_DS3231.setSecond(time_time[2]);
+  }else{
+    Serial.println("   err");
   }
-  DATA
-    timeset 2024 5 22 3 15 48 39
-  */
-  uint8_t time_data[6];
-  uint8_t time_index = 0;
-  String time_text = "";
-  for(uint8_t index=8; index<COMMAND_LENGTH; index++){
-    if(command_buf[index] == 0x20 || command_buf[index] == 0x00){
-      time_data[time_index++] = (time_text.toInt())%100;
-      time_text = "";
-      index+=1; //passing to 0x20
-      if(time_index > 5) break;
-    };
-    time_text += command_buf[index];
-  }
-  if(time_data[3]==0) time_data[3] = 7;
-  RTC_DS3231.setYear(time_data[0]);
-  RTC_DS3231.setMonth(time_data[1]);
-  RTC_DS3231.setDate(time_data[2]);
-  RTC_DS3231.setDoW(time_data[3]);
-  RTC_DS3231.setHour(time_data[4]);
-  RTC_DS3231.setMinute(time_data[5]);
-  RTC_DS3231.setSecond(time_data[6]);
+  http.end();           // Free resources
 }
 /******************************************/
 /***************Functions******************/
