@@ -705,7 +705,9 @@ void system_ctr(unsigned long millisec){
           iot_ctr[Cooler].state = false;
         }
       }else{
-
+        digitalWrite(Relay[Cooler], false);
+        digitalWrite(Relay[Heater], false);
+        iot_ctr[Cooler].state = false;
       }
       if(iot_ctr[Water_H].enable){
         int8_t temp_liq = 25;//온도
@@ -713,6 +715,7 @@ void system_ctr(unsigned long millisec){
 
         if(temp_liq < temp_rtc-200 || temp_liq > temp_rtc+200){
           //온도센서 고장
+          iot_ctr[Water_H].state = false;
           digitalWrite(Relay[Water_H], false);
         }else if(temp_liq > iot_ctr[Water_H].run){
           digitalWrite(Relay[Water_H], false);
@@ -724,7 +727,8 @@ void system_ctr(unsigned long millisec){
           digitalWrite(Relay[Water_H], false);
         }
       }else{
-       
+        iot_ctr[Water_H].state = true;
+        digitalWrite(Relay[Water_H], false);
       }
     }else if(update_order == 2){
       for (uint8_t index = 0; index < 2; index++){
@@ -743,6 +747,9 @@ void system_ctr(unsigned long millisec){
             }else if(water_ctr_time[index] > iot_ctr[Water_A+index].stop*60) water_ctr_time[index] = iot_ctr[Water_A+index].stop*60;
           }
           digitalWrite(Relay[Water_A+index], iot_ctr[Water_A+index].state);
+        }else{
+          iot_ctr[Water_A+index].state = false;
+          digitalWrite(Relay[Water_A+index], iot_ctr[Water_A+index].state);
         }
       }
     }else if(update_order == 3){
@@ -760,6 +767,9 @@ void system_ctr(unsigned long millisec){
             Circulater_ctr_time = iot_ctr[Circulater].run*60;
           }else if(Circulater_ctr_time > iot_ctr[Circulater].stop*60) Circulater_ctr_time = iot_ctr[Circulater].stop*60;
         }
+        digitalWrite(Relay[Circulater], iot_ctr[Circulater].state);
+      }else{
+        iot_ctr[Circulater].state = false;
         digitalWrite(Relay[Circulater], iot_ctr[Circulater].state);
       }
     }else {
@@ -794,6 +804,9 @@ void system_ctr(unsigned long millisec){
           }else{
 
           }//nextion 표기
+        }else{
+          iot_ctr[Lamp_A+index].state = false;
+          digitalWrite(Relay[index], iot_ctr[Lamp_A+index].state);
         }
       }
 
