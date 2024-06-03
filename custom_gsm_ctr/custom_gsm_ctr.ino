@@ -710,20 +710,19 @@ void system_ctr(unsigned long millisec){
         iot_ctr[Cooler].state = false;
       }
       if(iot_ctr[Water_H].enable){
-        int8_t temp_liq = 25;//온도
-        if(iot_ctr[Water_H].run>250) iot_ctr[Water_H].run=250; //양액 온도 상한.
-
-        if(temp_liq < temp_rtc-200 || temp_liq > temp_rtc+200){
+        if(iot_ctr[Water_H].run>40) iot_ctr[Water_H].run=40; //양액 온도 상한.
+        uint8_t liq_temp = (temp_liq/10);
+        if(liq_temp > 999){
           //온도센서 고장
           iot_ctr[Water_H].state = false;
           digitalWrite(Relay[Water_H], false);
-        }else if(temp_liq > iot_ctr[Water_H].run){
+        }else if(liq_temp > iot_ctr[Water_H].run){
           digitalWrite(Relay[Water_H], false);
           iot_ctr[Water_H].state = false;
-        }else if(temp_liq < iot_ctr[Water_H].run - 5){ //양액 온도 갭 //iot_ctr[Water_H].stop){
+        }else if(liq_temp < iot_ctr[Water_H].run - 3){ //양액 온도 갭 //iot_ctr[Water_H].stop){
           digitalWrite(Relay[Water_H], true);
           iot_ctr[Water_H].state = true;
-        }else if((iot_ctr[Water_H].state && temp_liq > iot_ctr[Water_H].run)||(!iot_ctr[Water_H].state && temp_liq < iot_ctr[Water_H].run)){
+        }else if((iot_ctr[Water_H].state && liq_temp > iot_ctr[Water_H].run)||(!iot_ctr[Water_H].state && liq_temp < iot_ctr[Water_H].run)){
           digitalWrite(Relay[Water_H], false);
         }
       }else if(nextion_page!=2){
