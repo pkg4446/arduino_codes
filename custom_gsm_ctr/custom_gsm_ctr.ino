@@ -481,6 +481,7 @@ void time_show(){
 }
 
 void time_set(){
+  RTC_DS3231.setClockMode(false);
   /*
   JS CODE
   {
