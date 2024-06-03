@@ -1,6 +1,7 @@
 #include <EEPROM.h>
 #include <Wire.h>
 #include <WiFi.h>
+#include <HTTPClient.h>
 #include <PubSubClient.h> //https://github.com/knolleary/pubsubclient
 #include <DS3231.h>
 #include <max6675.h>
