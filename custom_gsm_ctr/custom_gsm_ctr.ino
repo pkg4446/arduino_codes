@@ -651,9 +651,9 @@ void page_change(){
       nextion_display("page_temp.stp_t",iot_ctr[Cooler].stop,&nxSerial);
     }else if(nextion_page == 6){
       for (uint8_t index = 0; index < 3; index++){
-        nextion_display("page_led.sw_led.sw_l"+String(index+1),iot_ctr[Lamp_A+index].enable,&nxSerial);
-        nextion_display("page_led.sw_led.run"+String(index+1),iot_ctr[Lamp_A+index].run,&nxSerial);
-        nextion_display("page_led.sw_led.stp"+String(index+1),iot_ctr[Lamp_A+index].stop,&nxSerial);
+        nextion_display("page_led.sw_led"+String(index+1),iot_ctr[Lamp_A+index].enable,&nxSerial);
+        nextion_display("page_led.run"+String(index+1),iot_ctr[Lamp_A+index].run,&nxSerial);
+        nextion_display("page_led.stp"+String(index+1),iot_ctr[Lamp_A+index].stop,&nxSerial);
       }
     }else if(nextion_page == 7){
       nextion_display("page_fan.sw_fan",iot_ctr[Circulater].enable,&nxSerial);
@@ -686,7 +686,6 @@ void system_ctr(unsigned long millisec){
         nextion_display("page_main.temp2",thermocouple1.readCelsius()*10,&nxSerial);
         nextion_display("page_main.temp4",temp_liq,&nxSerial);
       }
-
       if(iot_ctr[Cooler].enable){
         if(temp_air < temp_rtc-100 || temp_air > temp_rtc+100){
           //온도센서 고장
@@ -705,7 +704,7 @@ void system_ctr(unsigned long millisec){
           digitalWrite(Relay[Heater], false);
           iot_ctr[Cooler].state = false;
         }
-      }else{
+      }else if(nextion_page!=2){
         digitalWrite(Relay[Cooler], false);
         digitalWrite(Relay[Heater], false);
         iot_ctr[Cooler].state = false;
@@ -727,7 +726,7 @@ void system_ctr(unsigned long millisec){
         }else if((iot_ctr[Water_H].state && temp_liq > iot_ctr[Water_H].run)||(!iot_ctr[Water_H].state && temp_liq < iot_ctr[Water_H].run)){
           digitalWrite(Relay[Water_H], false);
         }
-      }else{
+      }else if(nextion_page!=2){
         iot_ctr[Water_H].state = true;
         digitalWrite(Relay[Water_H], false);
       }
@@ -748,7 +747,7 @@ void system_ctr(unsigned long millisec){
             }else if(water_ctr_time[index] > iot_ctr[Water_A+index].stop*60) water_ctr_time[index] = iot_ctr[Water_A+index].stop*60;
           }
           digitalWrite(Relay[Water_A+index], iot_ctr[Water_A+index].state);
-        }else{
+        }else if(nextion_page!=2){
           iot_ctr[Water_A+index].state = false;
           digitalWrite(Relay[Water_A+index], iot_ctr[Water_A+index].state);
         }
@@ -762,14 +761,14 @@ void system_ctr(unsigned long millisec){
             Circulater_ctr_time = iot_ctr[Circulater].stop*60;
           }else if(Circulater_ctr_time > iot_ctr[Circulater].run*60) Circulater_ctr_time = iot_ctr[Circulater].run*60;
         }else{
+          if(nextion_page == 0) nextion_display("page_main.fanfm",(Circulater_ctr_time/60),&nxSerial);
           if(--Circulater_ctr_time < 1){
-            if(nextion_page == 0) nextion_display("page_main.fanfm",(Circulater_ctr_time/60),&nxSerial);
             iot_ctr[Circulater].state = true;
             Circulater_ctr_time = iot_ctr[Circulater].run*60;
           }else if(Circulater_ctr_time > iot_ctr[Circulater].stop*60) Circulater_ctr_time = iot_ctr[Circulater].stop*60;
         }
         digitalWrite(Relay[Circulater], iot_ctr[Circulater].state);
-      }else{
+      }else if(nextion_page!=2){
         iot_ctr[Circulater].state = false;
         digitalWrite(Relay[Circulater], iot_ctr[Circulater].state);
       }
@@ -799,15 +798,15 @@ void system_ctr(unsigned long millisec){
               iot_ctr[Lamp_A+index].state = true;
             }
           }
-          digitalWrite(Relay[index], iot_ctr[Lamp_A+index].state);
+          digitalWrite(Relay[Lamp_A+index], iot_ctr[Lamp_A+index].state);
           if(iot_ctr[Lamp_A+index].state){
 
           }else{
 
           }//nextion 표기
-        }else{
+        }else if(nextion_page!=2){
           iot_ctr[Lamp_A+index].state = false;
-          digitalWrite(Relay[index], iot_ctr[Lamp_A+index].state);
+          digitalWrite(Relay[Lamp_A+index], iot_ctr[Lamp_A+index].state);
         }
       }
 
