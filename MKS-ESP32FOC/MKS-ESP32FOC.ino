@@ -1,4 +1,4 @@
-v /// MKS ESP32 FOC Open loop speed control example; Test Library：SimpleFOC 2.1.1 ; Tested hardware：MKS ESP32 FOC V1.0
+/// MKS ESP32 FOC Open loop speed control example; Test Library：SimpleFOC 2.1.1 ; Tested hardware：MKS ESP32 FOC V1.0
 /// Enter "T+number" in the serial port to set the speed of the two motors.For example, to set the motor to rotate at a speed of 10rad/s, input "T10"
 /// When the motor is powered on, it will rotate at 5rad/s by default
 /// When using your own motor, do remember to modify the default number of pole pairs, the value in BLDCMotor(7).
