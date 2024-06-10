@@ -47,10 +47,10 @@ const uint8_t eep_var[EEPROM_SIZE_VALUE*EEPROM_SIZE_CTR] = {32,33,34, 35,36,37, 
                                                             50,51,52, 53,54,55};
 /***************EEPROM*********************/
 /***************MQTT_CONFIG****************/
-const char*     mqttServer    = "smarthive.kr";
+const char*     mqttServer    = "mqtt.kr";
 const uint16_t  mqttPort      = 1883;
-const char*     mqttUser      = "hive";
-const char*     mqttPassword  = "hive";
+const char*     mqttUser      = "test";
+const char*     mqttPassword  = "test";
 const char*     topic_pub     = "SHS";
 
 WiFiClient    mqtt_client;
