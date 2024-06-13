@@ -9,7 +9,7 @@
 #include "uart_print.h"
 
 #define TOTAL_RELAY 10
-#define EEPROM_SIZE_CONFIG  16
+#define EEPROM_SIZE_CONFIG  24
 #define EEPROM_SIZE_VALUE   3
 #define EEPROM_SIZE_CTR     8
 #define COMMAND_LENGTH  32
@@ -40,14 +40,14 @@ enum RelayFunc {
     Spare_A
 };
 /***************EEPROM*********************/
-const uint8_t eep_ssid[EEPROM_SIZE_CONFIG] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-const uint8_t eep_pass[EEPROM_SIZE_CONFIG] = {16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
-const uint8_t eep_var[EEPROM_SIZE_VALUE*EEPROM_SIZE_CTR] = {32,33,34, 35,36,37, 38,39,40,
-                                                            41,42,43, 44,45,46, 47,48,49,
-                                                            50,51,52, 53,54,55};
+const uint8_t eep_ssid[EEPROM_SIZE_CONFIG] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
+const uint8_t eep_pass[EEPROM_SIZE_CONFIG] = {24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47};
+const uint8_t eep_var[EEPROM_SIZE_VALUE*EEPROM_SIZE_CTR] = {48,49,50, 51,52,53, 54,55,56,
+                                                            57,58,59, 60,61,62, 63,64,65,
+                                                            66,67,68, 69,70,71};
 /***************EEPROM*********************/
 /***************MQTT_CONFIG****************/
-const char*     mqttServer    = "mqtt.kr";
+const char*     mqttServer    = "smarthive.kro.kr";
 const uint16_t  mqttPort      = 1883;
 const char*     mqttUser      = "test";
 const char*     mqttPassword  = "test";
@@ -349,8 +349,7 @@ void command_service(bool command_type){
       Serial.print("PT100 1: ");Serial.print(thermocouple1.readCelsius());Serial.println("°C");
       Serial.print("PT100 2: ");Serial.print(thermocouple2.readCelsius());Serial.println("°C");
       Serial.print("SHT30: ");
-      Wire.beginTransmission(0x44);
-      if(!Wire.endTransmission()){
+      if(sht31.begin(0x44)){
         Serial.print(sht31.readTemperature());
         Serial.println("°C, ");
         Serial.print(sht31.readHumidity());
@@ -674,10 +673,11 @@ void system_ctr(unsigned long millisec){
       int16_t temp_air = 999;
       int16_t temp_liq = thermocouple2.readCelsius()*10;
       int16_t temp_rtc = RTC_DS3231.getTemperature()*10;
-      Wire.beginTransmission(0x44);
-      if(!Wire.endTransmission()){
+      if(sht31.begin(0x44)){
         temp_air = sht31.readTemperature()*10;
         humi_now = sht31.readHumidity()*10;
+      }else{
+        Serial.println("sht31 fail!");
       }
       if(nextion_page == 0){
         nextion_display("page_main.temp1",temp_air,&nxSerial);
