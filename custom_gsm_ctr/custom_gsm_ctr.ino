@@ -676,8 +676,6 @@ void system_ctr(unsigned long millisec){
       if(sht31.begin(0x44)){
         temp_air = sht31.readTemperature()*10;
         humi_now = sht31.readHumidity()*10;
-      }else{
-        Serial.println("sht31 fail!");
       }
       if(nextion_page == 0){
         nextion_display("page_main.temp1",temp_air,&nxSerial);
