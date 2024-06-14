@@ -349,14 +349,10 @@ void command_service(bool command_type){
       Serial.print("PT100 1: ");Serial.print(thermocouple1.readCelsius());Serial.println("°C");
       Serial.print("PT100 2: ");Serial.print(thermocouple2.readCelsius());Serial.println("°C");
       Serial.print("SHT30: ");
-      if(sht31.begin(0x44)){
-        Serial.print(sht31.readTemperature());
-        Serial.println("°C, ");
-        Serial.print(sht31.readHumidity());
-        Serial.println("%");
-      }else{
-        Serial.println("No device");
-      }
+      Serial.print(sht31.readTemperature());
+      Serial.print("°C, ");
+      Serial.print(sht31.readHumidity());
+      Serial.println("%");
     }else if(uart_type && cmd_text=="help"){
       serial_command_help(&Serial);
     }else{ serial_err_msg(&Serial, command_buf); }
@@ -592,6 +588,7 @@ void setup() {
     iot_ctr[index].stop   = EEPROM.read(eep_var[3*index+2]);
   }
 
+  sht31.begin(0x44);
   wifi_connect();
   serial_command_help(&Serial);
   if(uart_type) Serial.println("System online");
@@ -609,6 +606,7 @@ void loop() {
   system_ctr(millis());
   page_change();
 }
+
 void page_change(){
   if(nextion_shift){
     nextion_shift = false;
@@ -669,14 +667,12 @@ void system_ctr(unsigned long millisec){
     prevUpdateTime = millisec;
     update_order += 1;
     if(update_order == 1){
-      int16_t humi_now = 0;
-      int16_t temp_air = 999;
+      int16_t humi_now = sht31.readHumidity()*10;
+      int16_t temp_air = sht31.readTemperature()*10;
       int16_t temp_liq = thermocouple2.readCelsius()*10;
       int16_t temp_rtc = RTC_DS3231.getTemperature()*10;
-      if(sht31.begin(0x44)){
-        temp_air = sht31.readTemperature()*10;
-        humi_now = sht31.readHumidity()*10;
-      }
+      if(temp_liq>999) temp_liq=999;
+
       if(nextion_page == 0){
         nextion_display("page_main.temp1",temp_air,&nxSerial);
         nextion_display("page_main.humi",humi_now,&nxSerial);
@@ -710,7 +706,7 @@ void system_ctr(unsigned long millisec){
       if(iot_ctr[Water_H].enable){
         if(iot_ctr[Water_H].run>40) iot_ctr[Water_H].run=40; //양액 온도 상한.
         uint8_t liq_temp = (temp_liq/10);
-        if(liq_temp > 999){
+        if(liq_temp > 99){
           //온도센서 고장
           iot_ctr[Water_H].state = false;
           digitalWrite(Relay[Water_H], false);
