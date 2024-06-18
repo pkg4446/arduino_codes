@@ -106,7 +106,7 @@ void command_service(){
     }
     EEPROM.commit();
   }else if(cmd_text=="limit"){
-    uint8_t limit_value = cmd_text.toInt();
+    uint8_t limit_value = temp_text.toInt();
     Serial.print("limit ");
     Serial.println(limit_value);
     if(target_mt){
@@ -118,7 +118,7 @@ void command_service(){
     }
     EEPROM.commit();
   }else if(cmd_text=="power"){
-    uint8_t power_value = cmd_text.toInt();
+    uint8_t power_value = temp_text.toInt();
     Serial.print("power ");
     Serial.println(power_value);
     if(target_mt){
@@ -127,6 +127,18 @@ void command_service(){
     }else{
       driver_b.voltage_power_supply = power_value;
       EEPROM.write(SUPPLY_B, power_value);
+    }
+    EEPROM.commit();
+  }else if(cmd_text=="speed"){
+    uint8_t power_value = temp_text.toInt();
+    Serial.print("speed ");
+    Serial.println(power_value);
+    if(target_mt){
+      driver_a.voltage_power_supply = power_value;
+      EEPROM.write(SPEED_A, power_value);
+    }else{
+      driver_b.voltage_power_supply = power_value;
+      EEPROM.write(SPEED_B, power_value);
     }
     EEPROM.commit();
   }else if(cmd_text=="reboot"){
