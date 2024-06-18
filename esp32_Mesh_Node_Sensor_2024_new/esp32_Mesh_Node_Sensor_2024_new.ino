@@ -20,7 +20,7 @@
 #define SCL2 32
 TwoWire I2Ctwo = TwoWire(1);
 
-//#define   SENSOR_SHT40
+//#define SENSOR_SHT40
 #ifdef SENSOR_SHT40
   #include "Adafruit_SHT4x.h"
   Adafruit_SHT4x sht40 = Adafruit_SHT4x();
@@ -37,6 +37,7 @@ bool mesh_info = false;
 bool mesh_send = false;
 
 uint8_t liquid_sensor = 0;
+uint8_t sht_port      = 0;
 
 void tca_select(uint8_t index) {
   if (index > 7) return;
@@ -117,7 +118,7 @@ void command_Service(String command, String value) {
     EEPROM.write(EEP_humidity, control_humidity);
     mesh.sendBroadcast("SENSOR=SET=HUMI="+ String(control_humidity) +"=0=0;");
   } else if (command == "AT+USE") {
-    if (value == "true"){
+    if (value == "true" || value == "1"){
       use_stable_h = 1;
       use_stable_f = 1;
     }else{
@@ -128,7 +129,7 @@ void command_Service(String command, String value) {
     EEPROM.write(EEP_Stable_f, use_stable_f);
     mesh.sendBroadcast("SENSOR=SET=USE=1=0=0;");
   } else if (command == "AT+USEH") {
-    if (value == "true"){
+    if (value == "true" || value == "1"){
       use_stable_h = 1;
     }else{
       use_stable_h = 0;
@@ -136,7 +137,7 @@ void command_Service(String command, String value) {
     EEPROM.write(EEP_Stable_h, use_stable_h);
     mesh.sendBroadcast("SENSOR=SET=USE=0=1=0;");
   } else if (command == "AT+USEF") {
-    if (value == "true"){
+    if (value == "true" || value == "1"){
       use_stable_f = 1;
     }else{
       use_stable_f = 0; 
@@ -150,7 +151,7 @@ void command_Service(String command, String value) {
     count_sensor_err_w = 0;
     mesh.sendBroadcast("SENSOR=SET=WATER=HONEY=0=0;");
   }else if (command == "AT+WATER") {
-    if (value == "true"){
+    if (value == "true" || value == "1"){
       use_water_f = 1;
     }else{
       use_water_f = 0;
@@ -158,7 +159,7 @@ void command_Service(String command, String value) {
     EEPROM.write(EEP_water, use_water_f);
     mesh.sendBroadcast("SENSOR=SET=WATER=HONEY=1=1;");
   }else if (command == "AT+HONEY") {
-    if (value == "true"){
+    if (value == "true" || value == "1"){
       use_honey_f = 1;
     }else{
       use_honey_f = 0;
@@ -184,6 +185,8 @@ void command_Service(String command, String value) {
     }
   } else if (command == "AT+LOG") {
     run_log  = (value.toInt() > 0) ? true : false;
+  } else if (command == "reboot") {
+    ESP.restart();
   }
   mesh.update();
   Serial.print("AT command:");
@@ -263,7 +266,7 @@ void sensor_values(unsigned long millisec){
     time_send = millisec;
     if(mesh_node_list() > 0){
       mesh_info = true;
-      String msg = "SENSOR=LOG=" + (String)temperature + "=" + (String)humidity + "=" + (String)send_water + "=" + (String)send_honey + ';';
+      String msg = "SENSOR=LOG=" + (String)temperature + "=" + (String)humidity + ';';
       mesh.sendBroadcast( msg );
     }
   }
@@ -394,7 +397,7 @@ void sensor_level(unsigned long millisec) {
         run_water = false;
         Serial.println("water_relay_stop_err");
       }else if(!sensor_state_w){
-        if(!run_water && !digitalRead(SENSOR_W[1]){
+        if(!run_water && !digitalRead(SENSOR_W[1])){
           //mesh.sendBroadcast("P=ID=AT+PUMP=3;"); //펌프 켜기
           digitalWrite(RELAY_VALVE_W, pin_on);   //솔레노이드 밸브 켜기
           run_water = true;
@@ -431,11 +434,10 @@ void sensor_level(unsigned long millisec) {
         digitalWrite(RELAY_VALVE_H, pin_off);
         Serial.println("honey_relay_stop_err");
       }else if(!sensor_state_h){
-        if(!run_honey && !digitalRead(SENSOR_H[1]){
+        if(!run_honey && !digitalRead(SENSOR_H[1])){
           //mesh.sendBroadcast("P=ID=AT+PUMP=3;"); //펌프 켜기
           digitalWrite(RELAY_VALVE_H, pin_on);     //솔레노이드 밸브 켜기
           run_honey = true;
-          level_gauge_h = 1;
           mesh.sendBroadcast("SENSOR=RELAY=ON=HONEY=1=1;");
           Serial.println("honey_relay_run");          
         }else if(digitalRead(SENSOR_H[1])){
@@ -557,26 +559,29 @@ void stable(unsigned long millisec) {
 void get_sensor(unsigned long millisec) {
   if ((millisec - timer_SHT) > 300) {
     timer_SHT = millisec;
-    tca_select(6);
-    Wire.beginTransmission(68); //0x44
-    mesh.update();
     bool sensor_conn = false;
-    if(!Wire.endTransmission()){
-      #ifdef SENSOR_SHT40
-        if (sht40.begin()) {
-          sensors_event_t humi, temp;
-          sht40.getEvent(&humi, &temp);
-          temperature  = temp.temperature * 100;
-          humidity     = humi.relative_humidity * 100;
-          sensor_conn  = true;
-        }
-      #else
-        if (sht31.begin(0x44)) {
-          temperature  = sht31.readTemperature() * 100;
-          humidity    = sht31.readHumidity() * 100;
-          sensor_conn  = true;
-        } 
-      #endif
+    for (int index = 0; index < 8; index++){
+      tca_select(index);
+      Wire.beginTransmission(68); //0x44
+      mesh.update();
+      sht_port = index;
+      if(!Wire.endTransmission()){
+        #ifdef SENSOR_SHT40
+          if (sht40.begin()) {
+            sensors_event_t humi, temp;
+            sht40.getEvent(&humi, &temp);
+            temperature  = temp.temperature * 100;
+            humidity     = humi.relative_humidity * 100;
+            sensor_conn  = true;
+          }
+        #else
+          if (sht31.begin(0x44)) {
+            temperature  = sht31.readTemperature() * 100;
+            humidity    = sht31.readHumidity() * 100;
+            sensor_conn  = true;
+          } 
+        #endif
+      }
     }
     if(!sensor_conn){
       temperature  = 14040;
@@ -590,7 +595,8 @@ void serial_monit(unsigned long millisec){
   if (run_log && ((millisec - timer_serial_monit) > 1000)) {
     timer_serial_monit = millisec;
     Serial.println(ERR_Message);
-    Serial.print("TCA Port 6");
+    Serial.print("TCA Port");
+    Serial.print(sht_port);
     Serial.print(", T: ");
     Serial.print(temperature);
     Serial.print("°C ,H: ");
@@ -614,22 +620,11 @@ void serial_monit(unsigned long millisec){
     Serial.print(run_heater);
     Serial.print(", fan");
     Serial.print(run_fan);
+    Serial.print(", state");
+    Serial.print(count_sensor_err_w);
+    Serial.print(count_sensor_err_h);
     Serial.println(";");
     mesh.update();
-    Serial.print(count_sensor_err_w);
-    Serial.print("-water_level: ");
-    for (int8_t index = 0 ; index < 6 ; index++) {
-      Serial.print(water_level[index]);
-      mesh.update();
-    }
-    Serial.println(";");
-    Serial.print(count_sensor_err_h);
-    Serial.print("-honey_level: ");
-    for (int8_t index = 0 ; index < 6 ; index++) {
-      Serial.print(honey_level[index]);
-      mesh.update();
-    }    
-    Serial.println(";");
   }
 }
 

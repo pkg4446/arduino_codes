@@ -4,7 +4,7 @@
 #define   SEGMENT 8
 #define   QUE_MAX 9
 
-#define   MESH_PREFIX     "smartHiveMesh"
+#define   MESH_PREFIX     "HiveMesh"
 #define   MESH_PASSWORD   "smarthive123"
 #define   MESH_PORT       3333
 
@@ -81,9 +81,7 @@ void command_Service() {
 }//Command_service() END
 
 //replace by pointer
-void command_Process() {
-  char ch;
-  ch = rootDvice.read();
+void command_Process(char ch) {
   mesh.update();
   switch (ch) {
     case ';':
@@ -159,32 +157,14 @@ void setup() {
 void loop() {
   unsigned long millisec = millis();
   if (rootDvice.available()) {
-    command_Process();
+    command_Process(rootDvice.read());
   }
   if (Serial.available()) {
-    Serial_process();
+    command_Process(Serial.read());
   }
   mesh.update();
   mesh_restart(millisec);
   segment_display(millisec);
-}
-
-void Serial_process() {
-  char ch;
-  ch = Serial.read();
-  mesh.update();
-  switch (ch) {
-    case ';':
-      command_Buf[command_Num] = ';';
-      command_Buf[command_Num+1] = 0x00;
-      command_Service();
-      command_Num = 0;
-      break;
-    default:
-      command_Buf[command_Num++] = ch;
-      command_Num %= SERIAL_MAX;
-      break;
-  }
 }
 
 unsigned long timer_restart = 0;
