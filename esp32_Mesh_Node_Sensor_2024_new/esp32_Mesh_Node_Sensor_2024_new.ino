@@ -8,13 +8,14 @@
 #include  <Adafruit_SHT31.h>
 #include  <DS3231.h>
 
-#define   EEPROM_SIZE 7
-#define   SERIAL_MAX  128
+#define EEPROM_SIZE 7
+#define SERIAL_MAX  128
 
-#define   MESH_PREFIX   "HiveMesh"
-#define   MESH_PASSWORD "smarthive123"
-#define   MESH_PORT     3333
+#define MESH_PREFIX   "HiveMesh"
+#define MESH_PASSWORD "smarthive123"
+#define MESH_PORT     3333
 
+#define TCAADDR 0x70
 #define SDA2 33
 #define SCL2 32
 TwoWire I2Ctwo = TwoWire(1);
@@ -36,13 +37,6 @@ bool mesh_info = false;
 bool mesh_send = false;
 
 uint8_t liquid_sensor = 0;
-
-PCA9539 ioport(0x74); // Base address starts at 0x74 for A0 = L and A1 = L
-//Address   A1    A0
-//0x74      L     L
-//0x75      L     H
-//0x76      H     L
-//0x77      H     H
 
 void tca_select(uint8_t index) {
   if (index > 7) return;
@@ -81,10 +75,6 @@ boolean run_log    = false;
 //// ----------- Sensor -----------
 int16_t temperature = 14040;
 int16_t humidity    = 14040;
-int8_t  send_water  = 0;
-int8_t  send_honey  = 0;
-boolean water_level[6] = {false,};
-boolean honey_level[6] = {false,};
 ////for millis() func//
 unsigned long timer_SHT   = 0UL;
 unsigned long time_water    = 0UL;
@@ -105,9 +95,9 @@ const uint8_t RELAY_HEATER  = 12;
 const uint8_t RELAY_FAN     = 16;
 const uint8_t RELAY_VALVE_H = 13;
 const uint8_t RELAY_VALVE_W = 14;
+const uint8_t SENSOR_H[2] = {35,34};
+const uint8_t SENSOR_W[2] = {17,36};
 
-const uint8_t BUILTIN_LED_A = 17;
-const uint8_t BUILTIN_LED_B = 25;
 //// ----------- Variable -----------
 uint8_t count_sensor_err_w = 0;
 uint8_t count_sensor_err_h = 0;
@@ -283,8 +273,8 @@ void sensor_values(unsigned long millisec){
 // Needed for painless library
 void receivedCallback( uint32_t from, String &msg ) {
   char msg_buf[SERIAL_MAX];
-  for (int i = 0; i < msg.length(); i++) {
-    msg_buf[i] = msg[i];
+  for (int index = 0; index < msg.length(); index++) {
+    msg_buf[index] = msg[index];
   }
   String types   = strtok(msg_buf, "=");
   if (types == "S") {
@@ -304,9 +294,6 @@ void setup() {
   Serial.begin(115200);
   Wire.begin();
   I2Ctwo.begin(SDA2,SCL2,400000);
-  for (int8_t index = 0 ; index <= 15 ; index++) {
-    ioport.pinMode(index, INPUT);
-  }
   //// ------------ PIN OUT ------------
   pinMode(RELAY_HEATER, OUTPUT);
   digitalWrite(RELAY_HEATER,  pin_off);
@@ -316,10 +303,10 @@ void setup() {
   digitalWrite(RELAY_VALVE_H, pin_off);
   pinMode(RELAY_VALVE_W, OUTPUT);
   digitalWrite(RELAY_VALVE_W, pin_off);
-  pinMode(BUILTIN_LED_A, OUTPUT);
-  digitalWrite(BUILTIN_LED_A, pin_off);
-  pinMode(BUILTIN_LED_B, OUTPUT);
-  digitalWrite(BUILTIN_LED_B, pin_off);
+  for (uint8_t index = 0; index < 2; index++){
+    pinMode(SENSOR_H[index], INPUT);
+    pinMode(SENSOR_W[index], INPUT);
+  }
   //// ------------ PIN OUT ------------
   if (!EEPROM.begin(EEPROM_SIZE)) Serial.println("failed to initialise EEPROM");
   //// ------------ EEPROM ------------
@@ -376,47 +363,29 @@ void loop() {
 uint8_t full_water = 0;
 uint8_t full_honey = 0;
 uint8_t err_sensor = 0;
-uint8_t level_gauge_w = 0;
-uint8_t level_gauge_h = 0;
 void sensor_level(unsigned long millisec) {
   if ((millisec - time_water) > 1000 * 1) {
     time_water = millisec;
-    send_water = 0;
-    send_honey = 0;
-    for (int8_t index = 0 ; index < 6 ; index++) {
-      water_level[index] = ioport.digitalRead(index);
-      honey_level[index] = ioport.digitalRead(index+6);
-      mesh.update();
-      //수위(단위 %)
-      if(water_level[index]) send_water = (index+1)*20;
-      if(honey_level[index]) send_honey = (index+1)*20;
-    }
-    if(!water_level[1]) use_water = true; //센서 수위가 40% 이하일 경우 급수
-    if(!honey_level[1]) use_honey = true;
-    for (int8_t index = 1 ; index < 6 ; index++) { //위는 켜졌는데 아래는 안켜질 경우(고장) 검증
-      if(water_level[index] && !water_level[index-1]){
-        if(count_sensor_err_w >= 30){
-          sensor_state_w = true;
-        }else{
-          count_sensor_err_w += 15;
-          Serial.println("water_sensor_error");
-        }
-      }else if(count_sensor_err_w>0){
-        count_sensor_err_w -= 1;
+    if(!digitalRead(SENSOR_W[0])){
+      if(digitalRead(SENSOR_W[1])){
+        Serial.println("water_sensor_error");
+      }else{
+        use_water = true;
       }
-      if(honey_level[index] && !honey_level[index-1]){
-        if(count_sensor_err_h >= 30){
-          sensor_state_h = true;
-        }else{
-          count_sensor_err_h += 15;
-          Serial.println("honey_sensor_error");
-        }
-      }else if(count_sensor_err_h>0){
-        count_sensor_err_h -= 1;
-      }
-      if(sensor_state_w && sensor_state_h) break;//센서들이 고장일 경우
-      mesh.update();
+    }else{
+      digitalWrite(RELAY_VALVE_W, pin_off);
     }
+    mesh.update();
+    if(!digitalRead(SENSOR_H[0])){
+      if(digitalRead(SENSOR_H[1])){
+        Serial.println("water_sensor_error");
+      }else{
+        use_honey = true;
+      }
+    }else{
+      digitalWrite(RELAY_VALVE_H, pin_off);
+    }
+
     if(use_water_f && use_water){
       mesh.update();
       if(run_water && sensor_state_w){
@@ -429,44 +398,26 @@ void sensor_level(unsigned long millisec) {
           //mesh.sendBroadcast("P=ID=AT+PUMP=3;"); //펌프 켜기
           digitalWrite(RELAY_VALVE_W, pin_on);   //솔레노이드 밸브 켜기
           run_water = true;
-          level_gauge_w = 1;
           mesh.sendBroadcast("SENSOR=RELAY=ON=WATER=1=1;");
           Serial.println("water_relay_run");
-        }else{
-          if(water_level[3]){
-            if(run_water){
-              //가득참
-              //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
-              digitalWrite(RELAY_VALVE_W, pin_off);
-              run_water      = false;
-              mesh.sendBroadcast("SENSOR=RELAY=OFF=WATER=0=0;");
-              Serial.println("water_relay_stop_full");
-            }            
-          } else if(water_level[4]||water_level[5]){
-            //넘침
+        }else if(digitalRead(SENSOR_W[1])){
+          if(run_water){
+            //가득참
             //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
             digitalWrite(RELAY_VALVE_W, pin_off);
-            mesh.sendBroadcast("SENSOR=ERR=OVERFLOW=WATER=0=0;");
-            Serial.println("water_relay_stop_overflow");
-          }else if(run_water){ 
-            if(!water_level[level_gauge_w]){
-              full_water++;
-              if (full_water > 254){
-                digitalWrite(RELAY_VALVE_W, pin_off);
-                run_water      = false;
-                sensor_state_w = true;
-                ERR_Message = "SENSOR=ERR=EMPTY=WATER=0=0;";
-                mesh.sendBroadcast(ERR_Message);
-                mesh.sendBroadcast("SENSOR=RELAY=OFF=WATER=0=0;");
-                Serial.println("water_relay_stop_timeout");
-              }
-            } else if(level_gauge_w != 0){
-              level_gauge_w += 1;
-              if(level_gauge_w > 6){
-                level_gauge_w = 0;
-                digitalWrite(RELAY_VALVE_W, pin_off);
-                run_water = false;
-              }
+            run_water = false;
+            mesh.sendBroadcast("SENSOR=RELAY=OFF=WATER=0=0;");
+            Serial.println("water_relay_stop_full");
+          }else{
+            full_water++;
+            if (full_water > 254){
+              digitalWrite(RELAY_VALVE_W, pin_off);
+              run_water      = false;
+              sensor_state_w = true;
+              ERR_Message = "SENSOR=ERR=EMPTY=WATER=0=0;";
+              mesh.sendBroadcast(ERR_Message);
+              mesh.sendBroadcast("SENSOR=RELAY=OFF=WATER=0=0;");
+              Serial.println("water_relay_stop_timeout");
             }
           }//밸브가 열려있을때 수위가 올라가지 않을경우
         }
@@ -487,41 +438,24 @@ void sensor_level(unsigned long millisec) {
           level_gauge_h = 1;
           mesh.sendBroadcast("SENSOR=RELAY=ON=HONEY=1=1;");
           Serial.println("honey_relay_run");          
-        }else{
-          if(honey_level[3]){
-            if(run_honey){
-              //가득참
-              //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
-              digitalWrite(RELAY_VALVE_H, pin_off);
-              run_honey      = false;
-              mesh.sendBroadcast("SENSOR=RELAY=OFF=HONEY=0=0;");
-              Serial.println("honey_relay_stop_full");
-            }
-          } else if(honey_level[4]||honey_level[5]){
-            //넘침
+        }else if(digitalRead(SENSOR_W[1])){
+          if(run_honey){
+            //가득참
             //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
             digitalWrite(RELAY_VALVE_H, pin_off);
-            mesh.sendBroadcast("SENSOR=ERR=OVERFLOW=HONEY=0=0;");
-            Serial.println("honey_relay_stop_overflow");
-          } else if(run_honey){ 
-            if(!honey_level[level_gauge_h]){
-              full_honey++;
-              if (full_honey > 254){
-                digitalWrite(RELAY_VALVE_H, pin_off);
-                run_honey = false;
-                sensor_state_h = true;
-                ERR_Message = "SENSOR=ERR=EMPTY=HONEY=0=0;";
-                mesh.sendBroadcast(ERR_Message);
-                mesh.sendBroadcast("SENSOR=RELAY=OFF=HONEY=0=0;");
-                Serial.println("honey_relay_stop_timeout");
-              }
-            } else if(level_gauge_h != 0){
-              level_gauge_h += 1;
-              if(level_gauge_h > 6){
-                level_gauge_h = 0;
-                digitalWrite(RELAY_VALVE_W, pin_off);
-                run_honey = false;
-              }
+            run_honey      = false;
+            mesh.sendBroadcast("SENSOR=RELAY=OFF=HONEY=0=0;");
+            Serial.println("honey_relay_stop_full");
+          }else{
+            full_honey++;
+            if (full_honey > 254){
+              digitalWrite(RELAY_VALVE_H, pin_off);
+              run_honey = false;
+              sensor_state_h = true;
+              ERR_Message = "SENSOR=ERR=EMPTY=HONEY=0=0;";
+              mesh.sendBroadcast(ERR_Message);
+              mesh.sendBroadcast("SENSOR=RELAY=OFF=HONEY=0=0;");
+              Serial.println("honey_relay_stop_timeout");
             }
           }//밸브가 열려있을때 수위가 올라가지 않을경우
         }
