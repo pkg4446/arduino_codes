@@ -394,7 +394,7 @@ void sensor_level(unsigned long millisec) {
         run_water = false;
         Serial.println("water_relay_stop_err");
       }else if(!sensor_state_w){
-        if(!run_water && !water_level[1]){
+        if(!run_water && !digitalRead(SENSOR_W[1]){
           //mesh.sendBroadcast("P=ID=AT+PUMP=3;"); //펌프 켜기
           digitalWrite(RELAY_VALVE_W, pin_on);   //솔레노이드 밸브 켜기
           run_water = true;
@@ -431,14 +431,14 @@ void sensor_level(unsigned long millisec) {
         digitalWrite(RELAY_VALVE_H, pin_off);
         Serial.println("honey_relay_stop_err");
       }else if(!sensor_state_h){
-        if(!run_honey && !honey_level[1]){
+        if(!run_honey && !digitalRead(SENSOR_H[1]){
           //mesh.sendBroadcast("P=ID=AT+PUMP=3;"); //펌프 켜기
           digitalWrite(RELAY_VALVE_H, pin_on);     //솔레노이드 밸브 켜기
           run_honey = true;
           level_gauge_h = 1;
           mesh.sendBroadcast("SENSOR=RELAY=ON=HONEY=1=1;");
           Serial.println("honey_relay_run");          
-        }else if(digitalRead(SENSOR_W[1])){
+        }else if(digitalRead(SENSOR_H[1])){
           if(run_honey){
             //가득참
             //mesh.sendBroadcast("P=ID=AT+PUMP=0;"); //펌프 끄기
