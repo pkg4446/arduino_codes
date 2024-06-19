@@ -7,7 +7,7 @@
 
 #include <SimpleFOC.h>
 #include <EEPROM.h>
-#define EEPROM_SIZE     8
+#define EEPROM_SIZE     6
 #define COMMAND_LENGTH  32
 
 char    command_buf[COMMAND_LENGTH];
@@ -31,9 +31,7 @@ enum MOTER_CONFIG {
   LIMIT_A,
   LIMIT_B,
   SPEED_A,
-  SPEED_B,
-  TYPEC_A,
-  TYPEC_B
+  SPEED_B
 };
 
 /// Serial Command Setting
@@ -71,40 +69,33 @@ void command_service(){
   }
   /**********/
   if(cmd_text=="run"){
-    if(target_mt) motor_a.enable();
-    else  motor_b.enable();
+    if(target_mt){
+      motor_a.controller = MotionControlType::velocity_openloop;
+      motor_a.enable();
+    }else{
+      motor_b.controller = MotionControlType::velocity_openloop;
+      motor_b.enable();
+    }
+  }else if(cmd_text=="pos"){
+    if(target_mt){
+      motor_a.controller = MotionControlType::angle_openloop;
+      motor_a.enable();
+    }else{
+      motor_b.controller = MotionControlType::angle_openloop;
+      motor_b.enable();
+    }
   }else if(cmd_text=="stop"){
     if(target_mt) motor_a.disable();
     else  motor_b.disable();
-  }else if(cmd_text=="forward"){
+  }else if(cmd_text=="go"){
     if(target_mt) method_a = float(temp_text.toInt())/100;
     else  method_b = float(temp_text.toInt())/100;
-  }else if(cmd_text=="backward"){
+  }else if(cmd_text=="back"){
     if(target_mt) method_a = -float(temp_text.toInt())/100;
     else  method_b = -float(temp_text.toInt())/100;
   }else if(cmd_text=="target"){
     if(temp_text == "a") target_mt=true;
     else target_mt=false;
-  }else if(cmd_text=="type"){
-    if(temp_text == "pos"){
-      if(target_mt){
-        motor_a.controller = MotionControlType::angle_openloop;
-        EEPROM.write(TYPEC_A, 0);
-      }else{
-        motor_b.controller = MotionControlType::angle_openloop;
-        EEPROM.write(TYPEC_B, 0);
-      }
-    }
-    else{
-      if(target_mt){
-        motor_a.controller = MotionControlType::velocity_openloop;
-        EEPROM.write(TYPEC_A, 1);
-      }else{
-        motor_b.controller = MotionControlType::velocity_openloop;
-        EEPROM.write(TYPEC_B, 1);
-      }
-    }
-    EEPROM.commit();
   }else if(cmd_text=="limit"){
     uint8_t limit_value = temp_text.toInt();
     Serial.print("limit ");
@@ -141,6 +132,11 @@ void command_service(){
       EEPROM.write(SPEED_B, power_value);
     }
     EEPROM.commit();
+  }else if(cmd_text=="info"){
+    Serial.print("pos a:");
+    Serial.println(motor_a.shaft_angle);
+    Serial.print("pos b:");
+    Serial.println(motor_b.shaft_angle);
   }else if(cmd_text=="reboot"){
     ESP.restart();
   }
@@ -174,11 +170,8 @@ void setup() {
   motor_b.voltage_limit  = EEPROM.read(LIMIT_B);   // [V]                  //Also modify the value of voltage_limit here
   motor_b.velocity_limit = EEPROM.read(SPEED_B); // [rad/s]
 
-  // Open Loop Control Mode Setting
-  if(EEPROM.read(TYPEC_A)) motor_a.controller = MotionControlType::velocity_openloop;
-  else motor_a.controller = MotionControlType::angle_openloop;
-  if(EEPROM.read(TYPEC_B)) motor_b.controller = MotionControlType::velocity_openloop;
-  else motor_b.controller = MotionControlType::angle_openloop;
+  motor_a.controller = MotionControlType::angle_openloop;
+  motor_b.controller = MotionControlType::angle_openloop;
   // Initialize the Hardware
   motor_a.init();
   motor_b.init();
