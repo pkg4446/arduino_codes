@@ -26,14 +26,14 @@ HardwareSerial nxSerial(2);
 bool    nextion_shift = false;
 uint8_t nextion_page  = 0;
 enum RelayFunc {
-    Water_1 = 0,
-    Water_2,
-    Liquid_1,
+    Liquid_1 = 0,
     Liquid_2,
     Lamp_1,
     Lamp_2,
     Lamp_3,
     Lamp_4,
+    Pump_1,
+    Pump_2,
     Heater_1,
     Heater_2,
 };
