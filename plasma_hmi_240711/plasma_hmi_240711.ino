@@ -25,13 +25,15 @@ const int8_t Relay[TOTAL_RELAY] = {2,4,5,12,13,23,27,26,25,33};
 unsigned long prevUpdateTime = 0L;
 /***************Interval_timer*************/
 /***************Variable*******************/
-char    ssid[EEPROM_SIZE_CONFIG];
-char    password[EEPROM_SIZE_CONFIG];
+char      ssid[EEPROM_SIZE_CONFIG];
+char      password[EEPROM_SIZE_CONFIG];
 /***************Variable*******************/
-bool    wifi_able;
+bool      wifi_able = false;
+bool      operation = false;
+uint32_t  runtime = 0;
 /***************Variable*******************/
-char    command_buf[COMMAND_LENGTH];
-int8_t  command_num;
+char      command_buf[COMMAND_LENGTH];
+int8_t    command_num;
 /******************************************/
 void wifi_config() {
   if(uart_type){
@@ -147,9 +149,13 @@ void command_service(){
   }else if(cmd_text=="send"){
     nextion_print(&nxSerial,temp_text);
   }else if(cmd_text=="run"){
-    
+    runtime = total_time();
+    operation = true;
+    //plasma run here
+    prevUpdateTime = millis();
   }else if(cmd_text=="stop"){
-    
+    //plasma stop here
+    operation = false;
   }else if(cmd_text=="memo"){
     //http post
   }else if(cmd_text=="minute"){
@@ -253,6 +259,12 @@ void wifi_connect() {
   }
 }
 /******************************************/
+uint32_t total_time(){
+  uint32_t time_min = EEPROM.read(0);
+  uint32_t time_sec = EEPROM.read(1);
+  if(time_sec>=60) time_sec = 59;
+  return (time_min*60) + time_sec;
+}
 /***************Functions******************/
 void setup() {
   Serial.begin(115200);
@@ -277,18 +289,9 @@ void setup() {
     ssid[index]     = EEPROM.read(eep_ssid[index]);
     password[index] = EEPROM.read(eep_pass[index]);
   }
-
-  for (int index = 0; index < EEPROM_SIZE_CTR; index++) {
-    iot_ctr[index].state  = true;
-    iot_ctr[index].enable = EEPROM.read(eep_var[3*index]);
-    iot_ctr[index].run    = EEPROM.read(eep_var[3*index+1]);
-    iot_ctr[index].stop   = EEPROM.read(eep_var[3*index+2]);
-  }
-
-  sht31.begin(0x44);
   wifi_connect();
   serial_command_help(&Serial);
-  if(uart_type) Serial.println("System online");
+  Serial.println("System online");
   nextion_print(&nxSerial,"page 0");
 }
 
@@ -320,7 +323,12 @@ void page_change(){
 void system_ctr(unsigned long millisec){
   if(millisec > prevUpdateTime + 250){
     prevUpdateTime = millisec;
-    
+    if(operation && --runtime>0){
+      //plasma run here
+    }else{
+      operation = false;
+      //plasma stop here
+    }
 
   }
 }
