@@ -30,7 +30,8 @@ char      password[EEPROM_SIZE_CONFIG];
 /***************Variable*******************/
 bool      wifi_able = false;
 bool      operation = false;
-uint32_t  runtime = 0;
+uint32_t  countdown = 0;
+uint32_t  runtime   = 0;
 /***************Variable*******************/
 char      command_buf[COMMAND_LENGTH];
 int8_t    command_num;
@@ -149,7 +150,7 @@ void command_service(){
   }else if(cmd_text=="send"){
     nextion_print(&nxSerial,temp_text);
   }else if(cmd_text=="run"){
-    runtime = total_time();
+    countdown = total_time();
     operation = true;
     //plasma run here
     prevUpdateTime = millis();
@@ -321,14 +322,18 @@ void page_change(){
 }
 
 void system_ctr(unsigned long millisec){
-  if(millisec > prevUpdateTime + 250){
+  if(millisec > prevUpdateTime + UPDATE_INTERVAL){
     prevUpdateTime = millisec;
-    if(operation && --runtime>0){
+    if(operation && --countdown>0){
       //plasma run here
+      ++runtime;
     }else{
       operation = false;
       //plasma stop here
+      if(runtime>0){
+        //http post runtime
+        runtime=0;
+      }
     }
-
-  }
+  } //routine
 }
