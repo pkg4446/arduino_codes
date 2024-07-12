@@ -160,9 +160,9 @@ void command_service(){
     digitalWrite(Relay[PLASMA_RELAY], false); //plasma stop here
     operation = false;
   }else if(cmd_text=="memo"){
-    httpPOSTRequest("http://smarthive.kr/plasma/insecticide",temp_text);//http post bug dead
+    httpPOSTRequest("http://plasma.smarthive.kr/plasma/insecticide",temp_text);//http post bug dead
   }else if(cmd_text=="refresh"){
-    httpPOSTRequest("http://smarthive.kr/plasma/refresh","null");//http post for getting setup data
+    httpPOSTRequest("http://plasma.smarthive.kr/plasma/refresh","null");//http post for getting setup data
   }else if(cmd_text=="minute"){
     eep_change = true;
     EEPROM.write(eep_var[0],temp_text.toInt(););
@@ -334,7 +334,7 @@ void system_ctr(unsigned long millisec){
     }else if(runtime>0){
       operation = false;
       digitalWrite(Relay[PLASMA_RELAY], false); //plasma stop here
-      httpPOSTRequest("http://smarthive.kr/plasma/runtime",String(runtime));//http post runtime
+      httpPOSTRequest("http://plasma.smarthive.kr/plasma/runtime",String(runtime));//http post runtime
       runtime=0;
     }
   } //routine
