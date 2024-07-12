@@ -129,6 +129,8 @@ void command_service(){
   /**********/
   if(uart_type){
     Serial.print("cmd: ");
+    Serial.print(cmd_text);
+    Serial.print(", ");
     Serial.println(cmd_text);
   }
 
@@ -152,7 +154,6 @@ void command_service(){
     nextion_shift = true;
     nextion_page  = temp_text.toInt();
     if(nextion_page == 0){
-      nextion_print(&nxSerial,"page 0");
       nextion_display("wifi",wifi_able,&nxSerial);
       nextion_display("min",EEPROM.read(0),&nxSerial);
       nextion_display("sec",EEPROM.read(1),&nxSerial);
@@ -172,6 +173,7 @@ void command_service(){
     nextion_display("operation",operation,&nxSerial);
   }else if(cmd_text=="memo"){
     httpPOSTRequest("http://plasma.smarthive.kr/plasma/insecticide",temp_text);//http post bug dead
+    nextion_print(&nxSerial,"page 0");
   }else if(cmd_text=="refresh"){
     httpPOSTRequest("http://plasma.smarthive.kr/plasma/refresh","null");//http post for getting setup data
     nextion_print(&nxSerial,"page 0");
@@ -180,9 +182,11 @@ void command_service(){
   }else if(cmd_text=="minute"){
     eep_change = true;
     EEPROM.write(eep_var[0],temp_text.toInt());
+    nextion_print(&nxSerial,"page 0");
   }else if(cmd_text=="seconde"){
     eep_change = true;
     EEPROM.write(eep_var[1],temp_text.toInt());
+    nextion_print(&nxSerial,"page 0");
   }
   /*****OFF_LINE_CMD*****/
   else if(uart_type){
@@ -243,7 +247,8 @@ void command_service(){
   }
 }
 void command_process(char ch, bool type_uart) {
-  uart_type = type_uart;
+  //uart_type = type_uart;
+  uart_type=true;
   if(ch=='\n'){
     command_buf[command_num] = 0x00;
     command_num = 0;
