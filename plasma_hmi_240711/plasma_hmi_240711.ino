@@ -9,6 +9,8 @@
 #define COMMAND_LENGTH  32
 #define UPDATE_INTERVAL 1000L
 
+#define PLASMA_RELAY 2
+
 HardwareSerial nxSerial(2);
 bool    nextion_shift = false;
 uint8_t nextion_page  = 0;
@@ -152,13 +154,15 @@ void command_service(){
   }else if(cmd_text=="run"){
     countdown = total_time();
     operation = true;
-    //plasma run here
+    digitalWrite(Relay[PLASMA_RELAY], true);  //plasma run here
     prevUpdateTime = millis();
   }else if(cmd_text=="stop"){
-    //plasma stop here
+    digitalWrite(Relay[PLASMA_RELAY], false); //plasma stop here
     operation = false;
   }else if(cmd_text=="memo"){
-    //http post
+    httpPOSTRequest("http://smarthive.kr/plasma/insecticide",temp_text);//http post bug dead
+  }else if(cmd_text=="refresh"){
+    httpPOSTRequest("http://smarthive.kr/plasma/refresh","null");//http post for getting setup data
   }else if(cmd_text=="minute"){
     eep_change = true;
     EEPROM.write(eep_var[0],temp_text.toInt(););
@@ -324,16 +328,25 @@ void page_change(){
 void system_ctr(unsigned long millisec){
   if(millisec > prevUpdateTime + UPDATE_INTERVAL){
     prevUpdateTime = millisec;
-    if(operation && --countdown>0){
-      //plasma run here
-      ++runtime;
-    }else{
+    if(operation && countdown>0){
+      countdown -=1;
+      runtime   +=1;
+    }else if(runtime>0){
       operation = false;
-      //plasma stop here
-      if(runtime>0){
-        //http post runtime
-        runtime=0;
-      }
+      digitalWrite(Relay[PLASMA_RELAY], false); //plasma stop here
+      httpPOSTRequest("http://smarthive.kr/plasma/runtime",String(runtime));//http post runtime
+      runtime=0;
     }
   } //routine
 }
+
+String httpPOSTRequest(String server_url, String send_data) {
+  WiFiClient client;
+  HTTPClient http;
+  http.begin(client, server_url);
+  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+  int response_code = http.POST("data="+send_data);
+  String response   = http.getString();
+  http.end();
+  return response;
+}////httpPOSTRequest_End
