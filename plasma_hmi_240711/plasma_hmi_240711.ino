@@ -292,8 +292,8 @@ uint32_t total_time(){
 /***************Functions******************/
 void setup() {
   Serial.begin(115200);
-  //nxSerial.begin(115200, SERIAL_8N1, 16, 17);
   nxSerial.begin(115200, SERIAL_8N1, 18, 19);
+  //nxSerial.begin(115200, SERIAL_8N1, 16, 17);
 
   for (uint8_t index = 0; index < TOTAL_RELAY; index++)
   {
