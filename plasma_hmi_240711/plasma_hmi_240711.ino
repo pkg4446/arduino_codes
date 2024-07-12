@@ -3,13 +3,14 @@
 #include <HTTPClient.h>
 #include "uart_print.h"
 
-#define TOTAL_RELAY 10
+#define TOTAL_RELAY 6
+//#define TOTAL_RELAY 10
 #define EEPROM_SIZE_CONFIG  24
 #define EEPROM_SIZE_VALUE   2
 #define COMMAND_LENGTH  32
 #define UPDATE_INTERVAL 1000L
 
-#define PLASMA_RELAY 2
+#define PLASMA_RELAY 12
 
 HardwareSerial nxSerial(2);
 bool    nextion_shift = false;
@@ -18,10 +19,11 @@ bool    uart_type     = false;
 /***************EEPROM*********************/
 const uint8_t eep_ssid[EEPROM_SIZE_CONFIG] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
 const uint8_t eep_pass[EEPROM_SIZE_CONFIG] = {24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47};
-const uint8_t eep_var[EEPROM_SIZE_VALUE]   = {48,49,50};
+const uint8_t eep_var[EEPROM_SIZE_VALUE]   = {48,49};
 /***************EEPROM*********************/
 /***************PIN_CONFIG*****************/
-const int8_t Relay[TOTAL_RELAY] = {2,4,5,12,13,23,27,26,25,33};
+const int8_t Relay[TOTAL_RELAY] = {12,13,14,15,17,23};
+//const int8_t Relay[TOTAL_RELAY] = {2,4,5,12,13,23,27,26,25,33};
 /***************PIN_CONFIG*****************/
 /***************Interval_timer*************/
 unsigned long prevUpdateTime = 0L;
@@ -127,7 +129,7 @@ void command_service(){
   /**********/
   if(uart_type){
     Serial.print("cmd: ");
-    Serial.print(cmd_text);
+    Serial.println(cmd_text);
   }
 
   if(cmd_text=="manual"){
@@ -149,6 +151,13 @@ void command_service(){
   }else if(cmd_text=="page"){
     nextion_shift = true;
     nextion_page  = temp_text.toInt();
+    if(nextion_page == 0){
+      nextion_print(&nxSerial,"page 0");
+      nextion_display("wifi",wifi_able,&nxSerial);
+      nextion_display("min",EEPROM.read(0),&nxSerial);
+      nextion_display("sec",EEPROM.read(1),&nxSerial);
+      nextion_display("operation",operation,&nxSerial);
+    }
   }else if(cmd_text=="send"){
     nextion_print(&nxSerial,temp_text);
   }else if(cmd_text=="run"){
@@ -156,19 +165,24 @@ void command_service(){
     operation = true;
     digitalWrite(Relay[PLASMA_RELAY], true);  //plasma run here
     prevUpdateTime = millis();
+    nextion_display("operation",operation,&nxSerial);
   }else if(cmd_text=="stop"){
     digitalWrite(Relay[PLASMA_RELAY], false); //plasma stop here
     operation = false;
+    nextion_display("operation",operation,&nxSerial);
   }else if(cmd_text=="memo"){
     httpPOSTRequest("http://plasma.smarthive.kr/plasma/insecticide",temp_text);//http post bug dead
   }else if(cmd_text=="refresh"){
     httpPOSTRequest("http://plasma.smarthive.kr/plasma/refresh","null");//http post for getting setup data
+    nextion_print(&nxSerial,"page 0");
+    nextion_display("min",EEPROM.read(0),&nxSerial);
+    nextion_display("sec",EEPROM.read(1),&nxSerial);
   }else if(cmd_text=="minute"){
     eep_change = true;
-    EEPROM.write(eep_var[0],temp_text.toInt(););
+    EEPROM.write(eep_var[0],temp_text.toInt());
   }else if(cmd_text=="seconde"){
     eep_change = true;
-    EEPROM.write(eep_var[1],temp_text.toInt(););
+    EEPROM.write(eep_var[1],temp_text.toInt());
   }
   /*****OFF_LINE_CMD*****/
   else if(uart_type){
@@ -273,8 +287,8 @@ uint32_t total_time(){
 /***************Functions******************/
 void setup() {
   Serial.begin(115200);
-  nxSerial.begin(115200, SERIAL_8N1, 16, 17);
-  Wire.begin();
+  //nxSerial.begin(115200, SERIAL_8N1, 16, 17);
+  nxSerial.begin(115200, SERIAL_8N1, 18, 19);
 
   for (uint8_t index = 0; index < TOTAL_RELAY; index++)
   {
@@ -282,7 +296,7 @@ void setup() {
     digitalWrite(Relay[index], false);
   }
 
-  if (!EEPROM.begin((EEPROM_SIZE_CONFIG*2) + (EEPROM_SIZE_VALUE*EEPROM_SIZE_CTR))){
+  if (!EEPROM.begin((EEPROM_SIZE_CONFIG*2) + (EEPROM_SIZE_VALUE))){
     if(uart_type){
       Serial.println("Failed to initialise eeprom");
       Serial.println("Restarting...");
@@ -302,10 +316,6 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-  if(wifi_able){
-    if (mqttClient.connected()){mqttClient.loop();}
-    else{mqtt_connect();}
-  }
   if (Serial.available()) command_process(Serial.read(), true);
   if (nxSerial.available()) command_process(nxSerial.read(), false);
   system_ctr(millis());
@@ -317,7 +327,6 @@ void page_change(){
     nextion_shift = false;
     Serial.print("page "); Serial.println(nextion_page);
     if(nextion_page == 0){
-      time_show();
       nextion_display("page_main.wifi",wifi_able,&nxSerial);
     }else if(nextion_page == 2){
       
@@ -331,6 +340,7 @@ void system_ctr(unsigned long millisec){
     if(operation && countdown>0){
       countdown -=1;
       runtime   +=1;
+      nextion_display("operation",map(runtime, 0, total_time(), 0, 100),&nxSerial);
     }else if(runtime>0){
       operation = false;
       digitalWrite(Relay[PLASMA_RELAY], false); //plasma stop here
@@ -341,12 +351,15 @@ void system_ctr(unsigned long millisec){
 }
 
 String httpPOSTRequest(String server_url, String send_data) {
-  WiFiClient client;
-  HTTPClient http;
-  http.begin(client, server_url);
-  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-  int response_code = http.POST("data="+send_data);
-  String response   = http.getString();
-  http.end();
+  String response = "";
+  if(wifi_able){
+    WiFiClient client;
+    HTTPClient http;
+    http.begin(client, server_url);
+    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    int response_code = http.POST("data="+send_data);
+    response          = http.getString();
+    http.end();
+  }
   return response;
 }////httpPOSTRequest_End
