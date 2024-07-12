@@ -10,7 +10,7 @@
 #define COMMAND_LENGTH  32
 #define UPDATE_INTERVAL 1000L
 
-#define PLASMA_RELAY 12
+#define PLASMA_RELAY 0
 
 HardwareSerial nxSerial(2);
 bool    nextion_shift = false;
@@ -131,7 +131,7 @@ void command_service(){
     Serial.print("cmd: ");
     Serial.print(cmd_text);
     Serial.print(", ");
-    Serial.println(cmd_text);
+    Serial.println(temp_text);
   }
 
   if(cmd_text=="manual"){
@@ -155,8 +155,8 @@ void command_service(){
     nextion_page  = temp_text.toInt();
     if(nextion_page == 0){
       nextion_display("wifi",wifi_able,&nxSerial);
-      nextion_display("min",EEPROM.read(0),&nxSerial);
-      nextion_display("sec",EEPROM.read(1),&nxSerial);
+      nextion_display("min",EEPROM.read(eep_var[0]),&nxSerial);
+      nextion_display("sec",EEPROM.read(eep_var[1]),&nxSerial);
       nextion_display("operation",operation,&nxSerial);
     }
   }else if(cmd_text=="send"){
@@ -284,8 +284,8 @@ void wifi_connect() {
 }
 /******************************************/
 uint32_t total_time(){
-  uint32_t time_min = EEPROM.read(0);
-  uint32_t time_sec = EEPROM.read(1);
+  uint32_t time_min = EEPROM.read(eep_var[0]);
+  uint32_t time_sec = EEPROM.read(eep_var[1]);
   if(time_sec>=60) time_sec = 59;
   return (time_min*60) + time_sec;
 }
@@ -345,12 +345,13 @@ void system_ctr(unsigned long millisec){
     if(operation && countdown>0){
       countdown -=1;
       runtime   +=1;
-      nextion_display("operation",map(runtime, 0, total_time(), 0, 100),&nxSerial);
+      if(nextion_page == 0) nextion_display("progress",map(runtime, 0, total_time(), 0, 100),&nxSerial);
     }else if(runtime>0){
       operation = false;
       digitalWrite(Relay[PLASMA_RELAY], false); //plasma stop here
       httpPOSTRequest("http://plasma.smarthive.kr/plasma/runtime",String(runtime));//http post runtime
       runtime=0;
+      if(nextion_page == 0) nextion_display("operation",operation,&nxSerial);
     }
   } //routine
 }
