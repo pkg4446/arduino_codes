@@ -198,20 +198,6 @@ void files_all_remove(String path) {
 }
 
 /******************************************************************/
-void file_stream(String path) {
-  File file;
-  fs::FS &fs = SD;
-  file = fs.open(path);
-  Serial.print(path);
-  Serial.print(" , size : ");
-  Serial.println(file.size());
-
-  while (file.available()) {
-    Serial.print(char(file.read()));
-  }
-  file.close();
-}
-
 size_t file_size(String path) {
   size_t response = 0;
   File file;

@@ -26,5 +26,4 @@ void file_append(String path, uint8_t *contents, uint16_t f_index);
 void file_remove(String path);
 void files_all_remove(String root_path);
 
-void file_stream(String path);
 size_t file_size(String path);
