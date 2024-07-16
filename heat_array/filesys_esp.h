@@ -9,9 +9,6 @@ const PROGMEM char check_sdcard2[] = "시스템을 시작합니다.";
 const PROGMEM char check_sdcard3[] = "SD Card 가 없네요! 카드를 삽입 해주세요!";
 const PROGMEM char check_sdcard4[] = "SD Card 없이 ";
 
-
-#define CMD_UNIT_SIZE 1436
-
 void sd_init(uint8_t chipSelect, bool *card_insert);
 bool exisits_check(String path);
 

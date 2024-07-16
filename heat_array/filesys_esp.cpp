@@ -26,7 +26,7 @@ void sd_init(uint8_t chipSelect, bool *card_insert) {
     } else {
       for (uint16_t index = 0; index < strlen_P(check_sdcard3); index++) {
         Serial.print(char(pgm_read_byte_near(check_sdcard3 + index)));
-        delay(20);
+        delay(10);
       }
     }
     Serial.println();

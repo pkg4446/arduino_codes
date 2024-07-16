@@ -103,6 +103,8 @@ void WIFI_scan(bool wifi_state){
   WiFi.scanDelete();
   if(wifi_able){
     wifi_connect();
+  }else{
+    WiFi.disconnect(true);
   }
 }
 /******************************************/
@@ -273,6 +275,7 @@ void wifi_connect() {
     if(update_time - wifi_config_update > 5000){
       wifi_able = false;
       if(uart_type) Serial.println("WIFI fail");
+      WiFi.disconnect(true);
       break;
     }
   }
