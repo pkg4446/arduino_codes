@@ -23,6 +23,7 @@ const uint8_t TMP112_ADDRESS = 0x48; // TMP112 온도 센서 주소
 byte tcaAddresses[TCA9548A_COUNT] = {0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76}; // 멀티플렉서 주소
 const uint8_t eep_ssid[EEPROM_SIZE_CONFIG] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
 const uint8_t eep_pass[EEPROM_SIZE_CONFIG] = {24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47};
+String path_savedata = "/data";
 /*********************************************************/
 bool able_sdcard = false;
 bool able_wifi   = false;
@@ -126,8 +127,8 @@ String sensor_csv(bool type_save){
       if(col<9){
         response += ",";
       }else{
-        if(type_save) response += "\n";
-        else          response += ",";
+        if(type_save)   response += "\n";
+        else if(row<4)  response += ",";
       }
     }
   }
@@ -211,6 +212,7 @@ void command_service(){
   }else if(cmd_text=="sensor"){
     Serial.println(sensor_csv(true));
   }else if(cmd_text=="upload"){
+    csv_save(sensor_csv(false));
     upload_test();
   }else if(cmd_text=="ssid"){
     able_wifi = false;
@@ -301,7 +303,7 @@ void setup() {
   Serial.begin(115200);
   Wire.begin(SDA_PIN, SCL_PIN);
   Wire.setClock(100000); // I2C 속도를 100kHz로 설정
-  sd_init(13, &able_sdcard);
+  sd_init(5, &able_sdcard);
 
   if (!EEPROM.begin(EEPROM_SIZE_CONFIG*2)){
     Serial.println("Failed to initialise eeprom");
@@ -313,6 +315,9 @@ void setup() {
     ssid[index]     = EEPROM.read(eep_ssid[index]);
     password[index] = EEPROM.read(eep_pass[index]);
   }
+
+  if(able_sdcard) dir_make(path_savedata);
+  
 
   sensor_mapping(UPDATE_INTERVAL+1);
   sensor_value_init();
@@ -336,6 +341,43 @@ void upload_test(){
   String response = httpPOSTRequest("http://192.168.1.15:3000/device/runtime",sensor_json());
   Serial.println(response);
 }
+
+String csv_file_name(uint16_t file_number){
+  String response     = path_savedata + "/data";
+  uint16_t num_digit  = file_number;
+  for(uint8_t index=0; index<4; index++){
+    num_digit /= 10;
+    if(num_digit==0) response += "0";
+  }
+  response += String(file_number) + ".csv";
+  return response;
+}
+
+void csv_save(String save_data){
+  if(able_sdcard){
+    uint16_t file_number = dir_list(path_savedata,false,false);
+    String file_name = "";
+    Serial.println(file_number);
+    if(file_number == 0){
+      file_name = csv_file_name(1);
+      file_write(file_name,"");
+    }else{
+      file_name = csv_file_name(file_number);
+      if(!exisits_check(file_name)) file_write(file_name,"");
+    }
+    if(file_size(file_name)>250*5){
+      file_name = csv_file_name(file_number+1);
+      file_write(file_name,"");
+    }
+    if(dir_list(path_savedata,false,false)==0){
+      able_sdcard = false;
+    }else{
+      file_append(file_name,save_data);
+      Serial.println(file_size(file_name));
+    }
+  }
+}
+
 String httpPOSTRequest(String server_url, String send_data) {
   String response = "";
   if(able_wifi){

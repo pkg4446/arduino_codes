@@ -160,13 +160,11 @@ void file_write(String path, String contents) {
   file.close();
 }
 
-void file_append(String path, uint8_t *contents, uint16_t f_index) {
+void file_append(String path, String contents) {
   File file;
   fs::FS &fs = SD;
   file = fs.open(path, FILE_APPEND);
-  for (uint16_t index = 0; index < f_index; index++) {
-    file.write(*(contents + index));
-  }
+  file.print(contents);
   file.close();
 }
 

@@ -19,7 +19,7 @@ String dir_index(String path, bool type, uint16_t dir_index);
 
 String file_read(String path);
 void file_write(String path, String contents);
-void file_append(String path, uint8_t *contents, uint16_t f_index);
+void file_append(String path, String contents);
 void file_remove(String path);
 void files_all_remove(String root_path);
 
