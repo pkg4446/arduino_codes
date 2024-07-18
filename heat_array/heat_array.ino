@@ -5,7 +5,10 @@
 #include "filesys_esp.h"
 #include "uart_print.h"
 
-#define UPDATE_INTERVAL 300L
+#define UPDATE_INTERVAL_SENSOR  300L
+#define UPDATE_INTERVAL_HTTP    60000L
+#define UPDATE_INTERVAL_CSV     60000L
+
 #define TCA9548A_COUNT  7
 #define SENSOR_COUNT    50
 #define MOVING_AVERAGE  10
@@ -23,7 +26,8 @@ const uint8_t TMP112_ADDRESS = 0x48; // TMP112 온도 센서 주소
 byte tcaAddresses[TCA9548A_COUNT] = {0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76}; // 멀티플렉서 주소
 const uint8_t eep_ssid[EEPROM_SIZE_CONFIG] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
 const uint8_t eep_pass[EEPROM_SIZE_CONFIG] = {24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47};
-String path_savedata = "/data";
+String http_server_addr = "http://192.168.1.15:3000/device/runtime";
+String path_savedata    = "/data";
 /*********************************************************/
 bool able_sdcard = false;
 bool able_wifi   = false;
@@ -34,8 +38,9 @@ char    password[EEPROM_SIZE_CONFIG];
 char    command_buf[COMMAND_LENGTH];
 int8_t  command_num = 0;
 /*********************************************************/
-unsigned long pre_sensor_read   = 0UL;
-unsigned long pre_update_post  = 0UL;
+unsigned long pre_sensor_read = 0UL;
+unsigned long pre_update_post = 0UL;
+unsigned long pre_save_csv    = 0UL;
 uint8_t  index_sensor   = 0;
 uint8_t  index_average  = 0;
 /*********************************************************/
@@ -64,7 +69,7 @@ int16_t readTemp() {
 }
 
 void sensor_mapping(unsigned long millisec){
-  if(millisec > pre_sensor_read + UPDATE_INTERVAL){//runtime : 32 millisec
+  if(millisec > pre_sensor_read + UPDATE_INTERVAL_SENSOR){//runtime : 32 millisec
     uint8_t  index_sensor = 0;
     // 모든 센서 값 읽기
     for (uint8_t index = 0; index < TCA9548A_COUNT; index++) {
@@ -211,9 +216,6 @@ void command_service(){
     ESP.restart();
   }else if(cmd_text=="sensor"){
     Serial.println(sensor_csv(true));
-  }else if(cmd_text=="upload"){
-    csv_save(sensor_csv(false));
-    upload_test();
   }else if(cmd_text=="ssid"){
     able_wifi = false;
     WiFi.disconnect(true);
@@ -319,7 +321,7 @@ void setup() {
   if(able_sdcard) dir_make(path_savedata);
   
 
-  sensor_mapping(UPDATE_INTERVAL+1);
+  sensor_mapping(UPDATE_INTERVAL_SENSOR+1);
   sensor_value_init();
   wifi_connect();
   serial_command_help(&Serial);
@@ -329,17 +331,37 @@ void loop() {
   unsigned long millisec = millis();
   if (Serial.available()) command_process(Serial.read());
   sensor_mapping(millisec);
+  sensor_upload(millisec);
+  csv_data_save(millisec);
 }
 /*********************************************************/
 void sensor_upload(unsigned long millisec){
-  if(millisec > pre_update_post + 3000){
+  if(millisec > pre_update_post + UPDATE_INTERVAL_HTTP){
     pre_update_post = millisec;
-    
+    String response = httpPOSTRequest(http_server_addr,sensor_json());
+    //Serial.println(response);
   }
 }
-void upload_test(){
-  String response = httpPOSTRequest("http://192.168.1.15:3000/device/runtime",sensor_json());
-  Serial.println(response);
+
+String httpPOSTRequest(String server_url, String send_data) {
+  String response = "";
+  if(able_wifi){
+    WiFiClient client;
+    HTTPClient http;
+    http.begin(client, server_url);
+    http.addHeader("Content-Type", "application/json");
+    int response_code = http.POST(send_data);
+    response          = http.getString();
+    http.end();
+  }
+  return response;
+}////httpPOSTRequest_End
+/*********************************************************/
+void csv_data_save(unsigned long millisec){
+  if(millisec > pre_save_csv + UPDATE_INTERVAL_CSV){
+    pre_save_csv = millisec;
+    csv_save(sensor_csv(false));
+  }
 }
 
 String csv_file_name(uint16_t file_number){
@@ -377,17 +399,3 @@ void csv_save(String save_data){
     }
   }
 }
-
-String httpPOSTRequest(String server_url, String send_data) {
-  String response = "";
-  if(able_wifi){
-    WiFiClient client;
-    HTTPClient http;
-    http.begin(client, server_url);
-    http.addHeader("Content-Type", "application/json");
-    int response_code = http.POST(send_data);
-    response          = http.getString();
-    http.end();
-  }
-  return response;
-}////httpPOSTRequest_End
