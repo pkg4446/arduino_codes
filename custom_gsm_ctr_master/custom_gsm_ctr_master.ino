@@ -10,7 +10,7 @@
 
 #define BOARD_TX 12
 #define BOARD_RX 13
-EspSoftwareSerial board;
+SoftwareSerial board;
 
 #define TOTAL_RELAY 10
 #define EEPROM_SIZE_CONFIG  24
@@ -558,7 +558,7 @@ void time_set(){
 void setup() {
   Serial.begin(115200);
   nxSerial.begin(115200, SERIAL_8N1, 16, 17);
-  board.begin(115200, EspSoftwareSerial::SWSERIAL_8N1, BOARD_RX, BOARD_TX, false);
+  board.begin(115200, SWSERIAL_8N1, BOARD_RX, BOARD_TX, false);
   Wire.begin();
 
   for (uint8_t index = 0; index < TOTAL_RELAY; index++)
