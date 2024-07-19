@@ -8,8 +8,8 @@
 #include <max6675.h>
 #include "uart_print.h"
 
-#define BOARD_TX 12
-#define BOARD_RX 13
+#define BOARD_TX 18
+#define BOARD_RX 19
 SoftwareSerial board;
 
 #define TOTAL_RELAY 10
@@ -80,6 +80,7 @@ typedef struct ctr_var{
     uint8_t stop;
 }ctr_var;
 /***************Variable*******************/
+bool      relay_state[TOTAL_RELAY] = {false,};
 ctr_var   iot_ctr[EEPROM_SIZE_CTR];
 uint16_t  water_ctr_time[2]   = {0,};
 /*
@@ -95,6 +96,12 @@ bool    uart_type = true;
 char    command_buf[COMMAND_LENGTH];
 int8_t  command_num;
 /***************Functions******************/
+void relay_ctr(uint8_t num_relay, bool status_relay){
+  digitalWrite(Relay[num_relay], status_relay);
+  relay_state[num_relay] = status_relay;
+  if(nextion_page == 2) nextion_display("page_manu.bt"+String(num_relay),status_relay,&nxSerial);
+}
+
 void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   for (int index = 0; index < length; index++) {
     command_buf[index] = payload[index];
@@ -197,6 +204,8 @@ void command_service(bool command_type){
   if(command_type)Serial.print("cmd: ");
   else Serial.print("mqtt: ");
   Serial.println(command_buf);
+  board.print(command_buf);
+  board.write(command_buf);
 
   if(cmd_text=="time"){
     time_show();
@@ -214,8 +223,8 @@ void command_service(bool command_type){
         }
         cmd_select += command_buf[index_check];
       }
-      if(cmd_select == "on")  digitalWrite(Relay[relay_num], true);
-      else  digitalWrite(Relay[relay_num], false);
+      if(cmd_select == "on")  relay_ctr(relay_num, true);
+      else  relay_ctr(relay_num, false);
     }
   }else if(cmd_text=="reboot"){
     ESP.restart();
@@ -271,10 +280,8 @@ void command_service(bool command_type){
         Serial.print(", run :");Serial.print(iot_ctr[iot_ctr_type].run);
         Serial.print(", stop :");Serial.println(iot_ctr[iot_ctr_type].stop);
       }
-      
       if(iot_ctr_type<=Lamp_4)        nextion_print(&nxSerial,"page 6"); //LED 페이지
       else if(iot_ctr_type<=Heater_2) nextion_print(&nxSerial,"page 4"); //양액 페이지
-      
     }
   }else if(cmd_text=="config"){
     uint8_t iot_ctr_type = 255;
@@ -569,7 +576,7 @@ void setup() {
   for (uint8_t index = 0; index < TOTAL_RELAY; index++)
   {
     pinMode(Relay[index], OUTPUT);
-    digitalWrite(Relay[index], false);
+    relay_ctr(index, false);
   }
 
   if (!EEPROM.begin((EEPROM_SIZE_CONFIG*2) + (EEPROM_SIZE_VALUE*EEPROM_SIZE_CTR))){
@@ -605,7 +612,7 @@ void loop() {
   }
   if (Serial.available()) command_process(Serial.read(),true);
   if (nxSerial.available()) command_process(nxSerial.read(),false);
-  //if (board.available()) command_process(board.read(),true);
+  if (board.available()) nxSerial.write(board.read());
   system_ctr(millis());
   page_change();
 }
@@ -643,7 +650,9 @@ void page_change(){
         nextion_display("page_led.stp"+String(index+1),iot_ctr[Lamp_1+index].stop,&nxSerial);
       }
     }else if(nextion_page == 2){
-      
+      for (uint8_t index = 0; index < TOTAL_RELAY; index++){
+        nextion_display("page_manu.bt"+String(index),relay_state[index],&nxSerial);
+      }
     }
   }
 }
@@ -670,19 +679,19 @@ void system_ctr(unsigned long millisec){
         if(liq_temp > 99){
           //온도센서 고장
           iot_ctr[Heater_1].state = false;
-          digitalWrite(Relay[Heater_1], false);
+          relay_ctr(Heater_1, false);
         }else if(liq_temp > iot_ctr[Heater_1].run){
-          digitalWrite(Relay[Heater_1], false);
+          relay_ctr(Heater_1, false);
           iot_ctr[Heater_1].state = false;
         }else if(liq_temp < iot_ctr[Heater_1].run - lquid_gap){ //물 온도 갭 //iot_ctr[Heater_1].stop){
-          digitalWrite(Relay[Heater_1], true);
+          relay_ctr(Heater_1, true);
           iot_ctr[Heater_1].state = true;
         }else if((iot_ctr[Heater_1].state && liq_temp > iot_ctr[Heater_1].run)||(!iot_ctr[Heater_1].state && liq_temp < iot_ctr[Heater_1].run)){
-          digitalWrite(Relay[Heater_1], false);
+          relay_ctr(Heater_1, false);
         }
       }else if(nextion_page!=2){
         iot_ctr[Heater_1].state = true;
-        digitalWrite(Relay[Heater_1], false);
+        relay_ctr(Heater_1, false);
       }
 
       if(iot_ctr[Heater_2].enable){
@@ -691,19 +700,19 @@ void system_ctr(unsigned long millisec){
         if(liq_temp > 99){
           //온도센서 고장
           iot_ctr[Heater_2].state = false;
-          digitalWrite(Relay[Heater_2], false);
+          relay_ctr(Heater_2, false);
         }else if(liq_temp > iot_ctr[Heater_1].run){
-          digitalWrite(Relay[Heater_2], false);
+          relay_ctr(Heater_2, false);
           iot_ctr[Heater_2].state = false;
         }else if(liq_temp < iot_ctr[Heater_1].run - lquid_gap){ //양액 온도 갭 //iot_ctr[Heater_2].stop){
-          digitalWrite(Relay[Heater_2], true);
+          relay_ctr(Heater_2, true);
           iot_ctr[Heater_2].state = true;
         }else if((iot_ctr[Heater_2].state && liq_temp > iot_ctr[Heater_1].run)||(!iot_ctr[Heater_2].state && liq_temp < iot_ctr[Heater_1].run)){
-          digitalWrite(Relay[Heater_2], false);
+          relay_ctr(Heater_2, false);
         }
       }else if(nextion_page!=2){
         iot_ctr[Heater_2].state = true;
-        digitalWrite(Relay[Heater_2], false);
+        relay_ctr(Heater_2, false);
       }
       /*
       if(iot_ctr[Heater_2].enable){
@@ -712,19 +721,19 @@ void system_ctr(unsigned long millisec){
         if(liq_temp > 99){
           //온도센서 고장
           iot_ctr[Heater_2].state = false;
-          digitalWrite(Relay[Heater_2], false);
+          relay_ctr(Heater_2, false);
         }else if(liq_temp > iot_ctr[Heater_2].run){
-          digitalWrite(Relay[Heater_2], false);
+          relay_ctr(Heater_2, false);
           iot_ctr[Heater_2].state = false;
         }else if(liq_temp < iot_ctr[Heater_2].run - lquid_gap){ //양액 온도 갭 //iot_ctr[Heater_2].stop){
-          digitalWrite(Relay[Heater_2], true);
+          relay_ctr(Heater_2, true);
           iot_ctr[Heater_2].state = true;
         }else if((iot_ctr[Heater_2].state && liq_temp > iot_ctr[Heater_2].run)||(!iot_ctr[Heater_2].state && liq_temp < iot_ctr[Heater_2].run)){
-          digitalWrite(Relay[Heater_2], false);
+          relay_ctr(Heater_2, false);
         }
       }else if(nextion_page!=2){
         iot_ctr[Heater_2].state = true;
-        digitalWrite(Relay[Heater_2], false);
+        relay_ctr(Heater_2, false);
       }
       */
     }else if(update_order == 2){
@@ -743,12 +752,12 @@ void system_ctr(unsigned long millisec){
               water_ctr_time[index] = iot_ctr[Liquid_1+index].run;
             }else if(water_ctr_time[index] > iot_ctr[Liquid_1+index].stop*60) water_ctr_time[index] = iot_ctr[Liquid_1+index].stop*60;
           }
-          digitalWrite(Relay[Line_1+index], iot_ctr[Line_1+index].enable);
-          digitalWrite(Relay[Liquid_1+index], iot_ctr[Liquid_1+index].state);
+          relay_ctr(Line_1+index, iot_ctr[Line_1+index].enable);
+          relay_ctr(Liquid_1+index, iot_ctr[Liquid_1+index].state);
         }else if(nextion_page!=2){
           iot_ctr[Liquid_1+index].state = false;
-          digitalWrite(Relay[Line_1+index], false);
-          digitalWrite(Relay[Liquid_1+index], false);
+          relay_ctr(Line_1+index, false);
+          relay_ctr(Liquid_1+index, false);
         }
       }
     }else {
@@ -777,7 +786,7 @@ void system_ctr(unsigned long millisec){
               iot_ctr[Lamp_1+index].state = true;
             }
           }
-          digitalWrite(Relay[Lamp_1+index], iot_ctr[Lamp_1+index].state);
+          relay_ctr(Lamp_1+index, iot_ctr[Lamp_1+index].state);
           if(iot_ctr[Lamp_1+index].state){
 
           }else{
@@ -785,7 +794,7 @@ void system_ctr(unsigned long millisec){
           }//nextion 표기
         }else if(nextion_page!=2){
           iot_ctr[Lamp_1+index].state = false;
-          digitalWrite(Relay[Lamp_1+index], iot_ctr[Lamp_1+index].state);
+          relay_ctr(Lamp_1+index, iot_ctr[Lamp_1+index].state);
         }
       }
 
