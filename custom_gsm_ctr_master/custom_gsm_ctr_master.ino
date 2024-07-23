@@ -95,6 +95,8 @@ bool    uart_type = true;
 /***************Variable*******************/
 char    command_buf[COMMAND_LENGTH];
 int8_t  command_num;
+char    sw_buf[COMMAND_LENGTH];
+int8_t  sw_num;
 /***************Functions******************/
 void relay_ctr(uint8_t num_relay, bool status_relay){
   digitalWrite(Relay[num_relay], status_relay);
@@ -205,7 +207,7 @@ void command_service(bool command_type){
   else Serial.print("mqtt: ");
   Serial.println(command_buf);
   board.print(command_buf);
-  board.write(command_buf);
+  board.write(0x0A);
 
   if(cmd_text=="time"){
     time_show();
@@ -374,6 +376,7 @@ void command_service(bool command_type){
     EEPROM.commit();
   }
 }
+uint8_t error_index = 0;
 void command_process(char ch, bool type_uart) {
   uart_type = type_uart;
   if(ch=='\n'){
@@ -381,10 +384,83 @@ void command_process(char ch, bool type_uart) {
     command_num = 0;
     command_service(true);
     memset(command_buf, 0x00, COMMAND_LENGTH);
+  }else if(ch==0x1A){
+    error_index = 0;
+  }else if(ch==0xFF){
+    if(++error_index>=3) Serial.println("nx_err");
   }else if(ch!='\r'){
     command_buf[command_num++] = ch;
     command_num %= COMMAND_LENGTH;
   }
+}
+
+/******************************************/
+void soft_serail(char ch) {
+  if(ch=='\n'){
+    sw_buf[sw_num] = 0x00;
+    sw_num = 0;
+    soft_service();
+    memset(sw_buf, 0x00, COMMAND_LENGTH);
+  }else{
+    sw_buf[sw_num++] = ch;
+    sw_num %= COMMAND_LENGTH;
+  }
+}
+void soft_service(){
+  String cmd_text = "";
+  String val_text = "";
+  uint8_t check_index = 0;
+  for(uint8_t index_check=0; index_check<COMMAND_LENGTH; index_check++){
+    if(sw_buf[index_check] == '.'){
+      check_index = index_check+1;
+      break;
+    }
+    cmd_text += sw_buf[index_check];
+  }
+  for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
+    if(sw_buf[index_check] == '='){
+      break;
+    }
+    val_text += sw_buf[index_check];
+  }
+
+  bool send_flage = false;
+  if(sw_buf[0]=='p'&&sw_buf[1]=='a'&&sw_buf[2]=='g'&&sw_buf[3]=='e'&&sw_buf[4]==0x20){
+    if(sw_buf[5]>=48&&sw_buf[5]<=57) send_flage = true;
+  }else if(val_text == "val"){
+    if(nextion_page == 0){
+      if(cmd_text == "temp_air" || cmd_text == "temp_out" || cmd_text == "bt_wing") send_flage = true;
+      else if(cmd_text == "sw_t" || cmd_text == "tempt" || cmd_text == "tempg") send_flage = true;
+      else if(cmd_text == "sw_f1" || cmd_text == "sw_f2") send_flage = true;
+      else if(cmd_text == "fano1" || cmd_text == "fano2") send_flage = true;
+      else if(cmd_text == "fanf1" || cmd_text == "fanf2") send_flage = true;
+    }else if(nextion_page == 2){
+      if(sw_buf[0]=='b'&&sw_buf[1]=='t'&&sw_buf[2]=='1'){
+        if(sw_buf[3]>=48&&sw_buf[3]<=57) send_flage = true;
+      }
+    }else if(nextion_page == 5){
+      if(cmd_text == "sw_temp" || cmd_text == "run_t" || cmd_text == "stp_t") send_flage = true;
+    }else if(nextion_page == 7){
+      if(cmd_text == "sw_fan1" || cmd_text == "sw_fan2") send_flage = true;
+      else if(cmd_text == "run_f1" || cmd_text == "run_f2") send_flage = true;
+      else if(cmd_text == "stp_f1" || cmd_text == "stp_f2") send_flage = true;
+    }
+  }
+  if(send_flage){
+    nextion_print(&nxSerial,sw_buf);//nextion page 이동
+    //Serial.print(",fw:");
+  }else{
+    //Serial.print(nextion_page);
+    //Serial.print(",er:");
+  }
+  /*
+  Serial.print(cmd_text);
+  Serial.print(".");
+  Serial.print(val_text);
+  Serial.print(":");
+  Serial.print(sw_buf);
+  Serial.println("_");
+  */
 }
 /******************************************/
 void mqtt_connect() {
@@ -612,7 +688,9 @@ void loop() {
   }
   if (Serial.available()) command_process(Serial.read(),true);
   if (nxSerial.available()) command_process(nxSerial.read(),false);
-  if (board.available()) nxSerial.write(board.read());
+  if (board.available()){
+    soft_serail(board.read());
+  }
   system_ctr(millis());
   page_change();
 }

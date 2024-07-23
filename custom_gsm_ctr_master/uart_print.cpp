@@ -18,7 +18,10 @@ void nextion_display(String IDs, uint16_t values, HardwareSerial *uart) {
 
 void serial_err_msg(HardwareSerial *uart, char *msg){
   uart->print("wrong cmd: ");
+  uart->write(msg);
+  uart->println(':');
   uart->println(msg);
+
 }
 void serial_command_help(HardwareSerial *uart) {
   uart->println("************* help *************");

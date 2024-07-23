@@ -22,7 +22,8 @@ Adafruit_SHT31 sht31 = Adafruit_SHT31();
 
 DS3231 RTC_DS3231;
 HardwareSerial nxSerial(2);
-bool    nextion_shift = false;
+bool    nextion_shift         = false;
+bool    nextion_shift_dubble  = false;
 uint8_t nextion_page  = 0;
 bool    wing_state    = false;
 enum RelayFunc {
@@ -45,8 +46,9 @@ const uint8_t eep_var[EEPROM_SIZE_VALUE*EEPROM_SIZE_CTR] = {1,2,3,    4,5,6,    
 const int8_t Relay[TOTAL_RELAY] = {2,4,5,12,13,23,27,26,25,33};
 /***************PIN_CONFIG*****************/
 /***************Interval_timer*************/
-unsigned long prevUpdateTime = 0L;
-uint8_t       update_order   = 0;
+unsigned long prevUpdateTime  = 0L;
+unsigned long prevSendTime    = 0L;
+uint8_t       update_order    = 0;
 /***************Interval_timer*************/
 /***************Variable*******************/
 typedef struct ctr_var{
@@ -75,7 +77,7 @@ int8_t  command_num;
 void relay_ctr(uint8_t num_relay, bool status_relay){
   digitalWrite(Relay[num_relay], status_relay);
   relay_state[num_relay] = status_relay;
-  if(nextion_page == 2) nextion_display("page_manu.bt1"+String(num_relay),status_relay,&nxSerial);
+  if(nextion_page == 2) nextion_display("bt1"+String(num_relay),status_relay,&nxSerial);
 }
 
 void command_service(){
@@ -118,7 +120,9 @@ void command_service(){
   }else if(cmd_text=="reboot"){
     ESP.restart();
   }else if(cmd_text=="page"){
+    prevSendTime  = millis()-300;
     nextion_shift = true;
+    nextion_shift_dubble = true;
     nextion_page  = temp_text.toInt();
   }else if(cmd_text=="send"){
     nextion_print(&nxSerial,temp_text);
@@ -290,37 +294,46 @@ void setup() {
 // the loop function runs over and over again forever
 void loop() {
   if (Serial.available()) command_process(Serial.read());
-  if (nxSerial.available()) command_process(nxSerial.read());
-  system_ctr(millis());
-  page_change();
+  if (nxSerial.available()){
+    char nx_read = nxSerial.read();
+    Serial.print(nx_read);
+    command_process(nx_read);
+  }
+  unsigned long millisec = millis();
+  system_ctr(millisec);
+  page_change(millisec);
 }
 
-void page_change(){
-  if(nextion_shift){
-    nextion_shift = false;
-    Serial.print("page "); Serial.println(nextion_page);
-    if(nextion_page == 0){
-      nextion_display("page_main.sw_t",iot_ctr[Cooler].enable,&nxSerial);
-      nextion_display("page_main.tempt",iot_ctr[Cooler].run,&nxSerial);
-      nextion_display("page_main.tempg",iot_ctr[Cooler].stop,&nxSerial);
-      for (uint8_t index = 0; index < 2; index++){
-        nextion_display("page_main.sw_f"+String(index+1),iot_ctr[Fan_A+index].enable,&nxSerial);
-        nextion_display("page_main.fano"+String(index+1),iot_ctr[Fan_A+index].run,&nxSerial);
-        nextion_display("page_main.fanf"+String(index+1),iot_ctr[Fan_A+index].stop,&nxSerial);
-      }
-    }else if(nextion_page == 5){
-      nextion_display("page_temp.sw_temp",iot_ctr[Cooler].enable,&nxSerial);
-      nextion_display("page_temp.run_t",iot_ctr[Cooler].run,&nxSerial);
-      nextion_display("page_temp.stp_t",iot_ctr[Cooler].stop,&nxSerial);
-    }else if(nextion_page == 7){
-      for (uint8_t index = 0; index < 2; index++){
-        nextion_display("page_fan.sw_fan"+String(index+1),iot_ctr[Fan_A+index].enable,&nxSerial);
-        nextion_display("page_fan.run_f"+String(index+1),iot_ctr[Fan_A+index].run,&nxSerial);
-        nextion_display("page_fan.stp_f"+String(index+1),iot_ctr[Fan_A+index].stop,&nxSerial);
-      }
-    }else if(nextion_page == 2){
-      for (uint8_t index = 0; index < TOTAL_RELAY; index++){
-        nextion_display("page_manu.bt1"+String(index),relay_state[index],&nxSerial);
+void page_change(unsigned long millisec){
+  if(millisec > prevSendTime + 300){
+    prevSendTime = millisec;
+    if(nextion_shift){
+      if(nextion_shift_dubble) nextion_shift_dubble = false;
+      else nextion_shift = false;
+      Serial.print("page "); Serial.println(nextion_page);
+      if(nextion_page == 0){
+        nextion_display("sw_t",iot_ctr[Cooler].enable,&nxSerial);
+        nextion_display("tempt",iot_ctr[Cooler].run,&nxSerial);
+        nextion_display("tempg",iot_ctr[Cooler].stop,&nxSerial);
+        for (uint8_t index = 0; index < 2; index++){
+          nextion_display("sw_f"+String(index+1),iot_ctr[Fan_A+index].enable,&nxSerial);
+          nextion_display("fano"+String(index+1),iot_ctr[Fan_A+index].run,&nxSerial);
+          nextion_display("fanf"+String(index+1),iot_ctr[Fan_A+index].stop,&nxSerial);
+        }
+      }else if(nextion_page == 5){
+        nextion_display("sw_temp",iot_ctr[Cooler].enable,&nxSerial);
+        nextion_display("run_t",iot_ctr[Cooler].run,&nxSerial);
+        nextion_display("stp_t",iot_ctr[Cooler].stop,&nxSerial);
+      }else if(nextion_page == 7){
+        for (uint8_t index = 0; index < 2; index++){
+          nextion_display("sw_fan"+String(index+1),iot_ctr[Fan_A+index].enable,&nxSerial);
+          nextion_display("run_f"+String(index+1),iot_ctr[Fan_A+index].run,&nxSerial);
+          nextion_display("stp_f"+String(index+1),iot_ctr[Fan_A+index].stop,&nxSerial);
+        }
+      }else if(nextion_page == 2){
+        for (uint8_t index = 0; index < TOTAL_RELAY; index++){
+          nextion_display("bt1"+String(index),relay_state[index],&nxSerial);
+        }
       }
     }
   }
@@ -333,17 +346,17 @@ void system_ctr(unsigned long millisec){
     if(update_order == 1){
       int16_t temp_air = thermocouple1.readCelsius()*10;
       int16_t temp_out = thermocouple2.readCelsius()*10;
-      if(temp_air>999) temp_air=999;
-      if(temp_out>999) temp_out=999;
+      if(temp_air == -1) temp_air=999;
+      if(temp_out == -1) temp_out=999;
       /*
       int16_t sht31_humi = sht31.readHumidity()*10;
       int16_t sht31_temp = sht31.readTemperature()*10;
       */
       int16_t temp_rtc = RTC_DS3231.getTemperature()*10;
       if(nextion_page == 0){
-        nextion_display("page_main.temp_air",temp_air,&nxSerial);
-        nextion_display("page_main.temp_out",temp_out,&nxSerial);
-        nextion_display("page_main.bt_wing",wing_state,&nxSerial);
+        nextion_display("temp_air",temp_air,&nxSerial);
+        nextion_display("temp_out",temp_out,&nxSerial);
+        nextion_display("bt_wing",wing_state,&nxSerial);
       }
       if(iot_ctr[Cooler].enable){
         if(temp_air < temp_rtc-100 || temp_air > temp_rtc+100){
@@ -372,13 +385,13 @@ void system_ctr(unsigned long millisec){
       for(uint8_t index=0; index<2; index++){
         if(iot_ctr[Fan_A+index].enable){
           if(iot_ctr[Fan_A+index].state){
-            //if(nextion_page == 0) nextion_display("page_main.fanom",(fan_ctr_time[index]/60),&nxSerial);
+            //if(nextion_page == 0) nextion_display("fanom",(fan_ctr_time[index]/60),&nxSerial);
             if(--fan_ctr_time[index] < 1){
               iot_ctr[Fan_A+index].state = false;
               fan_ctr_time[index] = iot_ctr[Fan_A+index].stop*60;
             }else if(fan_ctr_time[index] > iot_ctr[Fan_A+index].run*60) fan_ctr_time[index] = iot_ctr[Fan_A+index].run*60;
           }else{
-            //if(nextion_page == 0) nextion_display("page_main.fanfm",(fan_ctr_time[index]/60),&nxSerial);
+            //if(nextion_page == 0) nextion_display("fanfm",(fan_ctr_time[index]/60),&nxSerial);
             if(--fan_ctr_time[index] < 1){
               iot_ctr[Fan_A+index].state = true;
               fan_ctr_time[index] = iot_ctr[Fan_A+index].run*60;

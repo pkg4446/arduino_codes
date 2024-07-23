@@ -2,9 +2,8 @@
 
 void nextion_print(HardwareSerial *uart, String cmd) {
   uart->print(cmd);
-  uart->write(0xFF);
-  uart->write(0xFF);
-  uart->write(0xFF);
+  uart->write(0x0A);
+  Serial.println(cmd);
 }
 
 void nextion_display(String IDs, uint16_t values, HardwareSerial *uart) {
