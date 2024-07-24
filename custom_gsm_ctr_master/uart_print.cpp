@@ -35,6 +35,9 @@ void serial_command_help(HardwareSerial *uart) {
   uart->println("     ena   * enable set");
   uart->println("     run   * run time");
   uart->println("     stp   * puase time");
+  uart->println("debug   * serial print");
+  uart->println("     main  * board");
+  uart->println("     board * other board");
   uart->println("config  * read system setup");
   uart->println("ssid    * ex)ssid your ssid");
   uart->println("pass    * ex)pass your password");

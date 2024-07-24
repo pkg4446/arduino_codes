@@ -18,6 +18,7 @@ SoftwareSerial board;
 #define EEPROM_SIZE_CTR     10
 #define COMMAND_LENGTH  32
 #define UPDATE_INTERVAL 1000L
+
 //관수, LED
 const uint8_t thermoDO[2] = {32,34};
 const uint8_t thermoCS    = 15;
@@ -30,6 +31,8 @@ DS3231 RTC_DS3231;
 HardwareSerial nxSerial(2);
 bool    nextion_shift = false;
 uint8_t nextion_page  = 0;
+bool    serial_uart   = false;
+bool    board_uart    = false;
 enum RelayFunc {
   Lamp_1 = 0,
   Lamp_2,
@@ -66,6 +69,7 @@ const int8_t Relay[TOTAL_RELAY] = {2,4,5,12,13,23,27,26,25,33};
 /***************PIN_CONFIG*****************/
 /***************Interval_timer*************/
 unsigned long prevUpdateTime = 0L;
+unsigned long prevPageChange = 0L;
 uint8_t       update_order   = 0;
 /***************Interval_timer*************/
 uint8_t lquid_gap = 3;
@@ -91,7 +95,6 @@ ctr_var circulate;  // run:동작_분, stop:정지_분
 */
 //이산화탄소 측정 추가
 bool    wifi_able;
-bool    uart_type = true;
 /***************Variable*******************/
 char    command_buf[COMMAND_LENGTH];
 int8_t  command_num;
@@ -110,15 +113,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   }
   command_num = 0;
   Serial.println("MQTT");
-  command_service(false);
-}
-/******************************************/
-void wifi_config() {
-  if(uart_type){
-    serial_wifi_config(&Serial,ssid,password);
-  }else{
-
-  }
+  command_service();
 }
 /******************************************/
 void WIFI_scan(bool wifi_state){
@@ -127,14 +122,14 @@ void WIFI_scan(bool wifi_state){
   nextion_print(&nxSerial,"page 1");//nextion page 이동
   nextion_page == 1;
   nextion_print(&nxSerial,"page_wifi.t_wifi.txt=\"WIFI scanning...\"");
-  if(uart_type) Serial.println("WIFI Scanning…");
+  if(serial_uart) Serial.println("WIFI Scanning…");
   uint8_t networks = WiFi.scanNetworks();
   if (networks == 0) {
     nextion_print(&nxSerial,"page_wifi.t_wifi.txt=\"WIFI not found!\"");
-    if(uart_type) Serial.println("WIFI not found!");
+    if(serial_uart) Serial.println("WIFI not found!");
   }else {
     nextion_print(&nxSerial,"page_wifi.t_wifi.txt=\"<= WIFI list are here!\\rscroll & select\"");
-    if(uart_type){
+    if(serial_uart){
       Serial.print(networks);
       Serial.println(" networks found");
       Serial.println("Nr | SSID                             | RSSI | CH | Encryption");
@@ -142,7 +137,7 @@ void WIFI_scan(bool wifi_state){
     String wifi_list ="";
     for (int index = 0; index < networks; ++index) {
       // Print SSID and RSSI for each network found
-      if(uart_type){
+      if(serial_uart){
         Serial.printf("%2d",index + 1);
         Serial.print(" | ");
         Serial.printf("%-32.32s", WiFi.SSID(index).c_str());
@@ -163,7 +158,7 @@ void WIFI_scan(bool wifi_state){
         else if(wifi_type == WIFI_AUTH_WPA2_WPA3_PSK){wifi_encryptionType = "WPA2+WPA3";}
         else if(wifi_type == WIFI_AUTH_WAPI_PSK){wifi_encryptionType = "WAPI";}
         else{wifi_encryptionType = "unknown";}
-        if(uart_type) Serial.println(wifi_encryptionType);
+        if(serial_uart) Serial.println(wifi_encryptionType);
       }
       if(nextion_page == 1){
         wifi_list += WiFi.SSID(index);
@@ -171,7 +166,7 @@ void WIFI_scan(bool wifi_state){
         if(index<10) nextion_print(&nxSerial,"page_wifi.wifi"+String(index)+".txt=\""+WiFi.SSID(index)+"\"");
       }
     }
-    if(uart_type) Serial.println("");
+    if(serial_uart) Serial.println("");
     if(nextion_page == 1) nextion_print(&nxSerial,"page_wifi.list.path=\""+wifi_list+"\"");
   }
 
@@ -182,7 +177,7 @@ void WIFI_scan(bool wifi_state){
   }
 }
 /******************************************/
-void command_service(bool command_type){
+void command_service(){
   String cmd_text     = "";
   String temp_text    = "";
   bool   eep_change   = false;
@@ -203,11 +198,15 @@ void command_service(bool command_type){
     temp_text += command_buf[index_check];
   }
   /**********/
-  if(command_type)Serial.print("cmd: ");
-  else Serial.print("mqtt: ");
-  Serial.println(command_buf);
-  board.print(command_buf);
-  board.write(0x0A);
+  if(serial_uart){
+    Serial.print("cmd: ");
+    Serial.print("mqtt: ");
+    Serial.println(command_buf);
+  }
+  if(cmd_text!="manual"){
+    board.print(command_buf);
+    board.write(0x0A);
+  }
 
   if(cmd_text=="time"){
     time_show();
@@ -227,12 +226,17 @@ void command_service(bool command_type){
       }
       if(cmd_select == "on")  relay_ctr(relay_num, true);
       else  relay_ctr(relay_num, false);
+    }else{
+      board.print(command_buf);
+      board.write(0x0A);
     }
   }else if(cmd_text=="reboot"){
     ESP.restart();
   }else if(cmd_text=="page"){
     nextion_shift = true;
     nextion_page  = temp_text.toInt();
+    board.print(command_buf);
+    board.write(0x0A);
   }else if(cmd_text=="send"){
     nextion_print(&nxSerial,temp_text);
   }else if(cmd_text=="set"){
@@ -277,13 +281,23 @@ void command_service(bool command_type){
         iot_ctr[iot_ctr_type].stop   = cmd_value.toInt();
         EEPROM.write(eep_var[iot_ctr_type*3+2], iot_ctr[iot_ctr_type].stop);
       }
-      if(uart_type){
+      if(serial_uart){
         Serial.print("enable: ");Serial.print(iot_ctr[iot_ctr_type].enable);
         Serial.print(", run :");Serial.print(iot_ctr[iot_ctr_type].run);
         Serial.print(", stop :");Serial.println(iot_ctr[iot_ctr_type].stop);
       }
       if(iot_ctr_type<=Lamp_4)        nextion_print(&nxSerial,"page 6"); //LED 페이지
       else if(iot_ctr_type<=Heater_2) nextion_print(&nxSerial,"page 4"); //양액 페이지
+    }
+  }else if(cmd_text=="debug"){
+    if(temp_text == "main"){
+      serial_uart = true;
+    }else if(temp_text == "board"){
+      board_uart  = true;
+    }else{
+      Serial.println("debug off");
+      serial_uart = false;
+      board_uart  = false;
     }
   }else if(cmd_text=="config"){
     uint8_t iot_ctr_type = 255;
@@ -298,14 +312,14 @@ void command_service(bool command_type){
     else if(temp_text=="heat_a"){iot_ctr_type=Heater_1;}
     else if(temp_text=="heat_b"){iot_ctr_type=Heater_2; }
     if(iot_ctr_type != 255){
-      if(uart_type){
+      if(serial_uart){
         Serial.print("enable: ");Serial.print(iot_ctr[iot_ctr_type].enable);
         Serial.print(", run :");Serial.print(iot_ctr[iot_ctr_type].run);
         Serial.print(", stop :");Serial.println(iot_ctr[iot_ctr_type].stop);
       }else{
 
       }
-    }else if(uart_type){
+    }else if(serial_uart){
       for (int index = 0; index < EEPROM_SIZE_CTR; index++) {
         Serial.print("config no.");Serial.print(index);
         Serial.print(", enable: ");Serial.print(iot_ctr[index].enable);
@@ -313,81 +327,75 @@ void command_service(bool command_type){
         Serial.print(", stop :");Serial.println(iot_ctr[index].stop);
       }
     }
-  }
-  /*****OFF_LINE_CMD*****/
-  else if(command_type){
-    if(cmd_text=="ssid"){
-      wifi_able = false;
-      WiFi.disconnect(true);
-      if(uart_type) Serial.print("ssid: ");
-      if(temp_text.length() > 0){
-        for (int index = 0; index < EEPROM_SIZE_CONFIG; index++) {
-          if(index < temp_text.length()){
-            if(uart_type) Serial.print(temp_text[index]);
-            ssid[index] = temp_text[index];
-            EEPROM.write(eep_ssid[index], byte(temp_text[index]));
-          }else{
-            ssid[index] = 0x00;
-            EEPROM.write(eep_ssid[index], byte(0x00));
-          }
+  }else if(cmd_text=="ssid"){
+    wifi_able = false;
+    WiFi.disconnect(true);
+    if(serial_uart) Serial.print("ssid: ");
+    if(temp_text.length() > 0){
+      for (int index = 0; index < EEPROM_SIZE_CONFIG; index++) {
+        if(index < temp_text.length()){
+          if(serial_uart) Serial.print(temp_text[index]);
+          ssid[index] = temp_text[index];
+          EEPROM.write(eep_ssid[index], byte(temp_text[index]));
+        }else{
+          ssid[index] = 0x00;
+          EEPROM.write(eep_ssid[index], byte(0x00));
         }
-        eep_change = true;
       }
-      if(uart_type) Serial.println("");
-    }else if(cmd_text=="pass"){
-      wifi_able = false;
-      WiFi.disconnect(true);
-      if(uart_type) Serial.print("pass: ");
-      if(temp_text.length() > 0){
-        for (int index = 0; index < EEPROM_SIZE_CONFIG; index++) {
-          if(index < temp_text.length()){
-            if(uart_type) Serial.print(temp_text[index]);
-            password[index] = temp_text[index];
-            EEPROM.write(eep_pass[index], byte(temp_text[index]));
-          }else{
-            password[index] = 0x00;
-            EEPROM.write(eep_pass[index], byte(0x00));
-          }
+      eep_change = true;
+    }
+    if(serial_uart) Serial.println("");
+  }else if(cmd_text=="pass"){
+    wifi_able = false;
+    WiFi.disconnect(true);
+    if(serial_uart) Serial.print("pass: ");
+    if(temp_text.length() > 0){
+      for (int index = 0; index < EEPROM_SIZE_CONFIG; index++) {
+        if(index < temp_text.length()){
+          if(serial_uart) Serial.print(temp_text[index]);
+          password[index] = temp_text[index];
+          EEPROM.write(eep_pass[index], byte(temp_text[index]));
+        }else{
+          password[index] = 0x00;
+          EEPROM.write(eep_pass[index], byte(0x00));
         }
-        eep_change = true;
       }
-      if(uart_type) Serial.println("");
-    }else if(cmd_text=="wifi"){
-      if(temp_text=="stop"){
-        wifi_able = false;
-        if(uart_type) Serial.print("WIFI disconnect");
-        WiFi.disconnect(true);
-      }else if(temp_text=="scan"){
-        WIFI_scan(WiFi.status() == WL_CONNECTED);
-      }else{
-        wifi_connect();
-      }
-    }else if(cmd_text=="temp"){
-      Serial.print("CPU: ");Serial.print(RTC_DS3231.getTemperature(), 2);Serial.println("°C");
-      Serial.print("PT100 1: ");Serial.print(thermocouple1.readCelsius());Serial.println("°C");
-      Serial.print("PT100 2: ");Serial.print(thermocouple2.readCelsius());Serial.println("°C");
-    }else if(uart_type && cmd_text=="help"){
-      serial_command_help(&Serial);
-    }else{ serial_err_msg(&Serial, command_buf); }
-  }
-  /*****OFF_LINE_CMD*****/
-  else{ serial_err_msg(&Serial, command_buf); }
-  if(eep_change){
-    EEPROM.commit();
-  }
+      eep_change = true;
+    }
+    if(serial_uart) Serial.println("");
+  }else if(cmd_text=="wifi"){
+    if(temp_text=="stop"){
+      wifi_able = false;
+      if(serial_uart) Serial.print("WIFI disconnect");
+      WiFi.disconnect(true);
+    }else if(temp_text=="scan"){
+      WIFI_scan(WiFi.status() == WL_CONNECTED);
+    }else{
+      wifi_connect();
+    }
+  }else if(cmd_text=="temp"){
+    Serial.print("CPU: ");Serial.print(RTC_DS3231.getTemperature(), 2);Serial.println("°C");
+    Serial.print("PT100 1: ");Serial.print(thermocouple1.readCelsius());Serial.println("°C");
+    Serial.print("PT100 2: ");Serial.print(thermocouple2.readCelsius());Serial.println("°C");
+  }else if(cmd_text=="help"){
+    serial_command_help(&Serial);
+  }else{ serial_err_msg(&Serial, command_buf); }
+  if(eep_change){ EEPROM.commit(); }
 }
 uint8_t error_index = 0;
-void command_process(char ch, bool type_uart) {
-  uart_type = type_uart;
+void command_process(char ch) {
   if(ch=='\n'){
     command_buf[command_num] = 0x00;
     command_num = 0;
-    command_service(true);
+    command_service();
     memset(command_buf, 0x00, COMMAND_LENGTH);
   }else if(ch==0x1A){
     error_index = 0;
   }else if(ch==0xFF){
-    if(++error_index>=3) Serial.println("nx_err");
+    if(++error_index>=3){
+      Serial.println("nx_err");
+      board_page_err();
+    }
   }else if(ch!='\r'){
     command_buf[command_num++] = ch;
     command_num %= COMMAND_LENGTH;
@@ -409,7 +417,9 @@ void soft_serail(char ch) {
 void soft_service(){
   String cmd_text = "";
   String val_text = "";
+  String values   = "";
   uint8_t check_index = 0;
+  bool send_flage = false;
   for(uint8_t index_check=0; index_check<COMMAND_LENGTH; index_check++){
     if(sw_buf[index_check] == '.'){
       check_index = index_check+1;
@@ -419,15 +429,19 @@ void soft_service(){
   }
   for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
     if(sw_buf[index_check] == '='){
+      check_index = index_check+1;
       break;
     }
     val_text += sw_buf[index_check];
   }
+  for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
+    if(sw_buf[index_check] == 0x00){
+      break;
+    }
+    values += sw_buf[index_check];
+  }
 
-  bool send_flage = false;
-  if(sw_buf[0]=='p'&&sw_buf[1]=='a'&&sw_buf[2]=='g'&&sw_buf[3]=='e'&&sw_buf[4]==0x20){
-    if(sw_buf[5]>=48&&sw_buf[5]<=57) send_flage = true;
-  }else if(val_text == "val"){
+  if(val_text == "val"){
     if(nextion_page == 0){
       if(cmd_text == "temp_air" || cmd_text == "temp_out" || cmd_text == "bt_wing") send_flage = true;
       else if(cmd_text == "sw_t" || cmd_text == "tempt" || cmd_text == "tempg") send_flage = true;
@@ -446,21 +460,33 @@ void soft_service(){
       else if(cmd_text == "stp_f1" || cmd_text == "stp_f2") send_flage = true;
     }
   }
+  if(isnan(values.toInt())) send_flage=false;
+  if(sw_buf[0]=='p'&&sw_buf[1]=='a'&&sw_buf[2]=='g'&&sw_buf[3]=='e'&&sw_buf[4]==0x20){
+    if(sw_buf[5]>=48&&sw_buf[5]<=57) send_flage = true;
+  }
   if(send_flage){
     nextion_print(&nxSerial,sw_buf);//nextion page 이동
-    //Serial.print(",fw:");
-  }else{
-    //Serial.print(nextion_page);
-    //Serial.print(",er:");
+    board_debug("o k");
+  }else {
+    board_page_err();
+    board_debug("err");
   }
-  /*
-  Serial.print(cmd_text);
-  Serial.print(".");
-  Serial.print(val_text);
-  Serial.print(":");
-  Serial.print(sw_buf);
-  Serial.println("_");
-  */
+}
+void board_debug(String send_state){
+  if(board_uart){
+    Serial.print(send_state);
+    Serial.print(":");
+    Serial.print(nextion_page);
+    Serial.print(":");
+    Serial.println(sw_buf);
+  }
+}
+void board_page_err(){
+  if(millis() > prevPageChange + 3000){
+    prevPageChange = millis();
+    board.print("page "+String(nextion_page));
+    board.write(0x0A);
+  }
 }
 /******************************************/
 void mqtt_connect() {
@@ -486,13 +512,13 @@ void mqtt_connect() {
       if (millis() > WIFI_wait + 1000) {
         WIFI_wait = millis();
         if (!wifi_able){
-          if(uart_type) Serial.println("WIFI was not connected");
+          if(serial_uart) Serial.println("WIFI was not connected");
           mqttClient.disconnect();
           return;
         }else if(mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
-          if(uart_type) Serial.println("connected");
+          if(serial_uart) Serial.println("connected");
         } else {
-          if(uart_type){
+          if(serial_uart){
             Serial.print("failed with state ");
             Serial.print(mqttClient.state());
           }
@@ -501,20 +527,20 @@ void mqtt_connect() {
         }
       }
     }
-    if(uart_type) Serial.print("MQTT Connected ");
+    if(serial_uart) Serial.print("MQTT Connected ");
     if(mqtt_connected){
       mqttClient.subscribe(topic_sub);
       mqttClient.publish(topic_pub, sub_ID);
-      if(uart_type) Serial.println(sub_ID);
+      if(serial_uart) Serial.println(sub_ID);
     }else{
-      if(uart_type) Serial.println("fail");
+      if(serial_uart) Serial.println("fail");
     }
   }
 }
 
 void wifi_connect() {
   wifi_able = true;
-  wifi_config();
+  serial_wifi_config(&Serial,ssid,password);
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
   if(nextion_page==1) nextion_print(&nxSerial,"page_wifi.t_wifi.txt=\"Try to WIFI connect...\"");
@@ -524,7 +550,7 @@ void wifi_connect() {
     unsigned long update_time = millis();
     if(update_time - wifi_config_update > 5000){
       wifi_able = false;
-      if(uart_type) Serial.println("WIFI fail");
+      Serial.println("WIFI fail");
       break;
     }
   }
@@ -547,7 +573,7 @@ void time_show(){
   uint8_t clock_min   = RTC_DS3231.getMinute();
   uint8_t clock_sec   = RTC_DS3231.getSecond();
 
-  if(uart_type){
+  if(serial_uart){
     Serial.print('2');
     if(century)Serial.print('1');
     else Serial.print('0');
@@ -656,10 +682,8 @@ void setup() {
   }
 
   if (!EEPROM.begin((EEPROM_SIZE_CONFIG*2) + (EEPROM_SIZE_VALUE*EEPROM_SIZE_CTR))){
-    if(uart_type){
-      Serial.println("Failed to initialise eeprom");
-      Serial.println("Restarting...");
-    }
+    Serial.println("Failed to initialise eeprom");
+    Serial.println("Restarting...");
     delay(1000);
     ESP.restart();
   }
@@ -676,7 +700,7 @@ void setup() {
   }
   wifi_connect();
   serial_command_help(&Serial);
-  if(uart_type) Serial.println("System online");
+  Serial.println("System online");
   nextion_print(&nxSerial,"page 0");
 }
 
@@ -686,8 +710,8 @@ void loop() {
     if (mqttClient.connected()){mqttClient.loop();}
     else{mqtt_connect();}
   }
-  if (Serial.available()) command_process(Serial.read(),true);
-  if (nxSerial.available()) command_process(nxSerial.read(),false);
+  if (Serial.available()) command_process(Serial.read());
+  if (nxSerial.available()) command_process(nxSerial.read());
   if (board.available()){
     soft_serail(board.read());
   }
