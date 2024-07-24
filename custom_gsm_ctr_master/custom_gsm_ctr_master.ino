@@ -27,6 +27,11 @@ const uint8_t thermoCLK   = 14;
 MAX6675 thermocouple1(thermoCLK, thermoCS, thermoDO[0]);
 MAX6675 thermocouple2(thermoCLK, thermoCS, thermoDO[1]);
 
+int16_t temp_water    = 0;
+int16_t temp_liquid   = 0;
+int16_t temp_air      = 0;
+int16_t temp_out      = 0;
+
 DS3231 RTC_DS3231;
 HardwareSerial nxSerial(2);
 bool    nextion_shift = false;
@@ -59,6 +64,7 @@ const uint16_t  mqttPort      = 1883;
 const char*     mqttUser      = "test";
 const char*     mqttPassword  = "test";
 const char*     topic_pub     = "SHS";
+char            deviceID[18];
 
 WiFiClient    mqtt_client;
 PubSubClient  mqttClient(mqtt_client);
@@ -70,6 +76,8 @@ const int8_t Relay[TOTAL_RELAY] = {2,4,5,12,13,23,27,26,25,33};
 /***************Interval_timer*************/
 unsigned long prevUpdateTime = 0L;
 unsigned long prevPageChange = 0L;
+unsigned long prePpdatePost  = 0L;
+
 uint8_t       update_order   = 0;
 /***************Interval_timer*************/
 uint8_t lquid_gap = 3;
@@ -93,6 +101,11 @@ ctr_var lamp[3];    // run:시작시간,stop:정지시간
 ctr_var temp_ctr;   // run:목표값,  stop:허용치
 ctr_var circulate;  // run:동작_분, stop:정지_분
 */
+ctr_var   board_ctr[4];
+//0:wing    state
+//1:heat    state
+//2:fan in  state
+//3:fan out state
 //이산화탄소 측정 추가
 bool    wifi_able;
 /***************Variable*******************/
@@ -200,7 +213,6 @@ void command_service(){
   /**********/
   if(serial_uart){
     Serial.print("cmd: ");
-    Serial.print("mqtt: ");
     Serial.println(command_buf);
   }
   if(cmd_text!="manual"){
@@ -312,19 +324,25 @@ void command_service(){
     else if(temp_text=="heat_a"){iot_ctr_type=Heater_1;}
     else if(temp_text=="heat_b"){iot_ctr_type=Heater_2; }
     if(iot_ctr_type != 255){
-      if(serial_uart){
-        Serial.print("enable: ");Serial.print(iot_ctr[iot_ctr_type].enable);
-        Serial.print(", run :");Serial.print(iot_ctr[iot_ctr_type].run);
-        Serial.print(", stop :");Serial.println(iot_ctr[iot_ctr_type].stop);
-      }else{
-
-      }
-    }else if(serial_uart){
+      Serial.print("enable: ");Serial.print(iot_ctr[iot_ctr_type].enable);
+      Serial.print(", run :");Serial.print(iot_ctr[iot_ctr_type].run);
+      Serial.print(", stop :");Serial.println(iot_ctr[iot_ctr_type].stop);
+    }else{
+      Serial.print("temp_water:\t");Serial.println(temp_water);
+      Serial.print("temp_liquid:\t");Serial.println(temp_liquid);
+      Serial.print("temp_air:\t");Serial.println(temp_air);
+      Serial.print("temp_out:\t");Serial.println(temp_out);
       for (int index = 0; index < EEPROM_SIZE_CTR; index++) {
         Serial.print("config no.");Serial.print(index);
         Serial.print(", enable: ");Serial.print(iot_ctr[index].enable);
         Serial.print(", run :");Serial.print(iot_ctr[index].run);
         Serial.print(", stop :");Serial.println(iot_ctr[index].stop);
+      }
+      for (int index = 0; index < 4; index++) {
+        Serial.print("other board.");Serial.print(index);
+        Serial.print(", enable: ");Serial.print(board_ctr[index].enable);
+        Serial.print(", run :");Serial.print(board_ctr[index].run);
+        Serial.print(", stop :");Serial.println(board_ctr[index].stop);
       }
     }
   }else if(cmd_text=="ssid"){
@@ -440,14 +458,46 @@ void soft_service(){
     }
     values += sw_buf[index_check];
   }
-
+  bool val_is_nan = isnan(values.toInt());
   if(val_text == "val"){
     if(nextion_page == 0){
-      if(cmd_text == "temp_air" || cmd_text == "temp_out" || cmd_text == "bt_wing") send_flage = true;
-      else if(cmd_text == "sw_t" || cmd_text == "tempt" || cmd_text == "tempg") send_flage = true;
-      else if(cmd_text == "sw_f1" || cmd_text == "sw_f2") send_flage = true;
-      else if(cmd_text == "fano1" || cmd_text == "fano2") send_flage = true;
-      else if(cmd_text == "fanf1" || cmd_text == "fanf2") send_flage = true;
+      if(cmd_text == "temp_air"){
+        send_flage = true;
+        if(!val_is_nan) temp_air   = values.toInt();
+      }else if(cmd_text == "temp_out"){
+        temp_out   = true;
+        if(!val_is_nan) temp_out   = values.toInt();
+      }else if(cmd_text == "bt_wing"){
+        send_flage = true;
+        if(!val_is_nan) board_ctr[0].enable = values.toInt();
+      }else if(cmd_text == "sw_t"){
+        send_flage = true;
+        if(!val_is_nan) board_ctr[1].enable = values.toInt();
+      }else if(cmd_text == "tempt"){
+        send_flage = true;
+        if(!val_is_nan) board_ctr[1].run = values.toInt();
+      }else if(cmd_text == "tempg"){
+        send_flage = true;
+        if(!val_is_nan) board_ctr[1].stop = values.toInt();
+      }else if(cmd_text == "sw_f1"){
+        send_flage = true;
+        if(!val_is_nan) board_ctr[2].enable = values.toInt();
+      }else if(cmd_text == "sw_f2"){
+        send_flage = true;
+        if(!val_is_nan) board_ctr[2].enable = values.toInt();
+      }else if(cmd_text == "fano1"){
+        send_flage = true;
+        if(!val_is_nan) board_ctr[2].run = values.toInt();
+      }else if(cmd_text == "fanf1"){
+        send_flage = true;
+        if(!val_is_nan) board_ctr[2].stop = values.toInt();
+      }else if(cmd_text == "fano2"){
+        send_flage = true;
+        if(!val_is_nan) board_ctr[3].run = values.toInt();
+      }else if(cmd_text == "fanf2"){
+        send_flage = true;
+        if(!val_is_nan) board_ctr[3].stop = values.toInt();
+      }
     }else if(nextion_page == 2){
       if(sw_buf[0]=='b'&&sw_buf[1]=='t'&&sw_buf[2]=='1'){
         if(sw_buf[3]>=48&&sw_buf[3]<=57) send_flage = true;
@@ -460,7 +510,7 @@ void soft_service(){
       else if(cmd_text == "stp_f1" || cmd_text == "stp_f2") send_flage = true;
     }
   }
-  if(isnan(values.toInt())) send_flage=false;
+  if(val_is_nan) send_flage=false;
   if(sw_buf[0]=='p'&&sw_buf[1]=='a'&&sw_buf[2]=='g'&&sw_buf[3]=='e'&&sw_buf[4]==0x20){
     if(sw_buf[5]>=48&&sw_buf[5]<=57) send_flage = true;
   }
@@ -495,11 +545,14 @@ void mqtt_connect() {
     mqttClient.setServer(mqttServer, mqttPort);
     mqttClient.setCallback(mqtt_callback);
 
-    char  deviceID[18];
     char  sendID[21]  = "ID=";
 
     for (int i = 0; i < 17; i++) {
-      sendID[i + 3] = WiFi.macAddress()[i];
+      if(WiFi.macAddress()[i]==':'){
+        sendID[i + 3] = '_';
+      }else{
+        sendID[i + 3] = WiFi.macAddress()[i];
+      }
       deviceID[i]   = sendID[i + 3];
     }
 
@@ -512,28 +565,26 @@ void mqtt_connect() {
       if (millis() > WIFI_wait + 1000) {
         WIFI_wait = millis();
         if (!wifi_able){
-          if(serial_uart) Serial.println("WIFI was not connected");
+          Serial.println("WIFI was not connected");
           mqttClient.disconnect();
           return;
         }else if(mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
-          if(serial_uart) Serial.println("connected");
+          Serial.println("connected");
         } else {
-          if(serial_uart){
-            Serial.print("failed with state ");
-            Serial.print(mqttClient.state());
-          }
+          Serial.print("failed with state ");
+          Serial.print(mqttClient.state());
           mqtt_connected = false;
           break;
         }
       }
     }
-    if(serial_uart) Serial.print("MQTT Connected ");
+    Serial.print("MQTT Connected ");
     if(mqtt_connected){
       mqttClient.subscribe(topic_sub);
       mqttClient.publish(topic_pub, sub_ID);
-      if(serial_uart) Serial.println(sub_ID);
+      Serial.println(sub_ID);
     }else{
-      if(serial_uart) Serial.println("fail");
+      Serial.println("fail");
     }
   }
 }
@@ -716,6 +767,7 @@ void loop() {
     soft_serail(board.read());
   }
   system_ctr(millis());
+  sensor_upload(millis());
   page_change();
 }
 //수정요망 : 디스플레이 디자인 나오면
@@ -764,8 +816,8 @@ void system_ctr(unsigned long millisec){
     prevUpdateTime = millisec;
     update_order += 1;
     if(update_order == 1){
-      int16_t temp_water  = thermocouple1.readCelsius()*10;
-      int16_t temp_liquid = thermocouple2.readCelsius()*10;
+      temp_water  = thermocouple1.readCelsius()*10;
+      temp_liquid = thermocouple2.readCelsius()*10;
       int16_t temp_rtc = RTC_DS3231.getTemperature()*10;
       if(temp_water == -1)  temp_water=999;
       if(temp_liquid == -1) temp_liquid=999;
@@ -900,7 +952,38 @@ void system_ctr(unsigned long millisec){
         }
       }
 
-
     }
   }
 }
+
+
+String sensor_json(){
+  String response = "{\"DEVID\":\""+String(deviceID)+"\",";
+  response += "\"t_w\":"+String(temp_water)+",";
+  response += "\"t_l\":"+String(temp_liquid)+",";
+  response += "\"t_a\":"+String(temp_air)+",";
+  response += "\"t_o\":"+String(temp_out)+"}";
+  return response;
+}
+
+void sensor_upload(unsigned long millisec){
+  if(wifi_able && (millisec > prePpdatePost + 1000*60*10)){
+    prePpdatePost = millisec;
+    String response = httpPOSTRequest("http://192.168.1.15:3002/device/log",sensor_json());
+    Serial.println(response);
+  }
+}
+
+String httpPOSTRequest(String server_url, String send_data) {
+  String response = "";
+  if(wifi_able){
+    WiFiClient client;
+    HTTPClient http;
+    http.begin(client, server_url);
+    http.addHeader("Content-Type", "application/json");
+    int response_code = http.POST(send_data);
+    response          = http.getString();
+    http.end();
+  }
+  return response;
+}////httpPOSTRequest_End

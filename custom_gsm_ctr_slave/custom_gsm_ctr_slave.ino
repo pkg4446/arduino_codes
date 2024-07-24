@@ -361,7 +361,7 @@ void page_change(unsigned long millisec){
 }
 
 void system_ctr(unsigned long millisec){
-  if(millisec > prevUpdateTime + 250){
+  if(millisec > prevUpdateTime + 500){
     if(!nextion_shift){
       prevUpdateTime = millisec;
       update_order += 1;
@@ -403,7 +403,7 @@ void system_ctr(unsigned long millisec){
           relay_ctr(Heater, false);
           iot_ctr[Cooler].state = false;
         }
-      }else if(update_order == 2){
+      }else{
         for(uint8_t index=0; index<2; index++){
           if(iot_ctr[Fan_A+index].enable){
             if(iot_ctr[Fan_A+index].state){
@@ -425,7 +425,6 @@ void system_ctr(unsigned long millisec){
             relay_ctr(Fan_A+index, iot_ctr[Fan_A+index].state);
           }
         }
-      }else {
         update_order = 0;
       }
     }
