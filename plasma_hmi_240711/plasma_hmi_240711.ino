@@ -10,8 +10,6 @@
 #define COMMAND_LENGTH  32
 #define UPDATE_INTERVAL 1000L
 
-#define PLASMA_RELAY 0
-
 HardwareSerial nxSerial(2);
 bool    nextion_shift = false;
 uint8_t nextion_page  = 0;
@@ -166,11 +164,17 @@ void command_service(){
   }else if(cmd_text=="run"){
     countdown = total_time();
     operation = true;
-    digitalWrite(Relay[PLASMA_RELAY], true);  //plasma run here
+    for (uint8_t index = 0; index < TOTAL_RELAY; index++)
+    {
+      digitalWrite(Relay[index], true);  //plasma run here
+    }
     prevUpdateTime = millis();
     nextion_display("operation",operation,&nxSerial);
   }else if(cmd_text=="stop"){
-    digitalWrite(Relay[PLASMA_RELAY], false); //plasma stop here
+    for (uint8_t index = 0; index < TOTAL_RELAY; index++)
+    {
+      digitalWrite(Relay[index], false);  //plasma run here
+    }
     operation = false;
     nextion_display("operation",operation,&nxSerial);
   }else if(cmd_text=="memo"){
@@ -351,7 +355,10 @@ void system_ctr(unsigned long millisec){
       if(nextion_page == 0) nextion_display("progress",map(runtime, 0, total_time(), 0, 100),&nxSerial);
     }else if(runtime>0){
       operation = false;
-      digitalWrite(Relay[PLASMA_RELAY], false); //plasma stop here
+      for (uint8_t index = 0; index < TOTAL_RELAY; index++)
+      {
+        digitalWrite(Relay[index], false);  //plasma run here
+      }
       httpPOSTRequest("http://plasma.smarthive.kr/plasma/runtime",String(runtime));//http post runtime
       runtime=0;
       if(nextion_page == 0) nextion_display("operation",operation,&nxSerial);
