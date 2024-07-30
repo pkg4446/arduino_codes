@@ -372,8 +372,8 @@ String httpPOSTRequest(String server_url, String send_data) {
     WiFiClient client;
     HTTPClient http;
     http.begin(client, server_url);
-    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-    int response_code = http.POST("data="+send_data);
+    http.addHeader("Content-Type", "application/json");
+    int response_code = http.POST("{\"data\":\""+send_data+"\"");
     response          = http.getString();
     http.end();
   }
