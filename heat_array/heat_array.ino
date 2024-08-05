@@ -26,8 +26,9 @@ const uint8_t TMP112_ADDRESS = 0x48; // TMP112 온도 센서 주소
 byte tcaAddresses[TCA9548A_COUNT] = {0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76}; // 멀티플렉서 주소
 const uint8_t eep_ssid[EEPROM_SIZE_CONFIG] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
 const uint8_t eep_pass[EEPROM_SIZE_CONFIG] = {24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47};
-String http_server_addr = "http://192.168.1.15:3000/device/runtime";
+String http_server_addr = "http://192.168.1.15:3000/device/log";
 String path_savedata    = "/data";
+char  deviceID[18];
 /*********************************************************/
 bool able_sdcard = false;
 bool able_wifi   = false;
@@ -93,9 +94,9 @@ void sensor_value_init(){
 }
 
 String sensor_json(){
-  String response = "{";
+  String response = "{\"dvid\":\""+deviceID+"\"";
   for (uint8_t row = 0; row < 5; row++){
-    response += "\"row"+String(row)+"\":[";
+    response += ",\"row"+String(row)+"\":[";
     for (uint8_t col = 0; col < 10; col++){
       uint8_t index = col*5 + row;
       int32_t sensor_temperature = 0;
@@ -108,7 +109,6 @@ String sensor_json(){
       if(col<9) response += ",";
     }
     response += "]";
-    if(row<4) response += ",";
   }
   response += "}";
   return response;
@@ -296,6 +296,13 @@ void wifi_connect() {
       Serial.println("WIFI fail");
       WiFi.disconnect(true);
       break;
+    }
+  }
+  for (int index = 0; index < 17; index++) {
+    if(WiFi.macAddress()[index]==':'){
+      deviceID[index] = '_';
+    }else{
+      deviceID[index] = WiFi.macAddress()[index];
     }
   }
   Serial.println("WIFI connected");
