@@ -94,7 +94,7 @@ void sensor_value_init(){
 }
 
 String sensor_json(){
-  String response = "{\"dvid\":\""+deviceID+"\"";
+  String response = "{\"dvid\":\""+String(deviceID)+"\"";
   for (uint8_t row = 0; row < 5; row++){
     response += ",\"row"+String(row)+"\":[";
     for (uint8_t col = 0; col < 10; col++){
