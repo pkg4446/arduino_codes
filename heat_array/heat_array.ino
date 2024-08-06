@@ -306,6 +306,8 @@ void wifi_connect() {
     }
   }
   Serial.println("WIFI connected");
+  Serail.print("deviceID:");
+  Serail.println(deviceID);
 }
 /*********************************************************/
 void setup() {
