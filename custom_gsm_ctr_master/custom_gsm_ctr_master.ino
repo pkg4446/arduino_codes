@@ -465,7 +465,7 @@ void soft_service(){
         send_flage = true;
         if(!val_is_nan) temp_air   = values.toInt();
       }else if(cmd_text == "temp_out"){
-        temp_out   = true;
+        send_flage = true;
         if(!val_is_nan) temp_out   = values.toInt();
       }else if(cmd_text == "bt_wing"){
         send_flage = true;
@@ -804,6 +804,7 @@ void page_change(){
         nextion_display("page_led.stp"+String(index+1),iot_ctr[Lamp_1+index].stop,&nxSerial);
       }
     }else if(nextion_page == 2){
+      nextion_print(&nxSerial,"page_manu.dvid.txt=\""+String(deviceID)+"\"");
       for (uint8_t index = 0; index < TOTAL_RELAY; index++){
         nextion_display("page_manu.bt"+String(index),relay_state[index],&nxSerial);
       }
