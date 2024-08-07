@@ -50,6 +50,7 @@ enum RelayFunc {
   Heater_1,
   Heater_2,
 };
+const String server = "http://192.168.1.15:3002/";
 /***************EEPROM*********************/
 const uint8_t eep_ssid[EEPROM_SIZE_CONFIG] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
 const uint8_t eep_pass[EEPROM_SIZE_CONFIG] = {24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47};
@@ -298,6 +299,11 @@ void command_service(){
         Serial.print(", run :");Serial.print(iot_ctr[iot_ctr_type].run);
         Serial.print(", stop :");Serial.println(iot_ctr[iot_ctr_type].stop);
       }
+      String config_post = "{\"DEVID\":\""+String(deviceID)+"\",";
+      config_post += "\"cmd\":\""+String(temp_text)+"\",";
+      config_post += "\"type\":\""+String(cmd_select)+"\",";
+      config_post += "\"val\":"+String(cmd_value)+"}";
+      httpPOSTRequest(server+"device/config",config_post);
       if(iot_ctr_type<=Lamp_4)        nextion_print(&nxSerial,"page 6"); //LED 페이지
       else if(iot_ctr_type<=Heater_2) nextion_print(&nxSerial,"page 4"); //양액 페이지
     }
@@ -970,7 +976,7 @@ String sensor_json(){
 void sensor_upload(unsigned long millisec){
   if(wifi_able && (millisec > prePpdatePost + 1000*60*10)){
     prePpdatePost = millisec;
-    String response = httpPOSTRequest("http://192.168.1.15:3002/device/log",sensor_json());
+    String response = httpPOSTRequest(server+"device/log",sensor_json());
     Serial.println(response);
   }
 }
