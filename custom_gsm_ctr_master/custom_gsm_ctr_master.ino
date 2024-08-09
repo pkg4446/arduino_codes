@@ -772,8 +772,9 @@ void loop() {
   if (board.available()){
     soft_serail(board.read());
   }
-  system_ctr(millis());
-  sensor_upload(millis());
+  const unsigned long millisec = millis();
+  system_ctr(millisec);
+  sensor_upload(millisec);
   page_change();
 }
 //수정요망 : 디스플레이 디자인 나오면
@@ -974,7 +975,7 @@ String sensor_json(){
 }
 
 void sensor_upload(unsigned long millisec){
-  if(wifi_able && (millisec > prePpdatePost + 1000*60*10)){
+  if(wifi_able && (millisec > prePpdatePost + 1000*60*1)){
     prePpdatePost = millisec;
     String response = httpPOSTRequest(server+"device/log",sensor_json());
     Serial.println(response);
