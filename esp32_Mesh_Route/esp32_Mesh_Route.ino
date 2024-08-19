@@ -132,11 +132,12 @@ void setup() {
   //mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION );
   mesh.setDebugMsgTypes( ERROR | STARTUP );
   mesh.init( MESH_PREFIX, MESH_PASSWORD, MESH_PORT );
+  mesh.setRoot( true );
+  mesh.setContainsRoot( true );
+
   mesh.onReceive( &receivedCallback );
   mesh.onChangedConnections(&changedConnectionCallback);
 
-  mesh.setRoot( true );
-  mesh.setContainsRoot( true );
   routeID = mesh.getNodeId();
 
   for(uint8_t index=0; index<8; index++){
