@@ -8,7 +8,7 @@
 #define EEPROM_SIZE_CONFIG  24
 #define EEPROM_SIZE_VALUE   2
 #define COMMAND_LENGTH  32
-#define UPDATE_INTERVAL 1000L
+#define UPDATE_INTERVAL 60000L
 
 HardwareSerial nxSerial(2);
 bool    nextion_shift = false;
@@ -291,10 +291,10 @@ void wifi_connect() {
 }
 /******************************************/
 uint32_t total_time(){
-  uint32_t time_min = EEPROM.read(eep_var[0]);
-  uint32_t time_sec = EEPROM.read(eep_var[1]);
-  if(time_sec>=60) time_sec = 59;
-  return (time_min*60) + time_sec;
+  uint32_t time_hour = EEPROM.read(eep_var[0]);
+  uint32_t time_min = EEPROM.read(eep_var[1]);
+  if(time_min>=60) time_min = 59;
+  return (time_hour*60) + time_min;
 }
 /***************Functions******************/
 void setup() {
