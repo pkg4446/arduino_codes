@@ -247,7 +247,7 @@ void loop() {
 }
 
 void httpPOSTRequest(struct dataSet *ptr) {
-  String serverUrl = "http://192.168.1.15:3004/reg/hive/";   //API adress
+  String serverUrl = "http://dev.smarthive.kr/reg/hive/";   //API adress
   HTTPClient http;
   WiFiClient http_client;
   http.begin(http_client, serverUrl);
@@ -270,7 +270,7 @@ void httpPOSTRequest(struct dataSet *ptr) {
   httpRequestData += "\",\"VALUE4\":\"";
   httpRequestData += ptr->VALUE4; 
   httpRequestData += "\"}";
-  
+
   int httpResponseCode = http.POST(httpRequestData);
   Serial.print(httpRequestData);
   Serial.print("HTTP Response code: ");
