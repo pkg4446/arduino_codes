@@ -5,7 +5,6 @@
 #include  <FS.h>
 #include  <SD.h>
 #include  <SPI.h>
-#include  <Adafruit_SHT31.h>
 #include  <DS3231.h>
 
 #define EEPROM_SIZE 7
