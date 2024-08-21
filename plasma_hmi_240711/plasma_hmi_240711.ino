@@ -373,7 +373,7 @@ String httpPOSTRequest(String server_url, String send_data) {
     HTTPClient http;
     http.begin(client, server_url);
     http.addHeader("Content-Type", "application/json");
-    int response_code = http.POST("{\"data\":\""+send_data+"\"");
+    int response_code = http.POST("{\"data\":\""+send_data+"\"}");
     response          = http.getString();
     http.end();
   }

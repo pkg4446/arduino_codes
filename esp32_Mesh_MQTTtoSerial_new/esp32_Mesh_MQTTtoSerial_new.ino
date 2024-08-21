@@ -231,16 +231,25 @@ void httpPOSTRequest(struct dataSet *ptr) {
   WiFiClient http_client;
   http.begin(http_client, serverUrl);
 
-  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-  String httpRequestData = (String)"FARM="  + deviceID     +
-                           "&MODULE="       + ptr->MODULE  +
-                           "&TYPE="         + ptr->TYPE    +
-                           "&COMMEND="      + ptr->COMMEND +
-                           "&VALUE1="       + ptr->VALUE1  +
-                           "&VALUE2="       + ptr->VALUE2  +
-                           "&VALUE3="       + ptr->VALUE3  +
-                           "&VALUE4="       + ptr->VALUE4;
-
+  http.addHeader("Content-Type", "application/json");
+  String httpRequestData = "{\"FARM\":\"";
+  httpRequestData += deviceID;
+  httpRequestData += "\",\"MODULE\":\"";
+  httpRequestData += ptr->MODULE;
+  httpRequestData += "\",\"TYPE\":\"";
+  httpRequestData += ptr->TYPE;
+  httpRequestData += "\",\"COMMEND\":\"";
+  httpRequestData += ptr->COMMEND;
+  httpRequestData += "\",\"VALUE1\":\"";
+  httpRequestData += ptr->VALUE1;
+  httpRequestData += "\",\"VALUE2\":\"";
+  httpRequestData += ptr->VALUE2;
+  httpRequestData += "\",\"VALUE3\":\"";
+  httpRequestData += ptr->VALUE3;
+  httpRequestData += "\",\"VALUE4\":\"";
+  httpRequestData += ptr->VALUE4; 
+  httpRequestData += "\"}";
+  
   int httpResponseCode = http.POST(httpRequestData);
   Serial.print(httpRequestData);
   Serial.print("HTTP Response code: ");
