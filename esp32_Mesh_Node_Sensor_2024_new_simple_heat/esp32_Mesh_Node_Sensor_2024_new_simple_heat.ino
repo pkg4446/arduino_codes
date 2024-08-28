@@ -206,8 +206,8 @@ void receivedCallback( uint32_t from, String &msg ) {
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  Wire.begin();
-  Wire2.begin(SDA2,SCL2,400000);
+  //Wire.begin();
+  //Wire2.begin(SDA2,SCL2,400000);
   //// ------------ PIN OUT ------------
   pinMode(RELAY_HEATER, OUTPUT);
   digitalWrite(RELAY_HEATER,  pin_off);
@@ -330,11 +330,13 @@ void get_sensor(unsigned long millisec) {
         temperature  = sht31_1.readTemperature() * 100;
         humidity    = sht31_1.readHumidity() * 100;
         sensor_conn  = true;
+        sht31_1.reset();
       }else if (sht31_2.begin(0x44)) {
         sht_port = 2;
         temperature  = sht31_2.readTemperature() * 100;
         humidity    = sht31_2.readHumidity() * 100;
         sensor_conn  = true;
+        sht31_2.reset();
       }
     #endif
     if(!sensor_conn){
