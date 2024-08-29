@@ -3,8 +3,6 @@
 #include  <EEPROM.h>
 #include  <Wire.h>
 #include  <FS.h>
-#include  <SD.h>
-#include  <SPI.h>
 
 #define EEPROM_SIZE 4
 #define SERIAL_MAX  128
@@ -13,7 +11,6 @@
 #define MESH_PASSWORD "smarthive123"
 #define MESH_PORT     3333
 
-#define TCAADDR 0x70
 #define SDA2 33
 #define SCL2 32
 TwoWire Wire2 = TwoWire(1);
@@ -206,8 +203,8 @@ void receivedCallback( uint32_t from, String &msg ) {
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  //Wire.begin();
-  //Wire2.begin(SDA2,SCL2,400000);
+  Wire.begin();
+  Wire2.begin(SDA2,SCL2,400000);
   //// ------------ PIN OUT ------------
   pinMode(RELAY_HEATER, OUTPUT);
   digitalWrite(RELAY_HEATER,  pin_off);
@@ -305,7 +302,7 @@ void stable(unsigned long millisec) {
 
 
 void get_sensor(unsigned long millisec) {
-  if ((millisec - timer_SHT) > 300) {
+  if ((millisec - timer_SHT) > 500) {
     timer_SHT = millisec;
     bool sensor_conn = false;
     #ifdef SENSOR_SHT40
@@ -326,16 +323,28 @@ void get_sensor(unsigned long millisec) {
       }
     #else
       if (sht31_1.begin(0x44)) {
+        sensor_conn = true;
         sht_port = 1;
-        temperature  = sht31_1.readTemperature() * 100;
-        humidity    = sht31_1.readHumidity() * 100;
-        sensor_conn  = true;
+        float temp_temperature = sht31_1.readTemperature();
+        if(isnan(temp_temperature)){
+          temperature  = 15060;
+          humidity     = 15060;
+        }else{
+          temperature = temp_temperature * 100;
+          humidity    = sht31_1.readHumidity() * 100;
+        }
         sht31_1.reset();
       }else if (sht31_2.begin(0x44)) {
+        sensor_conn = true;
         sht_port = 2;
-        temperature  = sht31_2.readTemperature() * 100;
-        humidity    = sht31_2.readHumidity() * 100;
-        sensor_conn  = true;
+        float temp_temperature = sht31_2.readTemperature();
+        if(isnan(temp_temperature)){
+          temperature  = 15060;
+          humidity     = 15060;
+        }else{
+          temperature = temp_temperature * 100;
+          humidity    = sht31_2.readHumidity() * 100;
+        }
         sht31_2.reset();
       }
     #endif
