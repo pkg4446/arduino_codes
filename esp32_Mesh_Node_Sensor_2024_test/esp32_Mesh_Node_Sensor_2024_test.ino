@@ -97,9 +97,8 @@ void get_sensor(unsigned long millisec) {
 
 unsigned long timer_serial_monit = 0;
 void serial_monit(unsigned long millisec){
-  if (run_log && ((millisec - timer_serial_monit) > 1000)) {
+  if ((millisec - timer_serial_monit) > 2000) {
     timer_serial_monit = millisec;
-    Serial.println(ERR_Message);
     Serial.print("TCA Port");
     Serial.print(sht_port);
     Serial.print(", T: ");
@@ -107,12 +106,5 @@ void serial_monit(unsigned long millisec){
     Serial.print("°C ,H: ");
     Serial.print(humidity);
     Serial.println("%");
-    mesh.update();
-    Serial.print("USE_heater = ");
-    Serial.println(use_stable_h);
-    Serial.print(", heater");
-    Serial.print(run_heater);
-    Serial.println(";");
-    mesh.update();
   }
 }
