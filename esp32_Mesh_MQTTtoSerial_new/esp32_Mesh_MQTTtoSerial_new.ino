@@ -214,8 +214,8 @@ void reconnect(){
     } else {
       Serial.print("failed with state ");
       Serial.print(mqttClient.state());
-      delay(2000);
-      if(restart_count++ > 240) ESP.restart();
+      delay(1000);
+      if(restart_count++ > 60) ESP.restart();
     }
   }
 }

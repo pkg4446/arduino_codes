@@ -14,6 +14,9 @@ const uint8_t eep_pass[EEPROM_SIZE] = {16,17,18,19,20,21,22,23,24,25,26,27,28,29
 char ssid[EEPROM_SIZE];
 char password[EEPROM_SIZE]; //#234567!
 
+unsigned long timer_restart = 0;
+uint8_t restart_count       = 0;
+
 const char* mqttServer    = "smarthive.kr";
 const int   mqttPort      = 1883;
 const char* mqttUser      = "hive";
@@ -232,7 +235,8 @@ void reconnect(){
       digitalWrite(led_pin[3], false);
       Serial.print("failed with state ");
       Serial.print(mqttClient.state());
-      delay(2000);
+      delay(1000);
+      if(restart_count++ > 60) ESP.restart();
     }
   }
 }
@@ -278,8 +282,6 @@ void httpPOSTRequest(struct dataSet *ptr) {
   http.end();           // Free resources
 }////httpPOSTRequest_End
 
-unsigned long timer_restart = 0;
-uint8_t restart_count       = 0;
 void mesh_restart(unsigned long millisec){
   if(millisec - timer_restart > 1000*60){
     timer_restart = millisec;
