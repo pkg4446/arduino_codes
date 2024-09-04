@@ -21,6 +21,7 @@ PCA9555 ioport(0x20);
 const uint8_t thermoDO[4] = {32,33,26,27};
 const uint8_t thermoCS    = 15;
 const uint8_t thermoCLK   = 14;
+const uint8_t pin_led     = 25;
 
 MAX6675 thermocouple1(thermoCLK, thermoCS, thermoDO[0]);
 MAX6675 thermocouple2(thermoCLK, thermoCS, thermoDO[1]);
@@ -613,6 +614,8 @@ void setup() {
 
   ioport.begin();
   ioport.setClock(400000);
+  pinMode(pin_led, OUTPUT);
+  digitalWrite(pin_led, true);
   for (uint8_t index = 0; index < TOTAL_RELAY; index++)
   {
     ioport.pinMode(index, OUTPUT);
