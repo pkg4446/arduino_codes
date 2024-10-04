@@ -1,3 +1,4 @@
+//// update : 2024.10.04
 #include <EEPROM.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
@@ -8,7 +9,7 @@
 #define EEPROM_SIZE_CONFIG  24
 #define EEPROM_SIZE_VALUE   9
 #define COMMAND_LENGTH  32
-#define UPDATE_INTERVAL 60000L
+#define UPDATE_INTERVAL 1000L
 
 HardwareSerial nxSerial(2);
 bool    nextion_shift = false;
@@ -111,7 +112,6 @@ void WIFI_scan(bool wifi_state){
 void command_service(){
   String cmd_text     = "";
   String temp_text    = "";
-  bool   eep_change   = false;
   uint8_t check_index = 0;
   
   for(uint8_t index_check=0; index_check<COMMAND_LENGTH; index_check++){
@@ -134,6 +134,7 @@ void command_service(){
     Serial.print(cmd_text);
     Serial.print(", ");
     Serial.println(temp_text);
+    Serial.println(byte(temp_text[0]));
   }
 
   if(cmd_text=="manual"){
@@ -157,9 +158,16 @@ void command_service(){
     nextion_page  = temp_text.toInt();
     if(nextion_page == 0){
       nextion_display("wifi",wifi_able,&nxSerial);
-      nextion_display("min",EEPROM.read(eep_var[0]),&nxSerial);
-      nextion_display("sec",EEPROM.read(eep_var[1]),&nxSerial);
       nextion_display("operation",operation,&nxSerial);
+      nextion_display("hr_w",EEPROM.read(eep_var[0]),&nxSerial);
+      nextion_display("mn_w",EEPROM.read(eep_var[1]),&nxSerial);
+      nextion_display("sc_w",EEPROM.read(eep_var[2]),&nxSerial);
+      nextion_display("hr_p",EEPROM.read(eep_var[3]),&nxSerial);
+      nextion_display("mn_p",EEPROM.read(eep_var[4]),&nxSerial);
+      nextion_display("sc_p",EEPROM.read(eep_var[5]),&nxSerial);
+      nextion_display("hr_t",EEPROM.read(eep_var[6]),&nxSerial);
+      nextion_display("mn_t",EEPROM.read(eep_var[7]),&nxSerial);
+      nextion_display("sc_t",EEPROM.read(eep_var[8]),&nxSerial);
     }
   }else if(cmd_text=="send"){
     nextion_print(&nxSerial,temp_text);
@@ -184,39 +192,42 @@ void command_service(){
   }else if(cmd_text=="refresh"){
     httpPOSTRequest("http://plasma.smarthive.kr/plasma/refresh","null");//http post for getting setup data
     nextion_print(&nxSerial,"page 0");
-    nextion_display("hr_w",EEPROM.read(0),&nxSerial);
-    nextion_display("mn_w",EEPROM.read(1),&nxSerial);
-    nextion_display("sc_w",EEPROM.read(2),&nxSerial);
-    nextion_display("hr_p",EEPROM.read(3),&nxSerial);
-    nextion_display("mn_p",EEPROM.read(4),&nxSerial);
-    nextion_display("sc_p",EEPROM.read(5),&nxSerial);
-    nextion_display("hr_t",EEPROM.read(0)+EEPROM.read(3),&nxSerial);
-    nextion_display("mn_t",EEPROM.read(1)+EEPROM.read(4),&nxSerial);
-    nextion_display("sc_t",EEPROM.read(2)+EEPROM.read(5),&nxSerial);
   }else if(cmd_text=="hr_w"){
-    eep_change = true;
-    EEPROM.write(eep_var[0],temp_text.toInt());
+    EEPROM.write(eep_var[0],byte(temp_text[0]));
     nextion_print(&nxSerial,"page 0");
+    EEPROM.commit();
   }else if(cmd_text=="mn_w"){
-    eep_change = true;
-    EEPROM.write(eep_var[1],temp_text.toInt());
+    EEPROM.write(eep_var[1],byte(temp_text[0]));
     nextion_print(&nxSerial,"page 0");
+    EEPROM.commit();
   }else if(cmd_text=="sc_w"){
-    eep_change = true;
-    EEPROM.write(eep_var[2],temp_text.toInt());
+    EEPROM.write(eep_var[2],byte(temp_text[0]));
     nextion_print(&nxSerial,"page 0");
+    EEPROM.commit();
   }else if(cmd_text=="hr_p"){
-    eep_change = true;
-    EEPROM.write(eep_var[3],temp_text.toInt());
+    EEPROM.write(eep_var[3],byte(temp_text[0]));
     nextion_print(&nxSerial,"page 0");
+    EEPROM.commit();
   }else if(cmd_text=="mn_p"){
-    eep_change = true;
-    EEPROM.write(eep_var[4],temp_text.toInt());
+    EEPROM.write(eep_var[4],byte(temp_text[0]));
     nextion_print(&nxSerial,"page 0");
+    EEPROM.commit();
   }else if(cmd_text=="sc_p"){
-    eep_change = true;
-    EEPROM.write(eep_var[5],temp_text.toInt());
+    EEPROM.write(eep_var[5],byte(temp_text[0]));
     nextion_print(&nxSerial,"page 0");
+    EEPROM.commit();
+  }else if(cmd_text=="hr_t"){
+    EEPROM.write(eep_var[6],byte(temp_text[0]));
+    nextion_print(&nxSerial,"page 0");
+    EEPROM.commit();
+  }else if(cmd_text=="mn_t"){
+    EEPROM.write(eep_var[7],byte(temp_text[0]));
+    nextion_print(&nxSerial,"page 0");
+    EEPROM.commit();
+  }else if(cmd_text=="sc_t"){
+    EEPROM.write(eep_var[8],byte(temp_text[0]));
+    nextion_print(&nxSerial,"page 0");
+    EEPROM.commit();
   }
   /*****OFF_LINE_CMD*****/
   else if(uart_type){
@@ -235,7 +246,7 @@ void command_service(){
             EEPROM.write(eep_ssid[index], byte(0x00));
           }
         }
-        eep_change = true;
+        EEPROM.commit();
       }
       if(uart_type) Serial.println("");
     }else if(cmd_text=="pass"){
@@ -253,7 +264,7 @@ void command_service(){
             EEPROM.write(eep_pass[index], byte(0x00));
           }
         }
-        eep_change = true;
+        EEPROM.commit();
       }
       if(uart_type) Serial.println("");
     }else if(cmd_text=="wifi"){
@@ -272,9 +283,6 @@ void command_service(){
   }
   /*****OFF_LINE_CMD*****/
   else{ serial_err_msg(&Serial, command_buf); }
-  if(eep_change){
-    EEPROM.commit();
-  }
 }
 void command_process(char ch, bool type_uart) {
   //uart_type = type_uart;
@@ -379,13 +387,13 @@ void system_ctr(unsigned long millisec){
       totaltime -=1;
       worktotal +=1;
       if(runtime > 1){
-        runtime--;
+        runtime -=1;
         for (uint8_t index = 0; index < TOTAL_RELAY; index++)
         {
           digitalWrite(Relay[index], true);  //plasma run here
         }
       }else if(stptime > 1){
-        stptime--;
+        stptime -=1;
         for (uint8_t index = 0; index < TOTAL_RELAY; index++){
           digitalWrite(Relay[index], false);  //plasma run here
         }
