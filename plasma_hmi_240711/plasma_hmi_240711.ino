@@ -6,7 +6,7 @@
 #define TOTAL_RELAY 6
 //#define TOTAL_RELAY 10
 #define EEPROM_SIZE_CONFIG  24
-#define EEPROM_SIZE_VALUE   2
+#define EEPROM_SIZE_VALUE   9
 #define COMMAND_LENGTH  32
 #define UPDATE_INTERVAL 60000L
 
@@ -17,7 +17,7 @@ bool    uart_type     = false;
 /***************EEPROM*********************/
 const uint8_t eep_ssid[EEPROM_SIZE_CONFIG] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
 const uint8_t eep_pass[EEPROM_SIZE_CONFIG] = {24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47};
-const uint8_t eep_var[EEPROM_SIZE_VALUE]   = {48,49};
+const uint8_t eep_var[EEPROM_SIZE_VALUE]   = {48,49,50,51,52,53,54,55,56};
 /***************EEPROM*********************/
 /***************PIN_CONFIG*****************/
 const int8_t Relay[TOTAL_RELAY] = {12,13,14,15,17,23};
@@ -32,8 +32,10 @@ char      password[EEPROM_SIZE_CONFIG];
 /***************Variable*******************/
 bool      wifi_able = false;
 bool      operation = false;
-uint32_t  countdown = 0;
+uint32_t  totaltime = 0;
 uint32_t  runtime   = 0;
+uint32_t  stptime   = 0;
+uint32_t  worktotal = 0;
 /***************Variable*******************/
 char      command_buf[COMMAND_LENGTH];
 int8_t    command_num;
@@ -162,12 +164,11 @@ void command_service(){
   }else if(cmd_text=="send"){
     nextion_print(&nxSerial,temp_text);
   }else if(cmd_text=="run"){
-    countdown = total_time();
+    runtime = cycle_time(0);
+    stptime = cycle_time(3);
+    totaltime = cycle_time(6);
     operation = true;
-    for (uint8_t index = 0; index < TOTAL_RELAY; index++)
-    {
-      digitalWrite(Relay[index], true);  //plasma run here
-    }
+    
     prevUpdateTime = millis();
     nextion_display("operation",operation,&nxSerial);
   }else if(cmd_text=="stop"){
@@ -183,15 +184,38 @@ void command_service(){
   }else if(cmd_text=="refresh"){
     httpPOSTRequest("http://plasma.smarthive.kr/plasma/refresh","null");//http post for getting setup data
     nextion_print(&nxSerial,"page 0");
-    nextion_display("min",EEPROM.read(0),&nxSerial);
-    nextion_display("sec",EEPROM.read(1),&nxSerial);
-  }else if(cmd_text=="minute"){
+    nextion_display("hr_w",EEPROM.read(0),&nxSerial);
+    nextion_display("mn_w",EEPROM.read(1),&nxSerial);
+    nextion_display("sc_w",EEPROM.read(2),&nxSerial);
+    nextion_display("hr_p",EEPROM.read(3),&nxSerial);
+    nextion_display("mn_p",EEPROM.read(4),&nxSerial);
+    nextion_display("sc_p",EEPROM.read(5),&nxSerial);
+    nextion_display("hr_t",EEPROM.read(0)+EEPROM.read(3),&nxSerial);
+    nextion_display("mn_t",EEPROM.read(1)+EEPROM.read(4),&nxSerial);
+    nextion_display("sc_t",EEPROM.read(2)+EEPROM.read(5),&nxSerial);
+  }else if(cmd_text=="hr_w"){
     eep_change = true;
     EEPROM.write(eep_var[0],temp_text.toInt());
     nextion_print(&nxSerial,"page 0");
-  }else if(cmd_text=="seconde"){
+  }else if(cmd_text=="mn_w"){
     eep_change = true;
     EEPROM.write(eep_var[1],temp_text.toInt());
+    nextion_print(&nxSerial,"page 0");
+  }else if(cmd_text=="sc_w"){
+    eep_change = true;
+    EEPROM.write(eep_var[2],temp_text.toInt());
+    nextion_print(&nxSerial,"page 0");
+  }else if(cmd_text=="hr_p"){
+    eep_change = true;
+    EEPROM.write(eep_var[3],temp_text.toInt());
+    nextion_print(&nxSerial,"page 0");
+  }else if(cmd_text=="mn_p"){
+    eep_change = true;
+    EEPROM.write(eep_var[4],temp_text.toInt());
+    nextion_print(&nxSerial,"page 0");
+  }else if(cmd_text=="sc_p"){
+    eep_change = true;
+    EEPROM.write(eep_var[5],temp_text.toInt());
     nextion_print(&nxSerial,"page 0");
   }
   /*****OFF_LINE_CMD*****/
@@ -290,11 +314,13 @@ void wifi_connect() {
   }
 }
 /******************************************/
-uint32_t total_time(){
-  uint32_t time_hour = EEPROM.read(eep_var[0]);
-  uint32_t time_min = EEPROM.read(eep_var[1]);
+uint32_t cycle_time(uint8_t index){
+  uint32_t time_hour = EEPROM.read(eep_var[index]);
+  uint32_t time_min = EEPROM.read(eep_var[index+1]);
+  uint32_t time_sec = EEPROM.read(eep_var[index+2]);
+  if(time_sec>=60) time_sec = 59;
   if(time_min>=60) time_min = 59;
-  return (time_hour*60) + time_min;
+  return (time_hour*60) + (time_min*60) + time_sec;
 }
 /***************Functions******************/
 void setup() {
@@ -349,18 +375,31 @@ void page_change(){
 void system_ctr(unsigned long millisec){
   if(millisec > prevUpdateTime + UPDATE_INTERVAL){
     prevUpdateTime = millisec;
-    if(operation && countdown>0){
-      countdown -=1;
-      runtime   +=1;
-      if(nextion_page == 0) nextion_display("progress",map(runtime, 0, total_time(), 0, 100),&nxSerial);
-    }else if(runtime>0){
+    if(operation && totaltime>0){
+      totaltime -=1;
+      worktotal +=1;
+      if(runtime > 1){
+        runtime--;
+        for (uint8_t index = 0; index < TOTAL_RELAY; index++)
+        {
+          digitalWrite(Relay[index], true);  //plasma run here
+        }
+      }else if(stptime > 1){
+        stptime--;
+        for (uint8_t index = 0; index < TOTAL_RELAY; index++){
+          digitalWrite(Relay[index], false);  //plasma run here
+        }
+      }else{
+        runtime = cycle_time(0);
+        stptime = cycle_time(3);
+      }
+    }else if(worktotal>0){
       operation = false;
-      for (uint8_t index = 0; index < TOTAL_RELAY; index++)
-      {
+      for (uint8_t index = 0; index < TOTAL_RELAY; index++){
         digitalWrite(Relay[index], false);  //plasma run here
       }
-      httpPOSTRequest("http://plasma.smarthive.kr/plasma/runtime",String(runtime));//http post runtime
-      runtime=0;
+      httpPOSTRequest("http://plasma.smarthive.kr/plasma/runtime",String(worktotal));//http post runtime
+      worktotal=0;
       if(nextion_page == 0) nextion_display("operation",operation,&nxSerial);
     }
   } //routine
