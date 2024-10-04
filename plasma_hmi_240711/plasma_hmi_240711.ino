@@ -171,7 +171,7 @@ void command_service(){
     
     prevUpdateTime = millis();
     nextion_display("operation",operation,&nxSerial);
-  }else if(cmd_text=="stop"){
+  }else if(cmd_text=="stp"){
     for (uint8_t index = 0; index < TOTAL_RELAY; index++)
     {
       digitalWrite(Relay[index], false);  //plasma run here
