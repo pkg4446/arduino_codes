@@ -27,7 +27,7 @@ void serial_command_help(HardwareSerial *uart) {
   uart->println("page    * moniter page change");
   uart->println("send    * command send to moniter");
   uart->println("run     * ");
-  uart->println("stop    * ");
+  uart->println("stp     * stop");
   uart->println("memo    * ");
   uart->println("minute  * runtime set");
   uart->println("seconde * runtime set");
