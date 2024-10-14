@@ -406,6 +406,7 @@ void wifi_connect() {
       break;
     }
   }
+  if(wifi_able) Serial.println("WIFI connected");
 }
 ////--------------------- wifi ------------------------////
 ////--------------------- DS3231 ----------------------////
