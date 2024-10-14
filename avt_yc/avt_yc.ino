@@ -122,6 +122,7 @@ void loop()
 {
   const unsigned long millisec = millis();
   if (Serial.available()) command_process(Serial.read());
+  system_control(millisec);
   led_toggle(millisec);
   led_heater(millisec);
 }
