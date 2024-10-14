@@ -131,9 +131,9 @@ void loop()
 void system_control(unsigned long millisec){
   if(millisec > prev_update + SECONDE){
     prev_update = millisec;
+    heater_work = 0;
     if(!manual_mode){
       if(heat_use){
-        heater_work = 0;
         for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
           if(temperature_sensor_tm[index]<temperature_goal[index]-temperature_gap){
             digitalWrite(MOSFET[index], true);
