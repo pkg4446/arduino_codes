@@ -132,6 +132,7 @@ void system_control(unsigned long millisec){
   if(millisec > prev_update + SECONDE){
     prev_update = millisec;
     heater_work = 0;
+    temperature_sensor_read();
     if(!manual_mode){
       if(heat_use){
         for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
