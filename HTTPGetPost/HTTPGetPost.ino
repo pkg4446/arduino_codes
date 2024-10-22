@@ -7,8 +7,8 @@
 unsigned long lastTime   = 0;
 unsigned long timerDelay = 10000;
 
-String SirialNumber = "0000";                         //Device number
-String Server       = "http://smarthive.kr/hive";     //API adress
+String SirialNumber = "0000";                   //Device number
+String Server       = "http://server.kr/";      //API adress
 
 struct dataSet {
   String MESURE_VAL_01;
