@@ -151,7 +151,7 @@ void command_service(){
       EEPROM.commit();
     }else if(temp_text=="farm"){
       if(cmd_value.length() > 0){
-        for (int index = 0; index < EEPROM_SIZE_WIFI; index++) {
+        for (int index = 0; index < EEPROM_SIZE_CODE; index++) {
           if(index < cmd_value.length()){
             Serial.print(cmd_value[index]);
             farm_code[index] = cmd_value[index];
@@ -165,7 +165,7 @@ void command_service(){
       EEPROM.commit();
     }else if(temp_text=="sens"){
       if(cmd_value.length() > 0){
-        for (int index = 0; index < EEPROM_SIZE_WIFI; index++) {
+        for (int index = 0; index < EEPROM_SIZE_CODE; index++) {
           if(index < cmd_value.length()){
             Serial.print(cmd_value[index]);
             sens_code[index] = cmd_value[index];
