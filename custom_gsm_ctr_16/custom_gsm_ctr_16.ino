@@ -58,7 +58,7 @@ enum RelayFunc {
     Wing_A,
     Wing_B
 };
-const String server = "http://192.168.1.15:3002/";
+const String server = "http://gsm.routes.kro.kr/";
 /***************EEPROM*********************/
 const uint8_t eep_ssid[EEPROM_SIZE_CONFIG] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
 const uint8_t eep_pass[EEPROM_SIZE_CONFIG] = {24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47};
