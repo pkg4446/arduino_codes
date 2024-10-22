@@ -354,6 +354,8 @@ String httpPOST_JSON(String server_url, String send_data) {
     http.begin(client, server_url);
     http.addHeader("Content-Type", "application/json");
     int response_code = http.POST(send_data);
+    Serial.print("response_code: ");
+    Serial.println(response_code);
     response          = http.getString();
     http.end();
   }
@@ -378,6 +380,8 @@ String httpPOST_QUERY(String server_url, String send_data) {
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");
     http.addHeader("cache-control", "no-cache");
     int response_code = http.POST("");
+    Serial.print("response_code: ");
+    Serial.println(response_code);
     response          = http.getString();
     http.end();
   }
