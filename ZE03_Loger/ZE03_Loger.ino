@@ -129,7 +129,8 @@ void command_service(){
   }else if(cmd_text=="post"){
     ZE03_sensor_read();
     // httpPOST_JSON(server_main,sensor_json());
-    httpPOST_QUERY(server_lemi,sensor_query());
+    String response = httpPOST_QUERY(server_lemi,sensor_query());
+    Serial.println(response);
     // data post
   }else if(cmd_text=="set"){
     String cmd_value = "";
