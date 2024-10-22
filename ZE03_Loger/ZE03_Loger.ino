@@ -96,6 +96,7 @@ void loop()
   const unsigned long millisec = millis();
   if (Serial.available()) command_process(Serial.read());
   sensor_upload(millisec);
+  ZE03_sensor_read();
 }
 ////--------------------- loop() ----------------------////
 ////--------------------- command ---------------------////
@@ -123,11 +124,9 @@ void command_service(){
   if(cmd_text=="reboot"){
     ESP.restart();
   }else if(cmd_text=="show"){
-    ZE03_sensor_read();
     Serial.print("ZE03 data = ");
     Serial.println(ze03_value);
   }else if(cmd_text=="post"){
-    ZE03_sensor_read();
     // httpPOST_JSON(server_main,sensor_json());
     String response = httpPOST_QUERY(server_lemi,sensor_query());
     Serial.println(response);

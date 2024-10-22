@@ -1,3 +1,4 @@
+//ze03센서 추가
 #include <EEPROM.h>
 #include <Wire.h>
 #include <WiFi.h>
@@ -6,15 +7,21 @@
 #include <DS3231.h>
 #include <max6675.h>
 #include <Adafruit_SHT31.h>
+#include <SoftwareSerial.h>//https://github.com/plerup/espsoftwareserial/
 #include "PCA9555.h"
 #include "uart_print.h"
+
+SoftwareSerial ZE03serial;
+#define ZE03_RX 25
+#define ZE03_TX 26
 
 #define TOTAL_RELAY 16
 #define EEPROM_SIZE_CONFIG  24
 #define EEPROM_SIZE_VALUE   3
 #define EEPROM_SIZE_CTR     16
-#define COMMAND_LENGTH  32
-#define UPDATE_INTERVAL 1000L
+#define COMMAND_LENGTH      32
+#define UPDATE_INTERVAL     1000L
+#define ZE03_CMD_LENGTH     9
 
 PCA9555 ioport(0x20);
 
@@ -100,6 +107,8 @@ typedef struct ctr_var{
     uint8_t stop;
 }ctr_var;
 /***************Variable*******************/
+bool      wifi_able;
+
 bool      relay_state[TOTAL_RELAY] = {false,};
 ctr_var   iot_ctr[EEPROM_SIZE_CTR];
 uint16_t  water_ctr_time[2]   = {0,};
@@ -114,8 +123,10 @@ ctr_var circulate;  // run:동작_분, stop:정지_분
 //2:fan in  state
 //3:fan out state
 */
-//이산화탄소 측정 추가
-bool    wifi_able;
+//ZE03 측정
+uint8_t  ZE03[ZE03_CMD_LENGTH] = {0,};
+uint8_t  ZE03Index = 0;
+uint16_t ze03_value = 0;
 /***************Variable*******************/
 char    command_buf[COMMAND_LENGTH];
 int8_t  command_num;
@@ -611,6 +622,7 @@ void time_set(){
 void setup() {
   Serial.begin(115200);
   nxSerial.begin(115200, SERIAL_8N1, 16, 17);
+  ZE03serial.begin(9600, SWSERIAL_8N1, ZE03_RX, ZE03_TX);
 
   ioport.begin();
   ioport.setClock(400000);
@@ -912,7 +924,8 @@ String sensor_json(){
   response += "\"t_w\":"+String(temp_water)+",";
   response += "\"t_l\":"+String(temp_liquid)+",";
   response += "\"t_a\":"+String(temp_air)+",";
-  response += "\"t_o\":"+String(temp_out)+"}";
+  response += "\"t_o\":"+String(temp_out)+",";
+  response += "\"ze3\":"+String(ze03_value)+"}";
   return response;
 }
 
@@ -937,3 +950,30 @@ String httpPOSTRequest(String server_url, String send_data) {
   }
   return response;
 }////httpPOSTRequest_End
+////--------------------- ZE03 read ------------////
+void ZE03_sensor_read(){
+  if (ZE03serial.available()){
+    uint8_t reciveSensor = ZE03serial.read();
+    if (reciveSensor == 0xFF) {
+      ZE03Index = 0;
+      ZE03[ZE03Index++] = reciveSensor;
+    } else if (ZE03Index >= ZE03_CMD_LENGTH) {
+      ZE03Index = 0;
+    } else {
+      ZE03[ZE03Index++] = reciveSensor;
+      if (ZE03Index == ZE03_CMD_LENGTH-1) {
+        uint8_t checksum = 0;
+        for(uint8_t index = 1; index < ZE03_CMD_LENGTH - 1; index++) {
+            checksum += ZE03[index];
+        }
+        checksum = ~checksum + 1;
+        if(ZE03[ZE03_CMD_LENGTH-1] != checksum){
+          ze03_value = ZE03[2]*256 + ZE03[3];
+        }else{
+          ze03_value = 404;
+        }
+      }
+    }
+  }
+}
+////--------------------- ZE03 read ------------////
