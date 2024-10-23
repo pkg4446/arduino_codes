@@ -651,7 +651,7 @@ void setup() {
     iot_ctr[index].run    = EEPROM.read(eep_var[3*index+1]);
     iot_ctr[index].stop   = EEPROM.read(eep_var[3*index+2]);
   }
-  //sht31.begin(0x44);
+  sht31.begin(0x44);
   wifi_connect();
   serial_command_help(&Serial);
   Serial.println("System online");
@@ -918,13 +918,14 @@ void system_ctr(unsigned long millisec){
   }
 }
 
-
 String sensor_json(){
   String response = "{\"DEVID\":\""+String(deviceID)+"\",";
   response += "\"t_w\":"+String(temp_water)+",";
   response += "\"t_l\":"+String(temp_liquid)+",";
   response += "\"t_a\":"+String(temp_air)+",";
-  response += "\"t_o\":"+String(temp_out)+",";
+  response += "\"t_o\":"+String(temp_out)+",";  
+  response += "\"i_t\":"+String(sht31.readTemperature(),2)+",";  
+  response += "\"i_h\":"+String(sht31.readHumidity(),2)+",";
   response += "\"ze3\":"+String(ze03_value)+"}";
   return response;
 }
