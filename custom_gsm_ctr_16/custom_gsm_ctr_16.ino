@@ -79,8 +79,8 @@ const uint8_t eep_var[EEPROM_SIZE_VALUE*EEPROM_SIZE_CTR] = {48,49,50, 51,52,53, 
 /***************MQTT_CONFIG****************/
 const char*     mqttServer    = "gsm.routes.kro.kr";
 const uint16_t  mqttPort      = 1883;
-const char*     mqttUser      = "gsm";
-const char*     mqttPassword  = "gsmmqtt";
+const char*     mqttUser      = "gsmkr";
+const char*     mqttPassword  = "gsmkrmqtt";
 const char*     topic_pub     = "SHS";
 char            deviceID[18];
 
