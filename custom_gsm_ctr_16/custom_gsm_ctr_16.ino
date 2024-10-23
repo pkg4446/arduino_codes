@@ -77,10 +77,10 @@ const uint8_t eep_var[EEPROM_SIZE_VALUE*EEPROM_SIZE_CTR] = {48,49,50, 51,52,53, 
                                                             93,94,95};
 /***************EEPROM*********************/
 /***************MQTT_CONFIG****************/
-const char*     mqttServer    = "smarthive.kro.kr";
+const char*     mqttServer    = "gsm.routes.kro.kr";
 const uint16_t  mqttPort      = 1883;
-const char*     mqttUser      = "test";
-const char*     mqttPassword  = "test";
+const char*     mqttUser      = "gsm";
+const char*     mqttPassword  = "gsmmqtt";
 const char*     topic_pub     = "SHS";
 char            deviceID[18];
 
