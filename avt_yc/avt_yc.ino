@@ -21,7 +21,7 @@
 #define LED_HEATUSE  2
 #define LED_HEATER   3
 
-const   String server = "http://192.168.1.15:3002/";
+const   String server = "http://192.168.1.15:3001/";
 char    deviceID[18];
 char    command_buf[COMMAND_LENGTH];
 int8_t  command_num;
@@ -534,14 +534,14 @@ void temperature_sensor_read(){
 ////--------------------- sensor data upload ----------////
 String sensor_json(){
   temperature_sensor_read();
-  String response = "{\"DVC\":\""+String(deviceID)+"\",";
+  String response = "{";
   for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
     String sensor_index = String(index);
     response += "\"HM"+sensor_index+"\":"+String(humidity_sensor_ic[index])+",";
     response += "\"IC"+sensor_index+"\":"+String(temperature_sensor_ic[index])+",";
     response += "\"TM"+sensor_index+"\":"+String(temperature_sensor_tm[index])+",";
   }
-  response += "\"key\":\"test\"}";
+  response += "\"DVC\":\""+String(deviceID)+"\"}";
   return response;
 }
 void sensor_upload(unsigned long millisec){
