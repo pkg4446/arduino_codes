@@ -318,7 +318,7 @@ void command_service(){
       config_post += "\"cmd\":\""+String(temp_text)+"\",";
       config_post += "\"type\":\""+String(cmd_select)+"\",";
       config_post += "\"val\":"+String(cmd_value)+"}";
-      httpPOSTRequest(server+"device/config",config_post);
+      String response = httpPOSTRequest(server+"device/config",config_post);
       if(iot_ctr_type<=Lamp_4)        nextion_print(&nxSerial,"page 6"); //LED 페이지
       else if(iot_ctr_type<=Heater_2) nextion_print(&nxSerial,"page 4"); //양액 페이지
       else if(iot_ctr_type<=Heater)   nextion_print(&nxSerial,"page 5");
@@ -920,13 +920,13 @@ void system_ctr(unsigned long millisec){
 
 String sensor_json(){
   String response = "{\"DEVID\":\""+String(deviceID)+"\",";
-  response += "\"t_w\":"+String(temp_water)+",";
-  response += "\"t_l\":"+String(temp_liquid)+",";
-  response += "\"t_a\":"+String(temp_air)+",";
-  response += "\"t_o\":"+String(temp_out)+",";  
-  response += "\"i_t\":"+String(sht31.readTemperature(),2)+",";  
-  response += "\"i_h\":"+String(sht31.readHumidity(),2)+",";
-  response += "\"ze3\":"+String(ze03_value)+"}";
+  response += "\"t_w\":\""+String(temp_water)+"\",";
+  response += "\"t_l\":\""+String(temp_liquid)+"\",";
+  response += "\"t_a\":\""+String(temp_air)+"\",";
+  response += "\"t_o\":\""+String(temp_out)+"\",";  
+  response += "\"i_t\":\""+String(sht31.readTemperature(),2)+"\",";  
+  response += "\"i_h\":\""+String(sht31.readHumidity(),2)+"\",";
+  response += "\"ze3\":\""+String(ze03_value)+"\"}";
   return response;
 }
 
