@@ -26,10 +26,12 @@ char    deviceID[18];
 char    command_buf[COMMAND_LENGTH];
 int8_t  command_num;
 ////--------------------- EEPROM ----------------------////
-const uint8_t eep_use_heat = 0;
-const uint8_t eep_ssid[EEPROM_SIZE_CONFIG] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24};
-const uint8_t eep_pass[EEPROM_SIZE_CONFIG] = {25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48};
-const uint8_t eep_temp[TOTAL_TEMPERATURE_SENSOR] = {49,50,51,52,53};
+const uint8_t eep_use_heat    = 0;
+const uint8_t upload_interval = 1;
+const uint8_t eep_ssid[EEPROM_SIZE_CONFIG] = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25};
+const uint8_t eep_pass[EEPROM_SIZE_CONFIG] = {26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49};
+const uint8_t eep_temp[TOTAL_TEMPERATURE_SENSOR] = {50,51,52,53,54};
+
 char  ssid[EEPROM_SIZE_CONFIG];
 char  password[EEPROM_SIZE_CONFIG];
 ////--------------------- EEPROM ----------------------////
@@ -41,6 +43,7 @@ const uint8_t MOSFET[TOTAL_TEMPERATURE_SENSOR] = {4,25,26,27,32};
 bool  wifi_able     = false;
 bool  manual_mode   = false;
 bool  heat_use      = false;
+bool  upload_period = 5;
 uint8_t heater_work = 0;
 ////--------------------- Flage -----------------------////
 DS3231 RTC_DS3231;
@@ -72,6 +75,8 @@ unsigned long prev_led_heater = 0L;
 unsigned long prev_led_toggle = 0L;
 bool  flage_led_heater = false;
 bool  flage_led_toggle = false;
+
+uint8_t heater_working[TOTAL_TEMPERATURE_SENSOR] = {0,};
 ////--------------------- Interval timer  -------------////
 ////--------------------- setup() ---------------------////
 void setup()
@@ -86,23 +91,39 @@ void setup()
     pinMode(MOSFET[index], OUTPUT);
     digitalWrite(MOSFET[index], false);
   }
-  if (!EEPROM.begin((EEPROM_SIZE_CONFIG*2) + TOTAL_TEMPERATURE_SENSOR + 1)){
+  if (!EEPROM.begin((EEPROM_SIZE_CONFIG*2) + TOTAL_TEMPERATURE_SENSOR + 2)){
     Serial.println("Failed to initialise eeprom");
     Serial.println("Restarting...");
     delay(1000);
     ESP.restart();
   }
-  heat_use = EEPROM.read(eep_use_heat);
+  bool check_init = false;
+  heat_use      = EEPROM.read(eep_use_heat);
+  upload_period = EEPROM.read(upload_interval);
+  if(upload_period > 60){
+    check_init = true;
+    uint init_interval = 5;
+    EEPROM.write(upload_interval, init_interval);
+    upload_period = init_interval;
+  }else if(upload_period == 0){
+    check_init = true;
+    uint init_interval = 1;
+    EEPROM.write(upload_interval, init_interval);
+    upload_period = init_interval;
+  }
+
   for (int index = 0; index < EEPROM_SIZE_CONFIG; index++) {
     ssid[index]     = EEPROM.read(eep_ssid[index]);
     password[index] = EEPROM.read(eep_pass[index]);
   }
-  bool check_init = false;
+
   for (int index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++) {
     temperature_goal[index] = EEPROM.read(eep_temp[index]);
     if(temperature_goal[index] > 50){
-      EEPROM.write(eep_temp[index], 15);
       check_init = true;
+      uint init_goal = 3;
+      EEPROM.write(eep_temp[index], init_goal);
+      temperature_goal[index] = init_goal;
     }
   }
   if(check_init)EEPROM.commit();
@@ -139,6 +160,7 @@ void system_control(unsigned long millisec){
           if(temperature_sensor_tm[index]<temperature_goal[index]-temperature_gap){
             digitalWrite(MOSFET[index], true);
             heater_work += 1;
+            heater_working[index] += 1;
           }else{
             digitalWrite(MOSFET[index], false);
           }
@@ -246,6 +268,11 @@ void command_service(){
       Serial.print(temperature_goal[index]);
       Serial.println(" ℃");
     }
+  }else if(cmd_text=="gap"){
+    uint8_t set_value = temp_text.toInt();
+    EEPROM.write(upload_interval, set_value);
+    upload_period = set_value;
+    EEPROM.commit();
   }else if(cmd_text=="test"){
     String cmd_value = "";
     for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
@@ -534,21 +561,43 @@ void temperature_sensor_read(){
 ////--------------------- sensor data upload ----------////
 String sensor_json(){
   temperature_sensor_read();
-  String response = "{";
+  String response = "{\"DVC\":\""+String(deviceID)+"\",";
   for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
     String sensor_index = String(index);
     response += "\"HM"+sensor_index+"\":"+String(humidity_sensor_ic[index])+",";
     response += "\"IC"+sensor_index+"\":"+String(temperature_sensor_ic[index])+",";
     response += "\"TM"+sensor_index+"\":"+String(temperature_sensor_tm[index])+",";
+    response += "\"WK"+sensor_index+"\":"+String(heater_working[index])+",";
+    heater_working[index] = 0;
   }
-  response += "\"DVC\":\""+String(deviceID)+"\"}";
+  response += "\"GAP"+"\":"+String(upload_period)+"}";
   return response;
 }
 void sensor_upload(unsigned long millisec){
-  if(wifi_able && (millisec > prev_data_post + SECONDE*60*1)){
-    prev_data_post = millisec;
+  if(wifi_able && (millisec > prev_data_post + SECONDE*60*upload_period)){
+    prev_data_post  = millisec;
     String response = httpPOSTRequest(server+"device/log",sensor_json());
     Serial.println(response);
+    //여기서 설정 변경, //문자 슬라이스 따로 함수로 만들기.
+    uint8_t check_index = 0;
+    String cmd_text = "";
+    for(uint8_t index_check=0; index_check<response.length; index_check++){
+      if(response[index_check] == 0x2C){
+        check_index = index_check+1;
+        break;
+      }
+      cmd_text += command_buf[index_check];
+    }
+    if (cmd_text == "set")
+    {
+      for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
+        if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
+          check_index = index_check+1;
+          break;
+        }
+        cmd_text += command_buf[index_check];
+      }
+    }
   }
 }
 String httpPOSTRequest(String server_url, String send_data) {

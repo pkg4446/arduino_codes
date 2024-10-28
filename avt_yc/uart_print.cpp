@@ -18,6 +18,7 @@ void serial_command_help(HardwareSerial *uart) {
   uart->println("   off  *");
   uart->println("set     * temperature goal setup, 0~4,5 is all . ex) set 0 25");
   uart->println("config  * read temperature setup");
+  uart->println("gap     * set upload interval");
   uart->println("test    *");
   uart->println("   mode * MOSFET manual mode");
   uart->println("   on   * test on  0~4,5 is all");
