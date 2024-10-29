@@ -40,11 +40,11 @@ const uint8_t LED[TOTAL_LED] = {13,14,16,17};
 const uint8_t MOSFET[TOTAL_TEMPERATURE_SENSOR] = {4,25,26,27,32};
 ////--------------------- Pin out ---------------------////
 ////--------------------- Flage -----------------------////
-bool  wifi_able     = false;
-bool  manual_mode   = false;
-bool  heat_use      = false;
-bool  upload_period = 5;
-uint8_t heater_work = 0;
+bool    wifi_able     = false;
+bool    manual_mode   = false;
+bool    heat_use      = false;
+uint8_t upload_period = 5;
+uint8_t heater_work   = 0;
 ////--------------------- Flage -----------------------////
 DS3231 RTC_DS3231;
 ////--------------------- temperature sensor ----------////
@@ -179,8 +179,8 @@ void system_control(unsigned long millisec){
 void command_service(){
   bool    eep_change  = false;
   uint8_t check_index = 0;
-  String cmd_text  = String_slice(&check_index, command_buf);
-  String temp_text = String_slice(&check_index, command_buf);
+  String cmd_text  = String_slice(&check_index, command_buf, 0x20);
+  String temp_text = String_slice(&check_index, command_buf, 0x20);
   ////cmd start
   if(cmd_text=="reboot"){
     ESP.restart();
@@ -210,7 +210,7 @@ void command_service(){
     EEPROM.commit();
   }else if(cmd_text=="set"){
     uint8_t set_index = temp_text.toInt();
-    uint8_t set_value = String_slice(&check_index, command_buf).toInt();
+    uint8_t set_value = String_slice(&check_index, command_buf, 0x20).toInt();
     if(set_index < TOTAL_TEMPERATURE_SENSOR){
       if(50 > set_value && set_value > 0){
         EEPROM.write(eep_temp[set_index], set_value);
@@ -257,7 +257,7 @@ void command_service(){
     Serial.print("upload interval ");
     Serial.println(upload_period);
   }else if(cmd_text=="test"){
-    uint8_t set_value = String_slice(&check_index, command_buf).toInt();
+    uint8_t set_value = String_slice(&check_index, command_buf, 0x20).toInt();
     if(temp_text=="mode"){
       manual_mode = true;
       Serial.println("Manual mode ON");
@@ -508,7 +508,7 @@ void time_set(){
     RTC_DS3231.setMinute(time_time[1]);
     RTC_DS3231.setSecond(time_time[2]);
   }else{
-    Serial.println("   err");
+    Serial.println("err");
   }
   http.end(); // Free resources
 }
@@ -571,14 +571,39 @@ void upload_loop(unsigned long millisec){
 }
 void sensor_upload(){
   String response = httpPOSTRequest(server+"device/log",sensor_json());
-  Serial.println(response);
   //여기서 설정 변경
   uint8_t check_index = 0;
-  String cmd_text = String_slice(&check_index,response);
-  Serial.println(cmd_text);
-  if (cmd_text == "set")
-  {
-    Serial.println("setting");
+  String cmd_text = String_slice(&check_index,response, 0x2C);
+  if (cmd_text == "set"){
+    uint8_t set_value = 0;
+    bool change_flage = false;
+    for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
+      set_value = String_slice(&check_index,response, 0x2C).toInt();
+      if(temperature_goal[index] != set_value){
+        Serial.println(" O");
+        EEPROM.write(eep_temp[index], set_value);
+        temperature_goal[index] = set_value;
+        change_flage = true;
+      }
+    }
+    set_value = String_slice(&check_index,response, 0x2C).toInt();
+    if((set_value == 1 && !heat_use)||(set_value == 0 && heat_use)){
+      EEPROM.write(eep_use_heat, set_value);
+      heat_use = set_value;
+      change_flage = true;
+    }
+    if(change_flage){
+      EEPROM.commit();
+      String set_data = "{\"DVC\":\""+String(deviceID)+"\",\"TMP\":[";
+      for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
+        set_data += String(temperature_goal[index]);
+        if(index < TOTAL_TEMPERATURE_SENSOR-1) set_data += ",";
+      }
+      set_data += "],\"RUN\":" + String(heat_use) + "}";
+      response = httpPOSTRequest(server+"device/hive_set",set_data);
+      Serial.println("http:");
+      Serial.println(response);
+    }
   }else{}
 }
 String httpPOSTRequest(String server_url, String send_data) {
@@ -622,10 +647,10 @@ void led_heater(unsigned long millisec){
 }
 ////--------------------- LED_toggle ------------------////
 ////--------------------- String_slice ----------------////
-String String_slice(uint8_t *check_index, String text){
+String String_slice(uint8_t *check_index, String text, char check_char){
   String response = "";
   for(uint8_t index_check=*check_index; index_check<text.length(); index_check++){
-    if(text[index_check] == 0x20 || text[index_check] == 0x00){
+    if(text[index_check] == check_char || text[index_check] == 0x00){
       *check_index = index_check+1;
       break;
     }
