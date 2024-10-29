@@ -254,6 +254,8 @@ void command_service(){
     EEPROM.write(upload_interval, set_value);
     upload_period = set_value;
     EEPROM.commit();
+    Serial.print("upload interval ");
+    Serial.println(upload_period);
   }else if(cmd_text=="test"){
     uint8_t set_value = String_slice(&check_index, command_buf).toInt();
     if(temp_text=="mode"){
@@ -573,6 +575,7 @@ void sensor_upload(){
   //여기서 설정 변경
   uint8_t check_index = 0;
   String cmd_text = String_slice(&check_index,response);
+  Serial.println(cmd_text);
   if (cmd_text == "set")
   {
     Serial.println("setting");

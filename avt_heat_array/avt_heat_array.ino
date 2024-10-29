@@ -26,7 +26,7 @@ const uint8_t TMP112_ADDRESS = 0x48; // TMP112 온도 센서 주소
 byte tcaAddresses[TCA9548A_COUNT] = {0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76}; // 멀티플렉서 주소
 const uint8_t eep_ssid[EEPROM_SIZE_CONFIG] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
 const uint8_t eep_pass[EEPROM_SIZE_CONFIG] = {24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47};
-String http_server_addr = "http://192.168.1.15:3000/device/log";
+String http_server_addr = "http://50.beetopia.kro.kr/device/log";
 String path_savedata    = "/data";
 char  deviceID[18];
 /*********************************************************/
