@@ -23,6 +23,7 @@ void serial_command_help(HardwareSerial *uart) {
   uart->println("   mode * MOSFET manual mode");
   uart->println("   on   * test on  0~4,5 is all");
   uart->println("   off  * test off 0~4,5 is all");
+  uart->println("   data * data to server");
   uart->println("time    * show system time");
   uart->println("timeset * change system time, WIFI require");
   uart->println("ssid    * ex)ssid your ssid");

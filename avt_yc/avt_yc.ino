@@ -144,6 +144,7 @@ void loop()
   const unsigned long millisec = millis();
   if (Serial.available()) command_process(Serial.read());
   system_control(millisec);
+  upload_loop(millisec);
   led_toggle(millisec);
   led_heater(millisec);
 }
@@ -176,25 +177,10 @@ void system_control(unsigned long millisec){
 ////--------------------- system control --------------////
 ////--------------------- command ---------------------////
 void command_service(){
-  String cmd_text     = "";
-  String temp_text    = "";
-  bool   eep_change   = false;
+  bool    eep_change  = false;
   uint8_t check_index = 0;
-  
-  for(uint8_t index_check=0; index_check<COMMAND_LENGTH; index_check++){
-    if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
-      check_index = index_check+1;
-      break;
-    }
-    cmd_text += command_buf[index_check];
-  }
-  for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
-    if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
-      check_index = index_check+1;
-      break;
-    }
-    temp_text += command_buf[index_check];
-  }
+  String cmd_text  = String_slice(&check_index, command_buf);
+  String temp_text = String_slice(&check_index, command_buf);
   ////cmd start
   if(cmd_text=="reboot"){
     ESP.restart();
@@ -224,15 +210,7 @@ void command_service(){
     EEPROM.commit();
   }else if(cmd_text=="set"){
     uint8_t set_index = temp_text.toInt();
-    String cmd_value = "";
-    for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
-      if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
-        check_index = index_check+1;
-        break;
-      }
-      cmd_value += command_buf[index_check];
-    }
-    uint8_t set_value = cmd_value.toInt();
+    uint8_t set_value = String_slice(&check_index, command_buf).toInt();
     if(set_index < TOTAL_TEMPERATURE_SENSOR){
       if(50 > set_value && set_value > 0){
         EEPROM.write(eep_temp[set_index], set_value);
@@ -257,6 +235,9 @@ void command_service(){
       Serial.println("set index error");
     }
   }else if(cmd_text=="config"){
+    Serial.print("upload interval : ");
+    Serial.print(upload_period);
+    Serial.println(" Min");
     Serial.print("homeothermy mode : ");
     if(heat_use) Serial.println("ON");
     else Serial.println("OFF");
@@ -274,15 +255,7 @@ void command_service(){
     upload_period = set_value;
     EEPROM.commit();
   }else if(cmd_text=="test"){
-    String cmd_value = "";
-    for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
-      if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
-        check_index = index_check+1;
-        break;
-      }
-      cmd_value += command_buf[index_check];
-    }
-    uint8_t set_value = cmd_value.toInt();
+    uint8_t set_value = String_slice(&check_index, command_buf).toInt();
     if(temp_text=="mode"){
       manual_mode = true;
       Serial.println("Manual mode ON");
@@ -302,6 +275,8 @@ void command_service(){
           digitalWrite(MOSFET[index], false);
         }
       }
+    }else if(temp_text=="data"){
+      sensor_upload();
     }else{
       manual_mode = false;
       Serial.println("Manual mode OFF");
@@ -561,44 +536,47 @@ void temperature_sensor_read(){
 ////--------------------- sensor data upload ----------////
 String sensor_json(){
   temperature_sensor_read();
-  String response = "{\"DVC\":\""+String(deviceID)+"\",";
+
+  const uint8_t post_menu = 4;
+  String res_array[post_menu] = {"\"HM\":[","\"IC\":[","\"TM\":[","\"WK\":["};
+
   for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
-    String sensor_index = String(index);
-    response += "\"HM"+sensor_index+"\":"+String(humidity_sensor_ic[index])+",";
-    response += "\"IC"+sensor_index+"\":"+String(temperature_sensor_ic[index])+",";
-    response += "\"TM"+sensor_index+"\":"+String(temperature_sensor_tm[index])+",";
-    response += "\"WK"+sensor_index+"\":"+String(heater_working[index])+",";
+    res_array[0] += "\""+String(humidity_sensor_ic[index])+"\"";
+    res_array[1] += "\""+String(temperature_sensor_ic[index])+"\"";
+    res_array[2] += "\""+String(temperature_sensor_tm[index])+"\"";
+    res_array[3] += String(heater_working[index]);
+    if(index < TOTAL_TEMPERATURE_SENSOR-1){
+      for (uint8_t menu_index = 0; menu_index < post_menu; menu_index++){
+        res_array[menu_index] += ",";
+      }
+    }
     heater_working[index] = 0;
   }
-  response += "\"GAP"+"\":"+String(upload_period)+"}";
+  for (uint8_t menu_index = 0; menu_index < post_menu; menu_index++){
+    res_array[menu_index] += "]";
+  }
+  
+  String response = "{\"DVC\":\""+String(deviceID)+"\","+
+    res_array[0] + "," + res_array[1] + "," + res_array[2] + "," + res_array[3] + "," +
+    "\"GAP"+"\":"+String(upload_period)+"}";
   return response;
 }
-void sensor_upload(unsigned long millisec){
+void upload_loop(unsigned long millisec){
   if(wifi_able && (millisec > prev_data_post + SECONDE*60*upload_period)){
     prev_data_post  = millisec;
-    String response = httpPOSTRequest(server+"device/log",sensor_json());
-    Serial.println(response);
-    //여기서 설정 변경, //문자 슬라이스 따로 함수로 만들기.
-    uint8_t check_index = 0;
-    String cmd_text = "";
-    for(uint8_t index_check=0; index_check<response.length; index_check++){
-      if(response[index_check] == 0x2C){
-        check_index = index_check+1;
-        break;
-      }
-      cmd_text += command_buf[index_check];
-    }
-    if (cmd_text == "set")
-    {
-      for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
-        if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
-          check_index = index_check+1;
-          break;
-        }
-        cmd_text += command_buf[index_check];
-      }
-    }
+    sensor_upload();
   }
+}
+void sensor_upload(){
+  String response = httpPOSTRequest(server+"device/log",sensor_json());
+  Serial.println(response);
+  //여기서 설정 변경
+  uint8_t check_index = 0;
+  String cmd_text = String_slice(&check_index,response);
+  if (cmd_text == "set")
+  {
+    Serial.println("setting");
+  }else{}
 }
 String httpPOSTRequest(String server_url, String send_data) {
   String response = "";
@@ -640,3 +618,16 @@ void led_heater(unsigned long millisec){
   }
 }
 ////--------------------- LED_toggle ------------------////
+////--------------------- String_slice ----------------////
+String String_slice(uint8_t *check_index, String text){
+  String response = "";
+  for(uint8_t index_check=*check_index; index_check<text.length(); index_check++){
+    if(text[index_check] == 0x20 || text[index_check] == 0x00){
+      *check_index = index_check+1;
+      break;
+    }
+    response += text[index_check];
+  }
+  return response;
+}
+////--------------------- String_slice ----------------////
