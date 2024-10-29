@@ -104,7 +104,7 @@ String sensor_json(){
         sensor_temperature += temperatures[index][average];
       }
       sensor_temperature /= MOVING_AVERAGE;
-      if (sensor_temperature == 9999) response += "NULL";
+      if (sensor_temperature == 9999) response += "-404";
       else response += String(sensor_temperature);
       if(col<9) response += ",";
     }
