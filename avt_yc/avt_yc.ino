@@ -51,7 +51,7 @@ DS3231 RTC_DS3231;
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
 const uint8_t thermoCS    = 5;
 const uint8_t thermoCLK   = 18;
-const uint8_t thermoDO[TOTAL_TEMPERATURE_SENSOR] = {33,34,35,36,39};
+const uint8_t thermoDO[TOTAL_TEMPERATURE_SENSOR] = {33,35,34,39,36};
 float temperature_sensor_tm[TOTAL_TEMPERATURE_SENSOR] = {0.00f,};
 float temperature_sensor_ic[TOTAL_TEMPERATURE_SENSOR] = {0.00f,};
 float humidity_sensor_ic[TOTAL_TEMPERATURE_SENSOR]    = {0.00f,};
