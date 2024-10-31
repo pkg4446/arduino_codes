@@ -21,7 +21,7 @@
 #define LED_HEATUSE  2
 #define LED_HEATER   3
 
-const   String server = "https://yc.beetopia.kro.kr/";
+const   String server = "http://yc.beetopia.kro.kr/";
 char    deviceID[18];
 char    command_buf[COMMAND_LENGTH];
 int8_t  command_num;
