@@ -199,24 +199,31 @@ void command_service(){
       Serial.println("℃");
     }
   }else if(cmd_text=="run"){
-    if(temp_text=="on"){
+    bool change_flage = false;
+    if(temp_text=="on" && heat_use){
       EEPROM.write(eep_use_heat, true);
       heat_use = true;
-    }else{
+      change_flage = true;
+    }else if(!heat_use){
       EEPROM.write(eep_use_heat, false);
       heat_use = false;
+      change_flage = true;
+    }
+    if(change_flage){
+      EEPROM.commit();
+      config_upload();
     }
     Serial.println(command_buf);
-    EEPROM.commit();
   }else if(cmd_text=="set"){
     uint8_t set_index = temp_text.toInt();
     uint8_t set_value = String_slice(&check_index, command_buf, 0x20).toInt();
+    bool change_flage = false;
     if(set_index < TOTAL_TEMPERATURE_SENSOR){
       if(50 > set_value && set_value > 0){
         EEPROM.write(eep_temp[set_index], set_value);
         temperature_goal[set_index] = set_value;
         Serial.println(command_buf);
-        EEPROM.commit();
+        change_flage = true;
       }else{
         Serial.println("set value error");
       }
@@ -227,12 +234,16 @@ void command_service(){
           temperature_goal[index] = set_value;
         }
         Serial.println(command_buf);
-        EEPROM.commit();
+        change_flage = true;
       }else{
         Serial.println("set value error");
       }
     }else{
       Serial.println("set index error");
+    }
+    if(change_flage){
+      EEPROM.commit();
+      config_upload();
     }
   }else if(cmd_text=="config"){
     Serial.print("upload interval : ");
@@ -594,17 +605,20 @@ void sensor_upload(){
     }
     if(change_flage){
       EEPROM.commit();
-      String set_data = "{\"DVC\":\""+String(deviceID)+"\",\"TMP\":[";
-      for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
-        set_data += String(temperature_goal[index]);
-        if(index < TOTAL_TEMPERATURE_SENSOR-1) set_data += ",";
-      }
-      set_data += "],\"RUN\":" + String(heat_use) + "}";
-      response = httpPOSTRequest(server+"device/hive_set",set_data);
-      Serial.println("http:");
-      Serial.println(response);
+      config_upload();
     }
   }else{}
+}
+void config_upload(){
+  String set_data = "{\"DVC\":\""+String(deviceID)+"\",\"TMP\":[";
+  for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
+    set_data += String(temperature_goal[index]);
+    if(index < TOTAL_TEMPERATURE_SENSOR-1) set_data += ",";
+  }
+  set_data += "],\"RUN\":" + String(heat_use) + "}";
+  String response = httpPOSTRequest(server+"device/hive_set",set_data);
+  Serial.println("http:");
+  Serial.println(response);
 }
 String httpPOSTRequest(String server_url, String send_data) {
   String response = "";
