@@ -11,8 +11,8 @@
 HardwareSerial rootDvice(2);
 painlessMesh   mesh;
 
-const uint8_t led_pin[8] = {12,13,14,16,17,25,26,27};
-const uint8_t led_sw[2]  = {32,33};
+const uint8_t led_pin[8] = {12,13,14,27,17,25,26,16}; //A,B,C,D,E,F,G,DP
+const uint8_t led_sw[2]  = {18,19};
 const uint8_t relay[2]   = {4,22};
 uint8_t segment_number   = 0;
 bool segment_state[SEGMENT]    = {true,true,true,true,true,true,true,true};
