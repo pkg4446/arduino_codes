@@ -44,7 +44,7 @@ bool    wifi_able     = false;
 bool    manual_mode   = false;
 bool    heat_use      = false;
 uint8_t upload_period = 5;
-uint8_t heater_work   = 0;
+uint8_t heater_worker = 0;
 ////--------------------- Flage -----------------------////
 DS3231 RTC_DS3231;
 ////--------------------- temperature sensor ----------////
@@ -76,7 +76,8 @@ unsigned long prev_led_toggle = 0L;
 bool  flage_led_heater = false;
 bool  flage_led_toggle = false;
 
-uint8_t heater_working[TOTAL_TEMPERATURE_SENSOR] = {0,};
+uint16_t working_total = 0;
+uint16_t heater_working[TOTAL_TEMPERATURE_SENSOR] = {0,};
 ////--------------------- Interval timer  -------------////
 ////--------------------- setup() ---------------------////
 void setup()
@@ -152,15 +153,16 @@ void loop()
 ////--------------------- system control --------------////
 void system_control(unsigned long millisec){
   if(millisec > prev_update + SECONDE){
-    prev_update = millisec;
-    heater_work = 0;
+    prev_update   = millisec;
+    heater_worker = 0;
+    working_total += 1;
     temperature_sensor_read();
     if(!manual_mode){
       if(heat_use){
         for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
           if(temperature_sensor_tm[index]<temperature_goal[index]-temperature_gap){
             digitalWrite(MOSFET[index], true);
-            heater_work += 1;
+            heater_worker += 1;
             heater_working[index] += 1;
           }else{
             digitalWrite(MOSFET[index], false);
@@ -571,7 +573,8 @@ String sensor_json(){
   
   String response = "{\"DVC\":\""+String(deviceID)+"\","+
     res_array[0] + "," + res_array[1] + "," + res_array[2] + "," + res_array[3] + "," +
-    "\"GAP"+"\":"+String(upload_period)+"}";
+    "\"GAP"+"\":"+String(working_total)+"}";
+  working_total = 0;
   return response;
 }
 void upload_loop(unsigned long millisec){
@@ -650,11 +653,11 @@ void led_toggle(unsigned long millisec){
   }
 }
 void led_heater(unsigned long millisec){
-  if(heater_work>0 && millisec > prev_led_heater + SECONDE){
+  if(heater_worker>0 && millisec > prev_led_heater + SECONDE){
     prev_led_heater  = millisec;
     flage_led_heater = true;
     digitalWrite(LED[LED_HEATER], true);
-  }else if(flage_led_heater && millisec > prev_led_heater + heater_work*200){
+  }else if(flage_led_heater && millisec > prev_led_heater + heater_worker*200){
     flage_led_heater = false;
     digitalWrite(LED[LED_HEATER], false);
   }
