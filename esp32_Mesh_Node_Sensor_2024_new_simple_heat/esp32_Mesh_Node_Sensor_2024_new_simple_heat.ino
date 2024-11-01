@@ -294,6 +294,7 @@ void stable(unsigned long millisec) {
           }
         }
       }else{//온도 조절 종료
+        temp_flage(false);
         digitalWrite(RELAY_HEATER, pin_off);
       }
     }
