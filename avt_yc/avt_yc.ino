@@ -136,7 +136,8 @@ void setup()
       deviceID[index] = WiFi.macAddress()[index];
     }
   }
-  Serial.println("System online");
+  Serial.print("System online, mac:");
+  Serial.println(deviceID);
 }
 ////--------------------- setup() ---------------------////
 ////--------------------- loop() ----------------------////
