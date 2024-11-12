@@ -203,11 +203,11 @@ void command_service(){
     }
   }else if(cmd_text=="run"){
     bool change_flage = false;
-    if(temp_text=="on" && heat_use){
+    if(temp_text=="on" && !heat_use){
       EEPROM.write(eep_use_heat, true);
       heat_use = true;
       change_flage = true;
-    }else if(!heat_use){
+    }else if(heat_use){
       EEPROM.write(eep_use_heat, false);
       heat_use = false;
       change_flage = true;
