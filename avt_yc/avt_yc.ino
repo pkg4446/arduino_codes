@@ -161,13 +161,12 @@ void system_control(unsigned long millisec){
     temperature_sensor_read();
     if(!manual_mode){
       for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
-        if(heat_use) heater_state[index] = temperature_sensor_tm[index]<temperature_goal[index]-temperature_gap;
-        else heater_state[index] = false;
-        digitalWrite(MOSFET[index], heater_state[index]);
-        if(heater_state[index]){
+        if(heat_use && temperature_sensor_tm[index]<temperature_goal[index]-temperature_gap){
+          heater_state[index] = true;
           heater_worker += 1;
           heater_working[index] += 1;
-        }
+        }else heater_state[index] = false;
+        digitalWrite(MOSFET[index], heater_state[index]);
       }
     }//if not manual mode
   }
