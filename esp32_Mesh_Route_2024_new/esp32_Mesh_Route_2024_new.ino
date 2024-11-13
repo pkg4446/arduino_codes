@@ -114,10 +114,21 @@ void mesh_node_list(){
 
 // Needed for painless library
 void receivedCallback( uint32_t from, String &msg ) {
-  rootDvice.print( String(from) + "=" + msg.c_str());
-  Serial.println( String(from) + "=" + msg.c_str());
-  String res = "S=" + String(from) + "=AT+RES=1;";
-  mesh.sendBroadcast(res);  
+  char msg_buf[SERIAL_MAX];
+  for (int index = 0; index < msg.length(); index++) {
+    msg_buf[index] = msg[index];
+  }
+  String devicd_id = strtok(msg_buf, "=");
+  if(devicd_id == String(from)){
+    rootDvice.print(msg.c_str());
+    Serial.println(msg.c_str());
+    String res = "S=" + String(from) + "=AT+RES=1;";
+    mesh.sendBroadcast(res);
+  }else{
+    Serial.print(devicd_id);
+    Serial.print(" != ");
+    Serial.println(from);
+  }
 }
 // Needed for painless library end
 

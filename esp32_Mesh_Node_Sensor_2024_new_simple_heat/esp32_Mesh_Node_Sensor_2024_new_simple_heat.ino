@@ -35,9 +35,9 @@ uint8_t sht_port      = 0;
 
 Scheduler taskScheduler; // to control upload task
 painlessMesh  mesh;
-String ERR_Message = "SENSOR=COMMEND=VALUE1=VALUE2=VALUE3=VALUE4;";
-
 String nodeID = "";
+String ERR_Message = "";
+
 SimpleList<uint32_t> nodes;
 
 const uint8_t tempGap = 1;
@@ -72,11 +72,11 @@ void command_Service(String command, String value) {
   } else if (command == "AT+TEMP") {
     control_temperature = value.toInt();
     EEPROM.write(EEP_temperature, control_temperature);
-    mesh.sendBroadcast("SENSOR=SET=TEMP="+ String(control_temperature) +"=0=0;");
+    mesh.sendBroadcast(nodeID+"=SENSOR=SET=TEMP="+ String(control_temperature) +"=0=0;");
   } else if (command == "AT+HUMI") {
     control_humidity = value.toInt();
     EEPROM.write(EEP_humidity, control_humidity);
-    mesh.sendBroadcast("SENSOR=SET=HUMI="+ String(control_humidity) +"=0=0;");
+    mesh.sendBroadcast(nodeID+"=SENSOR=SET=HUMI="+ String(control_humidity) +"=0=0;");
   } else if (command == "AT+USE") {
     if (value == "true" || value == "1"){
       use_stable_h = 1;
@@ -84,7 +84,7 @@ void command_Service(String command, String value) {
       use_stable_h = 0;
     }
     EEPROM.write(EEP_Stable_h, use_stable_h);
-    mesh.sendBroadcast("SENSOR=SET=USE=1=0=0;");
+    mesh.sendBroadcast(nodeID+"=SENSOR=SET=USE=1=0=0;");
   }
   
   else if (command == "AT+RELAY") {
@@ -174,7 +174,7 @@ void sensor_values(unsigned long millisec){
     time_send = millisec;
     if(mesh_node_list() > 0){
       mesh_info = true;
-      String msg = "SENSOR=LOG=" + (String)temperature + "=" + (String)humidity + ';';
+      String msg = nodeID+"=SENSOR=LOG=" + (String)temperature + "=" + (String)humidity + ';';
       mesh.sendBroadcast( msg );
     }
   }
@@ -195,7 +195,7 @@ void receivedCallback( uint32_t from, String &msg ) {
       String value   = strtok(0x00, ";");
       command_Service(command, value);
     } else if (device == "connecting"){
-      mesh.sendBroadcast("SENSOR=CNT=TRUE=0=0=0;");
+      mesh.sendBroadcast(nodeID+"=SENSOR=CNT=TRUE=0=0=0;");
     }//echo
   }
 }
@@ -211,7 +211,7 @@ void setup() {
   //// ------------ PIN OUT ------------
   if (!EEPROM.begin(EEPROM_SIZE)) Serial.println("failed to initialise EEPROM");
   //// ------------ EEPROM ------------
-  if(EEPROM.read(EEP_temperature) == 255){EEPROM.write(EEP_temperature, 25);EEPROM.commit();}
+  if(EEPROM.read(EEP_temperature) == 255){EEPROM.write(EEP_temperature, 3);EEPROM.commit();}
   if(EEPROM.read(EEP_humidity)    == 255){EEPROM.write(EEP_humidity, 50);EEPROM.commit();}
   if(EEPROM.read(EEP_Stable_h) == 255){EEPROM.write(EEP_Stable_h, 0);EEPROM.commit();}
 
@@ -227,6 +227,7 @@ void setup() {
   mesh.onReceive(&receivedCallback);
   
   nodeID = mesh.getNodeId();
+  ERR_Message = nodeID+"=SENSOR=COMMEND=VALUE1=VALUE2=VALUE3=VALUE4;";
 
   taskScheduler.addTask( sensorLog );
   sensorLog.enable();
@@ -267,11 +268,11 @@ boolean temp_flage(boolean onoff_Heater) {
     run_heater = onoff_Heater;
     if (onoff_Heater) {
       Serial.println("Heater on");
-      mesh.sendBroadcast("SENSOR=RELAY=ON=HEAT=1=1;");
+      mesh.sendBroadcast(nodeID+"=SENSOR=RELAY=ON=HEAT=1=1;");
     }
     else {
       Serial.println("Heater off");
-      mesh.sendBroadcast("SENSOR=RELAY=OFF=HEAT=0=0;");
+      mesh.sendBroadcast(nodeID+"=SENSOR=RELAY=OFF=HEAT=0=0;");
     }
   }
   return true;
