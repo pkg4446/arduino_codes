@@ -43,6 +43,7 @@ const uint8_t MOSFET[TOTAL_TEMPERATURE_SENSOR] = {4,25,26,27,32};
 bool    wifi_able     = false;
 bool    manual_mode   = false;
 bool    heat_use      = false;
+bool    heater_state[TOTAL_TEMPERATURE_SENSOR] = {false,};
 uint8_t upload_period = 5;
 uint8_t heater_worker = 0;
 ////--------------------- Flage -----------------------////
@@ -159,19 +160,13 @@ void system_control(unsigned long millisec){
     working_total += 1;
     temperature_sensor_read();
     if(!manual_mode){
-      if(heat_use){
-        for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
-          if(temperature_sensor_tm[index]<temperature_goal[index]-temperature_gap){
-            digitalWrite(MOSFET[index], true);
-            heater_worker += 1;
-            heater_working[index] += 1;
-          }else{
-            digitalWrite(MOSFET[index], false);
-          }
-        }
-      }else{
-        for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
-          digitalWrite(MOSFET[index], false);
+      for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
+        if(heat_use) heater_state[index] = temperature_sensor_tm[index]<temperature_goal[index]-temperature_gap;
+        else heater_state[index] = false;
+        digitalWrite(MOSFET[index], heater_state[index]);
+        if(heater_state[index]){
+          heater_worker += 1;
+          heater_working[index] += 1;
         }
       }
     }//if not manual mode
@@ -536,7 +531,9 @@ void tcaselect(uint8_t index) {
 }
 void temperature_sensor_read(){
   for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
-    temperature_sensor_tm[index] = thermocouple[index].readCelsius();
+    if(!heater_state[index]) digitalWrite(MOSFET[index], false);
+  }// noise remove for MAX6675
+  for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
     tcaselect(index);
     Wire.beginTransmission(68);
     if (!Wire.endTransmission() && sht31.begin(0x44)) {
@@ -546,8 +543,14 @@ void temperature_sensor_read(){
       temperature_sensor_ic[index] = NAN;
       humidity_sensor_ic[index]    = NAN;
     }
+  }// delay for noise remove
+  for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
+    temperature_sensor_tm[index] = thermocouple[index].readCelsius();
   }
-}
+  for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
+    if(heater_state[index]) digitalWrite(MOSFET[index], true);
+  }
+}// heater recovery
 ////--------------------- temperature read ------------////
 ////--------------------- sensor data upload ----------////
 String sensor_json(){
