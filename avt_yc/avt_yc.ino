@@ -532,6 +532,8 @@ void temperature_sensor_read(){
   for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
     if(heater_state[index]) digitalWrite(MOSFET[index], false);
   }// noise remove for MAX6675
+  const unsigned long wait = millis();
+  while (millis()-wait > 200) {if(Serial.available()) command_process(Serial.read());}
   for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
     tcaselect(index);
     Wire.beginTransmission(68);
@@ -553,8 +555,6 @@ void temperature_sensor_read(){
 ////--------------------- temperature read ------------////
 ////--------------------- sensor data upload ----------////
 String sensor_json(){
-  temperature_sensor_read();
-
   const uint8_t post_menu = 4;
   String res_array[post_menu] = {"\"HM\":[","\"IC\":[","\"TM\":[","\"WK\":["};
 
