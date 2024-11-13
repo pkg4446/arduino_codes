@@ -530,7 +530,7 @@ void tcaselect(uint8_t index) {
 }
 void temperature_sensor_read(){
   for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
-    if(!heater_state[index]) digitalWrite(MOSFET[index], false);
+    if(heater_state[index]) digitalWrite(MOSFET[index], false);
   }// noise remove for MAX6675
   for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
     tcaselect(index);
