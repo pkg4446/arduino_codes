@@ -227,7 +227,8 @@ void setup() {
         Serial.println("---------------------------");
         while (true)
         {
-          if (Serial.available()) Serial_process();
+          if(millis()-update_time > 1000*60*3){ESP.restart();}
+          if(Serial.available()) Serial_process();
         }
         break;
       }

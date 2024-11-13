@@ -209,9 +209,11 @@ void setup() {
         Serial.println("------- wifi change -------");
         Serial.println("    ;AT+WIFI=SSID=PASS;");
         Serial.println("---------------------------");
+        update_time = millis();
         while (true)
         {
-          if (Serial.available()) Serial_process();
+          if(millis()-update_time > 1000*60*3){ESP.restart();}
+          if(Serial.available()) Serial_process();
         }
         break;
       }
