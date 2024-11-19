@@ -246,20 +246,7 @@ void setup() {
     deviceID[i]   = sendID[i + 3];
   }
   
-  char* topic_sub = deviceID;
-  char* sub_ID    = sendID;
-  while (!mqttClient.connected()) {
-    Serial.println("Connecting to MQTT...");
-    if (mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
-      Serial.println("connected");
-      digitalWrite(led_pin[3], true);
-    } else {
-      digitalWrite(led_pin[3], false);
-      Serial.print("failed with state ");
-      Serial.print(mqttClient.state());
-      delay(2000);
-    }
-  }
+  mqtt_connect();
 
   mqttClient.subscribe(topic_sub);
   mqttClient.publish(topic_pub, sub_ID);
@@ -267,10 +254,10 @@ void setup() {
   Serial.print("subscribe: ");
   Serial.print(topic_sub);
   Serial.println(" - MQTT Connected");
-  Serial.println("ver 1.0.0");
+  Serial.println("ver 1.0.1");
 }//End Of Setup()
 
-void reconnect(){
+void mqtt_connect(){
   char* topic_sub = deviceID;
   char* sub_ID    = sendID;
   while (!mqttClient.connected()) {
@@ -278,7 +265,6 @@ void reconnect(){
     if (mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
       Serial.println("connected");
       digitalWrite(led_pin[3], true);
-      ESP.restart();
     } else {
       digitalWrite(led_pin[3], false);
       Serial.print("failed with state ");
@@ -291,7 +277,7 @@ void reconnect(){
 
 void loop() {
   if (mqttClient.connected()){mqttClient.loop();}
-  else{reconnect();}
+  else{mqtt_connect();}
   if (rootDvice.available()) command_Process();//post
   if (Serial.available()) Serial_process();
   unsigned long millisec = millis();
