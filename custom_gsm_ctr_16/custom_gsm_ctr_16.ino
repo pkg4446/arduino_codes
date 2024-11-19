@@ -448,8 +448,7 @@ void mqtt_connect() {
     char* topic_sub = deviceID;
     char* sub_ID    = sendID;
 
-    unsigned long WIFI_wait  = millis();
-    bool mqtt_connected = true;
+    // unsigned long WIFI_wait  = millis();
     // while (!mqttClient.connected()) {
     //   if (millis() > WIFI_wait + 1000) {
     //     WIFI_wait = millis();
@@ -462,7 +461,6 @@ void mqtt_connect() {
     //     } else {
     //       Serial.print("failed with state ");
     //       Serial.println(mqttClient.state());
-    //       mqtt_connected = false;
     //       break;
     //     }
     //   }
@@ -472,12 +470,10 @@ void mqtt_connect() {
         Serial.println("WIFI X");
         return;
       }else if(mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
-      } else {
-        mqtt_connected = false;
-      }
+      } else {}
     }
     Serial.print("MQTT ");
-    if(mqtt_connected){
+    if(mqttClient.connected()){
       mqttClient.subscribe(topic_sub);
       mqttClient.publish(topic_pub, sub_ID);
       Serial.println(sub_ID);
