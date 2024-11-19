@@ -238,26 +238,21 @@ void setup() {
   digitalWrite(led_pin[6], true);
   Serial.println("Connected to the WiFi network");
 
-  mqttClient.setServer(mqttServer, mqttPort);
-  mqttClient.setCallback(callback);
-
   for (int i = 0; i < 17; i++) {
     sendID[i + 3] = WiFi.macAddress()[i];
     deviceID[i]   = sendID[i + 3];
   }
-  
   mqtt_connect();
 
-  mqttClient.subscribe(topic_sub);
-  mqttClient.publish(topic_pub, sub_ID);
-
-  Serial.print("subscribe: ");
-  Serial.print(topic_sub);
-  Serial.println(" - MQTT Connected");
   Serial.println("ver 1.0.1");
 }//End Of Setup()
 
 void mqtt_connect(){
+  mqttClient.disconnect();
+
+  mqttClient.setServer(mqttServer, mqttPort);
+  mqttClient.setCallback(callback);
+
   char* topic_sub = deviceID;
   char* sub_ID    = sendID;
   while (!mqttClient.connected()) {
@@ -273,6 +268,13 @@ void mqtt_connect(){
       if(restart_count++ > 60) ESP.restart();
     }
   }
+
+  mqttClient.subscribe(topic_sub);
+  mqttClient.publish(topic_pub, sub_ID);
+
+  Serial.print("subscribe: ");
+  Serial.print(topic_sub);
+  Serial.println(" - MQTT Connected");
 }
 
 void loop() {

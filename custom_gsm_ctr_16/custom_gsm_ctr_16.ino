@@ -82,6 +82,8 @@ const uint16_t  mqttPort      = 1883;
 const char*     mqttUser      = "gsmkr";
 const char*     mqttPassword  = "gsmkrmqtt";
 const char*     topic_pub     = "SHS";
+
+char            sendID[21]    = "ID=";
 char            deviceID[18];
 
 WiFiClient    mqtt_client;
@@ -443,46 +445,44 @@ void mqtt_connect() {
     mqttClient.setServer(mqttServer, mqttPort);
     mqttClient.setCallback(mqtt_callback);
 
-    char  sendID[21]  = "ID=";
-
-    for (int i = 0; i < 17; i++) {
-      if(WiFi.macAddress()[i]==':'){
-        sendID[i + 3] = '_';
-      }else{
-        sendID[i + 3] = WiFi.macAddress()[i];
-      }
-      deviceID[i]   = sendID[i + 3];
-    }
-
     char* topic_sub = deviceID;
     char* sub_ID    = sendID;
 
     unsigned long WIFI_wait  = millis();
     bool mqtt_connected = true;
-    while (!mqttClient.connected()) {
-      if (millis() > WIFI_wait + 1000) {
-        WIFI_wait = millis();
-        if (!wifi_able){
-          Serial.println("WIFI was not connected");
-          mqttClient.disconnect();
-          return;
-        }else if(mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
-          Serial.println("connected");
-        } else {
-          Serial.print("failed with state ");
-          Serial.print(mqttClient.state());
-          mqtt_connected = false;
-          break;
-        }
+    // while (!mqttClient.connected()) {
+    //   if (millis() > WIFI_wait + 1000) {
+    //     WIFI_wait = millis();
+    //     if (WiFi.status() != WL_CONNECTED){
+    //       Serial.println("WIFI was not connected");
+    //       mqttClient.disconnect();
+    //       return;
+    //     }else if(mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
+    //       Serial.println("connected");
+    //     } else {
+    //       Serial.print("failed with state ");
+    //       Serial.println(mqttClient.state());
+    //       mqtt_connected = false;
+    //       break;
+    //     }
+    //   }
+    // }
+    if(!mqttClient.connected()){
+      if (WiFi.status() != WL_CONNECTED){
+        Serial.println("WIFI X");
+        return;
+      }else if(mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
+      } else {
+        mqtt_connected = false;
       }
     }
-    Serial.print("MQTT Connected ");
+    Serial.print("MQTT ");
     if(mqtt_connected){
       mqttClient.subscribe(topic_sub);
       mqttClient.publish(topic_pub, sub_ID);
       Serial.println(sub_ID);
-    }else{
-      Serial.println("fail");
+    }else{      
+      Serial.println(mqttClient.state());
     }
   }
 }
@@ -643,6 +643,15 @@ void setup() {
   for (int index = 0; index < EEPROM_SIZE_CONFIG; index++) {
     ssid[index]     = EEPROM.read(eep_ssid[index]);
     password[index] = EEPROM.read(eep_pass[index]);
+  }
+
+  for (int index = 0; index < 17; index++) {
+    if(WiFi.macAddress()[index]==':'){
+      sendID[index + 3] = '_';
+    }else{
+      sendID[index + 3] = WiFi.macAddress()[index];
+    }
+    deviceID[index]   = sendID[index + 3];
   }
 
   for (int index = 0; index < EEPROM_SIZE_CTR; index++) {
