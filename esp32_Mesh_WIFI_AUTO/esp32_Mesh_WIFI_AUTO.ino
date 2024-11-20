@@ -157,6 +157,8 @@ void setup() {
   Serial.print("pass: "); Serial.println(password);
   Serial.println("---------------------------");
 
+  Serial.println("ver 1.0.1");
+  
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
@@ -227,7 +229,6 @@ void setup() {
     deviceID[i]   = sendID[i + 3];
   }
   mqtt_connect();
-  Serial.println("ver 1.0.1");
 }//End Of Setup()
 
 void mqtt_connect(){
