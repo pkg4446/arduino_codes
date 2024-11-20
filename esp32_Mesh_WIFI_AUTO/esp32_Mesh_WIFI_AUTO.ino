@@ -226,12 +226,7 @@ void setup() {
     sendID[i + 3] = WiFi.macAddress()[i];
     deviceID[i]   = sendID[i + 3];
   }
-  
   mqtt_connect();
-  
-  Serial.print("subscribe: ");
-  Serial.print(topic_sub);
-  Serial.println(" - MQTT Connected");
   Serial.println("ver 1.0.1");
 }//End Of Setup()
 
@@ -257,6 +252,9 @@ void mqtt_connect(){
   }
   mqttClient.subscribe(topic_sub);
   mqttClient.publish(topic_pub, sub_ID);
+  Serial.print("subscribe: ");
+  Serial.print(topic_sub);
+  Serial.println(" - MQTT Connected");
 }
 
 void loop() {
