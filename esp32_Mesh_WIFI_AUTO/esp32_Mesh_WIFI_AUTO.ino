@@ -243,7 +243,6 @@ void mqtt_connect(){
     Serial.println("Connecting to MQTT...");
     if (mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
       Serial.println("connected");
-      ESP.restart();
     } else {
       Serial.print("failed with state ");
       Serial.print(mqttClient.state());
