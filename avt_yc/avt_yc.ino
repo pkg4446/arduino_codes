@@ -691,7 +691,7 @@ String String_slice(uint8_t *check_index, String text, char check_char){
 ////--------------------- firmware_update -------------////
 void firmware_upadte() {
   if(wifi_able){
-    String serverUrl = "http://192.168.1.2:3002/firmware/device";   //API adress
+    String serverUrl = server + "firmware/device";   //API adress
     WiFiClient client;
     HTTPClient http;
     http.begin(client, serverUrl);
