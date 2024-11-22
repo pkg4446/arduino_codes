@@ -1,5 +1,6 @@
 //// 2024.10.10
 //// http post 로 인터넷 설정 받아오는부분 추가할것.
+#include <Update.h>
 #include <EEPROM.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
@@ -8,6 +9,8 @@
 #include <max6675.h>
 #include <Adafruit_SHT31.h>
 #include "uart_print.h"
+
+String firmwareVersion = "0.0.0";
 
 #define TCAADDR                   0x70
 #define TOTAL_TEMPERATURE_SENSOR  5
@@ -26,11 +29,11 @@ char    deviceID[18];
 char    command_buf[COMMAND_LENGTH];
 int8_t  command_num;
 ////--------------------- EEPROM ----------------------////
-const uint8_t eep_use_heat    = 0;
-const uint8_t upload_interval = 1;
-const uint8_t eep_ssid[EEPROM_SIZE_CONFIG] = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25};
-const uint8_t eep_pass[EEPROM_SIZE_CONFIG] = {26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49};
-const uint8_t eep_temp[TOTAL_TEMPERATURE_SENSOR] = {50,51,52,53,54};
+const uint8_t eep_ssid = 0;
+const uint8_t eep_pass = 24;
+const uint8_t eep_use_heat    = 48;
+const uint8_t upload_interval = 49;
+const uint8_t eep_temp = 50;
 
 char  ssid[EEPROM_SIZE_CONFIG];
 char  password[EEPROM_SIZE_CONFIG];
@@ -85,6 +88,8 @@ void setup()
 {
   Serial.begin(115200);
   Wire.begin();
+  Serial.print("ver:");
+  Serial.println(firmwareVersion);
   for (uint8_t index = 0; index < TOTAL_LED; index++){
     pinMode(LED[index], OUTPUT);
     digitalWrite(LED[index], false);
@@ -115,16 +120,16 @@ void setup()
   }
 
   for (int index = 0; index < EEPROM_SIZE_CONFIG; index++) {
-    ssid[index]     = EEPROM.read(eep_ssid[index]);
-    password[index] = EEPROM.read(eep_pass[index]);
+    ssid[index]     = EEPROM.read(eep_ssid+index);
+    password[index] = EEPROM.read(eep_pass+index);
   }
 
   for (int index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++) {
-    temperature_goal[index] = EEPROM.read(eep_temp[index]);
+    temperature_goal[index] = EEPROM.read(eep_temp+index);
     if(temperature_goal[index] > 50){
       check_init = true;
       uint init_goal = 3;
-      EEPROM.write(eep_temp[index], init_goal);
+      EEPROM.write(eep_temp+index, init_goal);
       temperature_goal[index] = init_goal;
     }
   }
@@ -217,7 +222,7 @@ void command_service(){
     bool change_flage = false;
     if(set_index < TOTAL_TEMPERATURE_SENSOR){
       if(50 > set_value && set_value > 0){
-        EEPROM.write(eep_temp[set_index], set_value);
+        EEPROM.write(eep_temp+set_index, set_value);
         temperature_goal[set_index] = set_value;
         Serial.println(command_buf);
         change_flage = true;
@@ -227,7 +232,7 @@ void command_service(){
     }else if(set_index == TOTAL_TEMPERATURE_SENSOR){
       if(50 > set_value && set_value > 0){
         for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
-          EEPROM.write(eep_temp[index], set_value);
+          EEPROM.write(eep_temp+index, set_value);
           temperature_goal[index] = set_value;
         }
         Serial.println(command_buf);
@@ -305,10 +310,10 @@ void command_service(){
         if(index < temp_text.length()){
           Serial.print(temp_text[index]);
           ssid[index] = temp_text[index];
-          EEPROM.write(eep_ssid[index], byte(temp_text[index]));
+          EEPROM.write(eep_ssid+index, byte(temp_text[index]));
         }else{
           ssid[index] = 0x00;
-          EEPROM.write(eep_ssid[index], byte(0x00));
+          EEPROM.write(eep_ssid+index, byte(0x00));
         }
       }
     }
@@ -323,10 +328,10 @@ void command_service(){
         if(index < temp_text.length()){
           Serial.print(temp_text[index]);
           password[index] = temp_text[index];
-          EEPROM.write(eep_pass[index], byte(temp_text[index]));
+          EEPROM.write(eep_pass+index, byte(temp_text[index]));
         }else{
           password[index] = 0x00;
-          EEPROM.write(eep_pass[index], byte(0x00));
+          EEPROM.write(eep_pass+index, byte(0x00));
         }
       }
     }
@@ -598,7 +603,7 @@ void sensor_upload(){
       set_value = String_slice(&check_index,response, 0x2C).toInt();
       if(temperature_goal[index] != set_value){
         Serial.println(" O");
-        EEPROM.write(eep_temp[index], set_value);
+        EEPROM.write(eep_temp+index, set_value);
         temperature_goal[index] = set_value;
         change_flage = true;
       }
@@ -613,7 +618,9 @@ void sensor_upload(){
       EEPROM.commit();
       config_upload();
     }
-  }else{}
+  }else if(cmd_text == "updt"){
+    firmware_upadte();
+  }
 }
 void config_upload(){
   String set_data = "{\"DVC\":\""+String(deviceID)+"\",\"TMP\":[";
@@ -679,3 +686,94 @@ String String_slice(uint8_t *check_index, String text, char check_char){
   return response;
 }
 ////--------------------- String_slice ----------------////
+////--------------------- firmware_update -------------////
+void firmware_upadte() {
+  if(wifi_able){
+    String serverUrl = "http://192.168.1.2:3002/firmware/device";   //API adress
+    WiFiClient client;
+    HTTPClient http;
+    http.begin(client, serverUrl);
+    // 타임아웃 설정 증가
+    http.setTimeout(30000);  // 30초
+    
+    http.addHeader("Content-Type", "application/json");
+    String httpRequestData = (String)"{\"ver\":\"" + String(firmwareVersion) + "\"}";
+
+    int httpResponseCode = http.POST(httpRequestData);
+
+    if (httpResponseCode == 200) {
+      int contentLength = http.getSize();
+      Serial.printf("Update size: %d\n", contentLength);
+      
+      if (contentLength <= 0) {
+          Serial.println("Invalid content length");
+          http.end();
+          return;
+      }
+      
+      if (!Update.begin(contentLength)) {
+          Serial.printf("Not enough space for update. Required: %d\n", contentLength);
+          http.end();
+          return;
+      }
+      
+      WiFiClient * stream = http.getStreamPtr();
+      
+      // 버퍼 크기 증가 및 타임아웃 처리 추가
+      size_t written = 0;
+      uint8_t buff[2048] = { 0 };
+      int timeout = 0;
+      
+      while (written < contentLength) {
+          delay(1);  // WiFi 스택에 시간 양보
+          
+          size_t available = stream->available();
+          
+          if (available) {
+              size_t toRead = min(available, sizeof(buff));
+              size_t bytesRead = stream->readBytes(buff, toRead);
+              
+              if (bytesRead > 0) {
+                  size_t bytesWritten = Update.write(buff, bytesRead);
+                  if (bytesWritten > 0) {
+                      written += bytesWritten;
+                      timeout = 0;  // 타임아웃 리셋
+                      
+                      // 진행률 표시
+                      float progress = (float)written / contentLength * 100;
+                      Serial.printf("Progress: %.1f%%\n", progress);
+                  }
+              }
+          } else {
+              timeout++;
+              if (timeout > 100) {  // 약 10초 타임아웃
+                  Serial.println("Download timeout");
+                  Update.abort();
+                  break;
+              }
+              delay(100);
+          }
+      }
+      
+      if (written == contentLength) {
+          if (Update.end(true)) {
+              Serial.println("Update Success!");
+              ESP.restart();
+          } else {
+              Serial.printf("Update failed with error: %d\n", Update.getError());
+          }
+      } else {
+          Update.abort();
+          Serial.println("Update failed: incomplete download");
+      }
+  } 
+  else if (httpResponseCode == 204) {
+      Serial.println("No update available");
+  }
+  else {
+      Serial.printf("HTTP error: %d\n", httpResponseCode);
+  }
+
+  http.end();           // Free resources
+  }
+}////httpPOSTRequest_End

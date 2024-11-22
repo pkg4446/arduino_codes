@@ -331,7 +331,7 @@ void httpPOSTRequest() {
         Update.abort();
         Serial.println("Update failed: incomplete download");
     }
-} 
+}
 else if (httpResponseCode == 204) {
     Serial.println("No update available");
 }
