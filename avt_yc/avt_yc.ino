@@ -699,48 +699,37 @@ void firmware_upadte() {
     http.setTimeout(30000);  // 30초
     
     http.addHeader("Content-Type", "application/json");
-    String httpRequestData = (String)"{\"ver\":\"" + String(firmwareVersion) + "\"}";
-
+    String httpRequestData = (String)"{\"DVC\":\""+String(deviceID)+"\",\"ver\":\"" + firmwareVersion + "\"}";
     int httpResponseCode = http.POST(httpRequestData);
-
     if (httpResponseCode == 200) {
       int contentLength = http.getSize();
       Serial.printf("Update size: %d\n", contentLength);
-      
       if (contentLength <= 0) {
           Serial.println("Invalid content length");
           http.end();
           return;
       }
-      
       if (!Update.begin(contentLength)) {
           Serial.printf("Not enough space for update. Required: %d\n", contentLength);
           http.end();
           return;
       }
-      
       WiFiClient * stream = http.getStreamPtr();
-      
       // 버퍼 크기 증가 및 타임아웃 처리 추가
       size_t written = 0;
       uint8_t buff[2048] = { 0 };
       int timeout = 0;
-      
       while (written < contentLength) {
           delay(1);  // WiFi 스택에 시간 양보
-          
           size_t available = stream->available();
-          
           if (available) {
               size_t toRead = min(available, sizeof(buff));
               size_t bytesRead = stream->readBytes(buff, toRead);
-              
               if (bytesRead > 0) {
                   size_t bytesWritten = Update.write(buff, bytesRead);
                   if (bytesWritten > 0) {
                       written += bytesWritten;
                       timeout = 0;  // 타임아웃 리셋
-                      
                       // 진행률 표시
                       float progress = (float)written / contentLength * 100;
                       Serial.printf("Progress: %.1f%%\n", progress);
@@ -756,7 +745,6 @@ void firmware_upadte() {
               delay(100);
           }
       }
-      
       if (written == contentLength) {
           if (Update.end(true)) {
               Serial.println("Update Success!");
@@ -775,7 +763,6 @@ void firmware_upadte() {
   else {
       Serial.printf("HTTP error: %d\n", httpResponseCode);
   }
-
   http.end();           // Free resources
   }
 }////httpPOSTRequest_End
