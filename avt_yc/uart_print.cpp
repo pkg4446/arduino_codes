@@ -31,6 +31,7 @@ void serial_command_help(HardwareSerial *uart) {
   uart->println("wifi    * WIFI connet");
   uart->println("   scan * WIFI scan");
   uart->println("   stop * WIFI disconnet");
+  uart->println("firm    * firmware update");
   uart->println("********************************");
 }
 void serial_wifi_config(HardwareSerial *uart, char *ssid, char *pass){

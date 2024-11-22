@@ -347,6 +347,8 @@ void command_service(){
     }else{
       wifi_connect();
     }
+  }else if(cmd_text=="firm"){
+    firmware_upadte();
   }else{
     serial_command_help(&Serial);
   }
