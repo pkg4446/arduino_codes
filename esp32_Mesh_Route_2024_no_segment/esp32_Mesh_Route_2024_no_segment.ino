@@ -46,13 +46,11 @@ void mesh_node_list(){
   nodes = mesh.getNodeList();
   SimpleList<uint32_t>::iterator node = nodes.begin();
   Serial.print("[");
-  segment_number = 0;
   while (node != nodes.end()) 
   {
     mesh.update();
     Serial.printf("%u,", *node);
     node++;
-    segment_number++;
   }
   Serial.println("]");
 }
