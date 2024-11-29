@@ -96,16 +96,6 @@ void setup() {
 
   routeID = mesh.getNodeId();
 
-  for(uint8_t index=0; index<8; index++){
-    pinMode(led_pin[index], OUTPUT);
-    digitalWrite(led_pin[index], true);
-  }
-  for(uint8_t index=0; index<2; index++){
-    pinMode(led_sw[index], OUTPUT);
-    pinMode(relay[index], OUTPUT);
-    digitalWrite(led_sw[index], true);
-    digitalWrite(relay[index], false);
-  }
   Serial.println("ver 1.1.0");
 }
 
