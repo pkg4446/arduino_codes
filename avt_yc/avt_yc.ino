@@ -1,5 +1,4 @@
-//// 2024.10.10
-//// http post 로 인터넷 설정 받아오는부분 추가할것.
+//// 2024.12.02
 #include <Update.h>
 #include <EEPROM.h>
 #include <WiFi.h>
@@ -10,7 +9,7 @@
 #include <Adafruit_SHT31.h>
 #include "uart_print.h"
 
-String firmwareVersion = "0.0.0";
+String firmwareVersion = "0.0.1";
 
 #define TCAADDR                   0x70
 #define TOTAL_TEMPERATURE_SENSOR  5
@@ -72,17 +71,21 @@ MAX6675 thermocouple[TOTAL_TEMPERATURE_SENSOR] = {
 const uint8_t temperature_gap = 1;
 uint8_t temperature_goal[TOTAL_TEMPERATURE_SENSOR] = {0,};
 ////--------------------- temperature control ---------////
-////--------------------- Interval timer  -------------////
+////--------------------- Interval timer --------------////
 unsigned long prev_update     = 0L;
 unsigned long prev_data_post  = 0L;
 unsigned long prev_led_heater = 0L;
 unsigned long prev_led_toggle = 0L;
+unsigned long prev_reconnect  = 0L;
 bool  flage_led_heater = false;
 bool  flage_led_toggle = false;
 
 uint16_t working_total = 0;
 uint16_t heater_working[TOTAL_TEMPERATURE_SENSOR] = {0,};
-////--------------------- Interval timer  -------------////
+////--------------------- Interval timer --------------////
+////--------------------- Serial command --------------////
+void Serial_command(){ if(Serial.available()) command_process(Serial.read()); }
+////--------------------- Serial command --------------////
 ////--------------------- setup() ---------------------////
 void setup()
 {
@@ -150,16 +153,17 @@ void setup()
 void loop()
 {
   const unsigned long millisec = millis();
-  if (Serial.available()) command_process(Serial.read());
+  Serial_command();
   system_control(millisec);
   upload_loop(millisec);
   led_toggle(millisec);
   led_heater(millisec);
+  wifi_reconnect(millisec);
 }
 ////--------------------- loop() ----------------------////`
 ////--------------------- system control --------------////
 void system_control(unsigned long millisec){
-  if(millisec > prev_update + SECONDE){
+  if(millisec - prev_update > SECONDE){
     prev_update   = millisec;
     heater_worker = 0;
     working_total += 1;
@@ -421,13 +425,20 @@ void wifi_connect() {
   unsigned long wifi_config_update  = millis();
   while (WiFi.status() != WL_CONNECTED) {
     unsigned long update_time = millis();
-    if(update_time - wifi_config_update > 5000){
+    Serial_command();
+    if(update_time - wifi_config_update > SECONDE){
       wifi_able = false;
       Serial.println("WIFI fail");
       break;
     }
   }
   if(wifi_able) Serial.println("WIFI connected");
+}
+////---------------------------------------------------////
+void wifi_reconnect(unsigned long millisec) {
+  if(!wifi_able && millisec - prev_reconnect > SECONDE*60){
+    wifi_connect();
+  }
 }
 ////--------------------- wifi ------------------------////
 ////--------------------- DS3231 ----------------------////
@@ -540,7 +551,7 @@ void temperature_sensor_read(){
     if(heater_state[index]) digitalWrite(MOSFET[index], false);
   }// noise remove for MAX6675
   const unsigned long wait = millis();
-  while (millis()-wait > 200) {if(Serial.available()) command_process(Serial.read());}
+  while (millis()-wait > 200) {Serial_command();}
   for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
     tcaselect(index);
     Wire.beginTransmission(68);
@@ -588,7 +599,7 @@ String sensor_json(){
   return response;
 }
 void upload_loop(unsigned long millisec){
-  if(wifi_able && (millisec > prev_data_post + SECONDE*60*upload_period)){
+  if(wifi_able && (millisec - prev_data_post > SECONDE*60*upload_period)){
     prev_data_post  = millisec;
     sensor_upload();
   }
@@ -651,13 +662,13 @@ String httpPOSTRequest(String server_url, String send_data) {
 ////--------------------- sensor data upload ----------////
 ////--------------------- LED_toggle ------------------////
 void led_toggle(unsigned long millisec){
-  if(millisec > prev_led_toggle + SECONDE){
+  if(millisec - prev_led_toggle > SECONDE){
     prev_led_toggle  = millisec;
     flage_led_toggle = true;
     if(wifi_able)   digitalWrite(LED[LED_INTERNET], true);
     if(manual_mode) digitalWrite(LED[LED_MANUAL], true);
     if(heat_use)    digitalWrite(LED[LED_HEATUSE], true);
-  }else if(flage_led_toggle && millisec > prev_led_toggle + SECONDE - 700){
+  }else if(flage_led_toggle && millisec - prev_led_toggle > SECONDE - 700){
     flage_led_toggle = false;
     for (uint8_t index = 0; index < TOTAL_LED; index++){
       digitalWrite(LED[index], false);
@@ -665,11 +676,11 @@ void led_toggle(unsigned long millisec){
   }
 }
 void led_heater(unsigned long millisec){
-  if(heater_worker>0 && millisec > prev_led_heater + SECONDE){
+  if(heater_worker>0 && millisec - prev_led_heater > SECONDE){
     prev_led_heater  = millisec;
     flage_led_heater = true;
     digitalWrite(LED[LED_HEATER], true);
-  }else if(flage_led_heater && millisec > prev_led_heater + heater_worker*200){
+  }else if(flage_led_heater && millisec - prev_led_heater > heater_worker*200){
     flage_led_heater = false;
     digitalWrite(LED[LED_HEATER], false);
   }
@@ -766,3 +777,12 @@ void firmware_upadte() {
   http.end();           // Free resources
   }
 }////httpPOSTRequest_End
+
+// unsigned long restart_timer = 0;
+// uint8_t restart_count       = 0;
+// void esp_restart(unsigned long millisec){
+//   if(millisec - restart_timer > 1000*60){
+//     restart_timer = millisec;
+//     if(restart_count++ > 240) ESP.restart();
+//   }
+// }
