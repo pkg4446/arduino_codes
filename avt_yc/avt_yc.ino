@@ -437,6 +437,7 @@ void wifi_connect() {
 ////---------------------------------------------------////
 void wifi_reconnect(unsigned long millisec) {
   if(!wifi_able && millisec - prev_reconnect > SECONDE*60){
+    prev_reconnect = millisec;
     wifi_connect();
   }
 }
