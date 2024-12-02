@@ -42,7 +42,6 @@ SimpleList<uint32_t> nodes;
 
 const uint8_t tempGap = 1;
 //// ----------- Flage --------------
-boolean connect_check = false;
 boolean use_stable_h = false;
 boolean run_heater = false;
 boolean run_log    = false;
@@ -258,7 +257,6 @@ void loop() {
   sensor_values(now);
 }
 
-uint8_t err_stable = 0;
 boolean temp_flage(boolean onoff_Heater) {
   if (run_heater == onoff_Heater) {
     return false;
