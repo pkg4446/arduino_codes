@@ -1,4 +1,4 @@
-//// 2024.12.02
+//// 2024.12.04
 #include <Update.h>
 #include <EEPROM.h>
 #include <WiFi.h>
@@ -9,7 +9,7 @@
 #include <Adafruit_SHT31.h>
 #include "uart_print.h"
 
-String firmwareVersion = "0.0.2";
+String firmwareVersion = "0.0.1";
 
 #define TCAADDR                   0x70
 #define TOTAL_TEMPERATURE_SENSOR  5
@@ -171,13 +171,14 @@ void system_control(unsigned long millisec){
     if(!manual_mode){
       for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
         if(heat_use && temperature_sensor_tm[index]<temperature_goal[index]-temperature_gap){
-          if(temperature_sensor_tm[index]<1 && temperature_goal[index]<temperature_sensor_ic[index]){
-            heater_state[index] = false;
-          }else{
-            heater_state[index] = true;
-            heater_worker += 1;
-            heater_working[index] += 1;
-          }
+          // if(temperature_sensor_tm[index]<1 && temperature_goal[index]<temperature_sensor_ic[index]){
+          //   heater_state[index] = false;
+          // }else{
+            
+          // }
+          heater_state[index] = true;
+          heater_worker += 1;
+          heater_working[index] += 1;
         }else heater_state[index] = false;
         digitalWrite(MOSFET[index], heater_state[index]);
       }
