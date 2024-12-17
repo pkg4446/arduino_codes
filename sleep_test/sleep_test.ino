@@ -22,7 +22,7 @@ void setup(){
   unsigned long wifi_config_update  = millis();
   while (WiFi.status() != WL_CONNECTED) {
     unsigned long update_time = millis();
-    if(update_time - wifi_config_update > SECONDE*3){
+    if(update_time - wifi_config_update > SECONDE*5){
       wifi_able = false;
       break;
     }
@@ -32,9 +32,9 @@ void setup(){
 
   while (pin_state){
     digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on (HIGH is the voltage level)
-    delay(500);                      // wait for a second
+    delay(250);                      // wait for a second
     digitalWrite(LED_BUILTIN, LOW);   // turn the LED off by making the voltage LOW
-    delay(500);
+    delay(250);
     pin_state = digitalRead(2);
   }
 
