@@ -28,14 +28,11 @@ void setup(){
     }
   }
 
-  bool pin_state = digitalRead(2);
-
-  while (pin_state){
+  while (digitalRead(2)){
     digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on (HIGH is the voltage level)
     delay(250);                      // wait for a second
     digitalWrite(LED_BUILTIN, LOW);   // turn the LED off by making the voltage LOW
     delay(250);
-    pin_state = digitalRead(2);
   }
 
   if(wifi_able) httpPOSTRequest("http://192.168.1.2:3002/");
