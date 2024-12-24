@@ -218,7 +218,7 @@ void sensor_values(unsigned long millisec){
     time_send = millisec;
     if(mesh_node_list() > 0){
       mesh_info = true;
-      String msg = nodeID+"SENSOR=LOG=" + (String)temperature + "=" + (String)humidity + ';';
+      String msg = nodeID+"=SENSOR=LOG=" + (String)temperature + "=" + (String)humidity + ';';
       mesh.sendBroadcast( msg );
     }
   }
