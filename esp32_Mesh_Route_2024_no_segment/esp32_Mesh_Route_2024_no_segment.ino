@@ -62,7 +62,7 @@ void receivedCallback( uint32_t from, String &msg ) {
     msg_buf[index] = msg[index];
   }
   String devicd_id = strtok(msg_buf, "=");
-  if(devicd_id == String(from)+){
+  if(devicd_id == String(from)){
     rootDvice.print(msg.c_str());
     Serial.println(msg.c_str());
     String res = "S=" + String(from) + "=AT+RES=1;";

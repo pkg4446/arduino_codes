@@ -92,11 +92,11 @@ void command_Service(String command, String value) {
   } else if (command == "AT+TEMP") {
     control_temperature = value.toInt();
     EEPROM.write(EEP_temperature, control_temperature);
-    mesh.sendBroadcast("SENSOR=SET=TEMP="+ String(control_temperature) +"=0=0;");
+    mesh.sendBroadcast(nodeID+"=SENSOR=SET=TEMP="+ String(control_temperature) +"=0=0;");
   } else if (command == "AT+HUMI") {
     control_humidity = value.toInt();
     EEPROM.write(EEP_humidity, control_humidity);
-    mesh.sendBroadcast("SENSOR=SET=HUMI="+ String(control_humidity) +"=0=0;");
+    mesh.sendBroadcast(nodeID+"=SENSOR=SET=HUMI="+ String(control_humidity) +"=0=0;");
   } else if (command == "AT+USE") {
     if (value == "true" || value == "1"){
       use_stable_h = 1;
@@ -107,7 +107,7 @@ void command_Service(String command, String value) {
     }
     EEPROM.write(EEP_Stable_h, use_stable_h);
     EEPROM.write(EEP_Stable_f, use_stable_f);
-    mesh.sendBroadcast("SENSOR=SET=USE=1=0=0;");
+    mesh.sendBroadcast(nodeID+"=SENSOR=SET=USE=1=0=0;");
   } else if (command == "AT+USEH") {
     if (value == "true" || value == "1"){
       use_stable_h = 1;
@@ -115,7 +115,7 @@ void command_Service(String command, String value) {
       use_stable_h = 0;
     }
     EEPROM.write(EEP_Stable_h, use_stable_h);
-    mesh.sendBroadcast("SENSOR=SET=USE=0=1=0;");
+    mesh.sendBroadcast(nodeID+"=SENSOR=SET=USE=0=1=0;");
   } else if (command == "AT+USEF") {
     if (value == "true" || value == "1"){
       use_stable_f = 1;
@@ -123,7 +123,7 @@ void command_Service(String command, String value) {
       use_stable_f = 0; 
     }
     EEPROM.write(EEP_Stable_f, use_stable_f);
-    mesh.sendBroadcast("SENSOR=SET=USE=0=0=1;");
+    mesh.sendBroadcast(nodeID+"=SENSOR=SET=USE=0=0=1;");
   }
   
   else if (command == "AT+RELAY") {
@@ -239,7 +239,7 @@ void receivedCallback( uint32_t from, String &msg ) {
       String value   = strtok(0x00, ";");
       command_Service(command, value);
     } else if (device == "connecting"){
-      mesh.sendBroadcast("SENSOR=CNT=TRUE=0=0=0;");
+      mesh.sendBroadcast(nodeID+"=SENSOR=CNT=TRUE=0=0=0;");
     }//echo
   }
 }
@@ -322,22 +322,22 @@ boolean temp_flage(boolean onoff_Heater, boolean onoff_Fan) {
     run_heater = onoff_Heater;
     if (onoff_Heater) {
       Serial.println("Heater on");
-      mesh.sendBroadcast("SENSOR=RELAY=ON=HEAT=1=1;");
+      mesh.sendBroadcast(nodeID+"=SENSOR=RELAY=ON=HEAT=1=1;");
     }
     else {
       Serial.println("Heater off");
-      mesh.sendBroadcast("SENSOR=RELAY=OFF=HEAT=0=0;");
+      mesh.sendBroadcast(nodeID+"=SENSOR=RELAY=OFF=HEAT=0=0;");
     }
   }
   if (run_fan != onoff_Fan) {
     run_fan = onoff_Fan;
     if (onoff_Fan) {
       Serial.println("Fan on");
-      mesh.sendBroadcast("SENSOR=RELAY=ON=FAN=1=1;");
+      mesh.sendBroadcast(nodeID+"=SENSOR=RELAY=ON=FAN=1=1;");
     }
     else {
       Serial.println("Fan off");
-      mesh.sendBroadcast("SENSOR=RELAY=OFF=FAN=0=0;");
+      mesh.sendBroadcast(nodeID+"=SENSOR=RELAY=OFF=FAN=0=0;");
     }
   }
   return true;
