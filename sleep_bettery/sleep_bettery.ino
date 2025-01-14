@@ -46,7 +46,6 @@ void setup(){
   if (!EEPROM.begin((EEPROM_SIZE_CONFIG*2))){
     Serial.println("Failed to initialise eeprom");
     Serial.println("Restarting...");
-    delay(1000);
     ESP.restart();
   }
 
@@ -66,6 +65,7 @@ void setup(){
       }
     }
     httpPOSTRequest(server);
+    WiFi.disconnect(true);
   }
   // 타이머 wake-up 설정
   esp_sleep_enable_timer_wakeup(interval * uS_TO_S_FACTOR);
@@ -81,7 +81,7 @@ String send_data(){
   httpRequestData += "\"count\":"+String(bootCount)+"";
   httpRequestData += ",\"sht31\":[\"";
   if(sht31.begin(0x44)) httpRequestData += String(sht31.readTemperature())+"\",\""+String(sht31.readHumidity());
-  else httpRequestData += "NaN\",\"NaN"
+  else httpRequestData += "NaN\",\"NaN";
   httpRequestData += "\"]}}";
   return httpRequestData;
 }
