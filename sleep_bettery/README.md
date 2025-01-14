@@ -2,4 +2,4 @@
 
 1. Serial commend
 최초 실행 시, 인터넷 연결을 위한 설정이 필요함.
-Serial 접속 상태에서 엔터키를 누르면, Help 메뉴가 나옴.
+3.3v 와 D3(gpio_21) 를 서로 연결하면 command 모드로 넘어감.

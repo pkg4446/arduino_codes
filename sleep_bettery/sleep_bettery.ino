@@ -15,8 +15,7 @@ RTC_DATA_ATTR uint32_t bootCount = 0;
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
 
 const uint8_t interval = 5;
-// const   String server  = "http://yc.beetopia.kro.kr/";
-const   String server  = "http://192.168.1.36:3003/";
+const   String server  = "http://test.beetopia.kro.kr/device/log";
 char    deviceID[18];
 char    command_buf[COMMAND_LENGTH];
 int8_t  command_num;
