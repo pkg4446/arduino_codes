@@ -221,7 +221,7 @@ void serial_command_help() {
   Serial.println("   stop * WIFI disconnet");
   Serial.println("********************************");
 }
-void serial_wifi_config(char *ssid, char *pass){
+void serial_wifi_config(String ssid, String pass){
   Serial.println("********* wifi config *********");
   Serial.print("your ssid: "); Serial.println(ssid);
   Serial.print("your pass: "); Serial.println(pass);
