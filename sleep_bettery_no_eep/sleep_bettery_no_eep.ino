@@ -149,7 +149,7 @@ bool wifi_connect() {
 }
 ////---------------------------------------------------////
 void config_update_check(){
-  if(digitalRead(pin_config)){
+  if(!digitalRead(pin_config)){
     serial_command_help();
     unsigned long led_shift = millis();
     bool led_state = true;
