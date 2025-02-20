@@ -58,7 +58,30 @@ void tcaDisable(uint8_t tcaAddress) {
   Wire.endTransmission();
 }
 
+void configureTMP112() {
+  // 셧다운 모드로 설정
+  Wire.beginTransmission(TMP112_ADDRESS);
+  Wire.write(0x01);
+  Wire.write(0x01);  // 셧다운 모드 활성화
+  Wire.write(0x00);
+  Wire.endTransmission();
+}
+
 int16_t readTemp() {
+  // One-shot 측정 시작
+  Wire.beginTransmission(TMP112_ADDRESS);
+  Wire.write(0x01);
+  Wire.write(0x80 | 0x01);  // One-shot 측정 시작하고 셧다운 모드 유지
+  Wire.write(0x00);
+  Wire.endTransmission();
+
+  delay(30);
+
+  // 온도 읽기
+  Wire.beginTransmission(TMP112_ADDRESS);
+  Wire.write(0x00);
+  Wire.endTransmission();
+
   Wire.requestFrom(TMP112_ADDRESS, 2);
   if (Wire.available() == 2) {
     int16_t raw = (Wire.read() << 8) | Wire.read();
@@ -319,6 +342,15 @@ void setup() {
   Wire.begin(SDA_PIN, SCL_PIN);
   Wire.setClock(100000); // I2C 속도를 100kHz로 설정
   sd_init(5, &able_sdcard);
+
+  // TMP112 센서들을 셧다운 모드로 초기화
+  for (uint8_t index = 0; index < TCA9548A_COUNT; index++) {
+    for (uint8_t ch = 0; ch < 8; ch++) {
+      tcaSelect(tcaAddresses[index], ch);
+      configureTMP112();  // 각 센서를 셧다운 모드로 설정
+    }
+    tcaDisable(tcaAddresses[index]);
+  }
 
   if (!EEPROM.begin(EEPROM_SIZE_CONFIG*2)){
     Serial.println("Failed to initialise eeprom");
