@@ -332,6 +332,7 @@ bool wifi_connect() {
   unsigned long wifi_config_update  = millis();
   while (WiFi.status() != WL_CONNECTED) {
     unsigned long update_time = millis();
+    config_update_check();
     if(update_time - wifi_config_update > WIFI_WAIT*SECONDE){
       able_wifi = false;
       Serial.println("WIFI fail");
@@ -349,6 +350,15 @@ bool wifi_connect() {
   Serial.println("WIFI connected");
   Serial.print("deviceID:");
   Serial.println(deviceID);
+}
+////---------------------------------------------------////
+void config_update_check(){
+  if(digitalRead(pin_config)){
+    serial_command_help(&Serial);
+    while (digitalRead(pin_config)){
+      if(Serial.available()) command_process(Serial.read());
+    }
+  }
 }
 /*********************************************************/
 void setup() {
