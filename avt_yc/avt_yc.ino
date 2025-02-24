@@ -1,5 +1,3 @@
-//// 2024.12.04
-//// 2025.02.24
 #include <Update.h>
 #include <EEPROM.h>
 #include <WiFi.h>
