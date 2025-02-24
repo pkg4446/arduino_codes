@@ -8,7 +8,7 @@
 #include <Adafruit_SHT31.h>
 #include "uart_print.h"
 
-String firmwareVersion = "0.0.3";
+String firmwareVersion = "0.0.4";
 
 #define TCAADDR                   0x70
 #define TOTAL_TEMPERATURE_SENSOR  5
@@ -169,12 +169,7 @@ void system_control(unsigned long millisec){
     temperature_sensor_read();
     if(!manual_mode){
       for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
-        if(heat_use && (temperature_sensor_tm[index]<temperature_goal[index]-temperature_gap) && (temperature_sensor_ic[index]==NAN || temperature_sensor_ic[index]<34.00f)){
-          // if(temperature_sensor_tm[index]<1 && temperature_goal[index]<temperature_sensor_ic[index]){
-          //   heater_state[index] = false;
-          // }else{
-            
-          // }
+        if(heat_use && (isnan(temperature_sensor_ic[index]) || temperature_sensor_ic[index]<33.00f) &&(temperature_sensor_tm[index]<temperature_goal[index]-temperature_gap)){
           heater_state[index] = true;
           heater_worker += 1;
           heater_working[index] += 1;
