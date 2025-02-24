@@ -169,7 +169,7 @@ void system_control(unsigned long millisec){
     temperature_sensor_read();
     if(!manual_mode){
       for (uint8_t index = 0; index < TOTAL_TEMPERATURE_SENSOR; index++){
-        if(heat_use && temperature_sensor_tm[index]<temperature_goal[index]-temperature_gap && temperature_sensor_ic[index]<34){
+        if(heat_use && temperature_sensor_tm[index]<temperature_goal[index]-temperature_gap && (temperature_sensor_ic[index]==NAN || temperature_sensor_ic[index]<34)){
           // if(temperature_sensor_tm[index]<1 && temperature_goal[index]<temperature_sensor_ic[index]){
           //   heater_state[index] = false;
           // }else{
