@@ -47,3 +47,6 @@ ex> set 5 15: 0~4번 벌통의 목표온도를 15도로 설정.
 2.12. wifi: wifi 만 입력할 경우 설정된 2.09, 2.10 에서 설정한 ssid와 password로 wifi에 접속을 시도함.
 wifi scan 을 입력할 경우 주변에 있는 ssid를 검색함.
 wifi stop을 입력할 경우 wifi 접속을 종료함.
+
+#update
+2025.02.24: 봉구온도가 34도 이상일 경우 가온중지, line_174
