@@ -2,8 +2,6 @@
 #include <EEPROM.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include "filesys_esp.h"
-#include "uart_print.h"
 
 String firmwareVersion = "0.0.1";
 #define uS_TO_S_FACTOR      1000000  //Conversion factor for micro seconds to seconds
@@ -304,8 +302,8 @@ void command_service(){
       wifi_connect();
     }
   }else if(cmd_text=="help"){
-    serial_command_help(&Serial);
-  }else{ serial_err_msg(&Serial, command_buf); }
+    serial_command_help();
+  }else{ serial_err_msg(command_buf); }
 
   if(eep_change){
     EEPROM.commit();
@@ -325,7 +323,7 @@ void command_process(char ch) {
 /******************************************/
 bool wifi_connect() {
   able_wifi = true;
-  serial_wifi_config(&Serial,ssid,password);
+  serial_wifi_config(ssid,password);
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
@@ -354,7 +352,7 @@ bool wifi_connect() {
 ////---------------------------------------------------////
 void config_update_check(){
   if(digitalRead(pin_config)){
-    serial_command_help(&Serial);
+    serial_command_help();
     while (digitalRead(pin_config)){
       if(Serial.available()) command_process(Serial.read());
     }
@@ -365,7 +363,6 @@ void setup() {
   Serial.begin(115200);
   Wire.begin(SDA_PIN, SCL_PIN);
   Wire.setClock(100000); // I2C 속도를 100kHz로 설정
-  sd_init(5, &able_sdcard);
   pinMode(pin_config, INPUT);
   if (!EEPROM.begin(EEPROM_SIZE_CONFIG*2)){
     Serial.println("Failed to initialise eeprom");
@@ -377,15 +374,11 @@ void setup() {
     ssid[index]     = EEPROM.read(eep_ssid[index]);
     password[index] = EEPROM.read(eep_pass[index]);
   }
-  if(able_sdcard) dir_make(path_savedata);
   wifi_connect();
-  if(able_wifi || able_sdcard){
+  if(able_wifi){
     sensor_mode(true);
-    sensor_mapping();
-    sensor_mapping();
-    sensor_mapping();
+    for (uint8_t index = 0; index < TCA9548A_COUNT; index++){sensor_mapping();}
     if(able_wifi) sensor_upload();
-    if(able_sdcard) csv_save(sensor_csv(false));
   }
   sensor_mode(false);
 
@@ -421,38 +414,25 @@ String httpPOSTRequest(String server_url, String send_data) {
   return response;
 }////httpPOSTRequest_End
 /*********************************************************/
-String csv_file_name(uint16_t file_number){
-  String response     = path_savedata + "/data";
-  uint16_t num_digit  = file_number;
-  for(uint8_t index=0; index<4; index++){
-    num_digit /= 10;
-    if(num_digit==0) response += "0";
-  }
-  response += String(file_number) + ".csv";
-  return response;
+void serial_err_msg(char *msg){
+  Serial.print("wrong cmd: ");
+  Serial.println(msg);
 }
-
-void csv_save(String save_data){
-  if(able_sdcard){
-    uint16_t file_number = dir_list(path_savedata,false,false);
-    String file_name = "";
-    Serial.println(file_number);
-    if(file_number == 0){
-      file_name = csv_file_name(1);
-      file_write(file_name,"");
-    }else{
-      file_name = csv_file_name(file_number);
-      if(!exisits_check(file_name)) file_write(file_name,"");
-    }
-    if(file_size(file_name)>250*5){
-      file_name = csv_file_name(file_number+1);
-      file_write(file_name,"");
-    }
-    if(dir_list(path_savedata,false,false)==0){
-      able_sdcard = false;
-    }else{
-      file_append(file_name,save_data);
-      Serial.println(file_size(file_name));
-    }
-  }
+void serial_command_help() {
+  Serial.println("************* help *************");
+  Serial.println("reboot   * system reboot");
+  Serial.println("sensor   * sensor read");
+  Serial.println("ssid     * ex)ssid your ssid");
+  Serial.println("pass     * ex)pass your password");
+  Serial.println("wifi     * WIFI connet");
+  Serial.println("   scan  * WIFI scan");
+  Serial.println("   stop  * WIFI disconnet");
+  Serial.println("help     * this text");
+  Serial.println("************* help *************");
+}
+void serial_wifi_config(char *ssid, char *pass){
+  Serial.println("********* wifi config *********");
+  Serial.print("your ssid: "); Serial.println(ssid);
+  Serial.print("your pass: "); Serial.println(pass);
+  Serial.println("********* wifi config *********");
 }
