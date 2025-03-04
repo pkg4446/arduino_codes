@@ -14,7 +14,7 @@ RTC_DATA_ATTR uint32_t bootCount = 0;
 
 #define TCA9548A_COUNT  8
 #define SENSOR_COUNT    64
-#define MOVING_AVERAGE  10
+#define MOVING_AVERAGE  2
 
 #define COMMAND_LENGTH  32
 #define WIFI_WAIT       10
@@ -32,9 +32,8 @@ const uint8_t TMP112_ADDRESS = 0x48; // TMP112 온도 센서 주소
 byte tcaAddresses[TCA9548A_COUNT] = {0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77}; // 멀티플렉서 주소
 const uint8_t eep_ssid[EEPROM_SIZE_CONFIG] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
 const uint8_t eep_pass[EEPROM_SIZE_CONFIG] = {24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47};
-String http_server_addr = "http://50.beetopia.kro.kr/device/log";
-String path_savedata    = "/data";
-char  deviceID[18];
+String http_server_addr = "http://array.beetopia.kro.kr/device/log";
+char  deviceID[18] = {0};  // 초기화 추가
 /*********************************************************/
 bool able_sdcard = false;
 bool able_wifi   = false;
@@ -51,6 +50,15 @@ unsigned long pre_save_csv    = 0UL;
 uint8_t  index_sensor   = 0;
 uint8_t  index_average  = 0;
 /*********************************************************/
+
+// 함수 프로토타입 선언 추가
+void sensor_upload();
+bool wifi_connect();
+void serial_wifi_config(char *ssid, char *pass);
+void config_update_check();
+void serial_command_help();
+void serial_err_msg(char *msg);
+
 void tcaSelect(uint8_t tcaAddress, uint8_t channel) {
   if (channel > 7) return;
   Wire.beginTransmission(tcaAddress);
@@ -107,16 +115,19 @@ void sensor_mode(bool wake){
 }
 
 void sensor_mapping(){
-  uint8_t  index_sensor = 0;
-  // 모든 센서 값 읽기
+  // 수정: 전역 변수 사용으로 인한 충돌 방지
+  // 지역 변수로 변경하거나 전역 변수는 외부에서 설정
   for (uint8_t index = 0; index < TCA9548A_COUNT; index++) {
     for (uint8_t ch = 0; ch < 8; ch++) {
       tcaSelect(tcaAddresses[index], ch);
-      temperatures[index_sensor++][index_average] = readTemp();
+      uint8_t sensor_idx = index * 8 + ch;  // 인덱스 계산 수정
+      if (sensor_idx < SENSOR_COUNT) {  // 범위 체크 추가
+        temperatures[sensor_idx][index_average] = readTemp();
+      }
     }
     tcaDisable(tcaAddresses[index]); // 각 멀티플렉서 비활성화
   }
-  if(++index_average>=MOVING_AVERAGE) index_average = 0;
+  if(++index_average >= MOVING_AVERAGE) index_average = 0;
 }
 
 void sensor_value_init(){
@@ -130,12 +141,10 @@ void sensor_value_init(){
 String sensor_json(){
   String response = "{\"dvid\":\""+String(deviceID)+"\"";
 
-  const uint8_t col_row = 8;
-  const uint8_t comma = col_row-1;
-  for (uint8_t row = 0; row < col_row; row++){
-    response += ",\"row"+String(row)+"\":[";
-    for (uint8_t col = 0; col < col_row; col++){
-      uint8_t index = col*col_row + row;
+  for (uint8_t mux = 0; mux < TCA9548A_COUNT; mux++){
+    response += ",\"col"+String(mux)+"\":[";
+    for (uint8_t sensor = 0; sensor < TCA9548A_COUNT; sensor++){
+      uint8_t index = mux*TCA9548A_COUNT + sensor;
       int32_t sensor_temperature = 0;
       for (uint8_t average = 0; average < MOVING_AVERAGE; average++) {
         sensor_temperature += temperatures[index][average];
@@ -143,7 +152,7 @@ String sensor_json(){
       sensor_temperature /= MOVING_AVERAGE;
       if (sensor_temperature == 9999) response += "-404";
       else response += String(sensor_temperature);
-      if(col<comma) response += ",";
+      if(sensor<TCA9548A_COUNT-1) response += ",";
     }
     response += "]";
   }
@@ -151,34 +160,37 @@ String sensor_json(){
   return response;
 }
 
-String sensor_csv(bool type_save){
-  String response = "";
-  const uint8_t col_row = 8;
-  const uint8_t comma = col_row-1;
-  for (uint8_t row = 0; row < col_row; row++){
-    for (uint8_t col = 0; col < col_row; col++){
-      uint8_t index = col*col_row + row;
-      int32_t sensor_temperature = 0;
-      for (uint8_t average = 0; average < MOVING_AVERAGE; average++) {
-        sensor_temperature += temperatures[index][average];
-      }
-      sensor_temperature /= MOVING_AVERAGE;
-      if (sensor_temperature == 9999) {
-        response += "NULL";
-      } else {
-        response += String(sensor_temperature);
-      }
-      if(col<9){
-        response += ",";
-      }else{
-        if(type_save)   response += "\n";
-        else if(row<comma)  response += ",";
-      }
-    }
-  }
-  response += "\n";
-  return response;
-}
+/*********************************************************/
+
+// String sensor_json(){
+//   String response = "{\"dvid\":\""+String(deviceID)+"\"";
+
+//   const uint8_t col_row = 8;
+//   const uint8_t comma = col_row-1;
+//   for (uint8_t row = 0; row < col_row; row++){
+//     response += ",\"row"+String(row)+"\":[";
+//     for (uint8_t col = 0; col < col_row; col++){
+//       uint8_t index = col*col_row + row;
+//       if (index < SENSOR_COUNT) {  // 범위 체크 추가
+//         int32_t sensor_temperature = 0;
+//         for (uint8_t average = 0; average < MOVING_AVERAGE; average++) {
+//           sensor_temperature += temperatures[index][average];
+//         }
+//         sensor_temperature /= MOVING_AVERAGE;
+//         if (sensor_temperature == 9999) response += "-404";
+//         else response += String(sensor_temperature);
+//       } else {
+//         response += "-404";  // 유효하지 않은 인덱스
+//       }
+//       if(col<comma) response += ",";
+//     }
+//     response += "]";
+//   }
+//   response += "}";
+//   return response;
+// }
+
+
 /*********************************************************/
 void WIFI_scan(bool wifi_state){
   able_wifi = wifi_state;
@@ -224,6 +236,7 @@ void WIFI_scan(bool wifi_state){
     WiFi.disconnect(true);
   }
 }
+
 /******************************************/
 void command_service(){
   String cmd_text     = "";
@@ -253,8 +266,6 @@ void command_service(){
 
   if(cmd_text=="reboot"){
     ESP.restart();
-  }else if(cmd_text=="sensor"){
-    Serial.println(sensor_csv(true));
   }else if(cmd_text=="ssid"){
     able_wifi = false;
     WiFi.disconnect(true);
@@ -309,6 +320,7 @@ void command_service(){
     EEPROM.commit();
   }
 }
+
 void command_process(char ch) {
   if(ch=='\n'){
     command_buf[command_num] = 0x00;
@@ -320,35 +332,48 @@ void command_process(char ch) {
     command_num %= COMMAND_LENGTH;
   }
 }
+
 /******************************************/
 bool wifi_connect() {
-  able_wifi = true;
-  serial_wifi_config(ssid,password);
+  able_wifi = false;  // 초기값을 false로 설정
+  serial_wifi_config(ssid, password);
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  unsigned long wifi_config_update  = millis();
+  unsigned long wifi_config_update = millis();
+  
+  // 타임아웃 처리 개선
   while (WiFi.status() != WL_CONNECTED) {
     unsigned long update_time = millis();
     config_update_check();
-    if(update_time - wifi_config_update > WIFI_WAIT*SECONDE){
-      able_wifi = false;
-      Serial.println("WIFI fail");
+    if(update_time - wifi_config_update > WIFI_WAIT * SECONDE){
+      Serial.println("\nWIFI connection failed");
       WiFi.disconnect(true);
-      break;
+      return false;  // 연결 실패 반환
     }
   }
-  for (int index = 0; index < 17; index++) {
-    if(WiFi.macAddress()[index]==':'){
-      deviceID[index] = '_';
-    }else{
-      deviceID[index] = WiFi.macAddress()[index];
+  
+  Serial.println("\nWIFI connected");
+  
+  // MAC 주소를 디바이스 ID로 변환 (범위 체크 추가)
+  String mac = WiFi.macAddress();
+  int j = 0;
+  for (int i = 0; i < mac.length() && j < 17; i++) {
+    if (mac[i] == ':') {
+      deviceID[j++] = '_';
+    } else {
+      deviceID[j++] = mac[i];
     }
   }
-  Serial.println("WIFI connected");
-  Serial.print("deviceID:");
+  deviceID[17] = '\0';  // 문자열 종료 문자 추가
+  
+  Serial.print("deviceID: ");
   Serial.println(deviceID);
+  
+  able_wifi = true;  // 연결 성공 후 true로 설정
+  return true;
 }
+
 ////---------------------------------------------------////
 void config_update_check(){
   if(digitalRead(pin_config)){
@@ -358,46 +383,88 @@ void config_update_check(){
     }
   }
 }
+
 /*********************************************************/
 void setup() {
   Serial.begin(115200);
+
+  // if(bootCount++ == 0){
+  //   // 와치독 타이머 초기화 추가
+  //   esp_task_wdt_config_t wdt_config = {
+  //     .timeout_ms = 30000, // 30초 타임아웃
+  //     .trigger_panic = true // 패닉 모드 활성화
+  //   };
+  //   esp_task_wdt_init(&wdt_config);
+  // }
+
+  // esp_task_wdt_add(NULL);       // 현재 태스크를 와치독에 등록
+  
   Wire.begin(SDA_PIN, SCL_PIN);
   Wire.setClock(100000); // I2C 속도를 100kHz로 설정
   pinMode(pin_config, INPUT);
-  if (!EEPROM.begin(EEPROM_SIZE_CONFIG*2)){
+  
+  // 모든 배열 초기화 - 메모리 오류 방지
+  memset(temperatures, 0, sizeof(temperatures));
+  memset(ssid, 0, sizeof(ssid));
+  memset(password, 0, sizeof(password));
+  memset(command_buf, 0, sizeof(command_buf));
+  
+  // EEPROM 초기화
+  if (!EEPROM.begin(EEPROM_SIZE_CONFIG * 2)){
     Serial.println("Failed to initialise eeprom");
     Serial.println("Restarting...");
     delay(1000);
     ESP.restart();
   }
+  
+  // EEPROM에서 데이터 읽기
   for (int index = 0; index < EEPROM_SIZE_CONFIG; index++) {
-    ssid[index]     = EEPROM.read(eep_ssid[index]);
+    ssid[index] = EEPROM.read(eep_ssid[index]);
     password[index] = EEPROM.read(eep_pass[index]);
   }
-  wifi_connect();
+  Serial.print(bootCount);
+  Serial.println(" times online");
+  bool wifi_connected = wifi_connect();
+
   if(able_wifi){
     sensor_mode(true);
-    for (uint8_t index = 0; index < TCA9548A_COUNT; index++){sensor_mapping();}
-    if(able_wifi) sensor_upload();
+    for (uint8_t index = 0; index < MOVING_AVERAGE; index++) {
+      sensor_mapping();
+    }
+    sensor_upload();
   }
+  
+  Serial.println("Setting sensors to sleep mode...");
   sensor_mode(false);
 
-  Serial.print("ver:");
+  Serial.print("Firmware version: ");
   Serial.println(firmwareVersion);
 
   // 타이머 wake-up 설정
   esp_sleep_enable_timer_wakeup(60 * uS_TO_S_FACTOR);
+  
+  Serial.println(" Going to deep sleep now");
+  
+  
   // 딥슬립 시작
   esp_deep_sleep_start();
-
-
 }
+
 /*********************************************************/
-void loop() {}
+void loop() {
+  // ESP 딥슬립으로 인해 실행되지 않음
+  delay(1000);
+}
+
 /*********************************************************/
 void sensor_upload(){
-  String response = httpPOSTRequest(http_server_addr,sensor_json());
-  Serial.println(response);
+  if (!able_wifi) return;  // WiFi 연결 확인
+  
+  String jsonData = sensor_json();
+  Serial.println("Sending data to server: " + jsonData);
+  
+  String response = httpPOSTRequest(http_server_addr, jsonData);
+  Serial.println("Server response: " + response);
 }
 
 String httpPOSTRequest(String server_url, String send_data) {
@@ -405,19 +472,34 @@ String httpPOSTRequest(String server_url, String send_data) {
   if(able_wifi){
     WiFiClient client;
     HTTPClient http;
+    
     http.begin(client, server_url);
     http.addHeader("Content-Type", "application/json");
     int response_code = http.POST(send_data);
-    response          = http.getString();
+    
+    if (response_code > 0) {
+      Serial.print("HTTP Response code: ");
+      Serial.println(response_code);
+      response = http.getString();
+    } else {
+      Serial.print("HTTP Error: ");
+      Serial.println(response_code);
+      response = "HTTP Error: " + String(response_code);
+    }
+    
     http.end();
+  } else {
+    response = "WiFi not connected";
   }
   return response;
-}////httpPOSTRequest_End
+}
+
 /*********************************************************/
 void serial_err_msg(char *msg){
   Serial.print("wrong cmd: ");
   Serial.println(msg);
 }
+
 void serial_command_help() {
   Serial.println("************* help *************");
   Serial.println("reboot   * system reboot");
@@ -430,6 +512,7 @@ void serial_command_help() {
   Serial.println("help     * this text");
   Serial.println("************* help *************");
 }
+
 void serial_wifi_config(char *ssid, char *pass){
   Serial.println("********* wifi config *********");
   Serial.print("your ssid: "); Serial.println(ssid);
