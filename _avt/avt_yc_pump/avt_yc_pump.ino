@@ -151,12 +151,23 @@ void command_service(){
   ////cmd start
   if(cmd_text=="reboot"){
     ESP.restart();
+  }else if(cmd_text=="gap"){
+    uint8_t set_value = temp_text.toInt();
+    EEPROM.write(upload_interval, set_value);
+    upload_period = set_value;
+    EEPROM.commit();
+    Serial.print("upload interval ");
+    Serial.println(upload_period);
+  }else if(cmd_text=="time"){
+    time_show();
   }else if(cmd_text=="temp"){
     temperature_sensor_read();
     Serial.print(sensor_temperature);
     Serial.print("℃,");
     Serial.print(sensor_humidity);
     Serial.println("%");
+  }else if(cmd_text=="water"){
+    
   }else if(cmd_text=="valve"){
     uint8_t valve = HEATER;
     if(temp_text == "a") valve = VALVE_A;
@@ -172,10 +183,22 @@ void command_service(){
       time_off[valve] = set_off;
       Serial.println(command_buf);
       EEPROM.commit();
-      config_upload();
+      config_upload(cmd_text,temp_text,valve);
     }else{
       Serial.println("valve error");
     }
+  }else if(cmd_text=="heat"){
+    uint8_t set_on  = temp_text.toInt;
+    uint8_t set_off = String_slice(&check_index, command_buf, 0x20).toInt();
+    if(set_on>23)  set_on  = 0;
+    if(set_off>23) set_off = 0;
+    EEPROM.write(eep_time_on,  set_on);
+    EEPROM.write(eep_time_off, set_on);
+    time_on[HEATER]  = set_on;
+    time_off[HEATER] = set_off;
+    Serial.println(command_buf);
+    EEPROM.commit();
+    config_upload(cmd_text,"",HEATER);
   }else if(cmd_text=="config"){
     Serial.print("upload interval : ");
     Serial.print(upload_period);
@@ -194,13 +217,6 @@ void command_service(){
       Serial.print(", off:");
       Serial.println(time_off[index]);
     }
-  }else if(cmd_text=="gap"){
-    uint8_t set_value = temp_text.toInt();
-    EEPROM.write(upload_interval, set_value);
-    upload_period = set_value;
-    EEPROM.commit();
-    Serial.print("upload interval ");
-    Serial.println(upload_period);
   }else if(cmd_text=="test"){
     uint8_t set_value = String_slice(&check_index, command_buf, 0x20).toInt();
     if(temp_text=="mode"){
@@ -233,8 +249,6 @@ void command_service(){
       manual_mode = false;
       Serial.println("Manual mode OFF");
     }
-  }else if(cmd_text=="time"){
-    time_show();
   }else if(cmd_text=="ssid"){
     wifi_able = false;
     WiFi.disconnect(true);
@@ -532,15 +546,11 @@ void sensor_upload(){
     firmware_upadte();
   }
 }
-void config_upload(){
-  String set_data = "{\"DVC\":\""+String(deviceID)+"\",\"TMP\":[";
-  for (uint8_t index = 0; index < OUTPUT; index++){
-    set_data += String(temperature_goal[index]);
-    if(index < OUTPUT-1) set_data += ",";
-  }
-  set_data += "],\"RUN\":" + String(heat_use) + "}";
+void config_upload(String ctr,String type,String index){
+  String set_data = "{\"DVC\":\""+String(deviceID)+"\",\"CTR\":\""+ctr+"\",\"TYPE\":\""+type;
+        set_data += "\",\"TIME\":[" + time_on[index] + ","+time_off[index] + "]}";
   String response = httpPOSTRequest(server+"device/hive_set",set_data);
-  Serial.println("http:");
+  Serial.print("http:");
   Serial.println(response);
 }
 String httpPOSTRequest(String server_url, String send_data) {
