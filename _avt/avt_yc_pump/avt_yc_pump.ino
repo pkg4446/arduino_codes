@@ -5,6 +5,7 @@
 #include <Wire.h>
 #include <DS3231.h>
 #include <Adafruit_SHT31.h>
+#include <HardwareSerial.h>
 #include "uart_print.h"
 
 String firmwareVersion = "0.0.1";
@@ -20,6 +21,15 @@ String firmwareVersion = "0.0.1";
 #define HEATER   0
 #define VALVE_A  1
 #define VALVE_B  2
+
+// UART 핀 설정
+#define SENSOR1_RX 13
+#define SENSOR1_TX 14
+#define SENSOR2_RX 16
+#define SENSOR2_TX 17
+// 하드웨어 UART 인스턴스 생성
+HardwareSerial ultrasonic1(2); // UART1 (GPIO13, GPIO14)
+HardwareSerial ultrasonic2(1); // UART2 (GPIO16, GPIO17)
 
 const   String server = "http://yc.beetopia.kro.kr/";
 char    deviceID[18];
@@ -65,6 +75,8 @@ void Serial_command(){ if(Serial.available()) command_process(Serial.read()); }
 void setup()
 {
   Serial.begin(115200);
+  ultrasonic1.begin(9600, SERIAL_8N1, SENSOR1_RX, SENSOR1_TX);
+  ultrasonic2.begin(9600, SERIAL_8N1, SENSOR2_RX, SENSOR2_TX);
   Wire.begin();
   Serial.print("ver:");
   Serial.println(firmwareVersion);
@@ -139,6 +151,8 @@ void system_control(unsigned long millisec){
   if(millisec - prev_update > SECONDE){
     prev_update   = millisec;
     //업로드 마다 시계 확인하고 업데이트 하기
+    uint16_t value1 = Sensor_ultrasonic(ultrasonic1,SENSOR1_RX, SENSOR1_TX);
+    uint16_t value1 = Sensor_ultrasonic(ultrasonic2,SENSOR2_RX, SENSOR2_TX);
   }
 }
 ////--------------------- system control --------------////
@@ -681,3 +695,42 @@ void firmware_upadte() {
 //     if(restart_count++ > 240) ESP.restart();
 //   }
 // }
+
+// 센서 측정 함수
+uint16_t Sensor_ultrasonic(HardwareSerial &sensorSerial, int rxPin, int txPin) {
+  uint16_t distance = 0;
+  bool validData = false;
+
+  // 센서 데이터 수신 대기 및 읽기
+  unsigned long startTime = millis();
+  while (millis() - startTime < 1000) { // 최대 1초 대기
+    uint8_t buffer[4];
+    uint8_t index = 0;
+    if (sensorSerial.available() >= 4) {
+      uint8_t get_serial = sensorSerial.read();
+      if (buffer[0] == 0xFF) index = 0;
+      buffer[index++] = get_serial;
+    }
+    if (index>=4 && buffer[0] == 0xFF) { // 헤더 검증
+      distance = (buffer[1] << 8) | buffer[2];
+      validData = true;
+      break;
+    }
+  }
+
+  if (!validData){
+    sensorSerial.end(); // UART 종료
+    // delay(500);         // 짧게 대기
+    Serial.print("Sensor ");
+    Serial.print(sensorNumber);
+    Serial.println(" No valid data received!");
+    sensorSerial.begin(9600, SERIAL_8N1, rxPin, txPin); // UART 다시 시작
+  }else{
+    Serial.print("Sensor ");
+    Serial.print(sensorNumber);
+    Serial.print(" Distance: ");
+    Serial.print(distance);
+    Serial.println(" mm");
+  }
+  return distance;
+}
