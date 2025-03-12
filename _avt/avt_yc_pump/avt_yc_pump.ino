@@ -65,8 +65,10 @@ float sensor_humidity    = 0.00f;
 ////--------------------- temperature sensor ----------////
 ////--------------------- Interval timer --------------////
 unsigned long prev_update     = 0L;
+unsigned long prev_led_toggle = 0L;
 unsigned long prev_data_post  = 0L;
 unsigned long prev_reconnect  = 0L;
+bool  flage_led_toggle = false;
 ////--------------------- Interval timer --------------////
 ////--------------------- Serial command --------------////
 void Serial_command(){ if(Serial.available()) command_process(Serial.read()); }
@@ -118,9 +120,10 @@ void setup()
   for (int index = 0; index < TOTAL_CONTROL; index++) {
     time_on[index]  = EEPROM.read(eep_time_on+ index);
     time_off[index] = EEPROM.read(eep_time_off+index);
+    if(time_on[index]> 24) time_on[index]  = 0;
+    if(time_off[index]>24) time_off[index] = 0;
   }
-  if(eep_time_on >24) eep_time_on  = 0;
-  if(eep_time_off>24) eep_time_off = 0;
+  
 
   if(check_init)EEPROM.commit();
   wifi_connect();
@@ -151,8 +154,18 @@ void system_control(unsigned long millisec){
   if(millisec - prev_update > SECONDE){
     prev_update   = millisec;
     //업로드 마다 시계 확인하고 업데이트 하기
-    uint16_t value1 = Sensor_ultrasonic(ultrasonic1,SENSOR1_RX, SENSOR1_TX);
-    uint16_t value1 = Sensor_ultrasonic(ultrasonic2,SENSOR2_RX, SENSOR2_TX);
+    float value[2] = {
+      sensor_ultrasonic_read(ultrasonic1,SENSOR1_RX, SENSOR1_TX),
+      sensor_ultrasonic_read(ultrasonic2,SENSOR2_RX, SENSOR2_TX)
+    };
+    for(uint8_t index=0; index<2; index++){
+      Serial.print("Sensor ");
+      Serial.print(index);
+      Serial.print(" Distance: ");
+      Serial.print(value[index]);
+      Serial.println(" cm");
+    }
+    
   }
 }
 ////--------------------- system control --------------////
@@ -175,7 +188,7 @@ void command_service(){
   }else if(cmd_text=="time"){
     time_show();
   }else if(cmd_text=="temp"){
-    temperature_sensor_read();
+    sensor_temperature_read();
     Serial.print(sensor_temperature);
     Serial.print("℃,");
     Serial.print(sensor_humidity);
@@ -202,7 +215,7 @@ void command_service(){
       Serial.println("valve error");
     }
   }else if(cmd_text=="heat"){
-    uint8_t set_on  = temp_text.toInt;
+    uint8_t set_on  = temp_text.toInt();
     uint8_t set_off = String_slice(&check_index, command_buf, 0x20).toInt();
     if(set_on>23)  set_on  = 0;
     if(set_off>23) set_off = 0;
@@ -498,29 +511,52 @@ void time_set(){
   http.end(); // Free resources
 }
 ////--------------------- DS3231 ----------------------////
-////--------------------- sensor data upload ----------////
-String sensor_json(){
-  const uint8_t post_menu = 4;
-  String res_array[post_menu] = {"\"HM\":[","\"IC\":[","\"TM\":[","\"WK\":["};
+void sensor_temperature_read(){
+  Wire.beginTransmission(68);
+  if (!Wire.endTransmission() && sht31.begin(0x44)) {
+    sensor_temperature = sht31.readTemperature();
+    sensor_humidity    = sht31.readHumidity();
+  }else{
+    sensor_temperature = NAN;
+    sensor_humidity    = NAN;
+  }
+}
+float sensor_ultrasonic_read(HardwareSerial &sensorSerial, int rxPin, int txPin) {
+  float     response;
+  bool      validData = false;
+  uint16_t  distance = 0;
 
-  for (uint8_t index = 0; index < OUTPUT; index++){
-    res_array[0] += "\""+String(humidity_sensor_ic[index])+"\"";
-    res_array[1] += "\""+String(temperature_sensor_ic[index])+"\"";
-    res_array[2] += "\""+String(temperature_sensor_tm[index])+"\"";
-    res_array[3] += String(heater_working[index]);
-    if(index < OUTPUT-1){
-      for (uint8_t menu_index = 0; menu_index < post_menu; menu_index++){
-        res_array[menu_index] += ",";
-      }
+  // 센서 데이터 수신 대기 및 읽기
+  unsigned long startTime = millis();
+  while (millis() - startTime < 1000) { // 최대 1초 대기
+    uint8_t buffer[4];
+    uint8_t index = 0;
+    if (sensorSerial.available() >= 4) {
+      uint8_t get_serial = sensorSerial.read();
+      if (buffer[0] == 0xFF) index = 0;
+      buffer[index++] = get_serial;
     }
-    heater_working[index] = 0;
+    if (index>=4 && buffer[0] == 0xFF) { // 헤더 검증
+      distance = (buffer[1] << 8) | buffer[2];
+      validData = true;
+      break;
+    }
   }
-  for (uint8_t menu_index = 0; menu_index < post_menu; menu_index++){
-    res_array[menu_index] += "]";
+
+  if(validData){
+    response = float(distance)/10.0;
+  }else{
+    sensorSerial.end(); // UART 종료
+    response = NAN;
+    sensorSerial.begin(9600, SERIAL_8N1, rxPin, txPin); // UART 다시 시작
   }
-  
-  String response = "{\"DVC\":\""+String(deviceID)+"\","+
-    res_array[0] + "," + res_array[1] + "," + res_array[2] + "," + res_array[3] + "}";
+  return distance;
+}
+
+////--------------------- sensor data upload ----------////
+String sensor_json(){  
+  String response = "{\"DVC\":\""+String(deviceID)+"\",\"DATA:[\""+
+    String(sensor_temperature) + "\",\"" + String(sensor_humidity) + "\"]}";
   return response;
 }
 void upload_loop(unsigned long millisec){
@@ -535,34 +571,19 @@ void sensor_upload(){
   uint8_t check_index = 0;
   String cmd_text = String_slice(&check_index,response, 0x2C);
   if (cmd_text == "set"){
-    uint8_t set_value = 0;
     bool change_flage = false;
-    for (uint8_t index = 0; index < OUTPUT; index++){
-      set_value = String_slice(&check_index,response, 0x2C).toInt();
-      if(temperature_goal[index] != set_value){
-        Serial.println(" O");
-        EEPROM.write(eep_temp+index, set_value);
-        temperature_goal[index] = set_value;
-        change_flage = true;
-      }
-    }
-    set_value = String_slice(&check_index,response, 0x2C).toInt();
-    if((set_value == 1 && !heat_use)||(set_value == 0 && heat_use)){
-      EEPROM.write(eep_heater, set_value);
-      heat_use = set_value;
-      change_flage = true;
-    }
-    if(change_flage){
-      EEPROM.commit();
-      config_upload();
-    }
+    uint8_t set_value = String_slice(&check_index,response, 0x2C).toInt();;
+    // if(change_flage){
+    //   EEPROM.commit();
+    //   config_upload();
+    // }
   }else if(cmd_text == "updt"){
     firmware_upadte();
   }
 }
-void config_upload(String ctr,String type,String index){
+void config_upload(String ctr,String type,uint8_t index){
   String set_data = "{\"DVC\":\""+String(deviceID)+"\",\"CTR\":\""+ctr+"\",\"TYPE\":\""+type;
-        set_data += "\",\"TIME\":[" + time_on[index] + ","+time_off[index] + "]}";
+        set_data += "\",\"TIME\":[" + String(time_on[index]) + ","+String(time_off[index]) + "]}";
   String response = httpPOSTRequest(server+"device/hive_set",set_data);
   Serial.print("http:");
   Serial.println(response);
@@ -695,42 +716,3 @@ void firmware_upadte() {
 //     if(restart_count++ > 240) ESP.restart();
 //   }
 // }
-
-// 센서 측정 함수
-uint16_t Sensor_ultrasonic(HardwareSerial &sensorSerial, int rxPin, int txPin) {
-  uint16_t distance = 0;
-  bool validData = false;
-
-  // 센서 데이터 수신 대기 및 읽기
-  unsigned long startTime = millis();
-  while (millis() - startTime < 1000) { // 최대 1초 대기
-    uint8_t buffer[4];
-    uint8_t index = 0;
-    if (sensorSerial.available() >= 4) {
-      uint8_t get_serial = sensorSerial.read();
-      if (buffer[0] == 0xFF) index = 0;
-      buffer[index++] = get_serial;
-    }
-    if (index>=4 && buffer[0] == 0xFF) { // 헤더 검증
-      distance = (buffer[1] << 8) | buffer[2];
-      validData = true;
-      break;
-    }
-  }
-
-  if (!validData){
-    sensorSerial.end(); // UART 종료
-    // delay(500);         // 짧게 대기
-    Serial.print("Sensor ");
-    Serial.print(sensorNumber);
-    Serial.println(" No valid data received!");
-    sensorSerial.begin(9600, SERIAL_8N1, rxPin, txPin); // UART 다시 시작
-  }else{
-    Serial.print("Sensor ");
-    Serial.print(sensorNumber);
-    Serial.print(" Distance: ");
-    Serial.print(distance);
-    Serial.println(" mm");
-  }
-  return distance;
-}
