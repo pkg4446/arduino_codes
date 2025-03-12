@@ -13,8 +13,7 @@ void serial_command_help(HardwareSerial *uart) {
   uart->println("reboot  * system reboot");
   uart->println("gap     * set upload interval");
   uart->println("time    * show system time");
-  uart->println("temp    * temperature show");
-  uart->println("water   * water level show");
+  uart->println("sensor  * sht, water level show");
   uart->println("Valve   *");
   uart->println("      a * ex) Valve a 09 13");
   uart->println("      b * ex) Valve b 18 21");

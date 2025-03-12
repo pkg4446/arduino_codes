@@ -60,14 +60,16 @@ uint8_t upload_period   = 5;
 DS3231 RTC_DS3231;
 ////--------------------- temperature sensor ----------////
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
-float sensor_temperature = 0.00f;
-float sensor_humidity    = 0.00f;
+float sensor_temperature    = 0.00f;
+float sensor_humidity       = 0.00f;
+float sensor_ultrasonic[2]  = {0.00f,};
 ////--------------------- temperature sensor ----------////
 ////--------------------- Interval timer --------------////
-unsigned long prev_update     = 0L;
-unsigned long prev_led_toggle = 0L;
-unsigned long prev_data_post  = 0L;
-unsigned long prev_reconnect  = 0L;
+unsigned long prev_update       = 0L;
+unsigned long prev_led_toggle   = 0L;
+unsigned long prev_sensor_read  = 0L;
+unsigned long prev_data_post    = 0L;
+unsigned long prev_reconnect    = 0L;
 bool  flage_led_toggle = false;
 ////--------------------- Interval timer --------------////
 ////--------------------- Serial command --------------////
@@ -143,32 +145,46 @@ void loop()
 {
   const unsigned long millisec = millis();
   Serial_command();
-  system_control(millisec);
-  upload_loop(millisec);
-  led_toggle(millisec);
   wifi_reconnect(millisec);
+  loop_sensor_read(millisec);
+  // loop_upload(millisec);
+  system_control(millisec);
+  led_toggle(millisec);
 }
 ////--------------------- loop() ----------------------////`
 ////--------------------- system control --------------////
 void system_control(unsigned long millisec){
   if(millisec - prev_update > SECONDE){
-    prev_update   = millisec;
-    //업로드 마다 시계 확인하고 업데이트 하기
-    float value[2] = {
-      sensor_ultrasonic_read(ultrasonic1,SENSOR1_RX, SENSOR1_TX),
-      sensor_ultrasonic_read(ultrasonic2,SENSOR2_RX, SENSOR2_TX)
-    };
-    for(uint8_t index=0; index<2; index++){
-      Serial.print("Sensor ");
-      Serial.print(index);
-      Serial.print(" Distance: ");
-      Serial.print(value[index]);
-      Serial.println(" cm");
-    }
-    
+    prev_update = millisec;
   }
 }
 ////--------------------- system control --------------////
+////--------------------- sensor reads ----------------////
+void loop_sensor_read(unsigned long millisec){
+  if(millisec - prev_sensor_read > SECONDE){
+    prev_sensor_read = millisec;
+    sensor_read();
+
+    for(uint8_t index=0; index<2; index++){
+      Serial.print("ultrasonic Sensor ");
+      Serial.print(index);
+      Serial.print(" Distance: ");
+      Serial.print(sensor_ultrasonic[index]);
+      Serial.println(" cm");
+    }
+    Serial.print("sht: ");
+    Serial.print(sensor_temperature);
+    Serial.print("℃,");
+    Serial.print(sensor_humidity);
+    Serial.println("%");
+  }
+}
+void sensor_read(){
+  sensor_temperature_read();
+  sensor_ultrasonic[0] = sensor_ultrasonic_read(ultrasonic1,SENSOR1_RX, SENSOR1_TX);
+  sensor_ultrasonic[1] = sensor_ultrasonic_read(ultrasonic2,SENSOR2_RX, SENSOR2_TX);
+}
+////--------------------- sensor reads ----------------////
 ////--------------------- command ---------------------////
 void command_service(){
   bool    eep_change  = false;
@@ -187,14 +203,22 @@ void command_service(){
     Serial.println(upload_period);
   }else if(cmd_text=="time"){
     time_show();
-  }else if(cmd_text=="temp"){
-    sensor_temperature_read();
+  }else if(cmd_text=="sensor"){
+    sensor_read();
+
+    for(uint8_t index=0; index<2; index++){
+      Serial.print("ultrasonic Sensor ");
+      Serial.print(index);
+      Serial.print(" Distance: ");
+      Serial.print(sensor_ultrasonic[index]);
+      Serial.println(" cm");
+    }
+    Serial.print("sht: ");
     Serial.print(sensor_temperature);
     Serial.print("℃,");
     Serial.print(sensor_humidity);
     Serial.println("%");
-  }else if(cmd_text=="water"){
-    
+
   }else if(cmd_text=="valve"){
     uint8_t valve = HEATER;
     if(temp_text == "a") valve = VALVE_A;
@@ -559,10 +583,11 @@ String sensor_json(){
     String(sensor_temperature) + "\",\"" + String(sensor_humidity) + "\"]}";
   return response;
 }
-void upload_loop(unsigned long millisec){
+void loop_upload(unsigned long millisec){
   if(wifi_able && (millisec - prev_data_post > SECONDE*60*upload_period)){
     prev_data_post  = millisec;
     sensor_upload();
+    //업로드 마다 시계 확인하고 업데이트 하기
   }
 }
 void sensor_upload(){
