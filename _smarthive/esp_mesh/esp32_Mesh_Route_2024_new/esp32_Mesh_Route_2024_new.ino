@@ -5,6 +5,7 @@
 #define   QUE_MAX 9
 
 #define   MESH_PREFIX     "HiveMesh"
+// #define   MESH_PREFIX     "smartHiveMesh"
 #define   MESH_PASSWORD   "smarthive123"
 #define   MESH_PORT       3333
 
