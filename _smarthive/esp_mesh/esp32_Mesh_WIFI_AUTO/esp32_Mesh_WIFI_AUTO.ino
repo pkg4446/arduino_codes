@@ -6,116 +6,117 @@ HardwareSerial rootDvice(2);
 #include "EEPROM.h"
 #define   EEPROM_SIZE 24
 
-/******************EEPROM******************/
+/****************** EEPROM ******************/
 const uint8_t eep_ssid[EEPROM_SIZE] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
 const uint8_t eep_pass[EEPROM_SIZE] = {24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47};
-/******************EEPROM******************/
+/****************** EEPROM ******************/
 char ssid[EEPROM_SIZE];
 char password[EEPROM_SIZE]; //#234567!
 
 unsigned long timer_restart = 0;
-uint8_t     restart_count   = 0;
+uint8_t       restart_count = 0;
 
-char        deviceID[18];
-char        sendID[21]    = "ID=";
-
-struct dataSet {
-  String TYPE;
-  String MODULE;
-  String DATA;
-};
+char          deviceID[18];
 
 //// ----------- Command  -----------
-char    command_Buf[SERIAL_MAX];
-int8_t  command_Num;
-
-char    Serial_buf[SERIAL_MAX];
-int8_t  Serial_num;
-
-
-void command_Service() {
-  struct dataSet dataSend;
-  dataSend.MODULE  = strtok(command_Buf, "=");
-  dataSend.TYPE    = strtok(NULL, "=");
-  dataSend.COMMEND = strtok(NULL, "=");
-  dataSend.VALUE1  = strtok(NULL, "=");
-  dataSend.VALUE2  = strtok(NULL, "=");
-  dataSend.VALUE3  = strtok(NULL, "=");
-  dataSend.VALUE4  = strtok(NULL, ";");
-  if (dataSend.TYPE != "P") {
-    httpPOSTRequest(&dataSend);
+char    command_Buf[2][SERIAL_MAX];
+uint8_t command_Num[2];
+////--------------------- String_slice ----------------////
+String String_slice(uint8_t *check_index, String text, char check_char){
+  String response = "";
+  for(uint8_t index_check=*check_index; index_check<text.length(); index_check++){
+    if(text[index_check] == check_char || text[index_check] == 0x00){
+      *check_index = index_check+1;
+      break;
+    }
+    response += text[index_check];
   }
-}//Command_service() END
-
-void command_Process() {
-  char ch;
-  ch = rootDvice.read();
-  switch (ch) {
-    case '\n':
-      command_Buf[command_Num] = ';';
-      command_Buf[command_Num+1] = 0x00;
-      Serial.println(command_Buf);
-      command_Service();
-      command_Num = 0;
-      break;
-    case '\r':
-      break;
-    default:
-      command_Buf[command_Num++] = ch;
-      command_Num %= SERIAL_MAX;
-      break;
-  }
+  return response;
 }
-
-void Serial_process() {
-  char ch;
-  ch = Serial.read();
-  switch ( ch ) {
-    case ';':
-      Serial_buf[Serial_num] = 0x00;
-      wifi_config_change();
-      Serial_num = 0;
-      break;
-    default :
-      Serial_buf[ Serial_num ++ ] = ch;
-      Serial_num %= SERIAL_MAX;
-      break;
-  }
+////--------------------- String_slice ----------------////
+////--------------------- command service -------------////
+////--------------------- service help ----------------////
+void help() {
+  Serial.println("************* help *************");
+  Serial.println("reboot  * system reboot");
+  Serial.println("ssid    * ex)ssid your ssid");
+  Serial.println("pass    * ex)pass your password");
+  Serial.println("wifi    * WIFI connet");
+  Serial.println("********************************");
 }
-
-void wifi_config_change() {
-  String at_cmd     = strtok(Serial_buf, "=");
-  String ssid_value = strtok(NULL, "=");
-  String pass_value = strtok(NULL, ";");
-  if(at_cmd=="AT+WIFI"){
-    Serial.print("ssid_value=");
+////--------------------- service serial --------------////
+void service_serial(String cmd) {
+  uint8_t cmd_index = 0;
+  String command  = String_slice(&cmd_index, cmd, 0x20);
+  String value    = String_slice(&cmd_index, cmd, 0x20);
+  ////cmd start
+  if(cmd_text=="reboot" || cmd_text=="wifi"){
+    ESP.restart();
+  }else if(cmd_text=="reg"){
+    
+  }else if(cmd_text=="ssid"){
+    WiFi.disconnect(true);
+    Serial.print("ssid: ");
     for (int index = 0; index < EEPROM_SIZE; index++) {
-      if(index < ssid_value.length()){
-        Serial.print(ssid_value[index]);
-        EEPROM.write(eep_ssid[index], byte(ssid_value[index]));
+      if(index < value.length()){
+        Serial.print(value[index]);
+        ssid[index] = value[index];
+        EEPROM.write(eep_ssid[index], byte(value[index]));
       }else{
+        ssid[index] = 0x00;
         EEPROM.write(eep_ssid[index], byte(0x00));
       }      
     }
     Serial.println("");
-    Serial.print("pass_value=");
+    EEPROM.commit();
+  }else if(cmd_text=="pass"){
+    WiFi.disconnect(true);
+    Serial.print("pass: ");
     for (int index = 0; index < EEPROM_SIZE; index++) {
-      if(index < pass_value.length()){
-        Serial.print(pass_value[index]);
-        EEPROM.write(eep_pass[index], byte(pass_value[index]));
+      if(index < value.length()){
+        Serial.print(value[index]);
+        password[index] = value[index];
+        EEPROM.write(eep_pass[index], byte(value[index]));
       }else{
+        password[index] = 0x00;
         EEPROM.write(eep_pass[index], byte(0x00));
-      }    
+      }      
     }
     Serial.println("");
     EEPROM.commit();
-    ESP.restart();
   }else{
-    Serial.println(Serial_buf);
+    help();
   }
-}//Command_service() END
+}
+////--------------------- service device --------------////
+void service_device(String cmd) {
+  uint8_t cmd_index = 0;
+  String command  = String_slice(&cmd_index, cmd, 0x20);
+  String type = String_slice(&cmd_index, cmd, 0x20);
+  String mac  = String_slice(&cmd_index, cmd, 0x20);
+  String api  = String_slice(&cmd_index, cmd, 0x20);
+  String data = String_slice(&cmd_index, cmd, 0x20);
 
+  if (command != "P") {
+    httpPOSTRequest(type,mac,api,data);
+  }else{
 
+  }
+}
+////--------------------- command call ----------------////
+void command_process(bool device, char ch) {
+  if (ch == '\n') {
+    command_Buf[device][command_Num[device]] = 0x00;
+    if(device)service_device(command_Buf[device]);
+    else service_serial(command_Buf[device]);
+    command_Num[device] = 0;
+  }else if (ch != '\r'){
+    command_Buf[command_Num[device]++] = ch;
+    command_Num[device] %= SERIAL_MAX;
+    break;
+  }
+}
+////--------------------- setup -----------------------////
 void setup() {
   Serial.begin(115200);
   rootDvice.begin(115200, SERIAL_8N1, 32, 33);
@@ -146,7 +147,7 @@ void setup() {
   unsigned long wifi_config_update = 0UL;
   bool scan_flage = false;
   while (WiFi.status() != WL_CONNECTED) {
-    if (Serial.available()) Serial_process();
+    if(Serial.available()) command_process(false,Serial.read());
     unsigned long update_time = millis();
     if(update_time - wifi_config_update > 8000){
       wifi_config_update = update_time;
@@ -181,6 +182,7 @@ void setup() {
           ESP.restart();
         }
       }
+
       if(scan_flage){
         Serial.println("------- WIFI lists -------");
         for (int index = 0; index < networks; ++index) {
@@ -188,14 +190,12 @@ void setup() {
         }
         Serial.println("---------------------------");
         WiFi.scanDelete();
-        Serial.println("------- wifi change -------");
-        Serial.println("    ;AT+WIFI=SSID=PASS;");
-        Serial.println("---------------------------");
         update_time = millis();
+        help();
         while (true)
         {
           if(millis()-update_time > 1000*60*3){ESP.restart();}
-          if(Serial.available()) Serial_process();
+          if(Serial.available()) command_process(false,Serial.read());
         }
         break;
       }
@@ -204,43 +204,35 @@ void setup() {
   }
   Serial.println("Connected to the WiFi network");
 
-  for (int i = 0; i < 17; i++) {
-    sendID[i + 3] = WiFi.macAddress()[i];
-    deviceID[i]   = sendID[i + 3];
+  for (uint8_t index = 0; index < 17; index++) {
+    if(WiFi.macAddress()[index]==':'){
+      deviceID[index] = '_';
+    }else{
+      deviceID[index] = WiFi.macAddress()[index];
+    }
   }
 }//End Of Setup()
 
 void loop() {
-  if (rootDvice.available()) command_Process();//post
-  if (Serial.available()) Serial_process();
+  if (rootDvice.available()) command_process(true,rootDvice.read());//post
+  if (Serial.available()) command_process(false,Serial.read());
   unsigned long millisec = millis();
   mesh_restart(millisec);
 }
 
-void httpPOSTRequest(struct dataSet *ptr) {
-  String serverUrl = "http://act.smarthive.kr/log/hive/";   //API adress
+void httpPOSTRequest(String type,String mac,String api,String data) {
+  String serverUrl = "http://act.smarthive.kr/log/hive";   //API adress
   HTTPClient http;
   WiFiClient http_client;
   http.begin(http_client, serverUrl);
 
   http.addHeader("Content-Type", "application/json");
-  String httpRequestData = "{\"FARM\":\"";
-  httpRequestData += deviceID;
-  httpRequestData += "\",\"MODULE\":\"";
-  httpRequestData += ptr->MODULE;
-  httpRequestData += "\",\"TYPE\":\"";
-  httpRequestData += ptr->TYPE;
-  httpRequestData += "\",\"COMMEND\":\"";
-  httpRequestData += ptr->COMMEND;
-  httpRequestData += "\",\"VALUE1\":\"";
-  httpRequestData += ptr->VALUE1;
-  httpRequestData += "\",\"VALUE2\":\"";
-  httpRequestData += ptr->VALUE2;
-  httpRequestData += "\",\"VALUE3\":\"";
-  httpRequestData += ptr->VALUE3;
-  httpRequestData += "\",\"VALUE4\":\"";
-  httpRequestData += ptr->VALUE4; 
-  httpRequestData += "\"}";
+  String httpRequestData = "{\"HUB\":\""  + deviceID;
+  httpRequestData += "\",\"TYPE\":\""     + type;
+  httpRequestData += "\",\"MODULE\":\""   + mac;
+  httpRequestData += "\",\"API\":\""      + api;
+  httpRequestData += "\",\"DATA\":"       + data;
+  httpRequestData += "}";
   
   int httpResponseCode = http.POST(httpRequestData);
   Serial.print(httpRequestData);
