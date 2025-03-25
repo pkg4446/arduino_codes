@@ -1,4 +1,5 @@
 #include <WiFi.h>
+#include <PubSubClient.h> //https://github.com/knolleary/pubsubclient
 #include <HTTPClient.h>
 #define SERIAL_MAX  128
 HardwareSerial rootDvice(2);
@@ -16,22 +17,41 @@ char password[EEPROM_SIZE]; //#234567!
 unsigned long timer_restart = 0;
 uint8_t     restart_count   = 0;
 
+const char* mqttServer    = "smarthive.kr";
+const int   mqttPort      = 1883;
+const char* mqttUser      = "hive";
+const char* mqttPassword  = "hive";
+const char* topic_pub     = "SHS";
 char        deviceID[18];
 char        sendID[21]    = "ID=";
+
+WiFiClient mqtt_client;
+PubSubClient mqttClient(mqtt_client);
 
 struct dataSet {
   String TYPE;
   String MODULE;
-  String DATA;
+  String COMMEND;
+  String VALUE1;
+  String VALUE2;
+  String VALUE3;
+  String VALUE4;
 };
+
+//// ------------ MQTT Callback ------------
+void callback(char* topic, byte* payload, unsigned int length) {
+  char mqtt_buf[SERIAL_MAX] = "";
+  for (int i = 0; i < length; i++) {
+    mqtt_buf[i] = payload[i];
+  }
+  Serial.print("Message arrived: ");
+  rootDvice.print(mqtt_buf);
+  Serial.println(mqtt_buf);
+}
 
 //// ----------- Command  -----------
 char    command_Buf[SERIAL_MAX];
 int8_t  command_Num;
-
-char    Serial_buf[SERIAL_MAX];
-int8_t  Serial_num;
-
 
 void command_Service() {
   struct dataSet dataSend;
@@ -51,14 +71,12 @@ void command_Process() {
   char ch;
   ch = rootDvice.read();
   switch (ch) {
-    case '\n':
+    case ';':
       command_Buf[command_Num] = ';';
       command_Buf[command_Num+1] = 0x00;
       Serial.println(command_Buf);
       command_Service();
       command_Num = 0;
-      break;
-    case '\r':
       break;
     default:
       command_Buf[command_Num++] = ch;
@@ -67,21 +85,8 @@ void command_Process() {
   }
 }
 
-void Serial_process() {
-  char ch;
-  ch = Serial.read();
-  switch ( ch ) {
-    case ';':
-      Serial_buf[Serial_num] = 0x00;
-      wifi_config_change();
-      Serial_num = 0;
-      break;
-    default :
-      Serial_buf[ Serial_num ++ ] = ch;
-      Serial_num %= SERIAL_MAX;
-      break;
-  }
-}
+char    Serial_buf[SERIAL_MAX];
+int8_t  Serial_num;
 
 void wifi_config_change() {
   String at_cmd     = strtok(Serial_buf, "=");
@@ -115,6 +120,21 @@ void wifi_config_change() {
   }
 }//Command_service() END
 
+void Serial_process() {
+  char ch;
+  ch = Serial.read();
+  switch ( ch ) {
+    case ';':
+      Serial_buf[Serial_num] = 0x00;
+      wifi_config_change();
+      Serial_num = 0;
+      break;
+    default :
+      Serial_buf[ Serial_num ++ ] = ch;
+      Serial_num %= SERIAL_MAX;
+      break;
+  }
+}
 
 void setup() {
   Serial.begin(115200);
@@ -208,9 +228,38 @@ void setup() {
     sendID[i + 3] = WiFi.macAddress()[i];
     deviceID[i]   = sendID[i + 3];
   }
+  mqtt_connect();
 }//End Of Setup()
 
+void mqtt_connect(){
+  mqttClient.disconnect();
+
+  mqttClient.setServer(mqttServer, mqttPort);
+  mqttClient.setCallback(callback);
+
+  char* topic_sub = deviceID;
+  char* sub_ID    = sendID;
+  while (!mqttClient.connected()) {
+    Serial.println("Connecting to MQTT...");
+    if (mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
+      Serial.println("connected");
+    } else {
+      Serial.print("failed with state ");
+      Serial.print(mqttClient.state());
+      delay(1000);
+      if(restart_count++ > 60) ESP.restart();
+    }
+  }
+  mqttClient.subscribe(topic_sub);
+  mqttClient.publish(topic_pub, sub_ID);
+  Serial.print("subscribe: ");
+  Serial.print(topic_sub);
+  Serial.println(" - MQTT Connected");
+}
+
 void loop() {
+  if (mqttClient.connected()){mqttClient.loop();}
+  else{mqtt_connect();}
   if (rootDvice.available()) command_Process();//post
   if (Serial.available()) Serial_process();
   unsigned long millisec = millis();
@@ -218,7 +267,7 @@ void loop() {
 }
 
 void httpPOSTRequest(struct dataSet *ptr) {
-  String serverUrl = "http://act.smarthive.kr/log/hive/";   //API adress
+  String serverUrl = "http://dev.smarthive.kr/reg/hive/";   //API adress
   HTTPClient http;
   WiFiClient http_client;
   http.begin(http_client, serverUrl);
