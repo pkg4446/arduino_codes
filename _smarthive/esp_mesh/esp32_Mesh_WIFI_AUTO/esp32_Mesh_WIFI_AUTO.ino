@@ -21,6 +21,34 @@ char          deviceID[18];
 //// ----------- Command  -----------
 char    command_Buf[2][SERIAL_MAX];
 uint8_t command_Num[2];
+////--------------------- make_json -------------------////
+String data_json(String type,String mac,String api,String data) {
+  String response = "{\"HUB\":\""  + String(deviceID);
+  response += "\",\"TYPE\":\""     + type;
+  response += "\",\"MODULE\":\""   + mac;
+  response += "\",\"API\":\""      + api;
+  response += "\",\"DATA\":"       + data;
+  response += "}";
+  return response;
+}
+////--------------------- httpPOSTRequest -------------////
+String httpPOSTRequest(String httpRequestData) {
+  String serverUrl = "http://act.smarthive.kr/log/hive";   //API adress
+  HTTPClient http;
+  WiFiClient http_client;
+  http.begin(http_client, serverUrl);
+
+  http.addHeader("Content-Type", "application/json");
+  
+  int httpResponseCode = http.POST(httpRequestData);
+  Serial.print("HTTP Response code: ");
+  Serial.println(httpResponseCode);
+  String response = http.getString();
+  http.end(); // Free resources
+
+  return response;
+}
+////--------------------- httpPOSTRequest -------------////
 ////--------------------- String_slice ----------------////
 String String_slice(uint8_t *check_index, String text, char check_char){
   String response = "";
@@ -91,16 +119,19 @@ void service_serial(String cmd) {
 ////--------------------- service device --------------////
 void service_device(String cmd) {
   uint8_t cmd_index = 0;
-  String command  = String_slice(&cmd_index, cmd, 0x20);
   String type = String_slice(&cmd_index, cmd, 0x20);
   String mac  = String_slice(&cmd_index, cmd, 0x20);
   String api  = String_slice(&cmd_index, cmd, 0x20);
   String data = String_slice(&cmd_index, cmd, 0x20);
 
-  if (command != "P") {
-    httpPOSTRequest(type,mac,api,data);
-  }else{
+  String httpRequestData = data_json(type,mac,api,data);
 
+  String response = httpPOSTRequest(httpRequestData);
+
+  uint8_t cmd_index = 0;
+  String command  = String_slice(&cmd_index, response, 0x2C);
+  if(command=="set"){
+    //do something
   }
 }
 ////--------------------- command call ----------------////
@@ -116,6 +147,7 @@ void command_process(bool device, char ch) {
     }
   }
 }
+////--------------------- httpPOSTRequest -------------////
 ////--------------------- setup -----------------------////
 void setup() {
   Serial.begin(115200);
@@ -219,27 +251,6 @@ void loop() {
   unsigned long millisec = millis();
   mesh_restart(millisec);
 }
-
-void httpPOSTRequest(String type,String mac,String api,String data) {
-  String serverUrl = "http://act.smarthive.kr/log/hive";   //API adress
-  HTTPClient http;
-  WiFiClient http_client;
-  http.begin(http_client, serverUrl);
-
-  http.addHeader("Content-Type", "application/json");
-  String httpRequestData = "{\"HUB\":\""  + String(deviceID);
-  httpRequestData += "\",\"TYPE\":\""     + type;
-  httpRequestData += "\",\"MODULE\":\""   + mac;
-  httpRequestData += "\",\"API\":\""      + api;
-  httpRequestData += "\",\"DATA\":"       + data;
-  httpRequestData += "}";
-  
-  int httpResponseCode = http.POST(httpRequestData);
-  Serial.print(httpRequestData);
-  Serial.print("HTTP Response code: ");
-  Serial.println(httpResponseCode);
-  http.end();           // Free resources
-}////httpPOSTRequest_End
 
 void mesh_restart(unsigned long millisec){
   if(millisec - timer_restart > 1000*60){
