@@ -111,9 +111,9 @@ void command_process(bool device, char ch) {
     else service_serial(command_Buf[device]);
     command_Num[device] = 0;
   }else if (ch != '\r'){
-    command_Buf[command_Num[device]++] = ch;
-    command_Num[device] %= SERIAL_MAX;
-    break;
+    if (command_Num[device] < SERIAL_MAX - 1) {  // 버퍼 오버플로우 방지
+      command_Buf[device][command_Num[device]++] = ch;
+    }
   }
 }
 ////--------------------- setup -----------------------////
@@ -227,7 +227,7 @@ void httpPOSTRequest(String type,String mac,String api,String data) {
   http.begin(http_client, serverUrl);
 
   http.addHeader("Content-Type", "application/json");
-  String httpRequestData = "{\"HUB\":\""  + deviceID;
+  String httpRequestData = "{\"HUB\":\""  + String(deviceID);
   httpRequestData += "\",\"TYPE\":\""     + type;
   httpRequestData += "\",\"MODULE\":\""   + mac;
   httpRequestData += "\",\"API\":\""      + api;
