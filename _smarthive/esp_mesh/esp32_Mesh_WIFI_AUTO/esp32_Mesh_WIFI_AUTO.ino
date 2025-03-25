@@ -50,11 +50,11 @@ void service_serial(String cmd) {
   String command  = String_slice(&cmd_index, cmd, 0x20);
   String value    = String_slice(&cmd_index, cmd, 0x20);
   ////cmd start
-  if(cmd_text=="reboot" || cmd_text=="wifi"){
+  if(command=="reboot" || command=="wifi"){
     ESP.restart();
-  }else if(cmd_text=="reg"){
+  }else if(command=="reg"){
     
-  }else if(cmd_text=="ssid"){
+  }else if(command=="ssid"){
     WiFi.disconnect(true);
     Serial.print("ssid: ");
     for (int index = 0; index < EEPROM_SIZE; index++) {
@@ -69,7 +69,7 @@ void service_serial(String cmd) {
     }
     Serial.println("");
     EEPROM.commit();
-  }else if(cmd_text=="pass"){
+  }else if(command=="pass"){
     WiFi.disconnect(true);
     Serial.print("pass: ");
     for (int index = 0; index < EEPROM_SIZE; index++) {
