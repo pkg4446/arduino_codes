@@ -119,19 +119,24 @@ void service_serial(String cmd) {
 ////--------------------- service device --------------////
 void service_device(String cmd) {
   uint8_t cmd_index = 0;
+  String command = String_slice(&cmd_index, cmd, 0x20);
   String type = String_slice(&cmd_index, cmd, 0x20);
   String mac  = String_slice(&cmd_index, cmd, 0x20);
   String api  = String_slice(&cmd_index, cmd, 0x20);
   String data = String_slice(&cmd_index, cmd, 0x20);
 
-  String httpRequestData = data_json(type,mac,api,data);
+  if (command == "post"){
+    String httpRequestData = data_json(type,mac,api,data);
 
-  String response = httpPOSTRequest(httpRequestData);
+    String response = httpPOSTRequest(httpRequestData);
 
-  uint8_t cmd_index = 0;
-  String command  = String_slice(&cmd_index, response, 0x2C);
-  if(command=="set"){
-    //do something
+    uint8_t cmd_index = 0;
+    String command  = String_slice(&cmd_index, response, 0x2C);
+    if(command=="set"){
+      //do something
+    }
+  }else{
+
   }
 }
 ////--------------------- command call ----------------////
