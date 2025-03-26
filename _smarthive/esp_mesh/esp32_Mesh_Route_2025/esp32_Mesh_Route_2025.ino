@@ -127,12 +127,12 @@ void receivedCallback( uint32_t from, String &msg ) {
   for (int index = 0; index < msg.length(); index++) {
     msg_buf[index] = msg[index];
   }
-  ////여기 수정해야함 2025.3.25
-  String devicd_id = strtok(msg_buf, "=");
+  uint8_t cmd_index = 0;
+  String devicd_id  = msg_buf(&cmd_index, msg_buf, 0x20);
   if(devicd_id == String(from)){
     rootDvice.print(msg.c_str());
     Serial.println(msg.c_str());
-    String res = "S=" + String(from) + "=AT+RES=1;";
+    String res = String(from) + " ACK";
     mesh.sendBroadcast(res);
   }else{
     Serial.print(devicd_id);
@@ -173,8 +173,6 @@ void setup() {
   }
   Serial.println("ver 0.0.1");
 }
-
-//unsigned long retime = 0UL;
 
 void loop() {
   unsigned long millisec = millis();

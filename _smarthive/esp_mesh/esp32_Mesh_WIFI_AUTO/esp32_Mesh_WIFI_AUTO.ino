@@ -22,10 +22,10 @@ char          deviceID[18];
 char    command_Buf[2][SERIAL_MAX];
 uint8_t command_Num[2];
 ////--------------------- make_json -------------------////
-String data_json(String type,String mac,String api,String data) {
+String data_json(String mac,String type,String api,String data) {
   String response = "{\"HUB\":\""  + String(deviceID);
-  response += "\",\"TYPE\":\""     + type;
   response += "\",\"MODULE\":\""   + mac;
+  response += "\",\"TYPE\":\""     + type;
   response += "\",\"API\":\""      + api;
   response += "\",\"DATA\":"       + data;
   response += "}";
@@ -33,7 +33,7 @@ String data_json(String type,String mac,String api,String data) {
 }
 ////--------------------- httpPOSTRequest -------------////
 String httpPOSTRequest(String httpRequestData) {
-  String serverUrl = "http://act.smarthive.kr/log/hive";   //API adress
+  String serverUrl = "http://act.smarthive.kr/log/hub";   //API adress
   HTTPClient http;
   WiFiClient http_client;
   http.begin(http_client, serverUrl);
@@ -119,20 +119,20 @@ void service_serial(String cmd) {
 ////--------------------- service device --------------////
 void service_device(String cmd) {
   uint8_t cmd_index = 0;
+  String mac  = String_slice(&cmd_index, cmd, 0x20);
   String command = String_slice(&cmd_index, cmd, 0x20);
   String type = String_slice(&cmd_index, cmd, 0x20);
-  String mac  = String_slice(&cmd_index, cmd, 0x20);
   String api  = String_slice(&cmd_index, cmd, 0x20);
   String data = String_slice(&cmd_index, cmd, 0x20);
 
   if (command == "post"){
-    String httpRequestData = data_json(type,mac,api,data);
+    String httpRequestData = data_json(mac,type,api,data);
 
     String response = httpPOSTRequest(httpRequestData);
 
     uint8_t cmd_index = 0;
     String command  = String_slice(&cmd_index, response, 0x2C);
-    if(command=="set"){
+    if(command=="run"){
       //do something
     }
   }else{
@@ -146,10 +146,8 @@ void command_process(bool device, char ch) {
     if(device)service_device(command_Buf[device]);
     else service_serial(command_Buf[device]);
     command_Num[device] = 0;
-  }else if (ch != '\r'){
-    if (command_Num[device] < SERIAL_MAX - 1) {  // 버퍼 오버플로우 방지
-      command_Buf[device][command_Num[device]++] = ch;
-    }
+  }else if (ch != '\r' && (command_Num[device] < SERIAL_MAX - 1)){
+    command_Buf[device][command_Num[device]++] = ch;
   }
 }
 ////--------------------- httpPOSTRequest -------------////

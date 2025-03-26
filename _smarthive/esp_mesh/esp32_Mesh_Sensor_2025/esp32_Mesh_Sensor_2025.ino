@@ -4,7 +4,7 @@
 #include  <Wire.h>
 #include  <FS.h>
 
-#define EEPROM_SIZE 4
+#define EEPROM_SIZE 2
 #define SERIAL_MAX  128
 
 #define MESH_PREFIX   "HiveMesh"
@@ -36,68 +36,102 @@ uint8_t sht_port      = 0;
 Scheduler taskScheduler; // to control upload task
 painlessMesh  mesh;
 String nodeID = "";
-String ERR_Message = "";
 
 SimpleList<uint32_t> nodes;
 
-const uint8_t tempGap = 1;
 //// ----------- Flage --------------
-boolean use_stable_h = false;
-boolean run_heater = false;
-boolean run_log    = false;
+boolean use_stable  = false;
+boolean run_heater  = false;
 //// ----------- Variable -----------
-//// ----------- Sensor -----------
-int16_t temperature = 14040;
-int16_t humidity    = 14040;
+//// ----------- Sensor -------------
+float temperature   = 0.00f;
+float humidity      = 0.00f;
+//// ----------- heater work --------
+uint16_t work_total = 0;
+uint16_t work_heat  = 0;
 ////for millis() func//
 unsigned long timer_SHT     = 0UL;
 unsigned long time_stayble  = 0UL;
 unsigned long time_send     = 0UL;
 //// ------------ EEPROM ------------
-const uint8_t EEP_temperature = 1;
-const uint8_t EEP_humidity    = 2;
-const uint8_t EEP_Stable_h    = 3;
+const uint8_t EEP_temp      = 0;
+const uint8_t EEP_stable    = 1;
 //// ------------ EEPROM Variable ---
 uint8_t control_temperature = 33;
-uint8_t control_humidity    = 50;
 //// ------------- PIN --------------
 const uint8_t RELAY_HEATER  = 12;
 //// ----------- Command  -----------
-void command_Service(String command, String value) {
-  if (command == "AT+RES") {
-    if(mesh_info) mesh_send = false;
-  } else if (command == "AT+HELP") {
-    AT_commandHelp();
-  } else if (command == "AT+TEMP") {
-    control_temperature = value.toInt();
-    EEPROM.write(EEP_temperature, control_temperature);
-    mesh.sendBroadcast(nodeID+"=SENSOR=SET=TEMP="+ String(control_temperature) +"=0=0;");
-  } else if (command == "AT+HUMI") {
-    control_humidity = value.toInt();
-    EEPROM.write(EEP_humidity, control_humidity);
-    mesh.sendBroadcast(nodeID+"=SENSOR=SET=HUMI="+ String(control_humidity) +"=0=0;");
-  } else if (command == "AT+USE") {
-    if (value == "true" || value == "1"){
-      use_stable_h = 1;
-    }else{
-      use_stable_h = 0;
+char    Serial_buf[SERIAL_MAX];
+int8_t  Serial_num;
+////--------------------- String_slice ----------------////
+String String_slice(uint8_t *check_index, String text, char check_char){
+  String response = "";
+  for(uint8_t index_check=*check_index; index_check<text.length(); index_check++){
+    if(text[index_check] == check_char || text[index_check] == 0x00){
+      *check_index = index_check+1;
+      break;
     }
-    EEPROM.write(EEP_Stable_h, use_stable_h);
-    mesh.sendBroadcast(nodeID+"=SENSOR=SET=USE=1=0=0;");
+    response += text[index_check];
   }
-  
-  else if (command == "AT+RELAY") {
-    if(value.toInt() == 1){
-      digitalWrite(RELAY_HEATER,  pin_on);
-    }else{      
-      digitalWrite(RELAY_HEATER,  pin_off);
-    }
-  } else if (command == "AT+LOG") {
-    run_log  = (value.toInt() > 0) ? true : false;
-  } else if (command == "AT+LIST") {
-    Serial.println(mesh_node_list());
+  return response;
+}
+////--------------------- String_slice ----------------////
+////--------------------- service help ----------------////
+void help() {
+  Serial.println("************** help **************");
+  Serial.println("run     * homeothermy mode, on/off");
+  Serial.println("set     * temperature goal setup, 0~4,5 is all . ex) set 0 25");
+  Serial.println("config  * read temperature setup");
+  Serial.println("show    * seonsor value show");
+  Serial.println("reboot  * system reboot");
+  Serial.println("**********************************");
+}
+////--------------------- service serial --------------////
+void read_config(){
+  Serial.print("Temperature goal: ");
+  Serial.print(control_temperature);
+  Serial.print(", Set Operation: ");
+  Serial.println(use_stable);
+}
+void serial_monit(){
+  Serial.print("TCA Port");
+  Serial.print(sht_port);
+  Serial.print(", T: ");
+  Serial.print(temperature);
+  Serial.print("°C ,H: ");
+  Serial.print(humidity);
+  Serial.println("%");
+  mesh.update();
+  Serial.print("USE_heater = ");
+  Serial.println(use_stable);
+  Serial.print(", heater");
+  Serial.print(run_heater);
+  Serial.println(";");
+  mesh.update();
+}
+////--------------------- service serial --------------////
+void command_Service(String command, String value) {
+  if (command == "ACK") {
+    if(mesh_info) mesh_send = false;
+  } else if (command == "run") {
+    if (value == "on"){use_stable = 1;}
+    else{use_stable = 0;}
+    EEPROM.write(EEP_stable, use_stable);
+    mesh.sendBroadcast(nodeID+" post hive run " + String(use_stable));
+  } else if (command == "set") {
+    control_temperature = value.toInt();
+    EEPROM.write(EEP_temp, control_temperature);
+    mesh.sendBroadcast(nodeID+" post hive temp " + String(control_temperature));
+  } else if (command == "config") {
+    read_config();
+  } else if (command == "show") {
+    serial_monit();
   } else if (command == "reboot") {
     ESP.restart();
+  } else if (command == "cnt") {
+    mesh.sendBroadcast(nodeID+" post hive cnt 1");
+  } else {
+    help();
   }
   mesh.update();
   Serial.print("AT command:");
@@ -106,47 +140,27 @@ void command_Service(String command, String value) {
   Serial.println(value);
   EEPROM.commit();
 }//Command_service() END
-
-//// ----------- TEST  -----------
-void AT_commandHelp() {
-  Serial.println("------------ AT command help ------------");
-  Serial.println(";AT+HELP=   int;      Tish menual.");
-  Serial.println(";AT+TEMP=   int;      Temperature Change.");
-  Serial.println(";AT+HUMI=   int;      Humidity Change.");
-  Serial.println(";AT+USE=    bool;     Useable Change.");
-  Serial.println(";AT+RELAY=  bool;     heat relay on|off.");
-  Serial.println(";AT+LOG=    bool;     Serial log view");
-  Serial.println(";AT+LIST=   bool;     mesh connected nodes");
-  Serial.println("-----------------------------------------");
+////--------------------- service serial --------------////
+void command_parser(String cmd) {
+  uint8_t cmd_index = 0;
+  String command  = String_slice(&cmd_index, cmd, 0x20);
+  String value    = String_slice(&cmd_index, cmd, 0x20);
+  command_Service(command, value);
 }
-char Serial_buf[SERIAL_MAX];
-int8_t Serial_num;
-void Serial_service() {
-  String str1 = strtok(Serial_buf, "=");
-  String str2 = strtok(0x00, " ");
-  command_Service(str1, str2);
-}
-void Serial_process() {
-  char ch;
+void Serial_process(char ch) {
   ch = Serial.read();
   mesh.update();
-  switch ( ch ) {
-    case '\n':
-      Serial_num = 0;
-      break;
-    case ';':
-      Serial_buf[Serial_num] = 0x00;
-      Serial_service();
-      Serial_num = 0;
-      break;
-    default :
-      Serial_buf[ Serial_num ++ ] = ch;
-      Serial_num %= SERIAL_MAX;
-      break;
+  if (ch == '\n') {
+    Serial_buf[Serial_num] = 0x00;
+    command_parser(Serial_buf);
+    Serial_num = 0;
+  }else if (ch != '\r' && (Serial_num < SERIAL_MAX - 1)){
+    Serial_buf[ Serial_num ++ ] = ch;
   }
 }
-//// ----------- TEST  -----------
-
+////--------------------- service serial --------------////
+////--------------------- wifi mesh -------------------////
+// Needed for painless library
 uint8_t mesh_node_list(){
   nodes = mesh.getNodeList();
   SimpleList<uint32_t>::iterator node = nodes.begin();
@@ -159,149 +173,108 @@ uint8_t mesh_node_list(){
   }
   return node_number;
 }
-
 //taskSendMessage funtion
 void sendMessage() ; // Prototype so PlatformIO doesn't complain
 Task sensorLog( TASK_SECOND*60*5, TASK_FOREVER, &sensorValue );
 void sensorValue() {
   mesh_send = true;
 }
-
-void sensor_values(unsigned long millisec){
+void data_post(unsigned long millisec){
   //매쉬 확인
-  if(mesh_send&& millisec - time_send > 1000*10){
+  if(mesh_send&& millisec - time_send > 1000*60*5){
     time_send = millisec;
     if(mesh_node_list() > 0){
       mesh_info = true;
-      String msg = nodeID+"=SENSOR=LOG=" + (String)temperature + "=" + (String)humidity + ';';
+      String msg = nodeID+" post hive log {\"temp\":\"" + (String)temperature;
+      msg = "\",\"humi\":\"" + (String)humidity;
+      msg = "\",\"work\":"   + (String)work_heat;
+      msg = ",\"runt\":"     + (String)work_total + '}';
       mesh.sendBroadcast( msg );
     }
   }
 }
-//taskSendMessage funtion end
-
-// Needed for painless library
 void receivedCallback( uint32_t from, String &msg ) {
   char msg_buf[SERIAL_MAX];
+  char device[12];
+  uint8_t dvc_index = 0;
+  bool device_check = false;
   for (int index = 0; index < msg.length(); index++) {
-    msg_buf[index] = msg[index];
+    if (device_check){
+      msg_buf[index-dvc_index] = msg[index];
+    }else if(msg[index] != 0x20){
+      device[index] = msg[index];
+    }else{
+      device_check = true;
+      dvc_index = index+1;
+    }
   }
-  String types   = strtok(msg_buf, "=");
-  if (types == "S") {
-    String device  = strtok(0x00, "=");
-    if (device == nodeID) {
-      String command = strtok(0x00, "=");
-      String value   = strtok(0x00, ";");
-      command_Service(command, value);
-    } else if (device == "connecting"){
-      mesh.sendBroadcast(nodeID+"=SENSOR=CNT=TRUE=0=0=0;");
-    }//echo
-  }
+  if (String(device) == nodeID) {command_parser(msg_buf);}
 }
-
+////--------------------- wifi mesh -------------------////
+////--------------------- set up ----------------------////
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
-  Wire.begin();
-  Wire2.begin(SDA2,SCL2,400000);
   //// ------------ PIN OUT ------------
   pinMode(RELAY_HEATER, OUTPUT);
   digitalWrite(RELAY_HEATER,  pin_off);
   //// ------------ PIN OUT ------------
-  if (!EEPROM.begin(EEPROM_SIZE)) Serial.println("failed to initialise EEPROM");
+  Serial.begin(115200);
+  Wire.begin();
+  Wire2.begin(SDA2,SCL2,400000);
   //// ------------ EEPROM ------------
-  if(EEPROM.read(EEP_temperature) == 255){EEPROM.write(EEP_temperature, 3);EEPROM.commit();}
+  if(!EEPROM.begin(EEPROM_SIZE)) Serial.println("failed to initialise EEPROM");
+  if(EEPROM.read(EEP_temp) == 255){EEPROM.write(EEP_temp, 3);EEPROM.commit();}
   if(EEPROM.read(EEP_humidity)    == 255){EEPROM.write(EEP_humidity, 50);EEPROM.commit();}
-  if(EEPROM.read(EEP_Stable_h) == 255){EEPROM.write(EEP_Stable_h, 0);EEPROM.commit();}
-
-  control_temperature = byte(EEPROM.read(EEP_temperature));
-  control_humidity    = byte(EEPROM.read(EEP_humidity));
-
-  if(EEPROM.read(EEP_Stable_h) != 0){use_stable_h = true;}
-  
+  if(EEPROM.read(EEP_stable) == 255){EEPROM.write(EEP_stable, 0);EEPROM.commit();}
+  control_temperature = byte(EEPROM.read(EEP_temp));
+  if(EEPROM.read(EEP_stable) != 0){use_stable = true;}
   //// ------------ EEPROM ------------
   mesh.init( MESH_PREFIX, MESH_PASSWORD, &taskScheduler, MESH_PORT );
   mesh.setContainsRoot( true );
-
   mesh.onReceive(&receivedCallback);
-  
-  nodeID = mesh.getNodeId();
-  ERR_Message = nodeID+"=SENSOR=COMMEND=VALUE1=VALUE2=VALUE3=VALUE4;";
-
   taskScheduler.addTask( sensorLog );
   sensorLog.enable();
 
-  Serial.print("System online, Set temperature is ");
-  Serial.print(control_temperature);
-  Serial.print(", Set humidity is ");
-  Serial.print(control_humidity);  
-  Serial.print(", Set Operation Heat: ");
-  Serial.println(use_stable_h);
-  AT_commandHelp();
+  nodeID = mesh.getNodeId();
+
+  read_config();
   Serial.print("Device nodeID = ");
+  if(nodeID != mesh.getNodeId()){
+    Serial.println("error. system reboot");
+    ESP.restart();
+  }
   Serial.println(nodeID);
-  Serial.println("ver 1.1.1");
+  Serial.println( "System online. ver 0.0.1");
 }
 
 void loop() {
   unsigned long now = millis();
   if (Serial.available()) Serial_process();
   mesh.update();
-  get_sensor(now);
+  sensor_get(now);
   mesh.update();
   stable(now);
   mesh.update();
-  serial_monit(now);
-  mesh.update();
   mesh_restart(now);
-  sensor_values(now);
-}
-
-boolean temp_flage(boolean onoff_Heater) {
-  if (run_heater == onoff_Heater) {
-    return false;
-  }
-  mesh.update();
-  if (run_heater != onoff_Heater) {
-    run_heater = onoff_Heater;
-    if (onoff_Heater) {
-      Serial.println("Heater on");
-      mesh.sendBroadcast(nodeID+"=SENSOR=RELAY=ON=HEAT=1=1;");
-    }
-    else {
-      Serial.println("Heater off");
-      mesh.sendBroadcast(nodeID+"=SENSOR=RELAY=OFF=HEAT=0=0;");
-    }
-  }
-  return true;
+  data_post(now);
 }
 
 void stable(unsigned long millisec) {
   if ((millisec - time_stayble) > 1000 * 1) {
     time_stayble = millisec;
+    run_heater = isnan(temperature) && use_stable && (temperature < control_temperature);
+    work_total += 1;
     mesh.update();
-    if(temperature != 14040 && temperature > 0) {
-      ////온도 유지 팬
-      if (use_stable_h) {
-        if (temperature/100 < control_temperature - tempGap) {
-          if (temp_flage(true)) { //히터, 팬
-            digitalWrite(RELAY_HEATER, pin_on);
-          }
-        }else if (temperature/100 > control_temperature) {
-          if (temp_flage(false)) { //히터, 팬
-            digitalWrite(RELAY_HEATER, pin_off);
-          }
-        }
-      }else{//온도 조절 종료
-        temp_flage(false);
-        digitalWrite(RELAY_HEATER, pin_off);
-      }
+    if(run_heater) {
+      digitalWrite(RELAY_HEATER, pin_on);
+      work_heat += 1;
+    }else{
+      digitalWrite(RELAY_HEATER, pin_off);
     }
   }//millis()
 }//stable() END
 
-
-void get_sensor(unsigned long millisec) {
+void sensor_get(unsigned long millisec) {
   if ((millisec - timer_SHT) > 500) {
     timer_SHT = millisec;
     bool sensor_conn = false;
@@ -310,71 +283,37 @@ void get_sensor(unsigned long millisec) {
         sht_port = 1;
         sensors_event_t humi, temp;
         sht40.getEvent(&humi, &temp);
-        temperature  = temp.temperature * 100;
-        humidity     = humi.relative_humidity * 100;
+        temperature  = temp.temperature;
+        humidity     = humi.relative_humidity;
         sensor_conn  = true;
       }else if (sht40.begin($Wire2)) {
         sht_port = 2;
         sensors_event_t humi, temp;
         sht40.getEvent(&humi, &temp);
-        temperature  = temp.temperature * 100;
-        humidity     = humi.relative_humidity * 100;
+        temperature  = temp.temperature;
+        humidity     = humi.relative_humidity;
         sensor_conn  = true;
       }
     #else
       if (sht31_1.begin(0x44)) {
         sensor_conn = true;
         sht_port = 1;
-        float temp_temperature = sht31_1.readTemperature();
-        if(isnan(temp_temperature)){
-          temperature  = 15060;
-          humidity     = 15060;
-        }else{
-          temperature = temp_temperature * 100;
-          humidity    = sht31_1.readHumidity() * 100;
-        }
+        temperature = sht31_1.readTemperature();
+        humidity    = sht31_1.readHumidity();
         sht31_1.reset();
       }else if (sht31_2.begin(0x44)) {
         sensor_conn = true;
         sht_port = 2;
-        float temp_temperature = sht31_2.readTemperature();
-        if(isnan(temp_temperature)){
-          temperature  = 15060;
-          humidity     = 15060;
-        }else{
-          temperature = temp_temperature * 100;
-          humidity    = sht31_2.readHumidity() * 100;
-        }
+        temperature = sht31_2.readTemperature();
+        humidity    = sht31_2.readHumidity();
         sht31_2.reset();
       }
     #endif
     if(!sensor_conn){
-      temperature  = 14040;
-      humidity     = 14040;
+      temperature  = NAN;
+      humidity     = NAN;
     }
   }//if
-}
-
-unsigned long timer_serial_monit = 0;
-void serial_monit(unsigned long millisec){
-  if (run_log && ((millisec - timer_serial_monit) > 1000)) {
-    timer_serial_monit = millisec;
-    Serial.println(ERR_Message);
-    Serial.print("TCA Port");
-    Serial.print(sht_port);
-    Serial.print(", T: ");
-    Serial.print(temperature);
-    Serial.print("°C ,H: ");
-    Serial.print(humidity);
-    Serial.println("%");
-    mesh.update();
-    Serial.print("USE_heater = ");
-    Serial.println(use_stable_h);
-    Serial.print(", heater");
-    Serial.print(run_heater);
-    Serial.println(";");
-    mesh.update();
-  }
 }
 
 unsigned long timer_restart = 0;
@@ -382,6 +321,9 @@ uint8_t restart_count       = 0;
 void mesh_restart(unsigned long millisec){
   if(millisec - timer_restart > 1000*60){
     timer_restart = millisec;
-    if(restart_count++ > 60) ESP.restart();
+    if(restart_count++ > 60){
+      data_post(millis()+1000*60*5)
+      ESP.restart();
+    }
   }
 }

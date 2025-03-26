@@ -169,7 +169,7 @@ void sensorValue() {
 
 void sensor_values(unsigned long millisec){
   //매쉬 확인
-  if(mesh_send&& millisec - time_send > 1000*10){
+  if(mesh_send&& millisec - time_send > 1000*60*5){
     time_send = millisec;
     if(mesh_node_list() > 0){
       mesh_info = true;
