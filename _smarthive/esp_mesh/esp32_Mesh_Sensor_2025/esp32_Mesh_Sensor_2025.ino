@@ -224,7 +224,6 @@ void setup() {
   //// ------------ EEPROM ------------
   if(!EEPROM.begin(EEPROM_SIZE)) Serial.println("failed to initialise EEPROM");
   if(EEPROM.read(EEP_temp) == 255){EEPROM.write(EEP_temp, 3);EEPROM.commit();}
-  if(EEPROM.read(EEP_humidity)    == 255){EEPROM.write(EEP_humidity, 50);EEPROM.commit();}
   if(EEPROM.read(EEP_stable) == 255){EEPROM.write(EEP_stable, 0);EEPROM.commit();}
   control_temperature = byte(EEPROM.read(EEP_temp));
   if(EEPROM.read(EEP_stable) != 0){use_stable = true;}
@@ -239,7 +238,7 @@ void setup() {
 
   read_config();
   Serial.print("Device nodeID = ");
-  if(nodeID != mesh.getNodeId()){
+  if(nodeID != String(mesh.getNodeId())){
     Serial.println("error. system reboot");
     ESP.restart();
   }
@@ -249,7 +248,7 @@ void setup() {
 
 void loop() {
   unsigned long now = millis();
-  if (Serial.available()) Serial_process();
+  if (Serial.available()) Serial_process(Serial.read());
   mesh.update();
   sensor_get(now);
   mesh.update();
@@ -321,8 +320,8 @@ uint8_t restart_count       = 0;
 void mesh_restart(unsigned long millisec){
   if(millisec - timer_restart > 1000*60){
     timer_restart = millisec;
-    if(restart_count++ > 60){
-      data_post(millis()+1000*60*5)
+    if(restart_count++ > 120){
+      data_post(millis()+1000*60*10);
       ESP.restart();
     }
   }

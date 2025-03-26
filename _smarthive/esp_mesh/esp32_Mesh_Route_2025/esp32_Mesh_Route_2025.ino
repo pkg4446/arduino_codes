@@ -5,7 +5,6 @@
 #define   QUE_MAX 9
 
 #define   MESH_PREFIX     "HiveMesh"
-// #define   MESH_PREFIX     "smartHiveMesh"
 #define   MESH_PASSWORD   "smarthive123"
 #define   MESH_PORT       3333
 
@@ -128,7 +127,7 @@ void receivedCallback( uint32_t from, String &msg ) {
     msg_buf[index] = msg[index];
   }
   uint8_t cmd_index = 0;
-  String devicd_id  = msg_buf(&cmd_index, msg_buf, 0x20);
+  String devicd_id  = String_slice(&cmd_index, msg_buf, 0x20);
   if(devicd_id == String(from)){
     rootDvice.print(msg.c_str());
     Serial.println(msg.c_str());
