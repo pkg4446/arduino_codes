@@ -39,8 +39,8 @@ String nodeID = "";
 SimpleList<uint32_t> nodes;
 
 //// ----------- Flage --------------
-boolean use_stable  = false;
-boolean run_heater  = false;
+bool use_stable  = false;
+bool run_heater  = false;
 //// ----------- Variable -----------
 //// ----------- Sensor -------------
 float temperature   = 0.00f;
@@ -108,21 +108,44 @@ void serial_monit(){
   Serial.println(";");
   mesh.update();
 }
+void post_config(uint8_t post_goal,uint8_t post_run){
+  String msg = nodeID+" post hive set {\"goal\":"+(String)post_goal+",\"run\":"+(String)post_run+"}";
+  mesh.sendBroadcast( msg );
+}
 ////--------------------- service serial --------------////
 void command_Service(String command, String value) {
   if (command == "ACK") {
     mesh_send = false;
+  }if (command == "WEB") {
+    uint8_t cmd_index = 0;
+    control_temperature = String_slice(&cmd_index, value, 0x20).toInt();
+    use_stable          = String_slice(&cmd_index, value, 0x20).toInt();
+    EEPROM.write(EEP_temp,    control_temperature);
+    EEPROM.write(EEP_stable,  use_stable);
+    EEPROM.commit();
+    post_config(control_temperature,use_stable);
   } else if (command == "run") {
-    if (value == "on"){use_stable = 1;}
-    else{use_stable = 0;}
-    EEPROM.write(EEP_stable, use_stable);
-    EEPROM.commit();
-    mesh.sendBroadcast(nodeID+" post hive run " + String(use_stable));
+    bool stable = false;
+    if (value == "on"){stable = 1;}
+    if (stable != use_stable) {
+      EEPROM.write(EEP_stable, use_stable);
+      EEPROM.commit();
+      post_config(control_temperature,use_stable);
+    }
+    Serial.print("Operation mode ");
+    if(stable) Serial.println("ON");
+    else Serial.println("OFF");
   } else if (command == "set") {
-    control_temperature = value.toInt();
-    EEPROM.write(EEP_temp, control_temperature);
-    EEPROM.commit();
-    mesh.sendBroadcast(nodeID+" post hive temp " + String(control_temperature));
+    uint8_t goal = value.toInt();
+    if(goal>40) goal = 40;
+    if(goal != control_temperature){
+      control_temperature = goal;
+      EEPROM.write(EEP_temp, control_temperature);
+      EEPROM.commit();
+      post_config(control_temperature,use_stable);
+    }
+    Serial.print("Temperature goal ");
+    Serial.println(control_temperature);    
   } else if (command == "config") {
     read_config();
   } else if (command == "show") {
@@ -141,7 +164,7 @@ void command_parser(String cmd) {
   Serial.println(cmd);
   uint8_t cmd_index = 0;
   String command  = String_slice(&cmd_index, cmd, 0x20);
-  String value    = String_slice(&cmd_index, cmd, 0x20);
+  String value    = String_slice(&cmd_index, cmd, 0x00);
   command_Service(command, value);
 }
 void Serial_process(char ch) {
@@ -175,7 +198,7 @@ void sensorValue() {
   mesh_send = true;
   Serial.println("send check");
 }
-void data_post(unsigned long millisec){
+void post_data(unsigned long millisec){
   //매쉬 확인
   if(millisec - time_send > 10000 && mesh_send){
     time_send = millisec;
@@ -184,7 +207,7 @@ void data_post(unsigned long millisec){
       String msg = nodeID+" post hive log {\"temp\":\"" + (String)temperature;
       msg += "\",\"humi\":\"" + (String)humidity;
       msg += "\",\"work\":"   + (String)work_heat;
-      msg += ",\"runt\":"     + (String)work_total + '}';
+      msg += ",\"runt\":"     + (String)work_total + "}";
       mesh.sendBroadcast( msg );
     }
   }
@@ -253,7 +276,7 @@ void loop() {
   stable(now);
   mesh.update();
   mesh_restart(now);
-  data_post(now);
+  post_data(now);
 }
 
 void stable(unsigned long millisec) {
@@ -319,7 +342,7 @@ void mesh_restart(unsigned long millisec){
   if(millisec - timer_restart > 1000*60){
     timer_restart = millisec;
     if(restart_count++ > 120){
-      data_post(millis()+1000*60*10);
+      post_data(millis()+1000*60*10);
       ESP.restart();
     }
   }
