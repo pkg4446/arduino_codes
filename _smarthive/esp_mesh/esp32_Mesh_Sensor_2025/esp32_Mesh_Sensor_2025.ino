@@ -117,10 +117,12 @@ void command_Service(String command, String value) {
     if (value == "on"){use_stable = 1;}
     else{use_stable = 0;}
     EEPROM.write(EEP_stable, use_stable);
+    EEPROM.commit();
     mesh.sendBroadcast(nodeID+" post hive run " + String(use_stable));
   } else if (command == "set") {
     control_temperature = value.toInt();
     EEPROM.write(EEP_temp, control_temperature);
+    EEPROM.commit();
     mesh.sendBroadcast(nodeID+" post hive temp " + String(control_temperature));
   } else if (command == "config") {
     read_config();
@@ -134,14 +136,10 @@ void command_Service(String command, String value) {
     help();
   }
   mesh.update();
-  Serial.print("AT command:");
-  Serial.print(command);
-  Serial.print("=");
-  Serial.println(value);
-  EEPROM.commit();
 }//Command_service() END
 ////--------------------- service serial --------------////
 void command_parser(String cmd) {
+  Serial.println(cmd);
   uint8_t cmd_index = 0;
   String command  = String_slice(&cmd_index, cmd, 0x20);
   String value    = String_slice(&cmd_index, cmd, 0x20);
@@ -152,6 +150,7 @@ void Serial_process(char ch) {
   mesh.update();
   if (ch == '\n') {
     Serial_buf[Serial_num] = 0x00;
+    Serial.println(Serial_buf);
     command_parser(Serial_buf);
     Serial_num = 0;
   }else if (ch != '\r' && (Serial_num < SERIAL_MAX - 1)){
@@ -181,8 +180,8 @@ void sensorValue() {
 }
 void data_post(unsigned long millisec){
   //매쉬 확인
-  if(mesh_send&& millisec - time_send > 1000*60*5){
-    time_send = millisec;
+  time_send = millisec;
+  if(millisec - time_send > 10000 && mesh_send){
     if(mesh_node_list() > 0){
       mesh_info = true;
       String msg = nodeID+" post hive log {\"temp\":\"" + (String)temperature;
