@@ -10,17 +10,20 @@
 
 String firmwareVersion = "0.0.1";
 
-#define TOTAL_LED             3
-#define TOTAL_CONTROL         3
-#define OUTPUT                5
-#define EEPROM_SIZE_CONFIG    24
-#define COMMAND_LENGTH        32
-#define SECONDE               1000L
+#define TOTAL_LED       3
+#define TOTAL_CONTROL   3
+#define OUTPUT          5
+#define EEPROM_SIZE     24
+#define COMMAND_LENGTH  32
+#define SECONDE         1000L
 
-#define LED_INTERNET 0
-#define HEATER   0
-#define VALVE_A  1
-#define VALVE_B  2
+#define LED_INTERNET  0
+#define HEATER        0
+#define VALVE_A       1
+#define VALVE_B       2
+
+#define SONA      2
+#define SONA_DATA 4
 
 // UART 핀 설정
 #define SENSOR1_RX 13
@@ -31,7 +34,8 @@ String firmwareVersion = "0.0.1";
 HardwareSerial ultrasonic1(2); // UART1 (GPIO13, GPIO14)
 HardwareSerial ultrasonic2(1); // UART2 (GPIO16, GPIO17)
 
-const   String server = "http://yc.beetopia.kro.kr/";
+const   String server = "http://192.168.1.36:3002/";
+// const   String server = "http://yc.beetopia.kro.kr/";
 char    deviceID[18];
 char    command_buf[COMMAND_LENGTH];
 int8_t  command_num;
@@ -42,8 +46,8 @@ const uint8_t upload_interval = 48;
 const uint8_t eep_time_on   = 49;
 const uint8_t eep_time_off  = 52;
 
-char  ssid[EEPROM_SIZE_CONFIG];
-char  password[EEPROM_SIZE_CONFIG];
+char  ssid[EEPROM_SIZE];
+char  password[EEPROM_SIZE];
 ////--------------------- EEPROM ----------------------////
 ////--------------------- Pin out ---------------------////
 const uint8_t LED[TOTAL_LED] = {4,5,33};
@@ -58,12 +62,17 @@ uint8_t time_off[TOTAL_CONTROL] = {0,};
 uint8_t upload_period   = 5;
 ////--------------------- Flage -----------------------////
 DS3231 RTC_DS3231;
-////--------------------- temperature sensor ----------////
+////--------------------- sensor temperature ----------////
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
 float sensor_temperature    = 0.00f;
 float sensor_humidity       = 0.00f;
-float sensor_ultrasonic[2]  = {0.00f,};
-////--------------------- temperature sensor ----------////
+////--------------------- sensor temperature ----------////
+////--------------------- sensor sona -----------------////
+float   sensor_ultrasonic[SONA]      = {NAN,};
+uint8_t sona_buffer[SONA][SONA_DATA] = {{0,},};
+bool    sona_flage[SONA]    = {false,};
+uint8_t sona_index[SONA]    = {0,};
+////--------------------- sensor sona -----------------////
 ////--------------------- Interval timer --------------////
 unsigned long prev_update       = 0L;
 unsigned long prev_led_toggle   = 0L;
@@ -73,7 +82,7 @@ unsigned long prev_reconnect    = 0L;
 bool  flage_led_toggle = false;
 ////--------------------- Interval timer --------------////
 ////--------------------- Serial command --------------////
-void Serial_command(){ if(Serial.available()) command_process(Serial.read()); }
+void Serial_command(){if(Serial.available()) command_process(Serial.read());}
 ////--------------------- Serial command --------------////
 ////--------------------- setup() ---------------------////
 void setup()
@@ -92,11 +101,16 @@ void setup()
     pinMode(MOSFET[index], OUTPUT);
     digitalWrite(MOSFET[index], false);
   }
-  if (!EEPROM.begin((EEPROM_SIZE_CONFIG*2) + TOTAL_CONTROL*2 + 1)){
+  if (!EEPROM.begin((EEPROM_SIZE*2) + TOTAL_CONTROL*2 + 1)){
     Serial.println("Failed to initialise eeprom");
     Serial.println("Restarting...");
     delay(1000);
     ESP.restart();
+  }
+
+  for (int index = 0; index < EEPROM_SIZE; index++) {
+    ssid[index]     = EEPROM.read(eep_ssid+index);
+    password[index] = EEPROM.read(eep_pass+index);
   }
 
   bool check_init = false;
@@ -145,8 +159,9 @@ void loop()
 {
   const unsigned long millisec = millis();
   Serial_command();
+  sensor_sona();
+  sensor_sht(millisec);
   wifi_reconnect(millisec);
-  loop_sensor_read(millisec);
   // loop_upload(millisec);
   system_control(millisec);
   led_toggle(millisec);
@@ -160,29 +175,15 @@ void system_control(unsigned long millisec){
 }
 ////--------------------- system control --------------////
 ////--------------------- sensor reads ----------------////
-void loop_sensor_read(unsigned long millisec){
+void sensor_sht(unsigned long millisec){
   if(millisec - prev_sensor_read > SECONDE){
     prev_sensor_read = millisec;
-    sensor_read();
-
-    for(uint8_t index=0; index<2; index++){
-      Serial.print("ultrasonic Sensor ");
-      Serial.print(index);
-      Serial.print(" Distance: ");
-      Serial.print(sensor_ultrasonic[index]);
-      Serial.println(" cm");
-    }
-    Serial.print("sht: ");
-    Serial.print(sensor_temperature);
-    Serial.print("℃,");
-    Serial.print(sensor_humidity);
-    Serial.println("%");
+    sensor_temperature_read();
   }
 }
-void sensor_read(){
-  sensor_temperature_read();
-  sensor_ultrasonic[0] = sensor_ultrasonic_read(ultrasonic1,SENSOR1_RX, SENSOR1_TX);
-  sensor_ultrasonic[1] = sensor_ultrasonic_read(ultrasonic2,SENSOR2_RX, SENSOR2_TX);
+void sensor_sona(){
+  sensor_ultrasonic_read(ultrasonic1,0,SENSOR1_RX, SENSOR1_TX);
+  sensor_ultrasonic_read(ultrasonic2,1,SENSOR2_RX, SENSOR2_TX);
 }
 ////--------------------- sensor reads ----------------////
 ////--------------------- command ---------------------////
@@ -204,8 +205,6 @@ void command_service(){
   }else if(cmd_text=="time"){
     time_show();
   }else if(cmd_text=="sensor"){
-    sensor_read();
-
     for(uint8_t index=0; index<2; index++){
       Serial.print("ultrasonic Sensor ");
       Serial.print(index);
@@ -218,7 +217,6 @@ void command_service(){
     Serial.print("℃,");
     Serial.print(sensor_humidity);
     Serial.println("%");
-
   }else if(cmd_text=="valve"){
     uint8_t valve = HEATER;
     if(temp_text == "a") valve = VALVE_A;
@@ -251,6 +249,8 @@ void command_service(){
     EEPROM.commit();
     config_upload(cmd_text,"",HEATER);
   }else if(cmd_text=="config"){
+    if(wifi_able) Serial.println("WIFI on");
+    else Serial.println("WIFI off");
     Serial.print("upload interval : ");
     Serial.print(upload_period);
     Serial.println(" Min");
@@ -305,7 +305,7 @@ void command_service(){
     WiFi.disconnect(true);
     Serial.print("ssid: ");
     if(temp_text.length() > 0){
-      for (int index = 0; index < EEPROM_SIZE_CONFIG; index++) {
+      for (int index = 0; index < EEPROM_SIZE; index++) {
         if(index < temp_text.length()){
           Serial.print(temp_text[index]);
           ssid[index] = temp_text[index];
@@ -323,7 +323,7 @@ void command_service(){
     WiFi.disconnect(true);
     Serial.print("pass: ");
     if(temp_text.length() > 0){
-      for (int index = 0; index < EEPROM_SIZE_CONFIG; index++) {
+      for (int index = 0; index < EEPROM_SIZE; index++) {
         if(index < temp_text.length()){
           Serial.print(temp_text[index]);
           password[index] = temp_text[index];
@@ -421,7 +421,7 @@ void wifi_connect() {
   while (WiFi.status() != WL_CONNECTED) {
     unsigned long update_time = millis();
     Serial_command();
-    if(update_time - wifi_config_update > SECONDE){
+    if(update_time - wifi_config_update > SECONDE*10){
       wifi_able = false;
       Serial.println("WIFI fail");
       break;
@@ -433,7 +433,7 @@ void wifi_connect() {
 void wifi_reconnect(unsigned long millisec) {
   if(!wifi_able && millisec - prev_reconnect > SECONDE*60){
     prev_reconnect = millisec;
-    wifi_connect();
+    if(WiFi.status() != WL_CONNECTED) wifi_connect();
   }
 }
 ////--------------------- wifi ------------------------////
@@ -545,42 +545,33 @@ void sensor_temperature_read(){
     sensor_humidity    = NAN;
   }
 }
-float sensor_ultrasonic_read(HardwareSerial &sensorSerial, int rxPin, int txPin) {
-  float     response;
-  bool      validData = false;
-  uint16_t  distance = 0;
+void sensor_ultrasonic_read(HardwareSerial &sensorSerial, uint8_t sensor_index, uint8_t rxPin, uint8_t txPin) {
+  if(sensorSerial.available()){
+    uint8_t get_serial = sensorSerial.read();
+    if(sona_index[sensor_index] >= SONA_DATA) sona_index[sensor_index] = 0;
 
-  // 센서 데이터 수신 대기 및 읽기
-  unsigned long startTime = millis();
-  while (millis() - startTime < 1000) { // 최대 1초 대기
-    uint8_t buffer[4];
-    uint8_t index = 0;
-    if (sensorSerial.available() >= 4) {
-      uint8_t get_serial = sensorSerial.read();
-      if (buffer[0] == 0xFF) index = 0;
-      buffer[index++] = get_serial;
+    if (get_serial == 255){
+      sona_flage[sensor_index] = false;
+      sona_index[sensor_index] = 0;
+    }else if(sona_index[sensor_index] == SONA_DATA-1){
+      sona_flage[sensor_index] = true;
     }
-    if (index>=4 && buffer[0] == 0xFF) { // 헤더 검증
-      distance = (buffer[1] << 8) | buffer[2];
-      validData = true;
-      break;
-    }
+    sona_buffer[sensor_index][sona_index[sensor_index]++] = get_serial;
   }
 
-  if(validData){
-    response = float(distance)/10.0;
-  }else{
-    sensorSerial.end(); // UART 종료
-    response = NAN;
-    sensorSerial.begin(9600, SERIAL_8N1, rxPin, txPin); // UART 다시 시작
+  if (sona_flage[sensor_index]) {
+    uint16_t  distance = 0;
+    distance = (sona_buffer[sensor_index][1] << 8) | sona_buffer[sensor_index][2];
+    sensor_ultrasonic[sensor_index] = float(distance)/10.0;
   }
-  return distance;
 }
-
 ////--------------------- sensor data upload ----------////
 String sensor_json(){  
-  String response = "{\"DVC\":\""+String(deviceID)+"\",\"DATA:[\""+
-    String(sensor_temperature) + "\",\"" + String(sensor_humidity) + "\"]}";
+  String response = "{\"DVC\":\""+String(deviceID);
+  response += "\",\"DATA\":{\"temp\":\""+String(sensor_temperature);
+  response += "\",\"humi\":\"" + String(sensor_humidity);
+  response += "\",\"sona1\":\"" + String(sensor_ultrasonic[0]);
+  response += "\",\"sona2\":\"" + String(sensor_ultrasonic[1])+"\"}}";
   return response;
 }
 void loop_upload(unsigned long millisec){
