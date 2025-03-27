@@ -145,9 +145,6 @@ void command_parser(String cmd) {
   command_Service(command, value);
 }
 void Serial_process(char ch) {
-  ch = Serial.read();
-  Serial.print("input");
-  Serial.println(ch);
   mesh.update();
   if (ch == '\n') {
     Serial_buf[Serial_num] = 0x00;
