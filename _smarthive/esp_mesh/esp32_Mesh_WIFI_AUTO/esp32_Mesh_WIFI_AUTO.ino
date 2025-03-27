@@ -32,25 +32,27 @@ String data_json(String mac,String type,String api,String data) {
   return response;
 }
 ////--------------------- httpPOSTRequest -------------////
-String httpPOSTRequest(String httpRequestData,String mac) {
+void httpPOSTRequest(String httpRequestData,String mac) {
   String serverUrl = "http://192.168.1.36:3010/log/hub";   //API adress
   HTTPClient http;
   WiFiClient http_client;
   http.begin(http_client, serverUrl);
   http.addHeader("Content-Type", "application/json");
+  http.setTimeout(5000);
   
   int httpResponseCode = http.POST(httpRequestData);
-  if(httpResponseCode == 200){
-    String ack = String(mac) + " ACK\n";
-    rootDvice.print(ack);
-  }
-  Serial.print("HTTP Response code: ");
-  Serial.println(httpResponseCode);
-
   String response = http.getString();
   http.end(); // Free resources
 
-  return response;
+  if(httpResponseCode == 200){
+    String ack = String(mac) + " ACK\n";
+    rootDvice.print(ack);
+    if(response.length()>0)rootDvice.print(response+"\n");
+  }else{
+    Serial.print("HTTP code: ");
+    Serial.println(httpResponseCode);
+    ESP.restart();
+  }
 }
 ////--------------------- httpPOSTRequest -------------////
 ////--------------------- String_slice ----------------////
@@ -124,7 +126,7 @@ void service_serial(String cmd) {
 }
 ////--------------------- service device --------------////
 void service_device(String cmd) {
-  Serial.print("cmd: ");
+  Serial.print("mesh: ");
   Serial.println(cmd);
 
   uint8_t cmd_index = 0;
@@ -136,13 +138,7 @@ void service_device(String cmd) {
 
   if (command == "post"){
     String httpRequestData = data_json(mac,type,api,data);
-    String response = httpPOSTRequest(httpRequestData,mac);
-
-    uint8_t cmd_index = 0;
-    String command  = String_slice(&cmd_index, response, 0x2C);
-    if(command=="run"){
-      //do something
-    }
+    httpPOSTRequest(httpRequestData,mac);
   }else{
 
   }
@@ -254,6 +250,7 @@ void setup() {
       deviceID[index] = WiFi.macAddress()[index];
     }
   }
+  delay(100);
 }//End Of Setup()
 
 void loop() {

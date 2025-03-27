@@ -108,29 +108,37 @@ void serial_monit(){
   Serial.println(";");
   mesh.update();
 }
-void post_config(uint8_t post_goal,uint8_t post_run){
-  String msg = nodeID+" post hive set {\"goal\":"+(String)post_goal+",\"run\":"+(String)post_run+"}";
+void post_config(String api,uint8_t post_goal,uint8_t post_run){
+  String msg = nodeID+" post hive "+api+" {\"goal\":"+(String)post_goal+",\"run\":"+(String)post_run+"}";
   mesh.sendBroadcast( msg );
 }
 ////--------------------- service serial --------------////
 void command_Service(String command, String value) {
   if (command == "ACK") {
     mesh_send = false;
-  }if (command == "WEB") {
+  } else if (command == "WEB") {
     uint8_t cmd_index = 0;
-    control_temperature = String_slice(&cmd_index, value, 0x20).toInt();
-    use_stable          = String_slice(&cmd_index, value, 0x20).toInt();
-    EEPROM.write(EEP_temp,    control_temperature);
-    EEPROM.write(EEP_stable,  use_stable);
-    EEPROM.commit();
-    post_config(control_temperature,use_stable);
+    uint8_t goal  = String_slice(&cmd_index, value, 0x20).toInt();
+    bool stable   = String_slice(&cmd_index, value, 0x20).toInt();
+    bool change   = false;
+    if(goal   != control_temperature) change=true;
+    if(stable != use_stable)          change=true;
+    if(change){
+      control_temperature = goal;
+      use_stable          = stable;
+      EEPROM.write(EEP_temp,    control_temperature);
+      EEPROM.write(EEP_stable,  use_stable);
+      EEPROM.commit();
+      post_config("mod",control_temperature,use_stable);
+    }
   } else if (command == "run") {
     bool stable = false;
-    if (value == "on"){stable = 1;}
+    if (value == "on"){stable = true;}
     if (stable != use_stable) {
+      use_stable = stable;
       EEPROM.write(EEP_stable, use_stable);
       EEPROM.commit();
-      post_config(control_temperature,use_stable);
+      post_config("set",control_temperature,use_stable);
     }
     Serial.print("Operation mode ");
     if(stable) Serial.println("ON");
@@ -142,7 +150,7 @@ void command_Service(String command, String value) {
       control_temperature = goal;
       EEPROM.write(EEP_temp, control_temperature);
       EEPROM.commit();
-      post_config(control_temperature,use_stable);
+      post_config("set",control_temperature,use_stable);
     }
     Serial.print("Temperature goal ");
     Serial.println(control_temperature);    
@@ -161,6 +169,7 @@ void command_Service(String command, String value) {
 }//Command_service() END
 ////--------------------- service serial --------------////
 void command_parser(String cmd) {
+  Serial.print("cmd: ");
   Serial.println(cmd);
   uint8_t cmd_index = 0;
   String command  = String_slice(&cmd_index, cmd, 0x20);
