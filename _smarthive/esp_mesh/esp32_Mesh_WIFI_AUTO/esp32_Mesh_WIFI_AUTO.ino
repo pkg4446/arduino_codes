@@ -34,6 +34,7 @@ String data_json(String mac,String type,String api,String data) {
 ////--------------------- httpPOSTRequest -------------////
 void httpPOSTRequest(String httpRequestData,String mac) {
   String serverUrl = "http://192.168.1.36:3010/log/hub";   //API adress
+  // String serverUrl = "http://act.smarthive.kr/log/hub";   //API adress
   HTTPClient http;
   WiFiClient http_client;
   http.begin(http_client, serverUrl);
