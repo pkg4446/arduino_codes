@@ -24,7 +24,7 @@ uint8_t command_Num[2];
 ////--------------------- make_json -------------------////
 String data_json(String mac,String type,String api,String data) {
   String response = "{\"HUB\":\""  + String(deviceID);
-  response += "\",\"MODULE\":\""   + mac;
+  response += "\",\"DVC\":\""      + mac;
   response += "\",\"TYPE\":\""     + type;
   response += "\",\"API\":\""      + api;
   response += "\",\"DATA\":"       + data;
@@ -32,17 +32,21 @@ String data_json(String mac,String type,String api,String data) {
   return response;
 }
 ////--------------------- httpPOSTRequest -------------////
-String httpPOSTRequest(String httpRequestData) {
+String httpPOSTRequest(String httpRequestData,String mac) {
   String serverUrl = "http://192.168.1.36:3010/log/hub";   //API adress
   HTTPClient http;
   WiFiClient http_client;
   http.begin(http_client, serverUrl);
-
   http.addHeader("Content-Type", "application/json");
   
   int httpResponseCode = http.POST(httpRequestData);
+  if(httpResponseCode == 200){
+    String ack = String(mac) + " ACK\n";
+    rootDvice.print(ack);
+  }
   Serial.print("HTTP Response code: ");
   Serial.println(httpResponseCode);
+
   String response = http.getString();
   http.end(); // Free resources
 
@@ -74,6 +78,8 @@ void help() {
 }
 ////--------------------- service serial --------------////
 void service_serial(String cmd) {
+  Serial.print("cmd: ");
+  Serial.println(cmd);
   uint8_t cmd_index = 0;
   String command  = String_slice(&cmd_index, cmd, 0x20);
   String value    = String_slice(&cmd_index, cmd, 0x20);
@@ -118,6 +124,9 @@ void service_serial(String cmd) {
 }
 ////--------------------- service device --------------////
 void service_device(String cmd) {
+  Serial.print("cmd: ");
+  Serial.println(cmd);
+
   uint8_t cmd_index = 0;
   String mac  = String_slice(&cmd_index, cmd, 0x20);
   String command = String_slice(&cmd_index, cmd, 0x20);
@@ -127,8 +136,7 @@ void service_device(String cmd) {
 
   if (command == "post"){
     String httpRequestData = data_json(mac,type,api,data);
-
-    String response = httpPOSTRequest(httpRequestData);
+    String response = httpPOSTRequest(httpRequestData,mac);
 
     uint8_t cmd_index = 0;
     String command  = String_slice(&cmd_index, response, 0x2C);

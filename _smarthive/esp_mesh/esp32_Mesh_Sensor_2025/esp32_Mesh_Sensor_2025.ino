@@ -28,8 +28,7 @@ TwoWire Wire2 = TwoWire(1);
 const boolean pin_on  = true;
 const boolean pin_off = false;
 
-bool mesh_info = false;
-bool mesh_send = false;
+bool mesh_send = true;
 
 uint8_t sht_port      = 0;
 
@@ -112,7 +111,7 @@ void serial_monit(){
 ////--------------------- service serial --------------////
 void command_Service(String command, String value) {
   if (command == "ACK") {
-    if(mesh_info) mesh_send = false;
+    mesh_send = false;
   } else if (command == "run") {
     if (value == "on"){use_stable = 1;}
     else{use_stable = 0;}
@@ -147,10 +146,11 @@ void command_parser(String cmd) {
 }
 void Serial_process(char ch) {
   ch = Serial.read();
+  Serial.print("input");
+  Serial.println(ch);
   mesh.update();
   if (ch == '\n') {
     Serial_buf[Serial_num] = 0x00;
-    Serial.println(Serial_buf);
     command_parser(Serial_buf);
     Serial_num = 0;
   }else if (ch != '\r' && (Serial_num < SERIAL_MAX - 1)){
@@ -173,21 +173,21 @@ uint8_t mesh_node_list(){
   return node_number;
 }
 //taskSendMessage funtion
-void sendMessage() ; // Prototype so PlatformIO doesn't complain
-Task sensorLog( TASK_SECOND*60*5, TASK_FOREVER, &sensorValue );
+Task sensorLog( TASK_SECOND*3*5, TASK_FOREVER, &sensorValue );
 void sensorValue() {
   mesh_send = true;
+  Serial.println("send check");
 }
 void data_post(unsigned long millisec){
   //매쉬 확인
-  time_send = millisec;
   if(millisec - time_send > 10000 && mesh_send){
+    time_send = millisec;
     if(mesh_node_list() > 0){
-      mesh_info = true;
+      Serial.println("send log");
       String msg = nodeID+" post hive log {\"temp\":\"" + (String)temperature;
-      msg = "\",\"humi\":\"" + (String)humidity;
-      msg = "\",\"work\":"   + (String)work_heat;
-      msg = ",\"runt\":"     + (String)work_total + '}';
+      msg += "\",\"humi\":\"" + (String)humidity;
+      msg += "\",\"work\":"   + (String)work_heat;
+      msg += ",\"runt\":"     + (String)work_total + '}';
       mesh.sendBroadcast( msg );
     }
   }
@@ -203,10 +203,12 @@ void receivedCallback( uint32_t from, String &msg ) {
     }else if(msg[index] != 0x20){
       device[index] = msg[index];
     }else{
+      device[index] = 0x00;
       device_check = true;
       dvc_index = index+1;
     }
   }
+  msg_buf[msg.length()-dvc_index] = 0x00;
   if (String(device) == nodeID) {command_parser(msg_buf);}
 }
 ////--------------------- wifi mesh -------------------////

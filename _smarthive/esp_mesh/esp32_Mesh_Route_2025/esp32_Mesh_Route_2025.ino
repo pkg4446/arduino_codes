@@ -87,13 +87,13 @@ String String_slice(uint8_t *check_index, String text, char check_char){
 ////--------------------- String_slice ----------------////
 void command_Service() {
   if(command_Buf[0] != '\n'){
-    Serial.println(command_Buf);
     mesh.sendBroadcast(command_Buf);
   }
 }//Command_service() END
 
 //replace by pointer
 void command_Process(char ch) {
+  Serial.print(ch);
   mesh.update();
   if (ch == '\n') {
     command_Buf[command_Num] = 0x00;
@@ -126,13 +126,15 @@ void receivedCallback( uint32_t from, String &msg ) {
   for (int index = 0; index < msg.length(); index++) {
     msg_buf[index] = msg[index];
   }
+  Serial.println(msg.c_str());
+
   uint8_t cmd_index = 0;
   String devicd_id  = String_slice(&cmd_index, msg_buf, 0x20);
+  
   if(devicd_id == String(from)){
-    rootDvice.print(msg.c_str());
-    Serial.println(msg.c_str());
-    String res = String(from) + " ACK";
-    mesh.sendBroadcast(res);
+    String post = msg.c_str();
+    post += "\n";
+    rootDvice.print(post);
   }else{
     Serial.print(devicd_id);
     Serial.print(" != ");
