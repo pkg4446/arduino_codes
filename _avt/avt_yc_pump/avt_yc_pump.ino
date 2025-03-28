@@ -34,8 +34,8 @@ String firmwareVersion = "0.0.1";
 HardwareSerial ultrasonic1(2); // UART1 (GPIO13, GPIO14)
 HardwareSerial ultrasonic2(1); // UART2 (GPIO16, GPIO17)
 
-const   String server = "http://192.168.1.36:3002/";
-// const   String server = "http://yc.beetopia.kro.kr/";
+// const   String server = "http://192.168.1.36:3002/";
+const   String server = "http://yc.beetopia.kro.kr/";
 char    deviceID[18];
 char    command_buf[COMMAND_LENGTH];
 int8_t  command_num;
@@ -171,9 +171,11 @@ void loop()
   sensor_sht(millisec);
   wifi_reconnect(millisec);
   loop_upload(millisec);
-  system_control(millisec);
-  //릴레이가 충분한 시간을 두고 스위칭 할 수 있도록 valve_relay_off 가 system_control 밑에 있어야 함.
-  valve_relay_off(millisec);
+  if(!manual_mode){
+    system_control(millisec);
+    //릴레이가 충분한 시간을 두고 스위칭 할 수 있도록 valve_relay_off 가 system_control 밑에 있어야 함.
+    valve_relay_off(millisec);
+  }
   led_toggle(millisec);
 }
 ////--------------------- loop() ----------------------////`
@@ -347,29 +349,59 @@ void command_service(){
       Serial.println("Manual mode ON");
     }else if(temp_text=="on"){
       if(set_value < OUTPUT){
-        uint8_t valve_delay = 500;
-        if(set_value == OUTPUT-1){
-          valve_delay = 0;
-        }else if(set_value%2 == 1){
-          digitalWrite(RELAY[set_value-1], false);
-        }else{
-          digitalWrite(RELAY[set_value+1], false);
+        uint8_t valve_delay = 0;
+        Serial.print("relay ");
+        if(set_value != OUTPUT-1){
+          bool    str_print = false;
+          uint8_t relay_num = 0;
+          if(set_value%2 == 1){
+            if(Hbridge[set_value-1]){
+              digitalWrite(RELAY[set_value-1], false);
+              Hbridge[set_value-1] = false;
+              relay_num = set_value-1;
+              str_print = true;
+            }
+          }else{
+            if(Hbridge[set_value+1]){
+              digitalWrite(RELAY[set_value+1], false);
+              Hbridge[set_value+1] = false;
+              relay_num = set_value+1;
+              str_print = true;
+            }
+          }
+          if(str_print){
+            valve_delay = 500;
+            Serial.print("OFF: ");
+            Serial.print(relay_num);
+            Serial.print(", ");
+          }
         }
         delay(valve_delay);
         digitalWrite(RELAY[set_value], true);
+        Hbridge[set_value] = true;
+        Serial.print("ON: ");
+        Serial.println(set_value);
       }
     }else if(temp_text=="off"){
+      Serial.print("relay OFF: ");
       if(set_value < OUTPUT){
         digitalWrite(RELAY[set_value], false);
+        Serial.println(set_value);
       }else if(set_value == OUTPUT){
         for (uint8_t index = 0; index < OUTPUT; index++){
           digitalWrite(RELAY[index], false);
         }
+        Serial.println("ALL");
       }
+      if(set_value < OUTPUT-1) Hbridge[set_value] = false;
     }else if(temp_text=="data"){
       sensor_upload();
     }else{
       manual_mode = false;
+      for (uint8_t index = 0; index < OUTPUT; index++){
+        digitalWrite(RELAY[index], false);
+        if(index<OUTPUT-1) Hbridge[index] = false;
+      }
       Serial.println("Manual mode OFF");
     }
   }else if(cmd_text=="ssid"){
