@@ -84,6 +84,10 @@ bool  flage_led_toggle = false;
 ////--------------------- Serial command --------------////
 void Serial_command(){if(Serial.available()) command_process(Serial.read());}
 ////--------------------- Serial command --------------////
+////--------------------- clock_array -----------------////
+String str_dow[7]   = {"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
+String str_month[12]= {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+////--------------------- clock_array -----------------////
 ////--------------------- setup() ---------------------////
 void setup()
 {
@@ -134,7 +138,7 @@ void setup()
   }
 
   for (int index = 0; index < TOTAL_CONTROL; index++) {
-    time_on[index]  = EEPROM.read(eep_time_on+ index);
+    time_on[index]  = EEPROM.read(eep_time_on +index);
     time_off[index] = EEPROM.read(eep_time_off+index);
     if(time_on[index]> 24) time_on[index]  = 0;
     if(time_off[index]>24) time_off[index] = 0;
@@ -162,7 +166,7 @@ void loop()
   sensor_sona();
   sensor_sht(millisec);
   wifi_reconnect(millisec);
-  // loop_upload(millisec);
+  loop_upload(millisec);
   system_control(millisec);
   led_toggle(millisec);
 }
@@ -197,13 +201,14 @@ void command_service(){
     ESP.restart();
   }else if(cmd_text=="gap"){
     uint8_t set_value = temp_text.toInt();
+    if(set_value==0) set_value = 1;
     EEPROM.write(upload_interval, set_value);
     upload_period = set_value;
     EEPROM.commit();
     Serial.print("upload interval ");
     Serial.println(upload_period);
   }else if(cmd_text=="time"){
-    time_show();
+    Serial.println(time_show(true));
   }else if(cmd_text=="sensor"){
     for(uint8_t index=0; index<2; index++){
       Serial.print("ultrasonic Sensor ");
@@ -226,13 +231,13 @@ void command_service(){
       uint8_t set_off = String_slice(&check_index, command_buf, 0x20).toInt();
       if(set_on>23)  set_on  = 0;
       if(set_off>23) set_off = 0;
-      EEPROM.write(eep_time_on+ valve, set_on);
+      EEPROM.write(eep_time_on +valve, set_on);
       EEPROM.write(eep_time_off+valve, set_on);
       time_on[valve]  = set_on;
       time_off[valve] = set_off;
       Serial.println(command_buf);
       EEPROM.commit();
-      config_upload(cmd_text,temp_text,valve);
+      config_upload();
     }else{
       Serial.println("valve error");
     }
@@ -247,14 +252,14 @@ void command_service(){
     time_off[HEATER] = set_off;
     Serial.println(command_buf);
     EEPROM.commit();
-    config_upload(cmd_text,"",HEATER);
+    config_upload();
   }else if(cmd_text=="config"){
     if(wifi_able) Serial.println("WIFI on");
     else Serial.println("WIFI off");
     Serial.print("upload interval : ");
     Serial.print(upload_period);
     Serial.println(" Min");
-    for (uint8_t index = 0; index < OUTPUT; index++)
+    for (uint8_t index = 0; index < TOTAL_CONTROL; index++)
     {
       if(index == HEATER){
         Serial.print("Heater: ");
@@ -438,7 +443,9 @@ void wifi_reconnect(unsigned long millisec) {
 }
 ////--------------------- wifi ------------------------////
 ////--------------------- DS3231 ----------------------////
-void time_show(){
+String time_show(bool type){
+  String response = "";
+
   bool century = false;
   bool h12Flag;
   bool pmFlag;
@@ -449,90 +456,30 @@ void time_show(){
   uint8_t clock_hour  = RTC_DS3231.getHour(h12Flag, pmFlag);
   uint8_t clock_min   = RTC_DS3231.getMinute();
   uint8_t clock_sec   = RTC_DS3231.getSecond();
-  Serial.print('2');
-  if(century)Serial.print('1');
-  else Serial.print('0');
-  if(clock_year<10) Serial.print('0');
-  Serial.print(clock_year);Serial.print('/');Serial.print(clock_month);Serial.print('/');Serial.print(clock_day);Serial.print(',');
-  Serial.print(clock_hour);Serial.print(':');Serial.print(clock_min);Serial.print(':');Serial.println(clock_sec);
-}
-////---------------------------------------------------////
-void time_set(){
-  HTTPClient http;
-  http.begin("http://www.google.com/");
-  const char *headerKeys[] = {"Date"};
-  const size_t headerKeysCount = sizeof(headerKeys) / sizeof(headerKeys[0]);
-  http.collectHeaders(headerKeys, headerKeysCount);
-  http.addHeader("Content-Type", "application/json");
-  uint16_t httpResponseCode = http.GET();
-  if(httpResponseCode==200){
-    String server_time = http.header("Date");
-    Serial.println(server_time);
-    //Mon, 03 Jun 2024 01:19:55 GMT
-    String  time_data[5];
-    uint8_t time_index = 0;
-    String  time_text = "";
-    for(uint8_t index=0; index<server_time.length(); index++){
-      if(server_time[index] == 0x20){
-        time_data[time_index++] = time_text;
-        time_text = "";
-        index+=1; //passing to 0x20
-        if(time_index > 4){
-          time_index  = 0;
-          break;
-        }
-      };
-      time_text += server_time[index];
+
+  if(type){
+    clock_hour += 9;
+    if(clock_hour > 23){
+      clock_hour = 0;
+      clock_day += 1;
+      clock_dow += 1;
+      if(clock_dow > 7) clock_dow = 1;
     }
-    uint8_t time_dow,time_day,time_month,time_year,time_time[3];
-    if(time_data[0]=="Mon,")      time_dow = 1;
-    else if(time_data[0]=="Tue,") time_dow = 2;
-    else if(time_data[0]=="Wed,") time_dow = 3;
-    else if(time_data[0]=="Thu,") time_dow = 4;
-    else if(time_data[0]=="Fri,") time_dow = 5;
-    else if(time_data[0]=="Sat,") time_dow = 6;
-    else time_dow = 7;
-    time_day = (time_data[1].toInt())%100;
-    if(time_data[2]=="Jan")      time_month = 1;
-    else if(time_data[2]=="Feb") time_month = 2;
-    else if(time_data[2]=="Mar") time_month = 3;
-    else if(time_data[2]=="Apr") time_month = 4;
-    else if(time_data[2]=="May") time_month = 5;
-    else if(time_data[2]=="Jun") time_month = 6;
-    else if(time_data[2]=="Jul") time_month = 7;
-    else if(time_data[2]=="Aug") time_month = 8;
-    else if(time_data[2]=="Sep") time_month = 9;
-    else if(time_data[2]=="Oct") time_month = 10;
-    else if(time_data[2]=="Nov") time_month = 11;
-    else time_month = 12;
-    time_year = (time_data[3].toInt())%100;
-    for(uint8_t index=0; index<time_data[4].length(); index++){
-      if(time_data[4][index] == 0x3A){
-        time_time[time_index++] = (time_text.toInt())%100;
-        time_text = "";
-        index+=1; //passing to 0x20
-      };
-      time_text += time_data[4][index];
-    }
-    time_time[time_index] = (time_text.toInt())%100;
-    time_time[0] += 9;
-    if(time_time[0] >= 23){
-      time_time[0] = 0;
-      time_day    += 1;
-      if(++time_dow > 7) time_dow = 1;
-    }
-    RTC_DS3231.setClockMode(false);
-    RTC_DS3231.setYear(time_year);
-    RTC_DS3231.setMonth(time_month);
-    RTC_DS3231.setDate(time_day);
-    RTC_DS3231.setDoW(time_dow);
-    RTC_DS3231.setHour(time_time[0]);
-    RTC_DS3231.setMinute(time_time[1]);
-    RTC_DS3231.setSecond(time_time[2]);
-  }else{
-    Serial.println("err");
   }
-  http.end(); // Free resources
+  
+  response += str_dow[clock_dow-1]+", "+String(clock_day)+" "+str_month[clock_month-1]+" 2";
+  if(century) response += "1";
+  else response += "0";
+  if(clock_year<10) response += '0';
+  response += String(clock_year)+" ";
+  if(clock_hour<10) response += '0';
+  response += String(clock_hour)+":";
+  if(clock_min<10) response += '0';
+  response += String(clock_min)+":";
+  if(clock_sec<10) response += '0';
+  response += String(clock_sec)+" GMT";
+
+  return response;
 }
 ////--------------------- DS3231 ----------------------////
 void sensor_temperature_read(){
@@ -578,42 +525,116 @@ void loop_upload(unsigned long millisec){
   if(wifi_able && (millisec - prev_data_post > SECONDE*60*upload_period)){
     prev_data_post  = millisec;
     sensor_upload();
-    //업로드 마다 시계 확인하고 업데이트 하기
   }
 }
 void sensor_upload(){
   String response = httpPOSTRequest(server+"device/pump",sensor_json());
+  Serial.print("http:");
+  Serial.println(response);
   //여기서 설정 변경
   uint8_t check_index = 0;
   String cmd_text = String_slice(&check_index,response, 0x2C);
   if (cmd_text == "set"){
-    bool change_flage = false;
-    uint8_t set_value = String_slice(&check_index,response, 0x2C).toInt();;
-    // if(change_flage){
-    //   EEPROM.commit();
-    //   config_upload();
-    // }
+    bool commint_flage                = false;
+    for (uint8_t index = 0; index < TOTAL_CONTROL; index++){
+      uint8_t set_time_on   = String_slice(&check_index,response, 0x2C).toInt();
+      uint8_t set_time__off = String_slice(&check_index,response, 0x2C).toInt();
+      if(time_on[index] != set_time_on){
+        commint_flage = true;
+        time_on[index] = set_time_on;
+        EEPROM.write(eep_time_on +index, set_time_on);
+      }
+      if(time_off[index] != set_time__off){
+        commint_flage = true;
+        time_off[index] = set_time__off;
+        EEPROM.write(eep_time_off+index, set_time__off);
+      }
+    }
+    if(commint_flage){
+      EEPROM.commit();
+      config_upload();
+    }
   }else if(cmd_text == "updt"){
     firmware_upadte();
   }
 }
-void config_upload(String ctr,String type,uint8_t index){
-  String set_data = "{\"DVC\":\""+String(deviceID)+"\",\"CTR\":\""+ctr+"\",\"TYPE\":\""+type;
-        set_data += "\",\"TIME\":[" + String(time_on[index]) + ","+String(time_off[index]) + "]}";
-  String response = httpPOSTRequest(server+"device/hive_set",set_data);
+void config_upload(){
+  String set_data = "{\"DVC\":\""+String(deviceID)+"\",\"SET\":\"";
+    for (uint8_t index=0; index < TOTAL_CONTROL; index++){
+      if(index != 0) set_data += ",";
+      set_data += String(time_on[index]) + ","+String(time_off[index]);
+    }
+    set_data += "\"}";
+  String response = httpPOSTRequest(server+"device/pump_set",set_data);
   Serial.print("http:");
   Serial.println(response);
+}
+void server_time_parser(String server_time){
+  String  time_data[5];
+  uint8_t time_index = 0;
+  String  time_text = "";
+  for(uint8_t index=0; index<server_time.length(); index++){
+    if(server_time[index] == 0x20){
+      time_data[time_index++] = time_text;
+      time_text = "";
+      index+=1; //passing to 0x20
+      if(time_index > 4){
+        time_index  = 0;
+        break;
+      }
+    };
+    time_text += server_time[index];
+  }
+  uint8_t time_dow,time_day,time_month,time_year,time_time[3];
+  for(uint8_t index=0; index<7; index++){
+    if(str_dow[index]+"," == time_data[0]) time_dow = index+1;
+  }
+  time_day = (time_data[1].toInt())%100;
+  for(uint8_t index=0; index<12; index++){
+    if(str_month[index] == time_data[2]) time_month = index+1;
+  }
+  time_year = (time_data[3].toInt())%100;
+  for(uint8_t index=0; index<time_data[4].length(); index++){
+    if(time_data[4][index] == 0x3A){
+      time_time[time_index++] = (time_text.toInt())%100;
+      time_text = "";
+      index+=1; //passing to 0x20
+    };
+    time_text += time_data[4][index];
+  }
+  time_time[time_index] = (time_text.toInt())%100;
+  //시간설정
+  RTC_DS3231.setClockMode(false);
+  RTC_DS3231.setYear(time_year);
+  RTC_DS3231.setMonth(time_month);
+  RTC_DS3231.setDate(time_day);
+  RTC_DS3231.setDoW(time_dow);
+  RTC_DS3231.setHour(time_time[0]);
+  RTC_DS3231.setMinute(time_time[1]);
+  RTC_DS3231.setSecond(time_time[2]);
 }
 String httpPOSTRequest(String server_url, String send_data) {
   String response = "";
   if(wifi_able){
+    String server_time = "";
     WiFiClient client;
     HTTPClient http;
     http.begin(client, server_url);
+    const char *headerKeys[] = {"Date"};
+    const size_t headerKeysCount = sizeof(headerKeys) / sizeof(headerKeys[0]);
+    http.collectHeaders(headerKeys, headerKeysCount);
     http.addHeader("Content-Type", "application/json");
+    http.setTimeout(5000);
     int response_code = http.POST(send_data);
-    response          = http.getString();
+    if(response_code==200||response_code==201){
+      response = http.getString();
+      server_time = http.header("Date");
+    }
     http.end();
+
+    if(response_code==200||response_code==201){
+      if(server_time != time_show(false)) server_time_parser(server_time);
+    }
   }
   return response;
 }////httpPOSTRequest_End
@@ -648,7 +669,7 @@ String String_slice(uint8_t *check_index, String text, char check_char){
 ////--------------------- firmware_update -------------////
 void firmware_upadte() {
   if(wifi_able){
-    String serverUrl = server + "firmware/device";   //API adress
+    String serverUrl = server + "firmware/pump";   //API adress
     WiFiClient client;
     HTTPClient http;
     http.begin(client, serverUrl);

@@ -462,6 +462,7 @@ void time_show(){
 }
 ////---------------------------------------------------////
 void time_set(){
+  String server_time;
   HTTPClient http;
   http.begin("http://www.google.com/");
   const char *headerKeys[] = {"Date"};
@@ -469,8 +470,11 @@ void time_set(){
   http.collectHeaders(headerKeys, headerKeysCount);
   http.addHeader("Content-Type", "application/json");
   uint16_t httpResponseCode = http.GET();
-  if(httpResponseCode==200){
-    String server_time = http.header("Date");
+  if(httpResponseCode==200||httpResponseCode==201) server_time = http.header("Date");
+  http.end(); // Free resources
+
+  if(httpResponseCode==200||httpResponseCode==201){
+    server_time = http.header("Date");
     Serial.println(server_time);
     //Mon, 03 Jun 2024 01:19:55 GMT
     String  time_data[5];
@@ -536,7 +540,6 @@ void time_set(){
   }else{
     Serial.println("err");
   }
-  http.end(); // Free resources
 }
 ////--------------------- DS3231 ----------------------////
 ////--------------------- temperature read ------------////
