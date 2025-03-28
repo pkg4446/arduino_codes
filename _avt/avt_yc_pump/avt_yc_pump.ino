@@ -719,6 +719,8 @@ void led_toggle(unsigned long millisec){
     prev_led_toggle  = millisec;
     flage_led_toggle = true;
     if(wifi_able)   digitalWrite(LED[LED_INTERNET], true);
+    if(ctr_state[VALVE_A]) digitalWrite(LED[VALVE_A], true);
+    if(ctr_state[VALVE_B]) digitalWrite(LED[VALVE_B], true);
   }else if(flage_led_toggle && millisec - prev_led_toggle > SECONDE - 700){
     flage_led_toggle = false;
     for (uint8_t index = 0; index < TOTAL_LED; index++){
