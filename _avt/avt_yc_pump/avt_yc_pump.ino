@@ -51,12 +51,15 @@ char  password[EEPROM_SIZE];
 ////--------------------- EEPROM ----------------------////
 ////--------------------- Pin out ---------------------////
 const uint8_t LED[TOTAL_LED] = {4,5,33};
-const uint8_t MOSFET[OUTPUT] = {23,25,26,27,32};
+const uint8_t RELAY[OUTPUT]  = {23,25,26,27,32};
 ////--------------------- Pin out ---------------------////
 ////--------------------- Flage -----------------------////
 bool  wifi_able       = false;
 bool  manual_mode     = false;
 bool  ctr_state[TOTAL_CONTROL]  = {false,};
+bool  Hbridge[OUTPUT-1]         = {false,};
+uint8_t valve_count[VALVE_B]    = {0,};
+
 uint8_t time_on[TOTAL_CONTROL]  = {0,};
 uint8_t time_off[TOTAL_CONTROL] = {0,};
 uint8_t upload_period   = 5;
@@ -75,6 +78,7 @@ uint8_t sona_index[SONA]    = {0,};
 ////--------------------- sensor sona -----------------////
 ////--------------------- Interval timer --------------////
 unsigned long prev_update       = 0L;
+unsigned long prev_vlave_relay  = 0L;
 unsigned long prev_led_toggle   = 0L;
 unsigned long prev_sensor_read  = 0L;
 unsigned long prev_data_post    = 0L;
@@ -102,8 +106,8 @@ void setup()
     digitalWrite(LED[index], false);
   }
   for (uint8_t index = 0; index < OUTPUT; index++){
-    pinMode(MOSFET[index], OUTPUT);
-    digitalWrite(MOSFET[index], false);
+    pinMode(RELAY[index], OUTPUT);
+    digitalWrite(RELAY[index], false);
   }
   if (!EEPROM.begin((EEPROM_SIZE*2) + TOTAL_CONTROL*2 + 1)){
     Serial.println("Failed to initialise eeprom");
@@ -133,8 +137,8 @@ void setup()
   }
 
   for (uint8_t index = 0; index < OUTPUT; index++){
-    pinMode(MOSFET[index], OUTPUT);
-    digitalWrite(MOSFET[index], false);
+    pinMode(RELAY[index], OUTPUT);
+    digitalWrite(RELAY[index], false);
   }
 
   for (int index = 0; index < TOTAL_CONTROL; index++) {
@@ -168,13 +172,76 @@ void loop()
   wifi_reconnect(millisec);
   loop_upload(millisec);
   system_control(millisec);
+  //릴레이가 충분한 시간을 두고 스위칭 할 수 있도록 valve_relay_off 가 system_control 밑에 있어야 함.
+  valve_relay_off(millisec);
   led_toggle(millisec);
 }
 ////--------------------- loop() ----------------------////`
 ////--------------------- system control --------------////
+void valve_relay_off(unsigned long millisec){
+  if(millisec - prev_vlave_relay > SECONDE){
+    prev_vlave_relay = millisec;
+    for(uint8_t index=VALVE_A; index<TOTAL_CONTROL; index++){
+      if(Hbridge[index*2]||Hbridge[index*2+1]){
+        if(valve_count[index-VALVE_A]<10){
+          valve_count[index-VALVE_A] += 1;
+        }else {
+          digitalWrite(Hbridge[index*2], false);
+          digitalWrite(Hbridge[index*2+1], false);
+        }
+      }
+    }
+  }
+}
+////--------------------- valve check -----------------////
+void valve_3way(uint8_t valve,bool valve_state){
+  if(ctr_state[valve] != valve_state){
+    valve_count[valve-VALVE_A] = 0;
+    if(valve_state){
+      //on
+      if(Hbridge[valve*2+1]){
+        digitalWrite(Hbridge[valve*2+1], false);
+        Hbridge[valve*2+1] = false;
+        delay(500);
+      }
+      digitalWrite(Hbridge[valve*2], true);
+      Hbridge[valve*2] = true;
+    }else{
+      //off
+      if(Hbridge[valve*2]){
+        digitalWrite(Hbridge[valve*2], false);
+        delay(500);
+      }
+      digitalWrite(Hbridge[valve*2+1], true);
+      Hbridge[valve*2+1] = true;
+    }
+  }
+}
+////--------------------- valve onoff -----------------////
 void system_control(unsigned long millisec){
   if(millisec - prev_update > SECONDE){
     prev_update = millisec;
+    const uint8_t time_hour = korean_time();
+    bool output_state[TOTAL_CONTROL] = {false,};
+    for (uint8_t index = 0; index < TOTAL_CONTROL; index++){
+      if(time_on[index] != time_off[index]){
+        if(time_on[index] < time_off[index]){
+          if(time_on[index]<=time_hour && time_hour<time_off[index]) output_state[index] = true;
+          else output_state[index] = false;
+        }else{
+          if(time_off[index]<=time_hour && time_hour<time_on[index]) output_state[index] = false;
+          else output_state[index] = true;
+        }
+      }else{
+        output_state[index] = true;
+      }
+    }
+    if(ctr_state[HEATER] != output_state[HEATER]){
+      ctr_state[HEATER] = output_state[HEATER];
+      digitalWrite(RELAY[OUTPUT-1], ctr_state[HEATER]);
+    }
+    valve_3way(VALVE_A,output_state[VALVE_A]);
+    valve_3way(VALVE_B,output_state[VALVE_B]);
   }
 }
 ////--------------------- system control --------------////
@@ -280,23 +347,23 @@ void command_service(){
       Serial.println("Manual mode ON");
     }else if(temp_text=="on"){
       if(set_value < OUTPUT){
-        uint8_t valve_delay = 50;
+        uint8_t valve_delay = 500;
         if(set_value == OUTPUT-1){
           valve_delay = 0;
         }else if(set_value%2 == 1){
-          digitalWrite(MOSFET[set_value-1], false);
+          digitalWrite(RELAY[set_value-1], false);
         }else{
-          digitalWrite(MOSFET[set_value+1], false);
+          digitalWrite(RELAY[set_value+1], false);
         }
         delay(valve_delay);
-        digitalWrite(MOSFET[set_value], true);
+        digitalWrite(RELAY[set_value], true);
       }
     }else if(temp_text=="off"){
       if(set_value < OUTPUT){
-        digitalWrite(MOSFET[set_value], false);
+        digitalWrite(RELAY[set_value], false);
       }else if(set_value == OUTPUT){
         for (uint8_t index = 0; index < OUTPUT; index++){
-          digitalWrite(MOSFET[index], false);
+          digitalWrite(RELAY[index], false);
         }
       }
     }else if(temp_text=="data"){
@@ -442,6 +509,12 @@ void wifi_reconnect(unsigned long millisec) {
   }
 }
 ////--------------------- wifi ------------------------////
+uint8_t korean_time(){
+  bool h12Flag;
+  bool pmFlag;
+  uint8_t clock_hour  = RTC_DS3231.getHour(h12Flag, pmFlag);
+  return clock_hour;
+}
 ////--------------------- DS3231 ----------------------////
 String time_show(bool type){
   String response = "";
@@ -458,6 +531,7 @@ String time_show(bool type){
   uint8_t clock_sec   = RTC_DS3231.getSecond();
 
   if(type){
+    //한국 기준 시간으로 변환
     clock_hour += 9;
     if(clock_hour > 23){
       clock_hour = 0;
