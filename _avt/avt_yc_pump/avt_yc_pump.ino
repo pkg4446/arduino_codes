@@ -382,11 +382,14 @@ void command_service(){
         Hbridge[set_value] = true;
         Serial.print("ON: ");
         Serial.println(set_value);
+      }else{
+        Serial.println("relay 0~4");
       }
     }else if(temp_text=="off"){
       Serial.print("relay OFF: ");
       if(set_value < RLY_OUTPUT){
-        if(set_value == RLY_OUTPUT-1) ctr_state[RLY_OUTPUT-1] = false;
+        if(set_value < RLY_OUTPUT-1) Hbridge[set_value] = false;
+        else ctr_state[RLY_OUTPUT-1] = false;
         digitalWrite(RELAY[set_value], false);
         Serial.println(set_value);
       }else if(set_value == RLY_OUTPUT){
@@ -395,8 +398,9 @@ void command_service(){
           digitalWrite(RELAY[index], false);
         }
         Serial.println("ALL");
+      }else{
+        Serial.println("relay 0~4");
       }
-      if(set_value < RLY_OUTPUT-1) Hbridge[set_value] = false;
     }else if(temp_text=="data"){
       sensor_upload();
     }else{
