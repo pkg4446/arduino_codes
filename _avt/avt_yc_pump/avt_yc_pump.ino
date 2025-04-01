@@ -639,7 +639,7 @@ void loop_upload(unsigned long millisec){
 }
 void sensor_upload(){
   String response = httpPOSTRequest(server+"device/pump",sensor_json());
-  Serial.print("http:");
+  Serial.print("res:");
   Serial.println(response);
   //여기서 설정 변경
   uint8_t check_index = 0;
@@ -676,7 +676,7 @@ void config_upload(){
     }
     set_data += "\"}";
   String response = httpPOSTRequest(server+"device/pump_set",set_data);
-  Serial.print("http:");
+  Serial.print("code:");
   Serial.println(response);
 }
 void server_time_parser(String server_time){
