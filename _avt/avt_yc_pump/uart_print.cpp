@@ -14,7 +14,7 @@ void serial_command_help(HardwareSerial *uart) {
   uart->println("gap     * set upload interval");
   uart->println("time    * show system time");
   uart->println("sensor  * sht, water level show");
-  uart->println("Valve   *");
+  uart->println("valve   *");
   uart->println("      a * ex) Valve a 09 13");
   uart->println("      b * ex) Valve b 18 21");
   uart->println("heat    * ex) heat 20 08");

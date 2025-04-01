@@ -12,7 +12,7 @@ String firmwareVersion = "0.0.1";
 
 #define TOTAL_LED       3
 #define TOTAL_CONTROL   3
-#define OUTPUT          5
+#define RLY_OUTPUT      5
 #define EEPROM_SIZE     24
 #define COMMAND_LENGTH  32
 #define SECONDE         1000L
@@ -51,13 +51,13 @@ char  password[EEPROM_SIZE];
 ////--------------------- EEPROM ----------------------////
 ////--------------------- Pin out ---------------------////
 const uint8_t LED[TOTAL_LED] = {4,5,33};
-const uint8_t RELAY[OUTPUT]  = {23,25,26,27,32};
+const uint8_t RELAY[RLY_OUTPUT]  = {23,25,26,27,32};
 ////--------------------- Pin out ---------------------////
 ////--------------------- Flage -----------------------////
 bool  wifi_able       = false;
 bool  manual_mode     = false;
 bool  ctr_state[TOTAL_CONTROL]  = {false,};
-bool  Hbridge[OUTPUT-1]         = {false,};
+bool  Hbridge[RLY_OUTPUT-1]     = {false,};
 uint8_t valve_count[VALVE_B]    = {0,};
 
 uint8_t time_on[TOTAL_CONTROL]  = {0,};
@@ -105,7 +105,7 @@ void setup()
     pinMode(LED[index], OUTPUT);
     digitalWrite(LED[index], false);
   }
-  for (uint8_t index = 0; index < OUTPUT; index++){
+  for (uint8_t index = 0; index < RLY_OUTPUT; index++){
     pinMode(RELAY[index], OUTPUT);
     digitalWrite(RELAY[index], false);
   }
@@ -135,12 +135,6 @@ void setup()
     EEPROM.write(upload_interval, init_interval);
     upload_period = init_interval;
   }
-
-  for (uint8_t index = 0; index < OUTPUT; index++){
-    pinMode(RELAY[index], OUTPUT);
-    digitalWrite(RELAY[index], false);
-  }
-
   for (int index = 0; index < TOTAL_CONTROL; index++) {
     time_on[index]  = EEPROM.read(eep_time_on +index);
     time_off[index] = EEPROM.read(eep_time_off+index);
@@ -183,13 +177,15 @@ void loop()
 void valve_relay_off(unsigned long millisec){
   if(millisec - prev_vlave_relay > SECONDE){
     prev_vlave_relay = millisec;
-    for(uint8_t index=VALVE_A; index<TOTAL_CONTROL; index++){
+    for(uint8_t index=0; index<VALVE_B; index++){
       if(Hbridge[index*2]||Hbridge[index*2+1]){
-        if(valve_count[index-VALVE_A]<10){
-          valve_count[index-VALVE_A] += 1;
+        if(valve_count[index]<10){
+          valve_count[index] += 1;
         }else {
-          digitalWrite(Hbridge[index*2], false);
-          digitalWrite(Hbridge[index*2+1], false);
+          Hbridge[index*2]   = false;
+          Hbridge[index*2+1] = false;
+          digitalWrite(RELAY[index*2], false);
+          digitalWrite(RELAY[index*2+1], false);
         }
       }
     }
@@ -198,23 +194,25 @@ void valve_relay_off(unsigned long millisec){
 ////--------------------- valve check -----------------////
 void valve_3way(uint8_t valve,bool valve_state){
   if(ctr_state[valve] != valve_state){
-    valve_count[valve-VALVE_A] = 0;
+    ctr_state[valve] = valve_state;
+    valve -= 1;
+    valve_count[valve] = 0;
     if(valve_state){
       //on
       if(Hbridge[valve*2+1]){
-        digitalWrite(Hbridge[valve*2+1], false);
+        digitalWrite(RELAY[valve*2+1], false);
         Hbridge[valve*2+1] = false;
         delay(500);
       }
-      digitalWrite(Hbridge[valve*2], true);
+      digitalWrite(RELAY[valve*2], true);
       Hbridge[valve*2] = true;
     }else{
       //off
       if(Hbridge[valve*2]){
-        digitalWrite(Hbridge[valve*2], false);
+        digitalWrite(RELAY[valve*2], false);
         delay(500);
       }
-      digitalWrite(Hbridge[valve*2+1], true);
+      digitalWrite(RELAY[valve*2+1], true);
       Hbridge[valve*2+1] = true;
     }
   }
@@ -235,12 +233,13 @@ void system_control(unsigned long millisec){
           else output_state[index] = true;
         }
       }else{
-        output_state[index] = true;
+        output_state[index] =  false;
       }
     }
+
     if(ctr_state[HEATER] != output_state[HEATER]){
       ctr_state[HEATER] = output_state[HEATER];
-      digitalWrite(RELAY[OUTPUT-1], ctr_state[HEATER]);
+      digitalWrite(RELAY[RLY_OUTPUT-1], ctr_state[HEATER]);
     }
     valve_3way(VALVE_A,output_state[VALVE_A]);
     valve_3way(VALVE_B,output_state[VALVE_B]);
@@ -301,7 +300,7 @@ void command_service(){
       if(set_on>23)  set_on  = 0;
       if(set_off>23) set_off = 0;
       EEPROM.write(eep_time_on +valve, set_on);
-      EEPROM.write(eep_time_off+valve, set_on);
+      EEPROM.write(eep_time_off+valve, set_off);
       time_on[valve]  = set_on;
       time_off[valve] = set_off;
       Serial.println(command_buf);
@@ -316,7 +315,7 @@ void command_service(){
     if(set_on>23)  set_on  = 0;
     if(set_off>23) set_off = 0;
     EEPROM.write(eep_time_on,  set_on);
-    EEPROM.write(eep_time_off, set_on);
+    EEPROM.write(eep_time_off, set_off);
     time_on[HEATER]  = set_on;
     time_off[HEATER] = set_off;
     Serial.println(command_buf);
@@ -348,10 +347,10 @@ void command_service(){
       manual_mode = true;
       Serial.println("Manual mode ON");
     }else if(temp_text=="on"){
-      if(set_value < OUTPUT){
+      if(set_value < RLY_OUTPUT){
         uint8_t valve_delay = 0;
         Serial.print("relay ");
-        if(set_value != OUTPUT-1){
+        if(set_value != RLY_OUTPUT-1){
           bool    str_print = false;
           uint8_t relay_num = 0;
           if(set_value%2 == 1){
@@ -375,6 +374,8 @@ void command_service(){
             Serial.print(relay_num);
             Serial.print(", ");
           }
+        }else{
+          ctr_state[RLY_OUTPUT-1] = true;
         }
         delay(valve_delay);
         digitalWrite(RELAY[set_value], true);
@@ -384,23 +385,25 @@ void command_service(){
       }
     }else if(temp_text=="off"){
       Serial.print("relay OFF: ");
-      if(set_value < OUTPUT){
+      if(set_value < RLY_OUTPUT){
+        if(set_value == RLY_OUTPUT-1) ctr_state[RLY_OUTPUT-1] = false;
         digitalWrite(RELAY[set_value], false);
         Serial.println(set_value);
-      }else if(set_value == OUTPUT){
-        for (uint8_t index = 0; index < OUTPUT; index++){
+      }else if(set_value == RLY_OUTPUT){
+        ctr_state[RLY_OUTPUT-1] = false;
+        for (uint8_t index = 0; index < RLY_OUTPUT; index++){
           digitalWrite(RELAY[index], false);
         }
         Serial.println("ALL");
       }
-      if(set_value < OUTPUT-1) Hbridge[set_value] = false;
+      if(set_value < RLY_OUTPUT-1) Hbridge[set_value] = false;
     }else if(temp_text=="data"){
       sensor_upload();
     }else{
       manual_mode = false;
-      for (uint8_t index = 0; index < OUTPUT; index++){
+      ctr_state[RLY_OUTPUT-1] = false;
+      for (uint8_t index = 0; index < RLY_OUTPUT; index++){
         digitalWrite(RELAY[index], false);
-        if(index<OUTPUT-1) Hbridge[index] = false;
       }
       Serial.println("Manual mode OFF");
     }
@@ -544,7 +547,8 @@ void wifi_reconnect(unsigned long millisec) {
 uint8_t korean_time(){
   bool h12Flag;
   bool pmFlag;
-  uint8_t clock_hour  = RTC_DS3231.getHour(h12Flag, pmFlag);
+  uint8_t clock_hour = RTC_DS3231.getHour(h12Flag, pmFlag)+9;
+  if(clock_hour>23) clock_hour = 0;
   return clock_hour;
 }
 ////--------------------- DS3231 ----------------------////
@@ -737,6 +741,8 @@ String httpPOSTRequest(String server_url, String send_data) {
       server_time = http.header("Date");
     }
     http.end();
+    Serial.print("http:");
+    Serial.println(response_code);
 
     if(response_code==200||response_code==201){
       if(server_time != time_show(false)) server_time_parser(server_time);
