@@ -346,7 +346,7 @@ void command_service(){
     if(temp_text=="mode"){
       manual_mode = true;
       Serial.println("Manual mode ON");
-    }else if(temp_text=="on"){
+    }else if(temp_text=="on" && manual_mode){
       if(set_value < RLY_OUTPUT){
         uint8_t valve_delay = 0;
         Serial.print("relay ");
@@ -385,7 +385,7 @@ void command_service(){
       }else{
         Serial.println("relay 0~4");
       }
-    }else if(temp_text=="off"){
+    }else if(temp_text=="off" && manual_mode){
       Serial.print("relay OFF: ");
       if(set_value < RLY_OUTPUT){
         if(set_value < RLY_OUTPUT-1) Hbridge[set_value] = false;
@@ -403,6 +403,8 @@ void command_service(){
       }
     }else if(temp_text=="data"){
       sensor_upload();
+    }else if(!manual_mode){
+      Serial.println("Manual mode OFF");
     }else{
       manual_mode = false;
       ctr_state[RLY_OUTPUT-1] = false;
