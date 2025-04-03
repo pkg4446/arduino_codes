@@ -33,8 +33,9 @@ void loop() {
 }
 
 void relayOnOff(int8_t pinNumber) {
+  Serial.print("pin number ");
+  Serial.println(pinNumber);
   ioport.digitalWrite(pinNumber, true);
   delay(1000);
   ioport.digitalWrite(pinNumber, false);
-  delay(1000);
 }
