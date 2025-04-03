@@ -102,7 +102,7 @@ void serial_monit(){
   Serial.println("%");
   mesh.update();
   Serial.print("USE_heater = ");
-  Serial.println(use_stable);
+  Serial.print(use_stable);
   Serial.print(", heater");
   Serial.print(run_heater);
   Serial.println(";");
@@ -291,7 +291,7 @@ void loop() {
 void stable(unsigned long millisec) {
   if ((millisec - time_stayble) > 1000 * 1) {
     time_stayble = millisec;
-    run_heater = isnan(temperature) && use_stable && (temperature < control_temperature);
+    run_heater = !isnan(temperature) && use_stable && (temperature < control_temperature);
     work_total += 1;
     mesh.update();
     if(run_heater) {
