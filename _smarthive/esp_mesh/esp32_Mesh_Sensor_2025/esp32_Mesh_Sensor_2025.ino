@@ -116,6 +116,8 @@ void post_config(String api,uint8_t post_goal,uint8_t post_run){
 void command_Service(String command, String value) {
   if (command == "ACK") {
     mesh_send = false;
+    work_total = 0;
+    work_heat  = 0;
   } else if (command == "WEB") {
     uint8_t cmd_index = 0;
     uint8_t goal  = String_slice(&cmd_index, value, 0x20).toInt();
