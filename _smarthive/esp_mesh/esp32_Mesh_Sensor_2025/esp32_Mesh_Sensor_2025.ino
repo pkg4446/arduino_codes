@@ -204,7 +204,7 @@ uint8_t mesh_node_list(){
   return node_number;
 }
 //taskSendMessage funtion
-Task sensorLog( TASK_SECOND*3*5, TASK_FOREVER, &sensorValue );
+Task sensorLog( TASK_SECOND*60*1, TASK_FOREVER, &sensorValue );
 void sensorValue() {
   mesh_send = true;
   Serial.println("send check");
