@@ -184,7 +184,7 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
-  unsigned long wifi_config_update = 0UL;
+  unsigned long wifi_config_update = millis();
   bool scan_flage = false;
   while (WiFi.status() != WL_CONNECTED) {
     if(Serial.available()) command_process(false,Serial.read());
