@@ -103,11 +103,33 @@ bool httpPOSTRequest(const String& httpRequestData) {
     String response = http.getString();
     if (response.length() > 0) {
       Serial.println(response);
+      uint8_t cmd_index = 0;
+      String_slice(&cmd_index, response, 0x20);
+      if(String_slice(&cmd_index, response, 0x20) == "WEB"){
+        uint8_t goal = String_slice(&cmd_index, response, 0x20).toInt();
+        bool stable = String_slice(&cmd_index, response, 0x20).toInt();
+        bool change = false;
+        
+        if (goal != control_temperature) change = true;
+        if (stable != use_stable) change = true;
+        
+        if (change) {
+          control_temperature = goal;
+          use_stable = stable;
+          EEPROM.write(EEP_temp, control_temperature);
+          EEPROM.write(EEP_stable, use_stable);
+          EEPROM.commit();
+          if (wifi_connected) {
+            post_config("mod", control_temperature, use_stable);
+          }
+        }
+      }
+
     } else {
-      Serial.println("Data uploaded");
+      Serial.println("Data uploaded");      
     }
   } else {
-    Serial.print("HTTP code: ");
+    Serial.print("HTTP code: ");    
     Serial.println(httpResponseCode);
   }
   
@@ -126,20 +148,27 @@ void post_config(const String& api, uint8_t post_goal, uint8_t post_run) {
   httpPOSTRequest(json);
 }
 
-void post_data(unsigned long millisec, bool manual = false) {
+void post_callback(unsigned long millisec, bool manual = false) {
   if (!wifi_connected) return;
-  
-  if (manual || (millisec - time_send > 1000 * 60 * 5)) {
+  if (manual){
+    post_data();
+  }else if (millisec - time_send > 1000*60*5){
     time_send = millisec;
-
-    String json = "{\"DVC\":\"" + String(deviceID) + "\",\"API\":\"log\",\"DATA\":{\"temp\":\"" + String(temperature);
-    json += "\",\"humi\":\"" + String(humidity);
-    json += "\",\"work\":" + String(work_heat);
-    json += ",\"runt\":" + String(work_total) + "}}";
-    Serial.println(json);
-    httpPOSTRequest(json);
+    post_data();
   }
 }
+
+void post_data() {
+  String json = "{\"DVC\":\"" + String(deviceID) + "\",\"API\":\"log\",\"DATA\":{\"temp\":\"" + String(temperature);
+  json += "\",\"humi\":\"" + String(humidity);
+  json += "\",\"work\":" + String(work_heat);
+  json += ",\"runt\":" + String(work_total) + "}}";
+  Serial.println(json);  
+  work_heat  = 0;
+  work_total = 0;
+  httpPOSTRequest(json);
+}
+
 
 ////--------------------- service help ----------------////
 void help() {
@@ -184,26 +213,7 @@ void wifi_connect();
 
 ////--------------------- service serial --------------////
 void command_Service(const String& command, const String& value) {
-  if (command == "WEB") {
-    uint8_t cmd_index = 0;
-    uint8_t goal = String_slice(&cmd_index, value, 0x20).toInt();
-    bool stable = String_slice(&cmd_index, value, 0x20).toInt();
-    bool change = false;
-    
-    if (goal != control_temperature) change = true;
-    if (stable != use_stable) change = true;
-    
-    if (change) {
-      control_temperature = goal;
-      use_stable = stable;
-      EEPROM.write(EEP_temp, control_temperature);
-      EEPROM.write(EEP_stable, use_stable);
-      EEPROM.commit();
-      if (wifi_connected) {
-        post_config("mod", control_temperature, use_stable);
-      }
-    }
-  } else if (command == "run") {
+  if (command == "run") {
     bool stable = false;
     if (value == "on") stable = true;
     
@@ -238,7 +248,7 @@ void command_Service(const String& command, const String& value) {
   } else if (command == "show") {
     serial_monit();
   } else if (command == "post") {
-    post_data(millis(), true);
+    post_callback(millis(), true);
   } else if (command == "reboot") {
     ESP.restart();
   } else if (command == "ssid") {
@@ -349,8 +359,11 @@ void setup() {
 
   Serial.print("ID: ");
   Serial.println(deviceID);
-  Serial.println("System online. ver 0.0.2");
+  Serial.println("System online. ver 0.0.1");
   Serial.println("---------------------------");
+  while (millis()<=500) {delay(1);}
+  sensor_get(millis());
+  post_callback(millis(), true);
 }
 
 void wifi_connect() {
@@ -379,9 +392,9 @@ void wifi_connect() {
     
     if (Serial.available()) Serial_process(Serial.read());
     
-    // 8초마다 자동 연결 시도
+    // 10초마다 자동 연결 시도
     unsigned long update_time = millis();
-    if (update_time - wifi_config_update > 8000) {
+    if (update_time - wifi_config_update > 10*1000) {
       wifi_config_update = update_time;
       Serial.println("Connecting to scan");
       
@@ -456,8 +469,8 @@ void check_wifi_connection() {
   static unsigned long last_wifi_check = 0;
   unsigned long current_time = millis();
   
-  // 30초마다 WiFi 연결 확인
-  if (current_time - last_wifi_check > 30000) {
+  // WiFi 연결 확인
+  if (current_time - last_wifi_check > 1000*60*3) {
     last_wifi_check = current_time;
     
     if (WiFi.status() != WL_CONNECTED) {
@@ -505,7 +518,7 @@ void loop() {
   
   // 데이터 전송
   if (wifi_connected) {
-    post_data(now, false);
+    post_callback(now, false);
   }
   
   // 짧은 지연으로 워치독 타이머 트리거 방지
