@@ -89,8 +89,8 @@ void restart(unsigned long millisec) {
 bool httpPOSTRequest(const String& httpRequestData) {
   if (!wifi_connected) return false;
   
-  String serverUrl = "http://192.168.1.29:3010/log/hive";   // API 주소
-  // String serverUrl = "http://act.smarthive.kr/log/hive";  // 대체 API 주소
+  // String serverUrl = "http://192.168.1.29:3010/log/hive";   // API 주소
+  String serverUrl = "http://bee.smarthive.kr/log/hive";  // 대체 API 주소
   
   http.begin(http_client, serverUrl);
   http.addHeader("Content-Type", "application/json");
