@@ -377,21 +377,10 @@ void wifi_connect() {
   WiFi.begin(ssid, password);
 
   unsigned long wifi_config_update = millis();
-  bool wifi_connect_success = false;
-  int connection_attempt = 0;
-  const int max_connection_attempts = 15; // 연결 시도 최대 횟수
+  bool wifi_connect_success = true;
 
-  while (connection_attempt < max_connection_attempts) {
-    delay(500); // 짧은 대기 시간
-    connection_attempt++;
-    
-    if (WiFi.status() == WL_CONNECTED) {
-      wifi_connect_success = true;
-      break;
-    }
-    
-    if (Serial.available()) Serial_process(Serial.read());
-    
+  while (WiFi.status() != WL_CONNECTED) {
+    if (Serial.available()) Serial_process(Serial.read());    
     // 10초마다 자동 연결 시도
     unsigned long update_time = millis();
     if (update_time - wifi_config_update > 10*1000) {
@@ -441,6 +430,7 @@ void wifi_connect() {
       }
       Serial.println("---------------------------");
       WiFi.scanDelete();
+      wifi_connect_success = false;
       restart_count = 230; // 재시작 예정
       break;
     }
