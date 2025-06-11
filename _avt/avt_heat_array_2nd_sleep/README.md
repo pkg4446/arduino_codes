@@ -6,3 +6,5 @@
 
 3. Sensor upload: 2.Sensor mapping 데이터를 json 형식으로 파싱하여 서버로 전송.
 4. Sdcard backup: 2.Sensor mapping 데이터를 csv 형식 데이터로 sdcard에 저장.
+
+# 2025.06.11 배터리 모니터링 추가

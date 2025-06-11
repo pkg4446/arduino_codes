@@ -2,6 +2,7 @@
 #include <EEPROM.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <Adafruit_MAX1704X.h>
 
 String firmwareVersion = "0.0.1";
 #define uS_TO_S_FACTOR      1000000  //Conversion factor for micro seconds to seconds
@@ -23,6 +24,8 @@ RTC_DATA_ATTR uint32_t bootCount = 0;
 
 #define SDA_PIN 21
 #define SCL_PIN 22
+
+Adafruit_MAX17048 maxlipo;
 ////--------------------- Pin out ---------------------////
 const uint8_t pin_config = 36;
 ////--------------------- Pin out ---------------------////
@@ -139,7 +142,7 @@ void sensor_value_init(){
 }
 
 String sensor_json(){
-  String response = "{\"dvid\":\""+String(deviceID)+"\"";
+  String response = "{\"dvid\":\""+String(deviceID)+"\",\"lipo\":"+String(maxlipo.cellVoltage());
 
   for (uint8_t mux = 0; mux < TCA9548A_COUNT; mux++){
     response += ",\"col"+String(mux)+"\":[";
@@ -387,20 +390,12 @@ void config_update_check(){
 /*********************************************************/
 void setup() {
   Serial.begin(115200);
-
-  // if(bootCount++ == 0){
-  //   // 와치독 타이머 초기화 추가
-  //   esp_task_wdt_config_t wdt_config = {
-  //     .timeout_ms = 30000, // 30초 타임아웃
-  //     .trigger_panic = true // 패닉 모드 활성화
-  //   };
-  //   esp_task_wdt_init(&wdt_config);
-  // }
-
-  // esp_task_wdt_add(NULL);       // 현재 태스크를 와치독에 등록
   
   Wire.begin(SDA_PIN, SCL_PIN);
   Wire.setClock(100000); // I2C 속도를 100kHz로 설정
+  if (!maxlipo.begin()) {
+    Serial.println("MAX17048 센서를 찾을 수 없습니다. 연결을 확인하세요!");
+  }
   pinMode(pin_config, INPUT);
   
   // 모든 배열 초기화 - 메모리 오류 방지
@@ -425,7 +420,7 @@ void setup() {
   Serial.print(bootCount);
   Serial.println(" times online");
   bool wifi_connected = wifi_connect();
-
+  maxlipo.reset();
   if(able_wifi){
     sensor_mode(true);
     for (uint8_t index = 0; index < MOVING_AVERAGE; index++) {
