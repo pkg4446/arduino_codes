@@ -27,7 +27,7 @@ RTC_DATA_ATTR uint32_t bootCount = 0;
 
 Adafruit_MAX17048 maxlipo;
 ////--------------------- Pin out ---------------------////
-const uint8_t pin_config = 36;
+const uint8_t pin_config = 12;
 ////--------------------- Pin out ---------------------////
 
 /*********************************************************/
@@ -162,37 +162,6 @@ String sensor_json(){
   response += "}";
   return response;
 }
-
-/*********************************************************/
-
-// String sensor_json(){
-//   String response = "{\"dvid\":\""+String(deviceID)+"\"";
-
-//   const uint8_t col_row = 8;
-//   const uint8_t comma = col_row-1;
-//   for (uint8_t row = 0; row < col_row; row++){
-//     response += ",\"row"+String(row)+"\":[";
-//     for (uint8_t col = 0; col < col_row; col++){
-//       uint8_t index = col*col_row + row;
-//       if (index < SENSOR_COUNT) {  // 범위 체크 추가
-//         int32_t sensor_temperature = 0;
-//         for (uint8_t average = 0; average < MOVING_AVERAGE; average++) {
-//           sensor_temperature += temperatures[index][average];
-//         }
-//         sensor_temperature /= MOVING_AVERAGE;
-//         if (sensor_temperature == 9999) response += "-404";
-//         else response += String(sensor_temperature);
-//       } else {
-//         response += "-404";  // 유효하지 않은 인덱스
-//       }
-//       if(col<comma) response += ",";
-//     }
-//     response += "]";
-//   }
-//   response += "}";
-//   return response;
-// }
-
 
 /*********************************************************/
 void WIFI_scan(bool wifi_state){
