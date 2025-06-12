@@ -26,6 +26,7 @@ RTC_DATA_ATTR uint32_t bootCount = 0;
 #define SCL_PIN 22
 
 Adafruit_MAX17048 maxlipo;
+bool able_maxlipo = false;
 ////--------------------- Pin out ---------------------////
 const uint8_t pin_config = 12;
 ////--------------------- Pin out ---------------------////
@@ -142,8 +143,8 @@ void sensor_value_init(){
 }
 
 String sensor_json(){
-  String response = "{\"dvid\":\""+String(deviceID)+"\",\"lipo\":"+String(maxlipo.cellVoltage());
-
+  String response = "{\"dvid\":\""+String(deviceID)+"\"";
+  if(able_maxlipo)  response += ",\"lipo\":"+String(maxlipo.cellPercent());
   for (uint8_t mux = 0; mux < TCA9548A_COUNT; mux++){
     response += ",\"col"+String(mux)+"\":[";
     for (uint8_t sensor = 0; sensor < TCA9548A_COUNT; sensor++){
@@ -362,7 +363,8 @@ void setup() {
   
   Wire.begin(SDA_PIN, SCL_PIN);
   Wire.setClock(100000); // I2C 속도를 100kHz로 설정
-  if (!maxlipo.begin()) {
+  able_maxlipo = maxlipo.begin(); // MAX17048 센서 초기화
+  if (!able_maxlipo) {
     Serial.println("MAX17048 센서를 찾을 수 없습니다. 연결을 확인하세요!");
   }
   pinMode(pin_config, INPUT);
@@ -389,7 +391,7 @@ void setup() {
   Serial.print(bootCount);
   Serial.println(" times online");
   bool wifi_connected = wifi_connect();
-  maxlipo.reset();
+  if(able_maxlipo) maxlipo.reset();
   if(able_wifi){
     sensor_mode(true);
     for (uint8_t index = 0; index < MOVING_AVERAGE; index++) {
