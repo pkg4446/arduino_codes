@@ -239,22 +239,18 @@ void mqtt_connect(){
 
   char* topic_sub = deviceID;
   char* sub_ID    = sendID;
-  while (!mqttClient.connected()) {
-    Serial.println("Connecting to MQTT...");
+  if(!mqttClient.connected()){
     if (mqttClient.connect(deviceID, mqttUser, mqttPassword )) {
       Serial.println("connected");
-    } else {
-      Serial.print("failed with state ");
-      Serial.print(mqttClient.state());
-      delay(1000);
-      if(restart_count++ > 60) ESP.restart();
     }
   }
-  mqttClient.subscribe(topic_sub);
-  mqttClient.publish(topic_pub, sub_ID);
-  Serial.print("subscribe: ");
-  Serial.print(topic_sub);
-  Serial.println(" - MQTT Connected");
+  if(mqttClient.connected()){
+    mqttClient.subscribe(topic_sub);
+    mqttClient.publish(topic_pub, sub_ID);
+    Serial.print("subscribe: ");
+    Serial.print(topic_sub);
+    Serial.println(" - MQTT Connected");
+  }  
 }
 
 void loop() {
