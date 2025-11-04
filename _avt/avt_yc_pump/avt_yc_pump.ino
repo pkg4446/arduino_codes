@@ -34,8 +34,8 @@ String firmwareVersion = "0.0.1";
 HardwareSerial ultrasonic1(2); // UART1 (GPIO13, GPIO14)
 HardwareSerial ultrasonic2(1); // UART2 (GPIO16, GPIO17)
 
-const   String server = "http://192.168.1.56:3002/";
-// const   String server = "http://yc.beetopia.kro.kr/";
+// const   String server = "http://192.168.1.56:3002/";
+const   String server = "http://yc.beetopia.kro.kr/";
 char    deviceID[18];
 char    command_buf[COMMAND_LENGTH];
 int8_t  command_num;
