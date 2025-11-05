@@ -142,7 +142,7 @@ void system_control(unsigned long millisec){
     if(!manual_mode){
       if(heat_use &&
         (isnan(sensor_temperature[SENSOR_AIR]) || sensor_temperature[SENSOR_AIR] < 33.00f) &&
-        (temperature_sensor_tm[SENSOR_HEAT] < temperature_goal-temperature_gap))
+        (sensor_temperature[SENSOR_HEAT] < temperature_goal-temperature_gap))
       {
         heater_state = true;
         heater_working += 1;
@@ -421,8 +421,7 @@ String sensor_json(){
     res_array[menu_index] += "]";
   }
   
-  String response = "{\"DVC\":\""+String(deviceID)+"\","+
-    res_array[0] + "," + res_array[1] + ",\"WK\":"+String(heater_working) + ",\"GAP"+"\":"+String(working_total)+"}";
+  String response = (String)"{\"DVC\":\""+String(deviceID)+"\"," + res_array[0] + "," + res_array[1] + ",\"WK\":"+String(heater_working) + ",\"GAP"+"\":"+String(working_total)+"}";
   heater_working = 0;
   working_total = 0;
   return response;
@@ -465,7 +464,7 @@ void sensor_upload(){
   }
 }
 void config_upload(){
-  String set_data = "{\"DVC\":\"" + String(deviceID) + "\",\"TMP\":" + String(temperature_goal[index]) + ",\"RUN\":" + String(heat_use) + "}";
+  String set_data = "{\"DVC\":\"" + String(deviceID) + "\",\"TMP\":" + String(temperature_goal) + ",\"RUN\":" + String(heat_use) + "}";
   String response = httpPOSTRequest(server+"device/hive_set",set_data);
   Serial.println("http:");
   Serial.println(response);
