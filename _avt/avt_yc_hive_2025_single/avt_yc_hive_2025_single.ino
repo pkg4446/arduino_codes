@@ -433,7 +433,7 @@ void upload_loop(unsigned long millisec){
   }
 }
 void sensor_upload(){
-  String response = httpPOSTRequest(server+"device/log",sensor_json());
+  String response = httpPOSTRequest(server+"device/log_25",sensor_json());
   //여기서 설정 변경
   uint8_t check_index = 0;
   String cmd_text = String_slice(&check_index,response, 0x2C);
@@ -465,7 +465,7 @@ void sensor_upload(){
 }
 void config_upload(){
   String set_data = "{\"DVC\":\"" + String(deviceID) + "\",\"TMP\":" + String(temperature_goal) + ",\"RUN\":" + String(heat_use) + "}";
-  String response = httpPOSTRequest(server+"device/hive_set",set_data);
+  String response = httpPOSTRequest(server+"device/set_25",set_data);
   Serial.println("http:");
   Serial.println(response);
 }
