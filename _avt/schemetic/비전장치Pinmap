@@ -1,0 +1,21 @@
+라즈베리파이에서 GPIO와 usb에 연결된 카메라 2대를 사용하려고 해
+
+IO, 기능
+5,ligth1
+6,ligth2
+16,limit1
+17,limit2
+20,button1
+21,button2
+22,button3
+26,relay1
+27,relay2
+
+button1 을 누르면 relay1이 limit1이 high가 될때까지 on,
+relay1이 off 되면 light1을 on 하고 opencv로 라즈베리파이에 연결된 카메라1로 사진을 찍어서 저장해.
+카메라1로 사진 저장이 끝나면 light1을 off하고 light2를 on 하고 카메라2로 사진을 찍어.
+이후에 light2를 off하고 relay2를 limit2가 high가 될때까지 on 
+
+
+23,HX711_sck
+24,HX711_dout
