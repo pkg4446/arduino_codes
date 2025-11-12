@@ -202,12 +202,31 @@ class DualCameraController:
                 if GPIO.input(BUTTON1) == GPIO.LOW:
                     print("버튼1 감지!")
                     self.button1_sequence()
-                    
                     # 디바운싱
                     while GPIO.input(BUTTON1) == GPIO.LOW:
                         time.sleep(0.1)
                     time.sleep(0.2)
-                
+
+                else if GPIO.input(BUTTON2) == GPIO.LOW:
+                    print("버튼2 감지!")
+                    GPIO.output(RELAY1, GPIO.HIGH)
+                    while GPIO.input(BUTTON2) == GPIO.LOW:
+                        if GPIO.input(LIMIT1) == GPIO.LOW:
+                            break
+                        time.sleep(0.1)
+                    GPIO.output(RELAY1, GPIO.LOW)
+                    time.sleep(0.2)
+                    
+                else if GPIO.input(BUTTON3) == GPIO.LOW:
+                    print("버튼3 감지!")
+                    GPIO.output(RELAY2, GPIO.HIGH)
+                    while GPIO.input(BUTTON3) == GPIO.LOW:
+                        if GPIO.input(LIMIT2) == GPIO.LOW:
+                            break
+                        time.sleep(0.1)
+                    GPIO.output(RELAY2, GPIO.LOW)
+                    time.sleep(0.2)
+                                    
                 # 버튼2, 버튼3은 필요시 추가 구현
                 
                 time.sleep(0.05)
