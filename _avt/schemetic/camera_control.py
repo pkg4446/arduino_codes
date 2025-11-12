@@ -21,9 +21,8 @@ BUTTON3 = 22
 RELAY1 = 26
 RELAY2 = 27
 
-# 카메라 인덱스 (필요시 수정)
-CAMERA1_INDEX = 0  # GPIO 연결 카메라 (CSI)
-CAMERA2_INDEX = 1  # USB 카메라
+# 카메라 인덱스
+available_cameras = []
 
 # 저장 디렉토리
 SAVE_DIR = "/home/pi/camera_images"
@@ -41,11 +40,11 @@ class DualCameraController:
         GPIO.setup(RELAY2, GPIO.OUT)
         
         # 입력 핀 설정 (풀다운 저항)
-        GPIO.setup(LIMIT1, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.setup(LIMIT2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.setup(BUTTON1, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.setup(BUTTON2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.setup(BUTTON3, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        GPIO.setup(LIMIT1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(LIMIT2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(BUTTON1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(BUTTON2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(BUTTON3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         
         # 초기 상태 설정
         GPIO.output(LIGHT1, GPIO.LOW)
@@ -56,6 +55,28 @@ class DualCameraController:
         # 저장 디렉토리 생성
         if not os.path.exists(SAVE_DIR):
             os.makedirs(SAVE_DIR)
+
+        print("카메라 검색 중...")
+        for i in range(5):
+            cap = cv2.VideoCapture(i)
+            if cap.isOpened():
+                ret, frame = cap.read()
+                if ret:
+                    # width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+                    # height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+                    # fps = cap.get(cv2.CAP_PROP_FPS)
+                    
+                    # print(f"\n카메라 {i} 발견!")
+                    # print(f"  해상도: {int(width)} x {int(height)}")
+                    # print(f"  FPS: {fps}")
+                    
+                    available_cameras.append(i)
+                cap.release()
+
+        if len(available_cameras)<2:
+            print(f"\n카메라가 {len(available_cameras)}개 연결되어 있어 종료합니다.")
+            self.cleanup()
+            quit()
         
         print("듀얼 카메라 제어 시스템 초기화 완료")
     
@@ -130,7 +151,7 @@ class DualCameraController:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename1 = os.path.join(SAVE_DIR, f"camera1_{timestamp}.jpg")
             
-            self.capture_image(CAMERA1_INDEX, filename1)
+            self.capture_image(available_cameras[0], filename1)
             
             GPIO.output(LIGHT1, GPIO.LOW)
             print("LIGHT1 OFF")
@@ -143,7 +164,7 @@ class DualCameraController:
             
             filename2 = os.path.join(SAVE_DIR, f"camera2_{timestamp}.jpg")
             
-            self.capture_image(CAMERA2_INDEX, filename2)
+            self.capture_image(available_cameras[1], filename2)
             
             GPIO.output(LIGHT2, GPIO.LOW)
             print("LIGHT2 OFF")
@@ -178,12 +199,12 @@ class DualCameraController:
         try:
             while True:
                 # 버튼1 감지
-                if GPIO.input(BUTTON1) == GPIO.HIGH:
+                if GPIO.input(BUTTON1) == GPIO.LOW:
                     print("버튼1 감지!")
                     self.button1_sequence()
                     
                     # 디바운싱
-                    while GPIO.input(BUTTON1) == GPIO.HIGH:
+                    while GPIO.input(BUTTON1) == GPIO.LOW:
                         time.sleep(0.1)
                     time.sleep(0.2)
                 
