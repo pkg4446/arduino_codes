@@ -1,8 +1,8 @@
 #include <Update.h>
 #include <EEPROM.h>
+#include <Wire.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include <Wire.h>
 #include <Adafruit_SHT31.h>
 #include "uart_print.h"
 
