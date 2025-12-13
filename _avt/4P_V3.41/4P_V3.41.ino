@@ -3,7 +3,7 @@
 #include <Wire.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include <Adafruit_SHT4x.h> 
+#include <Adafruit_SHT31.h>
 #include <Adafruit_MAX1704X.h>
 #include <OneWireNg_CurrentPlatform.h>
 
@@ -38,7 +38,6 @@ String firmwareVersion = "0.0.1";
 #define PIN_DS_EXT      4   
 #define PIN_DS_SPACE    5   
 #define PIN_CONFIG      2 
-// const uint8_t pin_config = 12;
 ////--------------------- Pin out ---------------------////
 /*
 #define SDA_PIN 21
@@ -72,11 +71,11 @@ char  deviceID[18] = {0};  // 초기화 추가
 bool able_sdcard = false;
 bool able_wifi   = false;
 /*********************************************************/
-int16_t temperatures[SENSOR_COUNT][MOVING_AVERAGE];
+int16_t temperature = 0;
 char    ssid[EEPROM_SIZE_CONFIG];
 char    password[EEPROM_SIZE_CONFIG];
 char    command_buf[COMMAND_LENGTH];
-int8_t  command_num = 0;
+int8_t  command_num  = 0;
 /*********************************************************/
 unsigned long pre_sensor_read = 0UL;
 unsigned long pre_update_post = 0UL;
@@ -94,104 +93,10 @@ void config_update_check();
 void serial_command_help();
 void serial_err_msg(char *msg);
 
-void tcaSelect(uint8_t tcaAddress, uint8_t channel) {
-  if (channel > 7) return;
-  Wire.beginTransmission(tcaAddress);
-  Wire.write(1 << channel);
-  Wire.endTransmission();
-}
-
-void tcaDisable(uint8_t tcaAddress) {
-  Wire.beginTransmission(tcaAddress);
-  Wire.write(0);
-  Wire.endTransmission();
-}
-
-void setTMP112Mode(bool wake) {
-  Wire.beginTransmission(TMP112_ADDRESS);
-  Wire.write(0x01);
-  if (wake) {
-    Wire.write(0x00);  // 깨우기 - 연속 변환 모드
-  } else {
-    Wire.write(0x01);  // 셧다운 모드
-  }
-  Wire.write(0x00);
-  Wire.endTransmission();
-  
-  if (wake) {
-    delay(30);  // 첫 변환을 위한 대기 시간
-  }
-}
-
-int16_t readTemp() {
-  // 온도 읽기
-  Wire.beginTransmission(TMP112_ADDRESS);
-  Wire.write(0x00);
-  Wire.endTransmission();
-
-  Wire.requestFrom(TMP112_ADDRESS, 2);
-  if (Wire.available() == 2) {
-    int16_t raw = (Wire.read() << 8) | Wire.read();
-    raw >>= 4; // TMP112는 12비트 해상도, 따라서 4비트 쉬프트
-    return int16_t(raw * 6.25); // TMP112 온도 변환
-  } else {
-    return 9999; // 읽기 실패
-  }
-}
-
-void sensor_mode(bool wake){
-  for (uint8_t index = 0; index < TCA9548A_COUNT; index++) {
-    for (uint8_t ch = 0; ch < 8; ch++) {
-      tcaSelect(tcaAddresses[index], ch);
-      setTMP112Mode(wake);
-    }
-    tcaDisable(tcaAddresses[index]);
-  }
-}
-
-void sensor_mapping(){
-  // 수정: 전역 변수 사용으로 인한 충돌 방지
-  // 지역 변수로 변경하거나 전역 변수는 외부에서 설정
-  for (uint8_t index = 0; index < TCA9548A_COUNT; index++) {
-    for (uint8_t ch = 0; ch < 8; ch++) {
-      tcaSelect(tcaAddresses[index], ch);
-      uint8_t sensor_idx = index * 8 + ch;  // 인덱스 계산 수정
-      if (sensor_idx < SENSOR_COUNT) {  // 범위 체크 추가
-        temperatures[sensor_idx][index_average] = readTemp();
-      }
-    }
-    tcaDisable(tcaAddresses[index]); // 각 멀티플렉서 비활성화
-  }
-  if(++index_average >= MOVING_AVERAGE) index_average = 0;
-}
-
-void sensor_value_init(){
-  for (uint8_t index = 0; index < SENSOR_COUNT; index++) {
-    for (uint8_t average = 1; average < MOVING_AVERAGE; average++) {
-      temperatures[index][average] = temperatures[index][0];
-    }
-  }
-}
-
 String sensor_json(){
   String response = "{\"dvid\":\""+String(deviceID)+"\"";
-  if(able_maxlipo)  response += ",\"lipo\":"+String(maxlipo.cellPercent());
-  for (uint8_t mux = 0; mux < TCA9548A_COUNT; mux++){
-    response += ",\"col"+String(mux)+"\":[";
-    for (uint8_t sensor = 0; sensor < TCA9548A_COUNT; sensor++){
-      uint8_t index = mux*TCA9548A_COUNT + sensor;
-      int32_t sensor_temperature = 0;
-      for (uint8_t average = 0; average < MOVING_AVERAGE; average++) {
-        sensor_temperature += temperatures[index][average];
-      }
-      sensor_temperature /= MOVING_AVERAGE;
-      if (sensor_temperature == 9999) response += "-404";
-      else response += String(sensor_temperature);
-      if(sensor<TCA9548A_COUNT-1) response += ",";
-    }
-    response += "]";
-  }
-  response += "}";
+  if(able_maxlipo)  response += ",\"lipo\":"+String(maxlipo.cellPercent())+",\"temp:";
+  response += (temperature == 9999) ? "-404" : String(temperature);
   return response;
 }
 
@@ -380,9 +285,9 @@ bool wifi_connect() {
 
 ////---------------------------------------------------////
 void config_update_check(){
-  if(digitalRead(pin_config)){
+  if(digitalRead(PIN_CONFIG)){
     serial_command_help();
-    while (digitalRead(pin_config)){
+    while (digitalRead(PIN_CONFIG)){
       if(Serial.available()) command_process(Serial.read());
     }
   }
@@ -391,17 +296,24 @@ void config_update_check(){
 /*********************************************************/
 void setup() {
   Serial.begin(115200);
+  Wire.begin(PIN_SDA, PIN_SCL);
   
-  Wire.begin(SDA_PIN, SCL_PIN);
-  Wire.setClock(100000); // I2C 속도를 100kHz로 설정
   able_maxlipo = maxlipo.begin(); // MAX17048 센서 초기화
   if (!able_maxlipo) {
     Serial.println("MAX17048 센서를 찾을 수 없습니다. 연결을 확인하세요!");
   }
-  pinMode(pin_config, INPUT);
+  // Pins
+  pinMode(PIN_LED_STATUS, OUTPUT);
+  pinMode(PIN_SSR_HEATER, OUTPUT);
+  pinMode(PIN_AC_DETECT, INPUT);
+  pinMode(PIN_CONFIG, INPUT_PULLUP);
+  digitalWrite(PIN_SSR_HEATER, LOW);
+  // 1-Wire
+  owExt   = new OneWireNg_CurrentPlatform(PIN_DS_EXT, false);
+  owSpace = new OneWireNg_CurrentPlatform(PIN_DS_SPACE, false);
   
   // 모든 배열 초기화 - 메모리 오류 방지
-  memset(temperatures, 0, sizeof(temperatures));
+  temperature = 0;
   memset(ssid, 0, sizeof(ssid));
   memset(password, 0, sizeof(password));
   memset(command_buf, 0, sizeof(command_buf));
@@ -422,6 +334,7 @@ void setup() {
   Serial.print(bootCount);
   Serial.println(" times online");
   bool wifi_connected = wifi_connect();
+
   if(able_maxlipo) maxlipo.reset();
   if(able_wifi){
     sensor_mode(true);
@@ -437,11 +350,14 @@ void setup() {
   Serial.print("Firmware version: ");
   Serial.println(firmwareVersion);
 
+  //sht31 읽기,
+  //센서 업로드
+  //외부전원 확인 => 상시 전환
+
   // 타이머 wake-up 설정
   esp_sleep_enable_timer_wakeup(60 * uS_TO_S_FACTOR);
   
   Serial.println(" Going to deep sleep now");
-  
   
   // 딥슬립 시작
   esp_deep_sleep_start();
