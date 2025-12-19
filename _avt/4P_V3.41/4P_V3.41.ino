@@ -12,6 +12,49 @@
 온도센서 DS18B20 두개로 히터, 공간 측정하는 걸로 바꼇엉
 글구 포토커플러 있어서 5v인입시 io 한개로 신호가고 그래서 가온할때는 딥슬립 안쓰고+코드넣을때도 나머지는 딥슬립할수있게했엉
 히터는 그대로고 led는 한개 이정도?
+
+스마트 벌통
+SDA               6   
+SCL               7   
+ac 인입확인용      3
+LED               22  
+SSR_HEATER        23  
+히팅판 온도 센서   4 
+공간 온도 센서     5
+스위치            2 -> 나중에 지그비쓸때 페어링쓸수도?
+
+요청사항
+
+슬립모드
+5v 인입시(AC인입orUSB인입) io3 인식 슬립모드 중지
+
+가온
+목표온도 = 공간온도
+
+ex) 목표온도 25도 설정 시 공간온도 15도 일때 가온 on
+1. 가온이 켜지고나서 히터온도는 목표온도로 맞춰 히팅진행한다.
+2. 일정 시간 이 후 공간온도의 변화가 없거나 내려가면 히터온도를 상향조정한다(ex 10분 2도)
+
+절대값 : 히터판은 50도를 넘지않는다 / 봉구온도가 35도이상이면 가온을 하지않는다
+
+
+
+
+4P 온습도 센서
+
+mcu lolin esp32사용(딥슬립 주기 30분)
+1번 센서 sda io4 / scl io5
+2번 센서 sda io18 / scl io19
+3번 센서 sda io21 / scl io22
+4번 센서 sda io26 / scl io27
+
+표기
+mac id 이름(수정가능)
+센서 번호 / 이름(수정가능) / 온습도 x4
+
+요청사항
+4P 센서를 64P 매칭하면 해당 64P 화면에 4개의 센서 확인가능하게
+4P 한개당 다수의 64P 매칭 가능하게
 */
 
 String firmwareVersion = "0.0.1";
@@ -20,14 +63,6 @@ String firmwareVersion = "0.0.1";
 #define SECONDE             1000L
 #define COMMAND_LENGTH  32
 #define WIFI_WAIT       10
-
-#define UPDATE_INTERVAL_SENSOR  300L
-#define UPDATE_INTERVAL_HTTP    60000L
-#define UPDATE_INTERVAL_CSV     60000L
-
-#define TCA9548A_COUNT  8
-#define SENSOR_COUNT    64
-#define MOVING_AVERAGE  2
 
 ////--------------------- Pin out ---------------------////
 #define PIN_SDA         6   
@@ -49,7 +84,7 @@ String firmwareVersion = "0.0.1";
 
 ////--------------------- Object ---------------------////
 RTC_DATA_ATTR uint32_t bootCount = 0;
-Adafruit_SHT4x sht = Adafruit_SHT4x(); 
+Adafruit_SHT31 sht31 = Adafruit_SHT31(); 
 Adafruit_MAX17048 maxlipo;
 OneWireNg *owExt = NULL;
 OneWireNg *owSpace = NULL;
@@ -65,13 +100,17 @@ const uint8_t ADDR_HEAT = 48;
 const uint8_t ADDR_GAP  = 49; 
 const uint8_t ADDR_GOAL = 50; 
 
-String http_server_addr = "http://array.beetopia.kro.kr/device/log";
+// String http_server_addr = "http://array.beetopia.kro.kr/device/log";
+String http_server_addr = "http://test.beetopia.kro.kr/log";
 char  deviceID[18] = {0};  // 초기화 추가
 /*********************************************************/
 bool able_sdcard = false;
 bool able_wifi   = false;
 /*********************************************************/
-int16_t temperature = 0;
+float   temp_heat   = 0.00f;
+float   temp_air    = 0.00f;
+float   temperature = 0.00f;
+float   humidity    = 0.00f;
 char    ssid[EEPROM_SIZE_CONFIG];
 char    password[EEPROM_SIZE_CONFIG];
 char    command_buf[COMMAND_LENGTH];
@@ -95,11 +134,63 @@ void serial_err_msg(char *msg);
 
 String sensor_json(){
   String response = "{\"dvid\":\""+String(deviceID)+"\"";
-  if(able_maxlipo)  response += ",\"lipo\":"+String(maxlipo.cellPercent())+",\"temp:";
-  response += (temperature == 9999) ? "-404" : String(temperature);
+  if(able_maxlipo) response += ",\"lipo\":"+String(maxlipo.cellPercent())+",\"temp:";
+  response += isnan(temperature) ? String(temperature):"\"NAN\"";
+  response += ",air:"+isnan(temperature) ?"\"NAN\"": String(temp_air);
+  response += ",heat:"+isnan(temperature) ? "\"NAN\"":String(temp_heat);
+  response += "}";
   return response;
 }
 
+float readDS18B20(OneWireNg *ow) {
+    if (!ow) return NAN; 
+
+    // 1. 온도 변환 시작
+    if (ow->reset() != OneWireNg::EC_SUCCESS) return NAN; 
+    ow->writeByte(0xCC); 
+    ow->writeByte(0x44);
+
+    // 2. 비차단 대기 (750ms)
+    unsigned long start = millis();
+    while(millis() - start < 750) { 
+        if(Serial.available()) command_process(Serial.read()); 
+        yield(); 
+    }
+    
+    // 3. 데이터 읽기
+    if (ow->reset() != OneWireNg::EC_SUCCESS) return NAN;
+    ow->writeByte(0xCC); 
+    ow->writeByte(0xBE);
+
+    uint8_t data[9];
+    for (int i = 0; i < 9; i++) data[i] = ow->readByte();
+
+    // 4. CRC 검사
+    if (OneWireNg::crc8(data, 8) != data[8]) {
+        return NAN; 
+    }
+
+    // 5. 온도 계산 및 범위 체크
+    int16_t raw = (data[1] << 8) | data[0];
+    float temp = (float)raw / 16.0;
+
+    if (temp < -55.0 || temp > 125.0) return NAN;
+
+    return temp;
+}
+
+  void read_sensors(){
+    temp_heat = readDS18B20(owExt);
+    temp_air  = readDS18B20(owSpace);
+    if (!sht31.begin(0x44)) { 
+      temperature = sht31.readTemperature();
+      humidity    = sht31.readHumidity();
+    }else{
+      temperature = NAN;
+      humidity    = NAN;
+      Serial.println("SHT31 missing");
+    }
+  }
 /*********************************************************/
 void WIFI_scan(bool wifi_state){
   able_wifi = wifi_state;
@@ -184,10 +275,10 @@ void command_service(){
         if(index < temp_text.length()){
           Serial.print(temp_text[index]);
           ssid[index] = temp_text[index];
-          EEPROM.write(eep_ssid[index], byte(temp_text[index]));
+          EEPROM.write(index, byte(temp_text[index]));
         }else{
           ssid[index] = 0x00;
-          EEPROM.write(eep_ssid[index], byte(0x00));
+          EEPROM.write(index, byte(0x00));
         }
       }
       eep_change = true;
@@ -202,10 +293,10 @@ void command_service(){
         if(index < temp_text.length()){
           Serial.print(temp_text[index]);
           password[index] = temp_text[index];
-          EEPROM.write(eep_pass[index], byte(temp_text[index]));
+          EEPROM.write(EEPROM_SIZE_CONFIG+index, byte(temp_text[index]));
         }else{
           password[index] = 0x00;
-          EEPROM.write(eep_pass[index], byte(0x00));
+          EEPROM.write(EEPROM_SIZE_CONFIG+index, byte(0x00));
         }
       }
       eep_change = true;
@@ -295,73 +386,78 @@ void config_update_check(){
 
 /*********************************************************/
 void setup() {
-  Serial.begin(115200);
-  Wire.begin(PIN_SDA, PIN_SCL);
-  
-  able_maxlipo = maxlipo.begin(); // MAX17048 센서 초기화
-  if (!able_maxlipo) {
-    Serial.println("MAX17048 센서를 찾을 수 없습니다. 연결을 확인하세요!");
-  }
   // Pins
   pinMode(PIN_LED_STATUS, OUTPUT);
   pinMode(PIN_SSR_HEATER, OUTPUT);
   pinMode(PIN_AC_DETECT, INPUT);
   pinMode(PIN_CONFIG, INPUT_PULLUP);
   digitalWrite(PIN_SSR_HEATER, LOW);
-  // 1-Wire
-  owExt   = new OneWireNg_CurrentPlatform(PIN_DS_EXT, false);
-  owSpace = new OneWireNg_CurrentPlatform(PIN_DS_SPACE, false);
-  
-  // 모든 배열 초기화 - 메모리 오류 방지
-  temperature = 0;
-  memset(ssid, 0, sizeof(ssid));
-  memset(password, 0, sizeof(password));
-  memset(command_buf, 0, sizeof(command_buf));
-  
-  // EEPROM 초기화
-  if (!EEPROM.begin(EEPROM_SIZE_CONFIG * 2)){
-    Serial.println("Failed to initialise eeprom");
-    Serial.println("Restarting...");
-    delay(1000);
-    ESP.restart();
-  }
-  
-  // EEPROM에서 데이터 읽기
-  for (int index = 0; index < EEPROM_SIZE_CONFIG; index++) {
-    ssid[index] = EEPROM.read(eep_ssid[index]);
-    password[index] = EEPROM.read(eep_pass[index]);
-  }
-  Serial.print(bootCount);
-  Serial.println(" times online");
-  bool wifi_connected = wifi_connect();
 
-  if(able_maxlipo) maxlipo.reset();
-  if(able_wifi){
-    sensor_mode(true);
-    for (uint8_t index = 0; index < MOVING_AVERAGE; index++) {
-      sensor_mapping();
+  if( bootCount++%30==0 || digitalRead(PIN_AC_DETECT)){
+    Serial.begin(115200);
+    Wire.begin(PIN_SDA, PIN_SCL);
+    
+    able_maxlipo = maxlipo.begin(); // MAX17048 센서 초기화
+    if (!able_maxlipo) {
+      Serial.println("MAX17048 missing");
     }
-    sensor_upload();
+
+    // 1-Wire
+    owExt   = new OneWireNg_CurrentPlatform(PIN_DS_EXT, false);
+    owSpace = new OneWireNg_CurrentPlatform(PIN_DS_SPACE, false);
+    
+    // 모든 배열 초기화 - 메모리 오류 방지
+    temperature = 0.00f;
+    humidity    = 0.00f;
+    memset(ssid, 0, sizeof(ssid));
+    memset(password, 0, sizeof(password));
+    memset(command_buf, 0, sizeof(command_buf));
+    
+    // EEPROM 초기화
+    if (!EEPROM.begin(EEPROM_SIZE_CONFIG * 2)){
+      Serial.println("Failed to initialise eeprom");
+      Serial.println("Restarting...");
+      delay(1000);
+      ESP.restart();
+    }
+    
+    // EEPROM에서 데이터 읽기
+    for (int index = 0; index < EEPROM_SIZE_CONFIG; index++) {
+      ssid[index] = EEPROM.read(index);
+      password[index] = EEPROM.read(EEPROM_SIZE_CONFIG+index);
+    }
+    Serial.println(" times online");
+    bool wifi_connected = wifi_connect();
+
+    if(able_maxlipo) maxlipo.reset();
+    
+    //온습도 센서 읽기
+    read_sensors();
+    //센서 업로드
+    if(able_wifi){
+      sensor_upload();
+    }
+    Serial.print("Firmware version: ");
+    Serial.println(firmwareVersion);
+    //외부전원 확인 => 상시 전환
+    loop_ac();
   }
-  
-  Serial.println("Setting sensors to sleep mode...");
-  sensor_mode(false);
 
-  Serial.print("Firmware version: ");
-  Serial.println(firmwareVersion);
 
-  //sht31 읽기,
-  //센서 업로드
-  //외부전원 확인 => 상시 전환
 
-  // 타이머 wake-up 설정
-  esp_sleep_enable_timer_wakeup(60 * uS_TO_S_FACTOR);
-  
-  Serial.println(" Going to deep sleep now");
-  
+  // 타이머 wake-up 설정 10초
+  esp_sleep_enable_timer_wakeup(10 * uS_TO_S_FACTOR); 
   // 딥슬립 시작
   esp_deep_sleep_start();
 }
+/*********************************************************/
+void loop_ac() {
+  while (digitalRead(PIN_AC_DETECT)){
+    yield();
+    /* code */
+  }
+}
+
 
 /*********************************************************/
 void loop() {

@@ -141,9 +141,8 @@ void system_control(unsigned long millisec){
     temperature_sensor_read();
     if(!manual_mode){
       if(heat_use &&
-        (isnan(sensor_temperature[SENSOR_AIR]) || sensor_temperature[SENSOR_AIR] < 33.00f) &&
-        (sensor_temperature[SENSOR_HEAT] < temperature_goal-temperature_gap))
-      {
+        (!isnan(sensor_temperature[SENSOR_AIR]) || sensor_temperature[SENSOR_AIR] < 33.00f) &&
+        (sensor_temperature[SENSOR_HEAT] < temperature_goal-temperature_gap)){
         heater_state = true;
         heater_working += 1;
       }else heater_state = false;
