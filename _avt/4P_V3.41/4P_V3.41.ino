@@ -7,7 +7,7 @@
 #include <Adafruit_MAX1704X.h>
 #include <OneWireNg_CurrentPlatform.h>
 
-String firmwareVersion = "0.0.1";
+String firmwareVersion = "0.0.1"; // 버전만 수정됨 표시
 
 #define uS_TO_S_FACTOR      1000000  //Conversion factor for micro seconds to seconds
 #define SECONDE             1000L
@@ -42,8 +42,6 @@ bool able_maxlipo = false;
 ////--------------------- Object ---------------------////
 
 /*********************************************************/
-const uint8_t TMP112_ADDRESS = 0x48; // TMP112 온도 센서 주소
-
 const uint8_t ADDR_SSID = 0;   
 const uint8_t ADDR_PASS = 24;  
 const uint8_t ADDR_HEAT = 48; 
@@ -51,7 +49,7 @@ const uint8_t ADDR_GAP  = 49;
 const uint8_t ADDR_GOAL = 50; 
 
 // String http_server_addr = "http://array.beetopia.kro.kr/device/log";
-String http_server_addr = "http://test.beetopia.kro.kr/log";
+String http_server_addr = "http://test.beetopia.kro.kr/device/log";
 char  deviceID[18] = {0};  // 초기화 추가
 /*********************************************************/
 bool able_sdcard = false;
@@ -82,13 +80,30 @@ void config_update_check();
 void serial_command_help();
 void serial_err_msg(char *msg);
 
+// [Fix] JSON 포맷을 서버(B코드) 규격에 맞게 전면 수정
+// 기존: {"dvid":"...", "lipo":...} -> 서버가 인식 못함
+// String sensor_json(){
+//   String response = "{\"dvid\":\""+String(deviceID)+"\"";
+//   if(able_maxlipo) response += ",\"lipo\":"+String(maxlipo.cellPercent())+",\"temp:";
+//   response += isnan(temperature) ? String(temperature):"\"NAN\"";
+//   response += ",air:"+isnan(temperature) ?"\"NAN\"": String(temp_air);
+//   response += ",heat:"+isnan(temperature) ? "\"NAN\"":String(temp_heat);
+//   response += "}";
+//   return response;
+// }
+// 변경: {"DVC":"...", "data":{"count":..., "sht40":["ext","spc","sht_t","sht_h"], "bat":["pct","vol"]}}
 String sensor_json(){
-  String response = "{\"dvid\":\""+String(deviceID)+"\"";
-  if(able_maxlipo) response += ",\"lipo\":"+String(maxlipo.cellPercent())+",\"temp:";
-  response += isnan(temperature) ? String(temperature):"\"NAN\"";
-  response += ",air:"+isnan(temperature) ?"\"NAN\"": String(temp_air);
-  response += ",heat:"+isnan(temperature) ? "\"NAN\"":String(temp_heat);
-  response += "}";
+  // B코드 스타일의 JSON 생성
+  String response = "{\"DVC\":\"" + String(deviceID) + "\",\"data\":{";
+  response += "\"count\":" + String(bootCount) + ",\"sht40\":[\"";
+  response += isnan(temp_heat) ? "NaN" : String(temp_heat);
+  response += "\",\"" +isnan(temp_air) ? "NaN" : String(temp_air);
+  response += "\",\"" +isnan(temperature) ? "NaN" : String(temperature);
+  response += "\",\"" +isnan(humidity) ? "NaN" : String(humidity);
+  response += "\"],\"bat\":[\"" + String(maxlipo.cellPercent());
+  response += "\",\"" + String(maxlipo.cellVoltage());
+  response += "\"]}}";
+  
   return response;
 }
 
@@ -132,10 +147,10 @@ float readDS18B20(OneWireNg *ow) {
   void read_sensors(){
     temp_heat = readDS18B20(owExt);
     temp_air  = readDS18B20(owSpace);
-    if (!sht31.begin(0x44)) { 
+    if (sht31.begin(0x44)) {
       temperature = sht31.readTemperature();
       humidity    = sht31.readHumidity();
-    }else{
+    } else {
       temperature = NAN;
       humidity    = NAN;
       Serial.println("SHT31 missing");
@@ -191,7 +206,7 @@ void WIFI_scan(bool wifi_state){
 void command_service(){
   String cmd_text     = "";
   String temp_text    = "";
-  bool   eep_change   = false;
+  bool    eep_change   = false;
   uint8_t check_index = 0;
   
   for(uint8_t index_check=0; index_check<COMMAND_LENGTH; index_check++){
@@ -292,8 +307,16 @@ bool wifi_connect() {
   WiFi.begin(ssid, password);
   unsigned long wifi_config_update = millis();
   
+  // [Fix] 시인성 개선
+  Serial.print("Connecting to WiFi [");
+  Serial.print(ssid);
+  Serial.print("] ");
+
   // 타임아웃 처리 개선
   while (WiFi.status() != WL_CONNECTED) {
+    delay(500); // 0.5초 대기 (모뎀 안정화 및 UX)
+    Serial.print("."); // [Fix] 점 찍기
+
     unsigned long update_time = millis();
     config_update_check();
     if(update_time - wifi_config_update > WIFI_WAIT * SECONDE){
@@ -326,25 +349,29 @@ bool wifi_connect() {
 
 ////---------------------------------------------------////
 void config_update_check(){
-  if(digitalRead(PIN_CONFIG)){
+  // [Fix] Active Low 반전: 버튼 눌림(!digitalRead) 감지
+  if(!digitalRead(PIN_CONFIG)){
     serial_command_help();
-    while (digitalRead(PIN_CONFIG)){
+    while (!digitalRead(PIN_CONFIG)){
       if(Serial.available()) command_process(Serial.read());
+      yield();
     }
   }
 }
 
 /*********************************************************/
 void setup() {
+  // [Fix] 시리얼 무조건 초기화 (부팅 로그 확인용)
+  Serial.begin(115200);
+
   // Pins
   pinMode(PIN_LED_STATUS, OUTPUT);
   pinMode(PIN_SSR_HEATER, OUTPUT);
-  pinMode(PIN_AC_DETECT, INPUT);
+  pinMode(PIN_AC_DETECT, INPUT_PULLUP);
   pinMode(PIN_CONFIG, INPUT_PULLUP);
   digitalWrite(PIN_SSR_HEATER, LOW);
 
   if( bootCount++%30==0 || digitalRead(PIN_AC_DETECT)){
-    Serial.begin(115200);
     Wire.begin(PIN_SDA, PIN_SCL);
     
     able_maxlipo = maxlipo.begin(); // MAX17048 센서 초기화
@@ -393,18 +420,38 @@ void setup() {
     loop_ac();
   }
 
-
-
   // 타이머 wake-up 설정 10초
   esp_sleep_enable_timer_wakeup(10 * uS_TO_S_FACTOR); 
   // 딥슬립 시작
+  Serial.println("Deep Sleep Start");
+  Serial.flush(); // 로그 전송 완료 대기
   esp_deep_sleep_start();
 }
 /*********************************************************/
 void loop_ac() {
+  // [Fix] Active Low 적용: 핀이 LOW(0)인 동안 동작
+  // [Fix] 비어있던 좀비 루프에 동작 로직(센싱+업로드) 주입
+  
+  if(digitalRead(PIN_AC_DETECT)) Serial.println("[AC MODE] Started");
+
   while (digitalRead(PIN_AC_DETECT)){
+    
+    // 1. 동작 수행
+    Serial.println("[AC MODE] Run...");
+    read_sensors();
+    
+    // WiFi 재연결 로직 추가 (끊겼을 경우)
+    if(WiFi.status() != WL_CONNECTED) wifi_connect();
+    
+    sensor_upload();
+
+    // 2. 대기 및 시리얼 명령 처리 (10초 대기)
+    for(int i=0; i<100; i++){ // 100ms * 100 = 10초
+        if(Serial.available()) command_process(Serial.read());
+        if(!digitalRead(PIN_AC_DETECT)) break; // AC 빠지면(HIGH) 즉시 탈출
+        delay(100);
+    }
     yield();
-    /* code */
   }
 }
 
