@@ -65,7 +65,6 @@ char    command_buf[COMMAND_LENGTH];
 int8_t  command_num  = 0;
 /*********************************************************/
 unsigned long pre_sensor_read = 0UL;
-unsigned long pre_update_post = 0UL;
 unsigned long pre_save_csv    = 0UL;
 uint8_t  index_sensor   = 0;
 uint8_t  index_average  = 0;
@@ -414,25 +413,13 @@ void setup() {
 void loop_ac() {
   // [Fix] Active Low 적용: 핀이 LOW(0)인 동안 동작
   // [Fix] 비어있던 좀비 루프에 동작 로직(센싱+업로드) 주입
-  
+  unsigned long pre_update_post = millis();
   if(digitalRead(PIN_AC_DETECT)) Serial.println("[AC MODE] Started");
-
   while (digitalRead(PIN_AC_DETECT)){
-    
-    // 1. 동작 수행
-    Serial.println("[AC MODE] Run...");
-    read_sensors();
-    
-    // WiFi 재연결 로직 추가 (끊겼을 경우)
-    if(WiFi.status() != WL_CONNECTED) wifi_connect();
-    
-    sensor_upload();
-
-    // 2. 대기 및 시리얼 명령 처리 (10초 대기)
-    for(int i=0; i<100; i++){ // 100ms * 100 = 10초
-        if(Serial.available()) command_process(Serial.read());
-        if(!digitalRead(PIN_AC_DETECT)) break; // AC 빠지면(HIGH) 즉시 탈출
-        delay(100);
+    if(millis()-pre_update_post > 1000*60*30){
+      if(WiFi.status() != WL_CONNECTED) wifi_connect();
+      read_sensors();
+      sensor_upload();
     }
     yield();
   }
