@@ -80,30 +80,13 @@ void config_update_check();
 void serial_command_help();
 void serial_err_msg(char *msg);
 
-// [Fix] JSON 포맷을 서버(B코드) 규격에 맞게 전면 수정
-// 기존: {"dvid":"...", "lipo":...} -> 서버가 인식 못함
-// String sensor_json(){
-//   String response = "{\"dvid\":\""+String(deviceID)+"\"";
-//   if(able_maxlipo) response += ",\"lipo\":"+String(maxlipo.cellPercent())+",\"temp:";
-//   response += isnan(temperature) ? String(temperature):"\"NAN\"";
-//   response += ",air:"+isnan(temperature) ?"\"NAN\"": String(temp_air);
-//   response += ",heat:"+isnan(temperature) ? "\"NAN\"":String(temp_heat);
-//   response += "}";
-//   return response;
-// }
-// 변경: {"DVC":"...", "data":{"count":..., "sht40":["ext","spc","sht_t","sht_h"], "bat":["pct","vol"]}}
 String sensor_json(){
-  // B코드 스타일의 JSON 생성
-  String response = "{\"DVC\":\"" + String(deviceID) + "\",\"data\":{";
-  response += "\"count\":" + String(bootCount) + ",\"sht40\":[\"";
-  response += isnan(temp_heat) ? "NaN" : String(temp_heat);
-  response += "\",\"" +isnan(temp_air) ? "NaN" : String(temp_air);
-  response += "\",\"" +isnan(temperature) ? "NaN" : String(temperature);
-  response += "\",\"" +isnan(humidity) ? "NaN" : String(humidity);
-  response += "\"],\"bat\":[\"" + String(maxlipo.cellPercent());
-  response += "\",\"" + String(maxlipo.cellVoltage());
-  response += "\"]}}";
-  
+  String response = "{\"dvid\":\""+String(deviceID)+"\"";
+  if(able_maxlipo) response += ",\"lipo\":["+String(maxlipo.cellPercent())+","+String(maxlipo.cellVoltage());
+  response += "],\"temp:"+isnan(temperature) ? String(temperature):"\"NAN\"";
+  response += ",\"air\":"+isnan(temperature) ?"\"NAN\"": String(temp_air);
+  response += ",\"heat\":"+isnan(temperature) ? "\"NAN\"":String(temp_heat);
+  response += "}";
   return response;
 }
 
