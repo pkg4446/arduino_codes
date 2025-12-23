@@ -9,10 +9,12 @@
 
 String firmwareVersion = "0.0.1"; // 버전만 수정됨 표시
 
-#define uS_TO_S_FACTOR      1000000  //Conversion factor for micro seconds to seconds
-#define SECONDE             1000L
-#define COMMAND_LENGTH  32
+#define uS_TO_S_FACTOR  1000000  //Conversion factor for micro seconds to seconds
+#define SLEEP_WAKE      10
+#define UPLOAD_PERIOD   180
+#define SECONDE         1000L
 #define WIFI_WAIT       10
+#define COMMAND_LENGTH  32
 
 ////--------------------- Pin out ---------------------////
 #define PIN_SDA         6   
@@ -30,6 +32,8 @@ String firmwareVersion = "0.0.1"; // 버전만 수정됨 표시
 */
 ////--------------------- EEPROM ---------------------////
 #define EEPROM_SIZE_CONFIG  24
+#define EEPROM_HEAT_USE     48
+#define EEPROM_HEAT_GOAL    49
 ////--------------------- EEPROM ---------------------////
 
 ////--------------------- Object ---------------------////
@@ -48,12 +52,13 @@ const uint8_t ADDR_HEAT = 48;
 const uint8_t ADDR_GAP  = 49; 
 const uint8_t ADDR_GOAL = 50; 
 
-// String http_server_addr = "http://array.beetopia.kro.kr/device/log";
-String http_server_addr = "http://test.beetopia.kro.kr/device/log";
+// String server = "http://yc.beetopia.kro.kr/";
+String server = "http://192.168.4.2:3002/";
 char  deviceID[18] = {0};  // 초기화 추가
 /*********************************************************/
-bool able_sdcard = false;
-bool able_wifi   = false;
+bool wifi_able  = false;
+bool heat_use   = false;
+uint8_t temp_goal = 0;
 /*********************************************************/
 float   temp_heat   = 0.00f;
 float   temp_air    = 0.00f;
@@ -66,11 +71,13 @@ int8_t  command_num  = 0;
 /*********************************************************/
 unsigned long pre_sensor_read = 0UL;
 unsigned long pre_save_csv    = 0UL;
-uint8_t  index_sensor   = 0;
-uint8_t  index_average  = 0;
+
+uint16_t working_total  = 1;
+uint16_t heater_working = 0;
 /*********************************************************/
 
 // 함수 프로토타입 선언 추가
+void config_upload();
 void sensor_upload();
 bool wifi_connect();
 void WIFI_scan(bool wifi_state);
@@ -80,12 +87,19 @@ void serial_command_help();
 void serial_err_msg(char *msg);
 
 String sensor_json(){
-  String response = "{\"dvid\":\""+String(deviceID)+"\"";
-  if(able_maxlipo) response += ",\"lipo\":["+String(maxlipo.cellPercent())+","+String(maxlipo.cellVoltage());
-  response += "],\"temp:"+isnan(temperature) ? String(temperature):"\"NAN\"";
-  response += ",\"air\":"+isnan(temperature) ?"\"NAN\"": String(temp_air);
-  response += ",\"heat\":"+isnan(temperature) ? "\"NAN\"":String(temp_heat);
-  response += "}";
+  String response = (String)"{\"DVC\":\""+String(deviceID)+"\",\"HM\":[\"NAN\",\"NAN\",";
+  response += isnan(humidity) ? "\"NAN\"" : String(humidity);
+  response += "],\"TP\":[";  
+  response += isnan(temp_heat) ? "\"NAN\"" :String(temp_heat);
+  response += ",";
+  response += isnan(temp_air) ? "\"NAN\"" : String(temp_air);
+  response += ",";
+  response += isnan(temperature) ? "\"NAN\"" : String(temperature);
+  response += "],\"bat\":[";
+  response += able_maxlipo ? String(maxlipo.cellPercent())+","+String(maxlipo.cellVoltage()) : "\"NAN\",\"NAN\"";
+  response += "],\"WK\":"+String(heater_working) + ",\"GAP"+"\":"+String(working_total)+"}";
+  heater_working = 0;
+  working_total  = 1;
   return response;
 }
 
@@ -140,7 +154,7 @@ float readDS18B20(OneWireNg *ow) {
   }
 /*********************************************************/
 void WIFI_scan(bool wifi_state){
-  able_wifi = wifi_state;
+  wifi_able = wifi_state;
   WiFi.disconnect(true);
   Serial.println("WIFI Scanning…");
   uint8_t networks = WiFi.scanNetworks();
@@ -177,44 +191,80 @@ void WIFI_scan(bool wifi_state){
   }
   // Delete the scan result to free memory for code below.
   WiFi.scanDelete();
-  if(able_wifi){
+  if(wifi_able){
     wifi_connect();
   }else{
     WiFi.disconnect(true);
   }
 }
 
-/******************************************/
+////--------------------- String_slice ----------------////
+String String_slice(uint8_t *check_index, String text, char check_char){
+  String response = "";
+  for(uint8_t index_check=*check_index; index_check<text.length(); index_check++){
+    if(text[index_check] == check_char || text[index_check] == 0x00){
+      *check_index = index_check+1;
+      break;
+    }
+    response += text[index_check];
+  }
+  return response;
+}
+////--------------------- String_slice ----------------////
 void command_service(){
-  String cmd_text     = "";
-  String temp_text    = "";
-  bool    eep_change   = false;
+  bool    eep_change  = false;
   uint8_t check_index = 0;
-  
-  for(uint8_t index_check=0; index_check<COMMAND_LENGTH; index_check++){
-    if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
-      check_index = index_check+1;
-      break;
-    }
-    cmd_text += command_buf[index_check];
-  }
-  for(uint8_t index_check=check_index; index_check<COMMAND_LENGTH; index_check++){
-    if(command_buf[index_check] == 0x20 || command_buf[index_check] == 0x00){
-      check_index = index_check+1;
-      break;
-    }
-    temp_text += command_buf[index_check];
-  }
-  /**********/
-  Serial.print("cmd: ");
-  Serial.print(cmd_text);
-  Serial.print(", ");
-  Serial.println(temp_text);
-
+  String cmd_text  = String_slice(&check_index, command_buf, 0x20);
+  String temp_text = String_slice(&check_index, command_buf, 0x20);
+  ////cmd start
   if(cmd_text=="reboot"){
     ESP.restart();
+
+  }else if(cmd_text=="sensor"){
+
+  }else if(cmd_text=="run"){
+    bool change_flage = false;
+    if(temp_text=="on" && !heat_use){
+      EEPROM.write(EEPROM_HEAT_USE, true);
+      heat_use = true;
+      change_flage = true;
+    }else if(heat_use){
+      EEPROM.write(EEPROM_HEAT_USE, false);
+      heat_use = false;
+      change_flage = true;
+    }
+    if(change_flage){
+      EEPROM.commit();
+      config_upload();
+    }
+    Serial.println(command_buf);
+
+  }else if(cmd_text=="set"){
+    uint8_t set_value = temp_text.toInt();
+    bool change_flage = false;
+    if(50 > set_value && set_value > 0){
+      EEPROM.write(EEPROM_HEAT_GOAL, set_value);
+      temp_goal = set_value;
+      Serial.println(command_buf);
+      change_flage = true;
+    }else{
+      Serial.println("set value error");
+    }
+    if(change_flage){
+      EEPROM.commit();
+      config_upload();
+    }
+
+  }else if(cmd_text=="config"){
+    Serial.print("homeothermy mode : ");
+    if(heat_use) Serial.println("ON");
+    else Serial.println("OFF");
+    Serial.print("temperature setup ");
+    Serial.print(temp_goal);
+    Serial.println(" ℃");
+
   }else if(cmd_text=="ssid"){
-    able_wifi = false;
+    wifi_able = false;
     WiFi.disconnect(true);
     Serial.print("ssid: ");
     if(temp_text.length() > 0){
@@ -228,11 +278,11 @@ void command_service(){
           EEPROM.write(index, byte(0x00));
         }
       }
-      eep_change = true;
     }
     Serial.println("");
+    EEPROM.commit();
   }else if(cmd_text=="pass"){
-    able_wifi = false;
+    wifi_able = false;
     WiFi.disconnect(true);
     Serial.print("pass: ");
     if(temp_text.length() > 0){
@@ -246,25 +296,26 @@ void command_service(){
           EEPROM.write(EEPROM_SIZE_CONFIG+index, byte(0x00));
         }
       }
-      eep_change = true;
     }
     Serial.println("");
+    EEPROM.commit();
+
   }else if(cmd_text=="wifi"){
     if(temp_text=="stop"){
-      able_wifi = false;
-      Serial.print("WIFI disconnect");
+      wifi_able = false;
       WiFi.disconnect(true);
+      Serial.print("WIFI disconnect");
     }else if(temp_text=="scan"){
       WIFI_scan(WiFi.status() == WL_CONNECTED);
     }else{
       wifi_connect();
     }
-  }else if(cmd_text=="help"){
+  
+  }else if(cmd_text=="firm"){
+    firmware_upadte();
+    
+  }else{
     serial_command_help();
-  }else{ serial_err_msg(command_buf); }
-
-  if(eep_change){
-    EEPROM.commit();
   }
 }
 
@@ -282,7 +333,7 @@ void command_process(char ch) {
 
 /******************************************/
 bool wifi_connect() {
-  able_wifi = false;  // 초기값을 false로 설정
+  wifi_able = false;  // 초기값을 false로 설정
   serial_wifi_config(ssid, password);
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
@@ -325,7 +376,7 @@ bool wifi_connect() {
   Serial.print("deviceID: ");
   Serial.println(deviceID);
   
-  able_wifi = true;  // 연결 성공 후 true로 설정
+  wifi_able = true;  // 연결 성공 후 true로 설정
   return true;
 }
 
@@ -353,7 +404,7 @@ void setup() {
   pinMode(PIN_CONFIG, INPUT_PULLUP);
   digitalWrite(PIN_SSR_HEATER, LOW);
 
-  if( bootCount++%30==0 || digitalRead(PIN_AC_DETECT)){
+  if( bootCount++%UPLOAD_PERIOD==0 || !digitalRead(PIN_AC_DETECT)){
     Wire.begin(PIN_SDA, PIN_SCL);
     
     able_maxlipo = maxlipo.begin(); // MAX17048 센서 초기화
@@ -373,7 +424,7 @@ void setup() {
     memset(command_buf, 0, sizeof(command_buf));
     
     // EEPROM 초기화
-    if (!EEPROM.begin(EEPROM_SIZE_CONFIG * 2)){
+    if (!EEPROM.begin(EEPROM_HEAT_GOAL+1)){
       Serial.println("Failed to initialise eeprom");
       Serial.println("Restarting...");
       delay(1000);
@@ -393,30 +444,30 @@ void setup() {
     //온습도 센서 읽기
     read_sensors();
     //센서 업로드
-    if(able_wifi){
-      sensor_upload();
-    }
+    sensor_upload();
+
     Serial.print("Firmware version: ");
     Serial.println(firmwareVersion);
     //외부전원 확인 => 상시 전환
     loop_ac();
   }
 
-  // 타이머 wake-up 설정 10초
-  esp_sleep_enable_timer_wakeup(10 * uS_TO_S_FACTOR); 
+  // 타이머 wake-up 설정
+  esp_sleep_enable_timer_wakeup(SLEEP_WAKE * uS_TO_S_FACTOR); 
   // 딥슬립 시작
   Serial.println("Deep Sleep Start");
   Serial.flush(); // 로그 전송 완료 대기
-  esp_deep_sleep_start();
+  // esp_deep_sleep_start();
 }
 /*********************************************************/
 void loop_ac() {
   // [Fix] Active Low 적용: 핀이 LOW(0)인 동안 동작
   // [Fix] 비어있던 좀비 루프에 동작 로직(센싱+업로드) 주입
   unsigned long pre_update_post = millis();
-  if(digitalRead(PIN_AC_DETECT)) Serial.println("[AC MODE] Started");
-  while (digitalRead(PIN_AC_DETECT)){
-    if(millis()-pre_update_post > 1000*60*30){
+  if(!digitalRead(PIN_AC_DETECT)) Serial.println("[AC MODE] Started");
+  while (!digitalRead(PIN_AC_DETECT)){
+    if(Serial.available()) command_process(Serial.read());
+    if(millis()-pre_update_post > SECONDE*WIFI_WAIT*UPLOAD_PERIOD){
       if(WiFi.status() != WL_CONNECTED) wifi_connect();
       read_sensors();
       sensor_upload();
@@ -433,19 +484,50 @@ void loop() {
 }
 
 /*********************************************************/
+void config_upload(){
+  String set_data = "{\"DVC\":\"" + String(deviceID) + "\",\"TMP\":" + String(temp_goal) + ",\"RUN\":" + String(heat_use) + "}";
+  String response = httpPOSTRequest(server+"device/set_25",set_data);
+  Serial.print("http:");
+  Serial.println(response);
+}
 void sensor_upload(){
-  if (!able_wifi) return;  // WiFi 연결 확인
-  
-  String jsonData = sensor_json();
-  Serial.println("Sending data to server: " + jsonData);
-  
-  String response = httpPOSTRequest(http_server_addr, jsonData);
-  Serial.println("Server response: " + response);
+  if (!wifi_able) return;  // WiFi 연결 확인 
+  String response = httpPOSTRequest(server+"device/log_25", sensor_json());
+  Serial.print("http:");
+  Serial.println(response);
+  //여기서 설정 변경
+  uint8_t check_index = 0;
+  String cmd_text = String_slice(&check_index,response, 0x2C);
+  if (cmd_text == "set"){
+    uint8_t set_value = 0;
+    bool change_flage = false;
+    
+    set_value = String_slice(&check_index,response, 0x2C).toInt();
+    if(temp_goal != set_value){
+      Serial.println(" O");
+      EEPROM.write(EEPROM_HEAT_GOAL, set_value);
+      temp_goal = set_value;
+      change_flage = true;
+    }
+
+    set_value = String_slice(&check_index,response, 0x2C).toInt();
+    if((set_value == 1 && !heat_use)||(set_value == 0 && heat_use)){
+      EEPROM.write(EEPROM_HEAT_USE, set_value);
+      heat_use = set_value;
+      change_flage = true;
+    }
+    if(change_flage){
+      EEPROM.commit();
+      config_upload();
+    }
+  }else if(cmd_text == "updt"){
+    firmware_upadte();
+  }
 }
 
 String httpPOSTRequest(String server_url, String send_data) {
   String response = "";
-  if(able_wifi){
+  if(wifi_able){
     WiFiClient client;
     HTTPClient http;
     
@@ -453,6 +535,7 @@ String httpPOSTRequest(String server_url, String send_data) {
     http.addHeader("Content-Type", "application/json");
     int response_code = http.POST(send_data);
     
+    Serial.println(server_url);
     if (response_code > 0) {
       Serial.print("HTTP Response code: ");
       Serial.println(response_code);
@@ -480,12 +563,14 @@ void serial_command_help() {
   Serial.println("************* help *************");
   Serial.println("reboot   * system reboot");
   Serial.println("sensor   * sensor read");
+  Serial.println("run      * heater run");
+  Serial.println("set      * temperature goal set");
+  Serial.println("config   * setting view");
   Serial.println("ssid     * ex)ssid your ssid");
   Serial.println("pass     * ex)pass your password");
   Serial.println("wifi     * WIFI connet");
   Serial.println("   scan  * WIFI scan");
   Serial.println("   stop  * WIFI disconnet");
-  Serial.println("help     * this text");
   Serial.println("************* help *************");
 }
 
@@ -495,3 +580,82 @@ void serial_wifi_config(char *ssid, char *pass){
   Serial.print("your pass: "); Serial.println(pass);
   Serial.println("********* wifi config *********");
 }
+
+////--------------------- firmware_update -------------////
+void firmware_upadte() {
+  if(wifi_able){
+    String serverUrl = server + "firmware/device";   //API adress
+    WiFiClient client;
+    HTTPClient http;
+    http.begin(client, serverUrl);
+    // 타임아웃 설정 증가
+    http.setTimeout(30000);  // 30초
+    
+    http.addHeader("Content-Type", "application/json");
+    String httpRequestData = (String)"{\"DVC\":\""+String(deviceID)+"\",\"ver\":\"" + firmwareVersion + "\"}";
+    int httpResponseCode = http.POST(httpRequestData);
+    if (httpResponseCode == 200) {
+      int contentLength = http.getSize();
+      Serial.printf("Update size: %d\n", contentLength);
+      if (contentLength <= 0) {
+          Serial.println("Invalid content length");
+          http.end();
+          return;
+      }
+      if (!Update.begin(contentLength)) {
+          Serial.printf("Not enough space for update. Required: %d\n", contentLength);
+          http.end();
+          return;
+      }
+      WiFiClient * stream = http.getStreamPtr();
+      // 버퍼 크기 증가 및 타임아웃 처리 추가
+      size_t written = 0;
+      uint8_t buff[2048] = { 0 };
+      int timeout = 0;
+      while (written < contentLength) {
+          delay(1);  // WiFi 스택에 시간 양보
+          size_t available = stream->available();
+          if (available) {
+              size_t toRead = min(available, sizeof(buff));
+              size_t bytesRead = stream->readBytes(buff, toRead);
+              if (bytesRead > 0) {
+                  size_t bytesWritten = Update.write(buff, bytesRead);
+                  if (bytesWritten > 0) {
+                      written += bytesWritten;
+                      timeout = 0;  // 타임아웃 리셋
+                      // 진행률 표시
+                      float progress = (float)written / contentLength * 100;
+                      Serial.printf("Progress: %.1f%%\n", progress);
+                  }
+              }
+          } else {
+              timeout++;
+              if (timeout > 100) {  // 약 10초 타임아웃
+                  Serial.println("Download timeout");
+                  Update.abort();
+                  break;
+              }
+              delay(100);
+          }
+      }
+      if (written == contentLength) {
+          if (Update.end(true)) {
+              Serial.println("Update Success!");
+              ESP.restart();
+          } else {
+              Serial.printf("Update failed with error: %d\n", Update.getError());
+          }
+      } else {
+          Update.abort();
+          Serial.println("Update failed: incomplete download");
+      }
+  } 
+  else if (httpResponseCode == 204) {
+      Serial.println("No update available");
+  }
+  else {
+      Serial.printf("HTTP error: %d\n", httpResponseCode);
+  }
+  http.end();           // Free resources
+  }
+}////httpPOSTRequest_End
