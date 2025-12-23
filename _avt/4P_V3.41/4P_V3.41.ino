@@ -59,6 +59,8 @@ char  deviceID[18] = {0};  // 초기화 추가
 bool wifi_able  = false;
 bool heat_use   = false;
 uint8_t temp_goal = 0;
+////--------------------- PID -------------------------////
+
 /*********************************************************/
 float   temp_heat   = 0.00f;
 float   temp_air    = 0.00f;
@@ -436,7 +438,9 @@ void setup() {
       ssid[index] = EEPROM.read(index);
       password[index] = EEPROM.read(EEPROM_SIZE_CONFIG+index);
     }
-    Serial.println(" times online");
+    heat_use  = EEPROM.read(EEPROM_HEAT_USE);
+    temp_goal = EEPROM.read(EEPROM_HEAT_GOAL);
+
     bool wifi_connected = wifi_connect();
 
     if(able_maxlipo) maxlipo.reset();
@@ -468,6 +472,7 @@ void loop_ac() {
   while (!digitalRead(PIN_AC_DETECT)){
     if(Serial.available()) command_process(Serial.read());
     if(millis()-pre_update_post > SECONDE*WIFI_WAIT*UPLOAD_PERIOD){
+      unsigned long pre_update_post = millis();
       if(WiFi.status() != WL_CONNECTED) wifi_connect();
       read_sensors();
       sensor_upload();
