@@ -15,7 +15,10 @@ String firmwareVersion = "0.0.1"; // 버전만 수정됨 표시
 #define SECONDE         1000L
 #define WIFI_WAIT       10
 #define COMMAND_LENGTH  32
-
+////--------------------- PID -------------------------////
+#define MAX_BEE_TEMP    35
+#define MAX_HEAT        50
+#define PEAK_COUNT      10    // 10번의 피크 = 5번의 전체 주기
 ////--------------------- Pin out ---------------------////
 #define PIN_SDA         6   
 #define PIN_SCL         7   
@@ -52,15 +55,31 @@ const uint8_t ADDR_HEAT = 48;
 const uint8_t ADDR_GAP  = 49; 
 const uint8_t ADDR_GOAL = 50; 
 
-// String server = "http://yc.beetopia.kro.kr/";
-String server = "http://192.168.4.2:3002/";
+String server = "http://yc.beetopia.kro.kr/";
+// String server = "http://192.168.4.2:3002/";
 char  deviceID[18] = {0};  // 초기화 추가
 /*********************************************************/
 bool wifi_able  = false;
 bool heat_use   = false;
-uint8_t temp_goal = 0;
 ////--------------------- PID -------------------------////
-
+uint8_t temp_goal = 0; // 목표값
+float   temp_heater;
+float   Kp = 0, Ki = 0, Kd = 0;
+// 자동 튜닝용 변수
+bool  isTuning = false;
+float Ku = 0, Pu = 0;
+float lastInput;
+float ITerm = 0;
+int   oscillationCount = 0;
+unsigned long lastTime, startTime;
+// 추가 또는 수정이 필요한 전역 변수들
+float peakMax = -1e6;
+float peakMin = 1e6;
+float amplitudeSum = 0;
+float periodSum = 0;
+unsigned long lastPeakTime = 0;
+int   peakCount = 0;
+bool  isHigh = false; // 현재 온도가 temp_heater보다 높은지 여부
 /*********************************************************/
 float   temp_heat   = 0.00f;
 float   temp_air    = 0.00f;
@@ -71,10 +90,9 @@ char    password[EEPROM_SIZE_CONFIG];
 char    command_buf[COMMAND_LENGTH];
 int8_t  command_num  = 0;
 /*********************************************************/
-unsigned long pre_sensor_read = 0UL;
-unsigned long pre_save_csv    = 0UL;
+unsigned long update_pid = 0UL;
 
-uint16_t working_total  = 1;
+uint16_t working_total  = 0;
 uint16_t heater_working = 0;
 /*********************************************************/
 
@@ -101,7 +119,7 @@ String sensor_json(){
   response += able_maxlipo ? String(maxlipo.cellPercent())+","+String(maxlipo.cellVoltage()) : "\"NAN\",\"NAN\"";
   response += "],\"WK\":"+String(heater_working) + ",\"GAP"+"\":"+String(working_total)+"}";
   heater_working = 0;
-  working_total  = 1;
+  working_total  = 0;
   return response;
 }
 
@@ -142,18 +160,137 @@ float readDS18B20(OneWireNg *ow) {
     return temp;
 }
 
-  void read_sensors(){
-    temp_heat = readDS18B20(owExt);
-    temp_air  = readDS18B20(owSpace);
-    if (sht31.begin(0x44)) {
-      temperature = sht31.readTemperature();
-      humidity    = sht31.readHumidity();
-    } else {
-      temperature = NAN;
-      humidity    = NAN;
-      Serial.println("SHT31 missing");
+void read_sensors(){
+  temp_heat = readDS18B20(owExt);
+  temp_air  = readDS18B20(owSpace);
+  if (sht31.begin(0x44)) {
+    temperature = sht31.readTemperature();
+    humidity    = sht31.readHumidity();
+  } else {
+    temperature = NAN;
+    humidity    = NAN;
+    Serial.println("SHT31 missing");
+  }
+}
+////--------------------- PID -------------------------////
+float constraint(float val) {
+  if (val < 0) return 0;
+  if (val > MAX_HEAT) return MAX_HEAT;
+  return val;
+}
+
+void run_pid() {
+  unsigned long now = millis();
+  float timeChange = (float)(now - lastTime) / SECONDE; // 초 단위
+
+  if (timeChange <= 0) return;
+
+  float error = temp_goal - temp_air;
+  ITerm += (Ki * error * timeChange);
+  // Anti-windup (출력 제한)
+  ITerm = constraint(ITerm);
+
+  float dInput = (temp_air - lastInput) / timeChange;
+
+  temp_heater = Kp * error + ITerm - Kd * dInput;
+  temp_heater = constraint(temp_heater);
+
+  lastInput = temp_air;
+  lastTime = now;
+}
+
+void pid_tune() {
+  // 1. 릴레이 제어 (On/Off 제어)
+  if (temp_air < temp_goal) {
+    temp_heater = MAX_HEAT; // Max Power
+    if (isHigh) { // 위에서 아래로 내려오는 순간 (하강 교차)
+      isHigh = false;
+    }
+  } else {
+    temp_heater = 0; // Min Power
+    if (!isHigh) { // 아래에서 위로 올라가는 순간 (상승 교차)
+      isHigh = true;
     }
   }
+
+  // 2. 피크값(최대/최소) 갱신
+  if (temp_air > peakMax) peakMax = temp_air;
+  if (temp_air < peakMin) peakMin = temp_air;
+
+  // 3. 제로 크로싱(temp_goal 통과) 시점에 피크 기록
+  // 여기서는 단순히 방향이 바뀔 때 peak를 계산하는 방식으로 설명합니다.
+  static bool lastDirection = false; // true: 상승중, false: 하강중
+  bool currentDirection = (temp_air > lastInput);
+  
+  // 방향이 바뀌었을 때 (피크 도달)
+  if (lastDirection != currentDirection) {
+    unsigned long now = millis();
+    
+    // 유효한 진동인지 확인 (노이즈 방지를 위해 작은 임계값 추가 가능)
+    if (peakCount > 0) {
+      // 주기 누적 (피크와 피크 사이의 시간)
+      periodSum += (now - lastPeakTime);
+    }
+    
+    lastPeakTime = now;
+    peakCount++;
+        
+    if (peakCount >= PEAK_COUNT) { 
+      float averageAmplitude = (peakMax - peakMin) / 2.0;
+      float averagePeriod = (periodSum / (peakCount - 1)) / 1000.0; // 초 단위
+
+      // Ku = (4 * RelayOutput) / (pi * Amplitude)
+      // 여기서 RelayOutput은 MAX_HEAT(전체 가동 범위)
+      Ku = (4.0 * MAX_HEAT) / (3.14159 * averageAmplitude);
+      Pu = averagePeriod;
+
+      // Ziegler-Nichols 공식 적용
+      Kp = 0.6 * Ku;
+      Ki = 2.0 * Kp / Pu;
+      Kd = Kp * Pu / 8.0;
+
+      isTuning = true;
+      Serial.println("--- 튜닝 완료 ---");
+      Serial.print("Ku: "); Serial.println(Ku);
+      Serial.print("Pu: "); Serial.println(Pu);
+      Serial.print("Kp: "); Serial.println(Kp);
+      Serial.print("Ki: "); Serial.println(Ki);
+      Serial.print("Kd: "); Serial.println(Kd);
+      
+      lastTime = millis(); // PID 시작 시간 초기화
+    }
+  }
+  lastInput = temp_air;
+}
+
+void loop_pid(){
+  unsigned long now = millis();
+  if(now - update_pid > SECONDE){
+    update_pid = now;
+    if (sht31.begin(0x44)) {
+      temperature = sht31.readTemperature();
+    } else {
+      temperature = NAN;
+      Serial.println("SHT31 missing");
+    }
+    if(!isnan(temperature) && temperature<MAX_BEE_TEMP){ //봉구온도가 35도보다 낮을경우만 작동
+      temp_heat = readDS18B20(owExt);
+      temp_air  = readDS18B20(owSpace);
+      if (!isTuning) {
+        pid_tune();
+      } else {
+        run_pid();
+      }
+      working_total++;
+      if(temp_heat<temp_heater){
+        heater_working++;
+        digitalWrite(PIN_SSR_HEATER, true);
+      }else{
+        digitalWrite(PIN_SSR_HEATER, false);
+      }
+    }
+  }
+}
 /*********************************************************/
 void WIFI_scan(bool wifi_state){
   wifi_able = wifi_state;
@@ -404,7 +541,7 @@ void setup() {
   pinMode(PIN_SSR_HEATER, OUTPUT);
   pinMode(PIN_AC_DETECT, INPUT_PULLUP);
   pinMode(PIN_CONFIG, INPUT_PULLUP);
-  digitalWrite(PIN_SSR_HEATER, LOW);
+  digitalWrite(PIN_SSR_HEATER, false);
 
   if( bootCount++%UPLOAD_PERIOD==0 || !digitalRead(PIN_AC_DETECT)){
     Wire.begin(PIN_SDA, PIN_SCL);
@@ -465,18 +602,19 @@ void setup() {
 }
 /*********************************************************/
 void loop_ac() {
-  // [Fix] Active Low 적용: 핀이 LOW(0)인 동안 동작
+  // [Fix] Active Low 적용: 핀이 false(0)인 동안 동작
   // [Fix] 비어있던 좀비 루프에 동작 로직(센싱+업로드) 주입
   unsigned long pre_update_post = millis();
   if(!digitalRead(PIN_AC_DETECT)) Serial.println("[AC MODE] Started");
   while (!digitalRead(PIN_AC_DETECT)){
     if(Serial.available()) command_process(Serial.read());
     if(millis()-pre_update_post > SECONDE*WIFI_WAIT*UPLOAD_PERIOD){
-      unsigned long pre_update_post = millis();
+      pre_update_post = millis();
       if(WiFi.status() != WL_CONNECTED) wifi_connect();
       read_sensors();
       sensor_upload();
     }
+    if(heat_use) loop_pid();
     yield();
   }
 }
