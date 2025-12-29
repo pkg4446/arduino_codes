@@ -358,9 +358,16 @@ void command_service(){
   ////cmd start
   if(cmd_text=="reboot"){
     ESP.restart();
-
   }else if(cmd_text=="sensor"){
-
+    read_sensors();
+    Serial.print("Heater: ");
+    Serial.println(temp_heat);
+    Serial.print("Air: ");
+    Serial.println(temp_air);
+    Serial.print("HIVE_T: ");
+    Serial.println(temperature);
+    Serial.print("HIVE_H: ");
+    Serial.println(humidity);
   }else if(cmd_text=="run"){
     bool change_flage = false;
     if(temp_text=="on" && !heat_use){
