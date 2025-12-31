@@ -10,8 +10,8 @@
 String firmwareVersion = "0.0.1"; // 버전만 수정됨 표시
 
 #define uS_TO_S_FACTOR  1000000  //Conversion factor for micro seconds to seconds
-#define SLEEP_WAKE      10
-#define UPLOAD_PERIOD   180
+#define SLEEP_WAKE      60
+#define UPLOAD_PERIOD   30
 #define SECONDE         1000L
 #define WIFI_WAIT       10
 #define COMMAND_LENGTH  32
@@ -615,7 +615,7 @@ void loop_ac() {
   if(!digitalRead(PIN_AC_DETECT)) Serial.println("[AC MODE] Started");
   while (!digitalRead(PIN_AC_DETECT)){
     if(Serial.available()) command_process(Serial.read());
-    if(millis()-pre_update_post > SECONDE*WIFI_WAIT*UPLOAD_PERIOD){
+    if(millis()-pre_update_post > SECONDE*WIFI_WAIT*UPLOAD_PERIOD/6){
       pre_update_post = millis();
       if(WiFi.status() != WL_CONNECTED) wifi_connect();
       read_sensors();
