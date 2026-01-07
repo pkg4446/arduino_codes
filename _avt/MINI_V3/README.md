@@ -1,2 +1,2 @@
 # Heat Array
-1. WIFI connect:
+1. IO2 누르고 있는동안 커맨드 입력 가능. 버튼 때면 바로 슬립모드로 전환됨

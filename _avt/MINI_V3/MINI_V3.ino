@@ -6,8 +6,12 @@
 
 String firmwareVersion = "0.0.1";
 
+#define I2C_SDA_PIN               6
+#define I2C_SCL_PIN               7
+
 #define uS_TO_S_FACTOR            1000000  //Conversion factor for micro seconds to seconds
 #define SECONDE                   1000L
+#define WIFI_WAIT                 10
 #define TCAADDR                   0x70
 #define TOTAL_TEMPERATURE_SENSOR  4
 #define EEPROM_SIZE_CONFIG        24
@@ -35,6 +39,18 @@ Adafruit_SHT31 sht31 = Adafruit_SHT31();
 float sensor_temperature[TOTAL_TEMPERATURE_SENSOR] = {0.00f,};
 float sensor_humidity[TOTAL_TEMPERATURE_SENSOR]    = {0.00f,};
 ////--------------------- temperature sensor ----------////
+void command_process(char ch);
+void command_service();
+void wifi_connect();
+void sensor_upload();
+void temperature_sensor_read();
+void WIFI_scan(bool wifi_state);
+String httpPOSTRequest(String server_url, String send_data);
+void serial_wifi_config(char *ssid, char *pass);
+String String_slice(uint8_t *check_index, String text, char check_char);
+void tcaselect(uint8_t index);
+void serial_command_help();
+String sensor_json();
 ////--------------------- Serial command --------------////
 void Serial_command(){ if(Serial.available()) command_process(Serial.read()); }
 ////--------------------- Serial command --------------////
@@ -42,7 +58,7 @@ void Serial_command(){ if(Serial.available()) command_process(Serial.read()); }
 void setup()
 {
   Serial.begin(115200); 
-  Wire.begin();
+  Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
   pinMode(PIN_BUTTON1, INPUT_PULLUP);
 
   Serial.print("ver:");
@@ -69,17 +85,20 @@ void setup()
   }
 
   wifi_connect();
+
+  String mac = WiFi.macAddress();
   for (uint8_t index = 0; index < 17; index++) {
     if(WiFi.macAddress()[index]==':'){
       deviceID[index] = '_';
     }else{
-      deviceID[index] = WiFi.macAddress()[index];
+      deviceID[index] = mac[index];
     }
   }
   sensor_upload();
 
   esp_sleep_enable_timer_wakeup(UPLOAD_PERIOD * 60 * uS_TO_S_FACTOR);
   Serial.println(" Going to deep sleep now");
+  Serial.flush();
   esp_deep_sleep_start();
 }
 ////--------------------- setup() ---------------------////
@@ -204,31 +223,8 @@ void WIFI_scan(bool wifi_state){
   }else {
     Serial.print(networks);
     Serial.println(" networks found");
-    Serial.println("Nr | SSID                             | RSSI | CH | Encryption");
-    String wifi_list ="";
     for (int index = 0; index < networks; ++index) {
-      // Print SSID and RSSI for each network found
-      Serial.printf("%2d",index + 1);
-      Serial.print(" | ");
-      Serial.printf("%-32.32s", WiFi.SSID(index).c_str());
-      Serial.print(" | ");
-      Serial.printf("%4d", WiFi.RSSI(index));
-      Serial.print(" | ");
-      Serial.printf("%2d", WiFi.channel(index));
-      Serial.print(" | ");
-      byte wifi_type = WiFi.encryptionType(index);
-      String wifi_encryptionType;
-      if(wifi_type == WIFI_AUTH_OPEN){wifi_encryptionType = "open";}
-      else if(wifi_type == WIFI_AUTH_WEP){wifi_encryptionType = "WEP";}
-      else if(wifi_type == WIFI_AUTH_WPA_PSK){wifi_encryptionType = "WPA";}
-      else if(wifi_type == WIFI_AUTH_WPA2_PSK){wifi_encryptionType = "WPA2";}
-      else if(wifi_type == WIFI_AUTH_WPA_WPA2_PSK){wifi_encryptionType = "WPA2";}
-      else if(wifi_type == WIFI_AUTH_WPA2_ENTERPRISE){wifi_encryptionType = "WPA2-EAP";}
-      else if(wifi_type == WIFI_AUTH_WPA3_PSK){wifi_encryptionType = "WPA3";}
-      else if(wifi_type == WIFI_AUTH_WPA2_WPA3_PSK){wifi_encryptionType = "WPA2+WPA3";}
-      else if(wifi_type == WIFI_AUTH_WAPI_PSK){wifi_encryptionType = "WAPI";}
-      else{wifi_encryptionType = "unknown";}
-      Serial.println(wifi_encryptionType);
+      Serial.printf("%2d | %-32.32s | %4d | %2d\n", index + 1, WiFi.SSID(index).c_str(), WiFi.RSSI(index), WiFi.channel(index));
     }
     Serial.println("");
   }
@@ -256,13 +252,16 @@ void wifi_connect() {
   while (WiFi.status() != WL_CONNECTED) {
     unsigned long update_time = millis();
     Serial_command();
-    if(update_time - wifi_config_update > SECONDE){
+    if(update_time - wifi_config_update > WIFI_WAIT*SECONDE){
       wifi_able = false;
       Serial.println("WIFI fail");
       break;
     }
   }
-  if(wifi_able) Serial.println("WIFI connected");
+  if(wifi_able) {
+    Serial.println("\n[Success] WIFI connected");
+    Serial.print("IP: "); Serial.println(WiFi.localIP());
+  }
 }
 ////--------------------- temperature read ------------////
 void tcaselect(uint8_t index) {
@@ -309,6 +308,10 @@ String sensor_json(){
 
 void sensor_upload(){
   temperature_sensor_read();
+  if (!wifi_able) {
+    Serial.println("Skip Upload: No WiFi");
+    return;
+  }
   String response = httpPOSTRequest(server+"device/log",sensor_json());
 }
 

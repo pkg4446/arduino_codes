@@ -425,7 +425,7 @@ void wifi_connect() {
   while (WiFi.status() != WL_CONNECTED) {
     unsigned long update_time = millis();
     Serial_command();
-    if(update_time - wifi_config_update > SECONDE){
+    if(update_time - wifi_config_update > 10*SECONDE){
       wifi_able = false;
       Serial.println("WIFI fail");
       break;
