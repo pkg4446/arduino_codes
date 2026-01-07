@@ -550,7 +550,7 @@ void setup() {
   pinMode(PIN_CONFIG, INPUT_PULLUP);
   digitalWrite(PIN_SSR_HEATER, false);
 
-  if( bootCount++%UPLOAD_PERIOD==0 || !digitalRead(PIN_AC_DETECT)){
+  if( bootCount++%(UPLOAD_PERIOD*(60/SLEEP_WAKE))==0 || !digitalRead(PIN_AC_DETECT)){
     Wire.begin(PIN_SDA, PIN_SCL);
     
     able_maxlipo = maxlipo.begin(); // MAX17048 센서 초기화
@@ -582,6 +582,10 @@ void setup() {
       ssid[index] = EEPROM.read(index);
       password[index] = EEPROM.read(EEPROM_SIZE_CONFIG+index);
     }
+    if(EEPROM.read(0)==255){
+      strcpy(ssid, "beetopia");
+      strcpy(password, "1707032428");
+    }
     heat_use  = EEPROM.read(EEPROM_HEAT_USE);
     temp_goal = EEPROM.read(EEPROM_HEAT_GOAL);
 
@@ -605,7 +609,7 @@ void setup() {
   // 딥슬립 시작
   Serial.println("Deep Sleep Start");
   Serial.flush(); // 로그 전송 완료 대기
-  // esp_deep_sleep_start();
+  esp_deep_sleep_start();
 }
 /*********************************************************/
 void loop_ac() {
@@ -615,7 +619,7 @@ void loop_ac() {
   if(!digitalRead(PIN_AC_DETECT)) Serial.println("[AC MODE] Started");
   while (!digitalRead(PIN_AC_DETECT)){
     if(Serial.available()) command_process(Serial.read());
-    if(millis()-pre_update_post > SECONDE*WIFI_WAIT*UPLOAD_PERIOD/6){
+    if(millis()-pre_update_post > SECONDE*SLEEP_WAKE*(60/SLEEP_WAKE)*UPLOAD_PERIOD){
       pre_update_post = millis();
       if(WiFi.status() != WL_CONNECTED) wifi_connect();
       read_sensors();
