@@ -9,10 +9,6 @@ String firmwareVersion = "0.0.1";
 #define SECONDE             1000L
 RTC_DATA_ATTR uint32_t bootCount = 0;
 
-#define UPDATE_INTERVAL_SENSOR  300L
-#define UPDATE_INTERVAL_HTTP    60000L
-#define UPDATE_INTERVAL_CSV     60000L
-
 #define TCA9548A_COUNT  8
 #define SENSOR_COUNT    64
 #define MOVING_AVERAGE  2
