@@ -41,6 +41,7 @@ String firmwareVersion = "0.0.1"; // 버전만 수정됨 표시
 
 ////--------------------- Object ---------------------////
 RTC_DATA_ATTR uint32_t bootCount = 0;
+RTC_DATA_ATTR uint16_t restart_count = 0;
 Adafruit_SHT31 sht31 = Adafruit_SHT31(); 
 Adafruit_MAX17048 maxlipo;
 OneWireNg *owExt = NULL;
@@ -551,32 +552,28 @@ void setup() {
   digitalWrite(PIN_SSR_HEATER, false);
 
   if( bootCount++%(UPLOAD_PERIOD*(60/SLEEP_WAKE))==0 || !digitalRead(PIN_AC_DETECT)){
-    Wire.begin(PIN_SDA, PIN_SCL);
-    
+    if(restart_count++ > (24*60)/UPLOAD_PERIOD) ESP.restart();
+    Wire.begin(PIN_SDA, PIN_SCL);    
     able_maxlipo = maxlipo.begin(); // MAX17048 센서 초기화
     if (!able_maxlipo) {
       Serial.println("MAX17048 missing");
     }
-
     // 1-Wire
     owExt   = new OneWireNg_CurrentPlatform(PIN_DS_EXT, false);
-    owSpace = new OneWireNg_CurrentPlatform(PIN_DS_SPACE, false);
-    
+    owSpace = new OneWireNg_CurrentPlatform(PIN_DS_SPACE, false);    
     // 모든 배열 초기화 - 메모리 오류 방지
     temperature = 0.00f;
     humidity    = 0.00f;
     memset(ssid, 0, sizeof(ssid));
     memset(password, 0, sizeof(password));
-    memset(command_buf, 0, sizeof(command_buf));
-    
+    memset(command_buf, 0, sizeof(command_buf));    
     // EEPROM 초기화
     if (!EEPROM.begin(EEPROM_HEAT_GOAL+1)){
       Serial.println("Failed to initialise eeprom");
       Serial.println("Restarting...");
       delay(1000);
       ESP.restart();
-    }
-    
+    }    
     // EEPROM에서 데이터 읽기
     for (int index = 0; index < EEPROM_SIZE_CONFIG; index++) {
       ssid[index] = EEPROM.read(index);
@@ -624,6 +621,7 @@ void loop_ac() {
       if(WiFi.status() != WL_CONNECTED) wifi_connect();
       read_sensors();
       sensor_upload();
+      if(restart_count++ > (24*60)/UPLOAD_PERIOD) ESP.restart();
     }
     if(heat_use) loop_pid();
     yield();
