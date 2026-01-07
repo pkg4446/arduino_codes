@@ -107,6 +107,10 @@ void config_update_check();
 void serial_command_help();
 void serial_err_msg(char *msg);
 
+void restart_day(){
+  if(restart_count++ > (24*60)/UPLOAD_PERIOD) ESP.restart();
+}
+
 String sensor_json(){
   String response = (String)"{\"DVC\":\""+String(deviceID)+"\",\"HM\":[\"NAN\",\"NAN\",";
   response += isnan(humidity) ? "\"NAN\"" : String(humidity);
@@ -551,8 +555,8 @@ void setup() {
   pinMode(PIN_CONFIG, INPUT_PULLUP);
   digitalWrite(PIN_SSR_HEATER, false);
 
-  if( bootCount++%(UPLOAD_PERIOD*(60/SLEEP_WAKE))==0 || !digitalRead(PIN_AC_DETECT)){
-    if(restart_count++ > (24*60)/UPLOAD_PERIOD) ESP.restart();
+  if(bootCount++%(UPLOAD_PERIOD*(60/SLEEP_WAKE))==0 || !digitalRead(PIN_AC_DETECT)){
+    restart_day();
     Wire.begin(PIN_SDA, PIN_SCL);    
     able_maxlipo = maxlipo.begin(); // MAX17048 센서 초기화
     if (!able_maxlipo) {
@@ -621,7 +625,7 @@ void loop_ac() {
       if(WiFi.status() != WL_CONNECTED) wifi_connect();
       read_sensors();
       sensor_upload();
-      if(restart_count++ > (24*60)/UPLOAD_PERIOD) ESP.restart();
+      restart_day();
     }
     if(heat_use) loop_pid();
     yield();
