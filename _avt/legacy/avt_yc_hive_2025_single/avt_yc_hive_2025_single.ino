@@ -521,7 +521,7 @@ void firmware_upadte() {
     http.setTimeout(30000);  // 30초
     
     http.addHeader("Content-Type", "application/json");
-    String httpRequestData = (String)"{\"DVC\":\""+String(deviceID)+"\",\"ver\":\"" + firmwareVersion + "\"}";
+    String httpRequestData = (String)"{\"DVC\":\""+String(deviceID)+"\",\"KIND\":\"device_out_25\",\"ver\":\"" + firmwareVersion + "\"}";
     int httpResponseCode = http.POST(httpRequestData);
     if (httpResponseCode == 200) {
       int contentLength = http.getSize();
